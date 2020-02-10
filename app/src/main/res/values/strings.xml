@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">Adolfinstro</string>
+    <string name="app_name">AdolfinstroAPP</string>
+    <string name="permi">Permissions</string>
+    <string name="permiM">The app needs all permissions!</string>
+    <string name="acept">Ok</string>
+    <string name="exi">Exit</string>
 </resources>

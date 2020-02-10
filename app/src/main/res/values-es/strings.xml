@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">AdolfinstroAPP</string>
+    <string name="permiM">La aplicación necesita todos los permisos solicitados</string>
+    <string name="permi">Permisos</string>
+    <string name="acept">Aceptar</string>
+    <string name="exi">Salir</string>
+</resources>
