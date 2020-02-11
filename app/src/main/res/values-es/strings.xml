@@ -5,4 +5,6 @@
     <string name="permi">Permisos</string>
     <string name="acept">Aceptar</string>
     <string name="exi">Salir</string>
+    <string name="task">Tarea</string>
+    <string name="next">Next</string>
 </resources>

@@ -4,4 +4,8 @@
     <string name="permiM">The app needs all permissions!</string>
     <string name="acept">Ok</string>
     <string name="exi">Exit</string>
+    <string name="title_activity_task_camera">task_camera</string>
+    <string name="task">Task</string>
+    <string name="cancel">Cancel</string>
+    <string name="next">Next</string>
 </resources>
