@@ -22,9 +22,18 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".TaskCamera"
-            android:label="@string/task"
+            android:label="@string/app_name"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.uva.gsic.adolfinstro.MainActivity" />
+        </activity>
+        <activity
+            android:name=".Ask"
+            android:label="@string/app_name"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="es.uva.gsic.adolfinstro.MainActivity" />

@@ -7,4 +7,11 @@
     <string name="exi">Salir</string>
     <string name="task">Tarea</string>
     <string name="next">Next</string>
+    <string name="cancel">Cancelar</string>
+    <string name="title_activity_task_camera">task_camera</string>
+    <string name="latitud">Latitud</string>
+    <string name="longitud">Longitud</string>
+    <string name="hintRespuesta">Tú respuesta...</string>
+    <string name="by">Acerca de...</string>
+    <string name="settings">Ajustes</string>
 </resources>

@@ -3,77 +3,69 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.ExistingWorkPolicy;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
+import androidx.core.app.NotificationCompat;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.hardware.Camera;
-import android.net.Uri;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.VideoView;
+import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button bt;
-    private Button bt2;
     private TextView tv;
-    private ImageView iv;
-    private VideoView vv;
     private static final int requestCodePermissions = 1000;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
+    private NotificationChannel channel;
+    private NotificationManager notificationManager;
+    private LocationCallback locationCallback;
+    private int contador;
+    private NotificationCompat.Builder builder;
 
 
-
+    /**
+     * Método de creación. Se recogen las referencias a los objectos del layout y se inicializan alguno de los objetos
+     * que estarán activos durante toda la sesión
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        bt = findViewById(R.id.btObtener);
-        bt2 = findViewById(R.id.bt);
-        tv = findViewById(R.id.tvTexto);
-        iv = findViewById(R.id.iv);
-        vv = findViewById(R.id.vv);
-        checkPermissions();
-    }
 
-    @Override
-    protected void onResume(){
-        super.onResume();
-        //startLocationUpdates();
-    }
-
-    @Override
-    protected void onPause(){
-        super.onPause();
-        //stopLocationUpdates();
-    }
-
-    @Override
-    protected void onStop(){
-        super.onStop();
-        //stopLocationUpdates();
+        checkPermissions(); //Compruebo los permisos antes de seguir
+        tv = findViewById(R.id.tvLatitudLongitud);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
+            channel = new NotificationChannel("100", "100", NotificationManager.IMPORTANCE_DEFAULT);
+            channel.setDescription("100");
+            notificationManager = this.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+        //Se crea la notificación  SE NECESITA CAMBIAR PARA TENER MÁS DE UNA NOTIFICACIÓN DE LA APP
+        builder = new NotificationCompat.Builder(this, "100")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setPriority(NotificationCompat.PRIORITY_HIGH);
     }
 
     /**
@@ -97,6 +89,9 @@ public class MainActivity extends AppCompatActivity {
             permisos.add(Manifest.permission.RECORD_AUDIO);
         if (permisos.size()>0) //Evitamos hacer una petición con un array nulo
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
+        else{
+            posicionamiento();
+        }
     }
 
     /**
@@ -128,79 +123,127 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
+        posicionamiento();
     }
-    //static Location loca;
-    public void btgetLocation(View view) {
-        //Location loca;
-        /*fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+
+    /**
+     * Inicia los objetos necesarios para llevar a cabo el seguimiento de la posición
+     */
+    private void posicionamiento(){
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        locationRequest = new LocationRequest().create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(10000).setFastestInterval(1000);
+        contador = 0;
+        locationCallback = new LocationCallback() {
             @Override
-            public void onSuccess(Location location) {
-                if(location != null){
-                    loca = location;
+            public void onLocationResult(LocationResult locationResult){
+                if(locationResult == null){
+                    return;
+                }
+                for(Location location :locationResult.getLocations()){
+                    ++contador;
+                    pintaNotificacion(location);
                 }
             }
-        });
-        pintaNotificacion(loca);*/
-        /*OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(Proceso.class).setInitialDelay(1, TimeUnit.SECONDS).build();
-        WorkManager.getInstance(this).enqueue(uploadWorkRequest);*/
-        //OneTimeWorkRequest periodicWorkRequest = new OneTimeWorkRequest.Builder(Proceso.class).build();
-        //WorkManager.getInstance().enqueueUniqueWork("Location", ExistingWorkPolicy.REPLACE, periodicWorkRequest);
-        Intent takePicture = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if(takePicture.resolveActivity(getPackageManager())!=null){
-            File photoFile = null;
-            try{
-                photoFile = createImageFile();
-            }catch (IOException e){
+        };
+        startLocation();
+    }
 
-            }
-            if(photoFile != null){
-                photoURI = FileProvider.getUriForFile(this, "es.uva.gsic.adolfinstro.fileprovider", photoFile);
+    /**
+     * Inicializador del bucle que obtiene la posición
+     */
+    private void startLocation(){
+        fusedLocationProviderClient
+                .requestLocationUpdates(locationRequest, locationCallback,null);
+    }
 
-                takePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePicture, 1);
-            }
+    /**
+     * Detiene la actulización de la posición
+     */
+    private void stopLocation(){
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    /**
+     * Método que lanza la notificación y actualiza el valor del TextView
+     * @param location Última posición obtenida
+     */
+    private void pintaNotificacion(Location location) {
+        if (location != null) {
+            Log.i("location", "!= null");
+            String l = getString(R.string.latitud) + ": " + location.getLatitude() + " || " +
+                    getString(R.string.longitud) + ": " + location.getLongitude();
+            builder.setContentTitle(String.format("%d",contador)).setContentText(l);
+            notificationManager.notify(100, builder.build());
+            tv.setText(l);
         }
     }
-    Uri photoURI;
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(requestCode == 1 && resultCode == RESULT_OK){
-            tv.setText("FOTO");
-            iv.setImageURI(photoURI);
-        }
-        if(requestCode == 2 && resultCode == RESULT_OK){
-            tv.setText("VIDEO");
-            //Uri videoUri = data.getData();
-            //vv.setVideoURI(videoUri);
-            //vv.resume();
-
-        }
-        super.onActivityResult(requestCode, resultCode, data);
+    protected void onResume(){
+        super.onResume();
+        startLocation();
     }
 
-    String currentPhotoPath;
-
-    private File createImageFile() throws IOException{
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDire = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imageFileName, ".jpg", storageDire);
-        currentPhotoPath = image.getAbsolutePath();
-        tv.setText(currentPhotoPath);
-        return image;
+    @Override
+    protected void onPause(){
+        super.onPause();
+        stopLocation();
     }
 
+    @Override
+    protected void onStop(){
+        super.onStop();
+        stopLocation();
+    }
 
-    public void btVideo(View view) {
-        Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-        if(takeVideoIntent.resolveActivity(getPackageManager()) != null){
-            startActivityForResult(takeVideoIntent, 2);
+    /**
+     * Método de escucha de los botones de prueba
+     * @param view
+     */
+    public void boton(View view){
+        Intent intent;
+        switch (view.getId()){
+            case R.id.btTexto:
+                intent = new Intent(this, Ask.class);
+                break;
+            case R.id.btUnaFoto:
+            case R.id.btVariasFotos:
+            case R.id.btVideo:
+                intent = new Intent(this, TaskCamera.class);
+                intent.putExtra("TIPO", view.getId());
+                break;
+            default:
+                System.exit(-2);
+                intent = null;
         }
-    }
-
-    public void btSalto(View view) {
-        Intent intent = new Intent(this, TaskCamera.class);
         startActivity(intent);
+    }
+
+    /**
+     * Creación del menú en el layout
+     * @param menu
+     * @return
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case R.id.ajustes:
+
+                return true;
+            case R.id.acerca:
+                Toast.makeText(this, "GSIC/EMIC", Toast.LENGTH_LONG).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

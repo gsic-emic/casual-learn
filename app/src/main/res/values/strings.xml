@@ -8,4 +8,9 @@
     <string name="task">Task</string>
     <string name="cancel">Cancel</string>
     <string name="next">Next</string>
+    <string name="latitud">Latitude</string>
+    <string name="longitud">Longitude</string>
+    <string name="hintRespuesta">Your answare...</string>
+    <string name="by">About the app...</string>
+    <string name="settings">Settings</string>
 </resources>

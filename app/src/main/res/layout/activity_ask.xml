@@ -4,12 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".TaskCamera"
-    tools:showIn="@layout/activity_task_camera">
+    tools:context=".Ask">
 
     <TextView
-        android:id="@+id/tituloCaptura"
+        android:id="@+id/titulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="40dp"
@@ -21,25 +19,46 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/descripcionCaptura"
+        android:id="@+id/descripcion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="20dp"
-        android:text="Descripción de la tarea que tienen que realizar cuando presionen el botón de la cámara"
+        android:text="Pregunta a realizar a los usuarios de aplicación. ¿Podría llevar un texto explicativo asociado?"
         android:paddingVertical="10dp"
         android:paddingHorizontal="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tituloCaptura" />
+        app:layout_constraintTop_toBottomOf="@id/titulo" />
+
+    <EditText
+        android:id="@+id/etRespuesta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingVertical="10dp"
+        android:paddingHorizontal="10dp"
+        android:maxLines="7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/descripcion"
+        android:textSize="20dp"
+        android:hint="@string/hintRespuesta"/>
 
     <Button
-        android:id="@+id/btCancelar"
+        android:id="@+id/btAceptar"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:text="@string/cancel"
+        android:layout_margin="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="@string/acept"
+        android:onClick="boton" />
+
+    <Button
+        android:id="@+id/btSalir"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:text="@string/cancel"
         android:onClick="boton"/>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
