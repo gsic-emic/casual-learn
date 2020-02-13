@@ -10,7 +10,13 @@ import android.widget.Toast;
 
 public class Ask extends AppCompatActivity {
 
+    /** Instancia del objeto donde el usuario introduce la respuesta*/
     EditText et;
+
+    /**
+     * Se crea el layout y se recoge la referencia al EditText
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,11 +55,11 @@ public class Ask extends AppCompatActivity {
         respuesta = respuesta.trim();
         boolean salida = false;
         if(respuesta.isEmpty()){
-            Toast.makeText(this, "La respuesta no puede estar vacía", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.respuestaVacia), Toast.LENGTH_SHORT).show();
         }
         else{
             //Creación del Bundle
-            Toast.makeText(this, "Respuesta guardada", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
             salida = true;
         }
         return salida;

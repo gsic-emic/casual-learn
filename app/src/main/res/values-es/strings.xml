@@ -14,4 +14,19 @@
     <string name="hintRespuesta">Tú respuesta...</string>
     <string name="by">Acerca de...</string>
     <string name="settings">Ajustes</string>
+    <string name="imagenG">Imagen almacenada</string>
+    <string name="videoG">Vídeo guardado</string>
+    <string name="imagenesG">Imágenes guardadas</string>
+    <string name="imagenGN">Imagen almacenada. Haga la siguiente foto</string>
+    <string name="errorOpera">Error en la operación</string>
+    <string name="gsic">GSIC/EMIC</string>
+    <string name="respuestaVacia">La respuesta no puede estar vacía</string>
+    <string name="respuestaG">Respuesta almacenada</string>
+    <string name="noMolestar">No molestar</string>
+    <string name="intervalo">Intervalo entre tareas</string>
+    <string name="unM">Un minuto</string>
+    <string name="tresM">Tres minutos</string>
+    <string name="cincoM">Cinco minutos</string>
+    <string name="sieteM">Siete minutos</string>
+    <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas</string>
 </resources>

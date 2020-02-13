@@ -25,19 +25,28 @@ import java.util.Date;
 
 public class TaskCamera extends AppCompatActivity {
 
-
+    /** Identificador de la tarea a realizar*/
     private int tipo;
+    /** URI de la última foto que se ha tomado*/
     private Uri photoURI;
+    /** Localización de la última foto tomada*/
     private String currentPhotoPath;
+    /** Botón flotante para realizar las fotos y vídeos */
     private FloatingActionButton fab;
+    /** Instancia del botón de cancelación de la tarea */
     private Button bt;
-    private int restantes = 3;
+    /** Número de fotos a realizar*/
+    private int restantes = 3; //Este valor será dinámico y dependerá de la tarea solicitada. Solo se utiliza en múltiples fotos
 
+    /**
+     * Método de creación del layout. Se crea desde java el botón flotante para realizar las
+     * capturas o los vídeos.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_camera);
-
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -61,6 +70,8 @@ public class TaskCamera extends AppCompatActivity {
     private void accion() {
         switch (tipo){
             case R.id.btUnaFoto:
+                fab.setClickable(false);
+                bt.setClickable(false);
                 realizaCaptura(0);
                 break;
             case R.id.btVariasFotos:
@@ -69,9 +80,14 @@ public class TaskCamera extends AppCompatActivity {
                 realizaCaptura(1);
                 break;
             case R.id.btVideo:
+                fab.setClickable(false);
+                bt.setClickable(false);
                 Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 if(takeVideoIntent.resolveActivity(getPackageManager()) != null){
                     startActivityForResult(takeVideoIntent, 2);
+                }else{
+                    Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                    bt.setClickable(true);
                 }
                 break;
         }
@@ -93,11 +109,16 @@ public class TaskCamera extends AppCompatActivity {
 
             }
             if(photoFile != null){
+                bt.setClickable(false);
+                fab.setClickable(false);
                 photoURI = FileProvider.getUriForFile(context, "es.uva.gsic.adolfinstro.fileprovider", photoFile);
 
                 takePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePicture, requestCode);//Los requestCode solo pueden ser de 16 bits
             }
+        } else{
+            Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            bt.setClickable(true);
         }
     }
 
@@ -124,15 +145,15 @@ public class TaskCamera extends AppCompatActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        boolean salir = false;
         switch (requestCode){
             case 0:
                 switch (resultCode){
                     case RESULT_OK:
-                        Toast.makeText(this, "Imagen almacenada", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         volverMain();
                         break;
                     case RESULT_CANCELED:
+                        bt.setClickable(true);
                         break;
                     default:
                         errorToast();
@@ -143,11 +164,12 @@ public class TaskCamera extends AppCompatActivity {
                     case RESULT_OK:
                         --restantes;
                         if(restantes==0){
-                            Toast.makeText(this, "Imágenes almacenadas", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
                             volverMain();
                         }
                         else {
-                            Toast.makeText(this, "Imagen almacenada. Haga la siguiente foto", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
+                            realizaCaptura(1);
                         }
                         break;
                     case RESULT_CANCELED:
@@ -160,10 +182,11 @@ public class TaskCamera extends AppCompatActivity {
             case 2:
                 switch (resultCode){
                     case RESULT_OK:
-                        Toast.makeText(this, "Vídeo almacenada", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
                         volverMain();
                         break;
                     case RESULT_CANCELED:
+                        bt.setClickable(true);
                         break;
                     default:
                         errorToast();
@@ -177,7 +200,7 @@ public class TaskCamera extends AppCompatActivity {
      * Impreme un toast para indicar al usuario que ha sucedido algún problema
      */
     private void errorToast() {
-        Toast.makeText(this, "Error en la operación", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
     }
 
     /**

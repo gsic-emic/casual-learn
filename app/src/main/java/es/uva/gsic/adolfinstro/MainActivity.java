@@ -4,12 +4,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -28,11 +30,13 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private TextView tv;
+    private TextView tv, tv2;
     private static final int requestCodePermissions = 1000;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
@@ -41,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     private LocationCallback locationCallback;
     private int contador;
     private NotificationCompat.Builder builder;
+    private int intervalo;
+    private boolean noMolestar;
 
 
     /**
@@ -56,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         checkPermissions(); //Compruebo los permisos antes de seguir
         tv = findViewById(R.id.tvLatitudLongitud);
+        tv2 = findViewById(R.id.tvAjustes);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
             channel = new NotificationChannel("100", "100", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription("100");
@@ -66,6 +73,11 @@ public class MainActivity extends AppCompatActivity {
         builder = new NotificationCompat.Builder(this, "100")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
     }
 
     /**
@@ -81,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED))
                 permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+        if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED))
+            permisos.add(Manifest.permission.INTERNET);
         if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.CAMERA);
         if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
@@ -101,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
      * @param grantResults Valor otorgado por el usuario al permiso.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults){
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults){
         for(int i : grantResults){
             if(i == -1){
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
@@ -171,7 +185,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void pintaNotificacion(Location location) {
         if (location != null) {
-            Log.i("location", "!= null");
             String l = getString(R.string.latitud) + ": " + location.getLatitude() + " || " +
                     getString(R.string.longitud) + ": " + location.getLongitude();
             builder.setContentTitle(String.format("%d",contador)).setContentText(l);
@@ -233,17 +246,42 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Método que reacciona a la pulsación de alguno de los items del menú
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case R.id.ajustes:
-
+                startActivity(new Intent(this, Ajustes.class));
                 return true;
             case R.id.acerca:
-                Toast.makeText(this, "GSIC/EMIC", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.gsic), Toast.LENGTH_LONG).show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * Called when a shared preference is changed, added, or removed. This
+     * may be called even if a preference is set to its existing value.
+     * @param sharedPreferences
+     * @param key
+     */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key){
+            case Ajustes.INTERVALO_pref:
+                intervalo = Integer.parseInt(sharedPreferences.getString(key, "3"));
+                break;
+            case Ajustes.NO_MOLESTAR_pref:
+                noMolestar = sharedPreferences.getBoolean(key, false);
+                break;
+        }
+        String m = "Intervalo: " + intervalo + " No Molestar: " + (noMolestar?"ON":"OFF");
+        tv2.setText(m);
     }
 }

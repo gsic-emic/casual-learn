@@ -1,0 +1,14 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <SwitchPreference
+        app:key="noMolestar"
+        app:title="@string/noMolestar"
+        app:defaultValue="false"/>
+    <ListPreference
+        app:key="intervalo"
+        app:title="@string/intervalo"
+        app:summary="@string/intervaloResumen"
+        app:dialogTitle="@string/intervalo"
+        app:entries="@array/minutos"
+        app:entryValues="@array/minu"
+        app:defaultValue="3"/>
+</PreferenceScreen>
