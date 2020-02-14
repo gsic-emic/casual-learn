@@ -9,10 +9,12 @@ import androidx.preference.PreferenceManager;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,6 +35,8 @@ import com.google.android.gms.location.LocationServices;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -43,10 +47,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private NotificationChannel channel;
     private NotificationManager notificationManager;
     private LocationCallback locationCallback;
-    private int contador;
     private NotificationCompat.Builder builder;
     private int intervalo;
     private boolean noMolestar;
+    private long ultimaMedida;
+    private Date date;
+    private HashMap<Integer, Integer> identificadorRealizada;//0 no contesta, 1 realizada, 2 rechazada
 
 
     /**
@@ -58,7 +64,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        if (identificadorRealizada==null)
+            identificadorRealizada = new HashMap<>();
 
         checkPermissions(); //Compruebo los permisos antes de seguir
         tv = findViewById(R.id.tvLatitudLongitud);
@@ -147,8 +154,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest().create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(10000).setFastestInterval(1000);
-        contador = 0;
+                .setInterval(10000).setFastestInterval(2000);
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult){
@@ -156,12 +162,87 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     return;
                 }
                 for(Location location :locationResult.getLocations()){
-                    ++contador;
-                    pintaNotificacion(location);
+                    compruebaLocalizacion(location);
                 }
             }
         };
         startLocation();
+    }
+
+    final double plazaMayorLat = 41.6520;
+    final double plazaMayorLong = -4.7286;
+    final double laAntiguaLat = 41.6547;
+    final double laAntiguaLong = -4.7231;
+    final double castilloPLat = 41.5966;
+    final double castilloPLong = -4.1144;
+    final double plazaMayorSLat = 40.9650;
+    final double plazaMayorSLong = -5.6641;
+
+    private void compruebaLocalizacion(Location location) {
+        double latitud = Math.round(location.getLatitude()*10000d)/10000d;
+        double longitud = Math.round(location.getLongitude()*10000d)/10000d;
+        String l = getString(R.string.latitud) + ": " + latitud + " || " +
+                getString(R.string.longitud) + ": " + longitud;
+        tv.setText(l);
+        if(!noMolestar){
+            Boolean comprueba = true;
+            if(ultimaMedida == 0){
+                date = new Date();
+            }
+            else{
+                date = new Date();
+                if(date.getTime() - ultimaMedida < intervalo * 20 * 1000){
+                    comprueba = false;
+                }
+            }
+            if(comprueba){
+                ultimaMedida = date.getTime();
+                int idTarea = -1;
+                //AQUÍ SE REALIZARÁ LA PETECIÓN SPARQL --> TIENE QUE HACERSE EN UN SERVICIO
+                if(plazaMayorLat == latitud && plazaMayorLong == longitud){ //Respuesta texto
+                    idTarea = 0; //La tomará de la respuesta a la consulta
+                    setIdentificadorTarea(idTarea);
+                }else{
+                    if(laAntiguaLat == latitud && laAntiguaLong == longitud){ // Una foto
+                        idTarea = 1;
+                        setIdentificadorTarea(idTarea);
+                    }else{
+                        if(castilloPLat == latitud && castilloPLong == longitud){ //Varias fotos
+                            idTarea = 2;
+                            setIdentificadorTarea(idTarea);
+                        }else{
+                            if(plazaMayorSLat == latitud && plazaMayorSLong == longitud) { // Un vídeo
+                            idTarea = 3;
+                            setIdentificadorTarea(idTarea);
+                            }else{
+                                return;
+                            }
+                        }
+                    }
+                }
+                if(idTarea != -1){
+                    if(getEstado(idTarea)==0){
+                        pintaNotificacion(location, idTarea);
+                    }
+                }
+            }
+        }
+    }
+
+    private void setIdentificadorTarea(int idTarea){
+        synchronized (identificadorRealizada){
+            if(identificadorRealizada.get(idTarea) == null){
+                identificadorRealizada.put(idTarea, 0);
+            }
+        }
+    }
+
+    private int getEstado(int idTarea){
+        int salida;
+        synchronized (identificadorRealizada){
+            salida = identificadorRealizada.get(idTarea);
+        }
+        return salida;
     }
 
     /**
@@ -182,14 +263,42 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     /**
      * Método que lanza la notificación y actualiza el valor del TextView
      * @param location Última posición obtenida
+     * @param idTarea Identificador de la tarea asociada a la notificación
      */
-    private void pintaNotificacion(Location location) {
+    private void pintaNotificacion(Location location, int idTarea) {
         if (location != null) {
+            Log.i("pintaNoficacion", "Pinto notificación de la tarea" + idTarea);
             String l = getString(R.string.latitud) + ": " + location.getLatitude() + " || " +
                     getString(R.string.longitud) + ": " + location.getLongitude();
-            builder.setContentTitle(String.format("%d",contador)).setContentText(l);
-            notificationManager.notify(100, builder.build());
-            tv.setText(l);
+            String titu = "";
+            Intent intent = null;
+            switch (idTarea){
+                case 0:
+                    titu = "Tarea de pregunta";
+                    intent = new Intent(this, Ask.class);
+                    break;
+                case 1:
+                    titu = "Tarea de una foto";
+                    intent = new Intent(this, TaskCamera.class);
+                    intent.putExtra("TIPO", R.id.btUnaFoto);
+                    break;
+                case 2:
+                    titu = "Tarea de varias fotos";
+                    intent = new Intent(this, TaskCamera.class);
+                    intent.putExtra("TIPO", R.id.btVariasFotos);
+                    break;
+                case 3:
+                    titu = "Tarea de un vídeo";
+                    intent = new Intent(this, TaskCamera.class);
+                    intent.putExtra("TIPO", R.id.btVideo);
+                    break;
+            }
+            builder.setContentTitle(titu).setContentText(l);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+            builder.setContentIntent(pendingIntent);
+            builder.setAutoCancel(true);
+            notificationManager.notify( idTarea, builder.build());
         }
     }
 
