@@ -64,4 +64,15 @@ public class Ask extends AppCompatActivity {
         }
         return salida;
     }
+
+    /*
+    @Override
+    protected void onSaveInstanceState(Bundle bundle){
+        super.onSaveInstanceState(bundle);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle bundle){
+        super.onRestoreInstanceState(bundle);
+    }*/
 }

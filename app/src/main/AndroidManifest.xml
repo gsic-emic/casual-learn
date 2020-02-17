@@ -47,6 +47,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".Proceso"
+            android:directBootAware="true"
+            android:icon="@drawable/ic_launcher_foreground"
+            android:foregroundServiceType="location">
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"

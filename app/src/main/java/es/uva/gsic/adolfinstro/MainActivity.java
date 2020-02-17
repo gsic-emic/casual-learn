@@ -111,7 +111,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         if (permisos.size()>0) //Evitamos hacer una petición con un array nulo
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
         else{
-            posicionamiento();
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                startForegroundService(new Intent(this, Proceso.class));
+            //posicionamiento();
         }
     }
 
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest().create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(10000).setFastestInterval(2000);
+                .setInterval(3 * 1000 * 60).setFastestInterval(1 * 100 * 60);
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult){
@@ -169,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         startLocation();
     }
 
+    /* PRUEBAS */
     final double plazaMayorLat = 41.6520;
     final double plazaMayorLong = -4.7286;
     final double laAntiguaLat = 41.6547;
@@ -305,19 +308,19 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     protected void onResume(){
         super.onResume();
-        startLocation();
+        //startLocation();
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        stopLocation();
+        //stopLocation();
     }
 
     @Override
     protected void onStop(){
         super.onStop();
-        stopLocation();
+        //stopLocation();
     }
 
     /**
@@ -392,5 +395,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         }
         String m = "Intervalo: " + intervalo + " No Molestar: " + (noMolestar?"ON":"OFF");
         tv2.setText(m);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle bundle){
+        super.onSaveInstanceState(bundle);
+        bundle.putLong("ULTIMAMEDIDA", ultimaMedida);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle bundle){
+        super.onRestoreInstanceState(bundle);
+        ultimaMedida = bundle.getLong("ULTIMAMEDIDA");
     }
 }

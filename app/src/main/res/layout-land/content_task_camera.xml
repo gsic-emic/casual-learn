@@ -22,7 +22,7 @@
                 android:id="@+id/tituloCaptura"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="40dp"
+                android:textSize="30dp"
                 android:text="Título"
                 android:textStyle="bold"
                 android:paddingVertical="20dp"
@@ -34,7 +34,7 @@
                 android:id="@+id/descripcionCaptura"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20dp"
+                android:textSize="15dp"
                 android:text="Descripción de la tarea que tienen que realizar cuando presionen el botón de la cámara"
                 android:paddingVertical="10dp"
                 android:paddingHorizontal="10dp"
@@ -53,7 +53,6 @@
                 android:onClick="boton"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
 
     </ScrollView>
 
