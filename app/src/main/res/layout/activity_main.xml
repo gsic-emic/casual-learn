@@ -6,20 +6,58 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-    <Button
-        android:id="@+id/btObtener"
+    <TextView
+        android:id="@+id/tvLatitudLongitud"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:onClick="btgetLocation"/>
+        android:textSize="15dp"
+        android:padding="15dp"/>
+
+    <Button
+        android:id="@+id/btTexto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tarea texto"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvLatitudLongitud"
+        android:onClick="boton"/>
+
+    <Button
+        android:id="@+id/btUnaFoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tarea Una foto"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btTexto"
+        android:onClick="boton"/>
+
+    <Button
+        android:id="@+id/btVariasFotos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tarea Varias Fotos"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btUnaFoto"
+        android:onClick="boton"/>
+
+    <Button
+        android:id="@+id/btVideo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tarea vídeo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btVariasFotos"
+        android:onClick="boton"/>
 
     <TextView
-        android:id="@+id/tvTexto"
+        android:id="@+id/tvAjustes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btObtener"
-        android:textSize="20dp"
+        app:layout_constraintTop_toBottomOf="@id/btVideo"
+        android:textSize="15dp"
         android:padding="15dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

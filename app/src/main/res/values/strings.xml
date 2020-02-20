@@ -1,3 +1,32 @@
 <resources>
-    <string name="app_name">Adolfinstro</string>
+    <string name="app_name">AdolfinstroAPP</string>
+    <string name="permi">Permissions</string>
+    <string name="permiM">The app needs all permissions!</string>
+    <string name="acept">Ok</string>
+    <string name="exi">Exit</string>
+    <string name="title_activity_task_camera">task_camera</string>
+    <string name="task">Task</string>
+    <string name="cancel">Cancel</string>
+    <string name="next">Next</string>
+    <string name="latitud">Latitude</string>
+    <string name="longitud">Longitude</string>
+    <string name="hintRespuesta">Your answare...</string>
+    <string name="by">About the app...</string>
+    <string name="settings">Settings</string>
+    <string name="imagenG">Saved image</string>
+    <string name="videoG">Saved video</string>
+    <string name="imagenesG">Saved images</string>
+    <string name="imagenGN">Saved image. Take the next photo</string>
+    <string name="errorOpera">Operation error</string>
+    <string name="gsic">GSIC/EMIC</string>
+    <string name="respuestaVacia">The answare is empty!!</string>
+    <string name="respuestaG">Saved answare</string>
+    <string name="noMolestar">Don\'t Disturb</string>
+    <string name="intervalo">Interval between tasks</string>
+    <string name="unM">One minute</string>
+    <string name="tresM">Three minutes</string>
+    <string name="cincoM">Five minutes</string>
+    <string name="sieteM">Seven minutes</string>
+    <string name="intervaloResumen">Minimum interval between each task</string>
+    <string name="textoNotificacionPersistente">Looking for new tasks..</string>
 </resources>
