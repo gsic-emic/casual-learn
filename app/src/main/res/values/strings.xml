@@ -28,4 +28,5 @@
     <string name="cincoM">Five minutes</string>
     <string name="sieteM">Seven minutes</string>
     <string name="intervaloResumen">Minimum interval between each task</string>
+    <string name="textoNotificacionPersistente">Looking for new tasks..</string>
 </resources>

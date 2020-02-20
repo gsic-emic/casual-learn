@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -25,13 +26,14 @@ import java.util.Date;
 import java.util.HashMap;
 
 
-/************************************ NO FUNCIONA *************************************************/
 public class Proceso extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final int requestCodePermissions = 1000;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
-    private NotificationChannel channel;
+    private NotificationChannel channel, channelPersis;
+    private static String channelId = "notiTareas";
+    private static String channelPersisId = "notiPersistencia";
     private NotificationManager notificationManager;
     private LocationCallback locationCallback;
     private NotificationCompat.Builder builder;
@@ -59,20 +61,29 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         identificadorRealizada = new HashMap<>();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
-            channel = new NotificationChannel("100", "100", NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setDescription("100");
+            channel = new NotificationChannel(channelId, "Canal de tareas", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Canal por donde se lanzan las tareas de la app");
+            channelPersis = new NotificationChannel(channelPersisId, "Canal de notificacion persistente", NotificationManager.IMPORTANCE_LOW);
+            channelPersis.setDescription("Canal de la notificacion persistente de la app");
             notificationManager = this.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
+            notificationManager.createNotificationChannel(channelPersis);
+        }
+        else{
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                notificationManager = this.getSystemService(NotificationManager.class);
+            else{//API 22
+                notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            }
         }
         //Se crea la notificación  SE NECESITA CAMBIAR PARA TENER MÁS DE UNA NOTIFICACIÓN DE LA APP
-        builder = new NotificationCompat.Builder(this, "100")
+        builder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
-
         posicionamiento();
     }
 
@@ -83,7 +94,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest().create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(10000).setFastestInterval(10000);
+                .setInterval(intervalo*60*100);
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult){
@@ -222,18 +233,37 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void startLocation(){
         fusedLocationProviderClient
                 .requestLocationUpdates(locationRequest, locationCallback,null);
+
+        Intent intent = new Intent(this, Proceso.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            Notification notification = new Notification.Builder(this, channelPersisId)
+                    .setContentTitle(getString(R.string.app_name))
+                    .setContentText(getString(R.string.textoNotificacionPersistente))
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentIntent(pendingIntent)
+                    .build();
+            startForeground(100, notification);
+        }
+        else
+            startService(intent);
     }
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
             case Ajustes.INTERVALO_pref:
-                intervalo = Integer.parseInt(sharedPreferences.getString(key, "3"));
+                intervalo = sharedPreferences.getInt(key, 0);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
+                if(noMolestar){
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                        stopForeground(Service.STOP_FOREGROUND_REMOVE);
+                    else
+                        stopSelf();
+                }
                 break;
         }
-        String m = "Intervalo: " + intervalo + " No Molestar: " + (noMolestar?"ON":"OFF");
     }
 }

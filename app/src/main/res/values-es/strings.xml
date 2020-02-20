@@ -29,4 +29,5 @@
     <string name="cincoM">Cinco minutos</string>
     <string name="sieteM">Siete minutos</string>
     <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas</string>
+    <string name="textoNotificacionPersistente">Buscando nuevas tareas..</string>
 </resources>

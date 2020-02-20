@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SeekBarPreference;
 
 public class AjustesFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -13,6 +14,8 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
+        SeekBarPreference seekBarPreference = findPreference("intervalo");
+        seekBarPreference.setMax(60);
         sharedPreferences = Ajustes.sharedPreferences;
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }

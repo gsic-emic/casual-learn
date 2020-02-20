@@ -3,12 +3,23 @@
         app:key="noMolestar"
         app:title="@string/noMolestar"
         app:defaultValue="false"/>
-    <ListPreference
+    <!--<ListPreference
         app:key="intervalo"
         app:title="@string/intervalo"
         app:summary="@string/intervaloResumen"
         app:dialogTitle="@string/intervalo"
         app:entries="@array/minutos"
         app:entryValues="@array/minu"
-        app:defaultValue="3"/>
+        app:defaultValue="3"/>-->
+    <SeekBarPreference
+        app:key="intervalo"
+        app:title="@string/intervalo"
+        app:summary="@string/intervaloResumen"
+        app:defaultValue="0"
+        app:min="0"
+        app:updatesContinuously="false"
+        app:showSeekBarValue="true"
+        app:seekBarIncrement="5"
+        app:adjustable="true" />
+
 </PreferenceScreen>
