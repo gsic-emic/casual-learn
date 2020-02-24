@@ -5,13 +5,19 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -22,6 +28,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -58,6 +65,22 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     @Override
     public void onCreate(){
         Log.i("Dentro del proceso", "Proceso creado");
+        ArrayList<String> permisos = new ArrayList<>();
+        Auxiliar.preQueryPermisos(this, permisos);
+        if(permisos.size()>0){
+            acabaServicio();
+        }
+        //SUBIDA CON WIFI
+        /*ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        for(Network network : connectivityManager.getAllNetworks()){
+            NetworkInfo networkInfo = connectivityManager.getNetworkInfo(network);
+            if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI){
+                Log.i("Wifi", "Conectado");
+            }
+            else{
+                Log.i("Wifi", "no es wifi");
+            }
+        }*/
         identificadorRealizada = new HashMap<>();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
@@ -82,9 +105,10 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        posicionamiento();
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
-        posicionamiento();
+        mantenServicio();
     }
 
     /**
@@ -92,9 +116,13 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      */
     private void posicionamiento(){
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        long inter = intervalo*60*1000;
         locationRequest = new LocationRequest().create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(intervalo*60*100);
+                .setInterval(inter)
+                .setFastestInterval(inter);
+        Log.i("Intervalo: ", ""+(inter));
+        Log.i("Inter. locationRequest", ""+locationRequest.getInterval());
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult){
@@ -126,7 +154,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 getString(R.string.longitud) + ": " + longitud;
         if(!noMolestar){
             Boolean comprueba = true;
-            if(ultimaMedida == 0){
+            /*if(ultimaMedida == 0){
                 date = new Date();
             }
             else{
@@ -135,9 +163,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 if(date.getTime() - ultimaMedida < intervalo * 60 * 1000){
                     comprueba = false;
                 }
-            }
+            }*/
             if(comprueba){
-                ultimaMedida = date.getTime();
+                //ultimaMedida = date.getTime();
                 int idTarea = -1;
                 //AQUÍ SE REALIZARÁ LA PETECIÓN SPARQL --> TIENE QUE HACERSE EN UN SERVICIO
                 if(plazaMayorLat == latitud && plazaMayorLong == longitud){ //Respuesta texto
@@ -233,7 +261,19 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void startLocation(){
         fusedLocationProviderClient
                 .requestLocationUpdates(locationRequest, locationCallback,null);
+    }
 
+    /**
+     * Detiene la tarea de recogida de posición
+     */
+    private void stopLocation(){
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+    }
+
+    /**
+     * Método para crear el servicio en primer plano
+     */
+    private void mantenServicio(){
         Intent intent = new Intent(this, Proceso.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
@@ -249,21 +289,34 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             startService(intent);
     }
 
+    /**
+     * Método de actuación cuando se detecta un cambio en una de las preferencias
+     * @param sharedPreferences
+     * @param key
+     */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
             case Ajustes.INTERVALO_pref:
                 intervalo = sharedPreferences.getInt(key, 0);
+                stopLocation();
+                posicionamiento();
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
                 if(noMolestar){
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        stopForeground(Service.STOP_FOREGROUND_REMOVE);
-                    else
-                        stopSelf();
+                    acabaServicio();
                 }
                 break;
         }
+    }
+
+    public void acabaServicio(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            stopForeground(Service.STOP_FOREGROUND_REMOVE);
+            stopSelf();
+        }
+        else
+            stopSelf();
     }
 }

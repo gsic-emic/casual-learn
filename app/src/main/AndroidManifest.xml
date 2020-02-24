@@ -21,7 +21,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Ajustes"
+        <activity
+            android:name=".Ask_camera"
+            android:label="@string/title_activity_ask_camera"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.uva.gsic.adolfinstro.MainActivity" />
+        </activity>
+        <activity
+            android:name=".Ajustes"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".TaskCamera"
@@ -48,12 +58,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name=".Proceso"
             android:directBootAware="true"
-            android:icon="@drawable/ic_launcher_foreground"
-            android:foregroundServiceType="location">
-        </service>
+            android:foregroundServiceType="location"
+            android:icon="@drawable/ic_launcher_foreground"></service>
 
         <provider
             android:name="androidx.core.content.FileProvider"

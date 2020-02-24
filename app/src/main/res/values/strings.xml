@@ -29,4 +29,8 @@
     <string name="sieteM">Seven minutes</string>
     <string name="intervaloResumen">Minimum interval between each task</string>
     <string name="textoNotificacionPersistente">Looking for new tasks..</string>
+    <string name="Usuario">User</string>
+    <string name="Password">Password</string>
+    <string name="acceso">Sign in</string>
+    <string name="title_activity_ask_camera">ask_camera</string>
 </resources>
