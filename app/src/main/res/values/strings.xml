@@ -33,4 +33,6 @@
     <string name="Password">Password</string>
     <string name="acceso">Sign in</string>
     <string name="title_activity_ask_camera">ask_camera</string>
+    <string name="canalTareas">Tasks channel</string>
+    <string name="canalPersistente">Persistent channel</string>
 </resources>

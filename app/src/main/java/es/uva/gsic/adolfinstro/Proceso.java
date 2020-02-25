@@ -84,10 +84,10 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         identificadorRealizada = new HashMap<>();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
-            channel = new NotificationChannel(channelId, "Canal de tareas", NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription("Canal por donde se lanzan las tareas de la app");
-            channelPersis = new NotificationChannel(channelPersisId, "Canal de notificacion persistente", NotificationManager.IMPORTANCE_LOW);
-            channelPersis.setDescription("Canal de la notificacion persistente de la app");
+            channel = new NotificationChannel(channelId, getString(R.string.canalTareas), NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription(getString(R.string.canalTareas));
+            channelPersis = new NotificationChannel(channelPersisId, getString(R.string.canalPersistente), NotificationManager.IMPORTANCE_LOW);
+            channelPersis.setDescription(getString(R.string.canalPersistente));
             notificationManager = this.getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
             notificationManager.createNotificationChannel(channelPersis);
