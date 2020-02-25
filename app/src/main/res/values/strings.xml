@@ -35,4 +35,8 @@
     <string name="title_activity_ask_camera">ask_camera</string>
     <string name="canalTareas">Tasks channel</string>
     <string name="canalPersistente">Persistent channel</string>
+    <string name="pregunta">Ask</string>
+    <string name="camara">Camera</string>
+    <string name="mapa">Map</string>
+    <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
 </resources>

@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -143,6 +142,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case R.id.btPreguntaFoto:
                 intent = new Intent(this, Ask_camera.class);
                 break;
+            case R.id.btMapa:
+                intent = new Intent(this, Maps.class);
+                break;
             default:
                 System.exit(-2);
                 intent = null;
@@ -196,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
                 if(!noMolestar)
-                    lanzaServicioPosicionamiento();
+                    //lanzaServicioPosicionamiento();
                 break;
         }
     }
