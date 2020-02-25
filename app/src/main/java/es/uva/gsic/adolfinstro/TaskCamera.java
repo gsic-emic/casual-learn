@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -27,10 +26,10 @@ public class TaskCamera extends AppCompatActivity {
 
     /** Identificador de la tarea a realizar*/
     private int tipo;
-    /** URI de la última foto que se ha tomado*/
-    private Uri photoURI;
-    /** Localización de la última foto tomada*/
-    private String currentPhotoPath;
+    /** URI de la última foto/vídeo que se ha tomado*/
+    private Uri photoURI, videoURI;
+    /** Localización de la última foto/vídeo tomada*/
+    private String currentPath;
     /** Botón flotante para realizar las fotos y vídeos */
     private FloatingActionButton fab;
     /** Instancia del botón de cancelación de la tarea */
@@ -56,7 +55,7 @@ public class TaskCamera extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                accion();
+                boton(view);
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -83,12 +82,26 @@ public class TaskCamera extends AppCompatActivity {
                 break;
             case R.id.btVideo:
                 bloqueaBotones();
+                //Se graba el vídeo
                 Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                if(takeVideoIntent.resolveActivity(getPackageManager()) != null){
-                    startActivityForResult(takeVideoIntent, 2);
-                }else{
-                    Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
-                    bt.setClickable(true);
+                File videoFile = null;
+                try {
+                    videoFile = Auxiliar.createFile(2, this);
+                }catch (IOException e){
+
+                }
+                if(videoFile != null){
+                    videoURI = FileProvider.getUriForFile(getBaseContext(), "es.uva.gsic.adolfinstro.fileprovider", videoFile);
+                    takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoURI);
+                    if(takeVideoIntent.resolveActivity(getPackageManager()) != null){
+                        //CALIDAD MMS
+                        //https://developer.android.com/reference/android/provider/MediaStore#EXTRA_VIDEO_QUALITY
+                        takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
+                        startActivityForResult(takeVideoIntent, 2);
+                    }else{
+                        Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                        bt.setClickable(true);
+                    }
                 }
                 break;
         }
@@ -114,7 +127,7 @@ public class TaskCamera extends AppCompatActivity {
         if(takePicture.resolveActivity(getPackageManager())!=null){
             File photoFile = null;
             try{
-                photoFile = createImageFile();
+                photoFile = Auxiliar.createFile(1,this);
             }catch (IOException e){
 
             }
@@ -139,20 +152,6 @@ public class TaskCamera extends AppCompatActivity {
     }
 
     /**
-     * Creación del fichero donde se almacenará la foto
-     * @return Fichero donde almacenar la foto
-     * @throws IOException Se lanzará una excepción cuando se produzca un error al crear el fichero vacío
-     */
-    private File createImageFile() throws IOException{
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDire = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File image = File.createTempFile(imageFileName, ".jpg", storageDire);
-        currentPhotoPath = image.getAbsolutePath();
-        return image;
-    }
-
-    /**
      * Método que se lanza para resolver el resultado de otra actividad. En nuestro caso se activa
      * cuando el usuario realice la captura o el vídeo
      * @param requestCode
@@ -166,13 +165,13 @@ public class TaskCamera extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
-                        volverMain();
+                        Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
                         desbloqueaBt();
                         break;
                     default:
-                        errorToast();
+                        Auxiliar.errorToast(this);
                 }
                 break;
             case 1:
@@ -181,7 +180,7 @@ public class TaskCamera extends AppCompatActivity {
                         --restantes;
                         if(restantes==0){
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                            volverMain();
+                            Auxiliar.returnMain(this);
                         }
                         else {
                             Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
@@ -192,41 +191,27 @@ public class TaskCamera extends AppCompatActivity {
                         desbloqueaBt();
                         break;
                     default:
-                        errorToast();
+                        Auxiliar.errorToast(this);
                 }
                 break;
             case 2:
                 switch (resultCode){
                     case RESULT_OK:
                         Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
-                        volverMain();
+                        Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
                         desbloqueaBt();
                         break;
                     default:
-                        errorToast();
+                        Auxiliar.errorToast(this);
                 }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    /**
-     * Impreme un toast para indicar al usuario que ha sucedido algún problema
-     */
-    private void errorToast() {
-        Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
-    }
 
-    /**
-     * Método para volver a la actividad principal
-     */
-    private void volverMain(){
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-    }
 
     /**
      * Método para agrupar las acciones de los diferentes botones. El botón flotante de la cámara se
@@ -236,7 +221,11 @@ public class TaskCamera extends AppCompatActivity {
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btCancelar:
-                volverMain();
+                Auxiliar.returnMain(this);
+                break;
+            case R.id.fab:
+                accion();
+                break;
         }
     }
 
@@ -273,4 +262,6 @@ public class TaskCamera extends AppCompatActivity {
         fab.setClickable(estadoFav);
         bt.setClickable(estadoBt);
     }
+
+
 }

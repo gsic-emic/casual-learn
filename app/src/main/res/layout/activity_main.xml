@@ -51,12 +51,21 @@
         app:layout_constraintTop_toBottomOf="@id/btVariasFotos"
         android:onClick="boton"/>
 
+    <Button
+        android:id="@+id/btPreguntaFoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pregunta + foto"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btVideo"
+        android:onClick="boton" />
+
     <TextView
         android:id="@+id/tvAjustes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btVideo"
+        app:layout_constraintTop_toBottomOf="@id/btPreguntaFoto"
         android:textSize="15dp"
         android:padding="15dp"/>
 

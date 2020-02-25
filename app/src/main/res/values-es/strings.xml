@@ -30,4 +30,10 @@
     <string name="sieteM">Siete minutos</string>
     <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas</string>
     <string name="textoNotificacionPersistente">Buscando nuevas tareas..</string>
+    <string name="Password">Contraseña</string>
+    <string name="Usuario">Usuario</string>
+    <string name="acceso">Accede</string>
+    <string name="title_activity_ask_camera">ask_camera</string>
+    <string name="canalTareas">Canal de tareas</string>
+    <string name="canalPersistente">Canal de notificación persistente</string>
 </resources>

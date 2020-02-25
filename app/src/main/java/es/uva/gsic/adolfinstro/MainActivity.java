@@ -12,7 +12,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -56,23 +55,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
      * En la actualidad, solicita permisos de localización y cámara.
      */
-    private void checkPermissions(){
+    public void checkPermissions(){
         if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA))
             System.exit(-1);
         ArrayList<String> permisos = new ArrayList<>();
-        if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED))
-                permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-        if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.INTERNET);
-        if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.CAMERA);
-        if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.RECORD_AUDIO);
-        if(!(ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Auxiliar.preQueryPermisos(this, permisos);
         if (permisos.size()>0) //Evitamos hacer una petición con un array nulo
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
     }
@@ -122,6 +109,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     @Override
+    protected  void onRestart(){
+        super.onRestart();
+        checkPermissions();
+    }
+
+    @Override
     protected void onPause(){
         super.onPause();
     }
@@ -146,6 +139,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case R.id.btVideo:
                 intent = new Intent(this, TaskCamera.class);
                 intent.putExtra("TIPO", view.getId());
+                break;
+            case R.id.btPreguntaFoto:
+                intent = new Intent(this, Ask_camera.class);
                 break;
             default:
                 System.exit(-2);

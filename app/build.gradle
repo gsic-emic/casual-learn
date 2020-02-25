@@ -61,3 +61,9 @@ dependencies {
 dependencies {
     implementation 'androidx.preference:preference:1.1.0'
 }
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:+'
+    implementation 'androidx.constraintlayout:constraintlayout:+'
+    implementation 'com.google.android.material:material:+'
+}
