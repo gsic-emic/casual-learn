@@ -116,7 +116,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      */
     private void posicionamiento(){
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        long inter = intervalo*60*1000;
+        long inter = 30000;
         locationRequest = new LocationRequest().create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(inter)
@@ -220,7 +220,6 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      */
     private void pintaNotificacion(Location location, int idTarea) {
         if (location != null) {
-            Log.i("pintaNoficacion", "Pinto notificación de la tarea" + idTarea);
             String l = getString(R.string.latitud) + ": " + location.getLatitude() + " || " +
                     getString(R.string.longitud) + ": " + location.getLongitude();
             String titu = "";

@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      * En la actualidad, solicita permisos de localización y cámara.
      */
     public void checkPermissions(){
-        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA))
+        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
             System.exit(-1);
         ArrayList<String> permisos = new ArrayList<>();
         Auxiliar.preQueryPermisos(this, permisos);
@@ -145,6 +145,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case R.id.btMapa:
                 intent = new Intent(this, Maps.class);
                 break;
+            case R.id.btLogin:
+                intent = new Intent( this, Login.class);
+                break;
             default:
                 System.exit(-2);
                 intent = null;
@@ -198,7 +201,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
                 if(!noMolestar)
-                    //lanzaServicioPosicionamiento();
+                    lanzaServicioPosicionamiento();
                 break;
         }
     }

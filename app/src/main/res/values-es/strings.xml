@@ -6,7 +6,7 @@
     <string name="acept">Aceptar</string>
     <string name="exi">Salir</string>
     <string name="task">Tarea</string>
-    <string name="next">Next</string>
+    <string name="next">Siguiente</string>
     <string name="cancel">Cancelar</string>
     <string name="title_activity_task_camera">task_camera</string>
     <string name="latitud">Latitud</string>
@@ -28,15 +28,17 @@
     <string name="tresM">Tres minutos</string>
     <string name="cincoM">Cinco minutos</string>
     <string name="sieteM">Siete minutos</string>
-    <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas</string>
+    <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas (horas)</string>
     <string name="textoNotificacionPersistente">Buscando nuevas tareas..</string>
     <string name="Password">Contraseña</string>
     <string name="Usuario">Usuario</string>
-    <string name="acceso">Accede</string>
+    <string name="acceso">Autenticación</string>
     <string name="title_activity_ask_camera">ask_camera</string>
     <string name="canalTareas">Canal de tareas</string>
     <string name="canalPersistente">Canal de notificación persistente</string>
     <string name="pregunta">Ask</string>
     <string name="camara">Camera</string>
     <string name="mapa">Map</string>
+    <string name="desactivaNoMolestar">Debes desactivar la opción no molestar del menú de preferencias de la aplicación</string>
+    <string name="registro">Registro</string>
 </resources>

@@ -77,3 +77,11 @@ dependencies {
 dependencies {
     implementation 'org.osmdroid:osmdroid-android:6.1.5'
 }
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:+'
+    implementation 'com.google.android.material:material:+'
+    implementation 'androidx.annotation:annotation:+'
+    implementation 'androidx.constraintlayout:constraintlayout:+'
+    implementation 'androidx.lifecycle:lifecycle-extensions:+'
+}
