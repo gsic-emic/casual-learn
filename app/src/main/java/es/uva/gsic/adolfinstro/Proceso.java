@@ -5,19 +5,13 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -35,19 +29,26 @@ import java.util.HashMap;
 
 public class Proceso extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final int requestCodePermissions = 1000;
+    /**
+     * Objeto utilizado para obtener la posición. Es el objeto al que hay que solicitar el inicio y
+     * finalización de la solicitud de la posición
+     */
     private FusedLocationProviderClient fusedLocationProviderClient;
+    /** Instancia que realiza la petición para obtener la posición*/
     private LocationRequest locationRequest;
+    /** Instancia donde están asociadas las tareas a realizar cuando se recupera la posición */
+    private LocationCallback locationCallback;
     private NotificationChannel channel, channelPersis;
     private static String channelId = "notiTareas";
     private static String channelPersisId = "notiPersistencia";
     private NotificationManager notificationManager;
-    private LocationCallback locationCallback;
+
     private NotificationCompat.Builder builder;
     private int intervalo;
+    private int incr = 0;
     private boolean noMolestar;
-    private long ultimaMedida;
-    private Date date;
+    //private long ultimaMedida;
+    //private Date date;
     private HashMap<Integer, Integer> identificadorRealizada;//0 no contesta, 1 realizada, 2 rechazada
 
     public class ProcesoBinder extends Binder {
@@ -62,13 +63,16 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         return iBinder;
     }
 
+    /**
+     * Método de creación del proceso. Se comprueba si los servicios siguen siendo los que necesita
+     * la app
+     */
     @Override
     public void onCreate(){
-        Log.i("Dentro del proceso", "Proceso creado");
         ArrayList<String> permisos = new ArrayList<>();
         Auxiliar.preQueryPermisos(this, permisos);
-        if(permisos.size()>0){
-            acabaServicio();
+        if(permisos.size()>0){ // Si se le han revocado permisos a la aplicación se mata el proceso
+            terminaServicio();
         }
         //SUBIDA CON WIFI
         /*ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -146,7 +150,13 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     final double castilloPLong = -4.1144;
     final double plazaMayorSLat = 40.9650;
     final double plazaMayorSLong = -5.6641;
+    final double cigalesLat = 41.7581;
+    final double cigalesLong = -4.698;
 
+    /**
+     * Método de pruebas
+     * @param location Posición
+     */
     private void compruebaLocalizacion(Location location) {
         double latitud = Math.round(location.getLatitude()*10000d)/10000d;
         double longitud = Math.round(location.getLongitude()*10000d)/10000d;
@@ -184,7 +194,12 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                                 idTarea = 3;
                                 setIdentificadorTarea(idTarea);
                             }else{
-                                return;
+                                if(cigalesLat == latitud && cigalesLong == longitud) {
+                                    idTarea = 4;
+                                    setIdentificadorTarea(4);
+                                }
+                                else
+                                    return;
                             }
                         }
                     }
@@ -244,10 +259,15 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     intent = new Intent(this, TaskCamera.class);
                     intent.putExtra("TIPO", R.id.btVideo);
                     break;
+                case 4:
+                    titu = "Tarea de pregunta y foto";
+                    intent = new Intent(this, Ask_camera.class);
+                    break;
             }
             builder.setContentTitle(titu).setContentText(l);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), incr, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+            ++incr;
             builder.setContentIntent(pendingIntent);
             builder.setAutoCancel(true);
             notificationManager.notify( idTarea, builder.build());
@@ -275,7 +295,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void mantenServicio(){
         Intent intent = new Intent(this, Proceso.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se diferencia las versiones de android
             Notification notification = new Notification.Builder(this, channelPersisId)
                     .setContentTitle(getString(R.string.app_name))
                     .setContentText(getString(R.string.textoNotificacionPersistente))
@@ -290,27 +310,30 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
 
     /**
      * Método de actuación cuando se detecta un cambio en una de las preferencias
-     * @param sharedPreferences
-     * @param key
+     * @param sharedPreferences Preferencias
+     * @param key Preferencia seleccionada
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
             case Ajustes.INTERVALO_pref:
-                intervalo = sharedPreferences.getInt(key, 0);
-                stopLocation();
-                posicionamiento();
+                intervalo = sharedPreferences.getInt(key, 1);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
                 if(noMolestar){
-                    acabaServicio();
+                    stopLocation();
+                    terminaServicio();
                 }
                 break;
         }
     }
 
-    public void acabaServicio(){
+    /**
+     * Método utilizado para terminar con el servicio. Se hace distinción entre las versiones de android que
+     * soportan xForeground de las que no
+     */
+    public void terminaServicio(){
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             stopForeground(Service.STOP_FOREGROUND_REMOVE);
             stopSelf();

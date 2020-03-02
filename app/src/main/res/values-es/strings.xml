@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">AdolfinstroAPP</string>
     <string name="permiM">La aplicación necesita todos los permisos solicitados</string>
     <string name="permi">Permisos</string>
     <string name="acept">Aceptar</string>
@@ -39,6 +38,12 @@
     <string name="pregunta">Ask</string>
     <string name="camara">Camera</string>
     <string name="mapa">Map</string>
-    <string name="desactivaNoMolestar">Debes desactivar la opción no molestar del menú de preferencias de la aplicación</string>
+    <string name="desactivaNoMolestar">Debes desactivar la opción \"no molestar\" para utilizar el mapa</string>
     <string name="registro">Registro</string>
+    <string name="emptyLoginUser">Introduce un nombre de usuario</string>
+    <string name="emptyLoginPass">Introduce una contraseña</string>
+    <string name="incorrectLogin">Incorrecto nombre de usuario o contraseña</string>
+    <string name="recuperandoPosicion">Obteniendo posición...</string>
+    <string name="exitT">Salir de la APP</string>
+    <string name="exit">¿Estás seguro?</string>
 </resources>

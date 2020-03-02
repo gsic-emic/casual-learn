@@ -1,8 +1,8 @@
 package es.uva.gsic.adolfinstro;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
@@ -25,8 +25,17 @@ public class Ajustes extends AppCompatActivity{
 
     @Override
     public void onDestroy() {
-        Log.i("Destruyo ajustes", "Destruyo ajustes");
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        Intent intent = new Intent(this, Maps.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        this.finish();
+
     }
 }
 

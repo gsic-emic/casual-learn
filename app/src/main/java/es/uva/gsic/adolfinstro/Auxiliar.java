@@ -43,7 +43,7 @@ public class Auxiliar {
      * Método utilizado para volver a la actividad principal
      */
     public static void returnMain(Context context){
-        Intent intent = new Intent(context, MainActivity.class);
+        Intent intent = new Intent(context, Maps.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(intent);
     }

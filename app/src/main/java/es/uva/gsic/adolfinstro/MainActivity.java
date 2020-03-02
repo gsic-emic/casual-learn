@@ -147,6 +147,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 break;
             case R.id.btLogin:
                 intent = new Intent( this, Login.class);
+                intent.putExtra("ERRORACCESO", true);
                 break;
             default:
                 System.exit(-2);

@@ -11,21 +11,21 @@
         android:text="@string/desactivaNoMolestar"
         android:textSize="25sp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/switchNoMolestar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:padding="25dp"
         />
-    <androidx.appcompat.widget.SwitchCompat
+    <Switch
         android:id="@+id/switchNoMolestar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/noMolestar"
         android:checked="true"
         app:layout_constraintTop_toBottomOf="@id/tvNoMolestar"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:onClick="boton"/>
+        android:onClick="boton"
+        android:layout_marginTop="40dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

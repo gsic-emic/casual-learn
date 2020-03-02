@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AdolfinstroAPP</string>
+    <string name="app_name" translatable="false">AdolfinstroAPP</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="acept">Ok</string>
@@ -38,16 +38,13 @@
     <string name="pregunta">Ask</string>
     <string name="camara">Camera</string>
     <string name="mapa">Map</string>
-    <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
-    <string name="desactivaNoMolestar">You should turn off don\'t disturb in preferences menu</string>
+    <string name="openstreetmap_contributors" translatable="false">© OpenStreetMap contributors</string>
+    <string name="desactivaNoMolestar">Turn off \"don\'t disturb\" for use the map</string>
     <string name="registro">Sign up</string>
-    <string name="title_activity_borrar">Sign in</string>
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome !"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
+    <string name="emptyLoginUser">Empty username</string>
+    <string name="emptyLoginPass">Empty password</string>
+    <string name="incorrectLogin">Incorrect username or password</string>
+    <string name="recuperandoPosicion">Getting position...</string>
+    <string name="exitT">Exit APP</string>
+    <string name="exit">Are you sure?</string>
 </resources>
