@@ -22,8 +22,8 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
 
     /**
      * Método que se ejecuta cuando el valor de una preferencia cambia
-     * @param sharedPreferences
-     * @param key
+     * @param sharedPreferences preferencia
+     * @param key llave
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

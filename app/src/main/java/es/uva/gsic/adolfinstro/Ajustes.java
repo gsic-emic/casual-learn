@@ -12,6 +12,8 @@ public class Ajustes extends AppCompatActivity{
 
     public static final String NO_MOLESTAR_pref = "noMolestar";
     public static final String INTERVALO_pref = "intervalo";
+    public static final String LISTABLANCA_pref = "listaBlanca";
+    public static final String TOKEN_pref = "token";
     public static SharedPreferences sharedPreferences;
 
     @Override

@@ -21,5 +21,15 @@
         app:showSeekBarValue="true"
         app:seekBarIncrement="2"
         app:adjustable="true" />
+    <CheckBoxPreference
+        app:key="listaBlanca"
+        app:title="@string/tituloListaBlancaPref"
+        app:summary="@string/descripcionListaBlancaPref"
+        app:defaultValue="true" />
+    <EditTextPreference
+        app:key="token"
+        app:enableCopying="false"
+        app:defaultValue=" "
+        app:enabled="false" />
 
 </PreferenceScreen>

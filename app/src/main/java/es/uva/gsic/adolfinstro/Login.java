@@ -3,39 +3,48 @@ package es.uva.gsic.adolfinstro;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.sax.EndElementListener;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
+import androidx.preference.PreferenceManager;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class Login extends Activity {
+public class Login extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener{
 
-    EditText etUser, etPassword;
-    TextView tvErrorLogin;
+    /** Objetos donde estará la respuesta del usuario*/
+    private EditText etUser, etPassword;
+    /** Objeto para inidicar que ha ocurrido un error al realizar la autenticación */
+    private TextView tvErrorLogin;
+    /** Código de identificación para la solicitud de los permisos de la app */
     private static final int requestCodePermissions = 1000;
 
+    private SharedPreferences sharedPreferences;
 
     @Override
     public void onCreate(Bundle sI){
         super.onCreate(sI);
         checkPermissions(); //Compruebo los permisos antes de seguir
+        //Aquí irá la comprobación de si el usuario ya se ha autenticado previamente
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.TOKEN_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         setContentView(R.layout.activity_login);
         etUser = findViewById(R.id.etUsuario);
         etPassword = findViewById(R.id.etContrase);
 
         tvErrorLogin = findViewById(R.id.tvAcessoIncorrecto);
+
         try {
             if (getIntent().getExtras().getBoolean("ERRORACCESO")) {
                 tvErrorLogin.setText(getString(R.string.incorrectLogin));
@@ -44,6 +53,12 @@ public class Login extends Activity {
             //No se ha pasado como parámetro "ERRORACCESO"
         }
 
+    }
+
+    private void actualizaToken(String token) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(Ajustes.TOKEN_pref, token);
+        editor.commit();
     }
 
     /**
@@ -90,6 +105,13 @@ public class Login extends Activity {
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
     }
 
+    /**
+     * Método que realiza las operaciones necesarias para comprobar si el par usuario contraseña está registrado
+     * en el sistema
+     * @param usuario Nombre del usuario
+     * @param contra Contraseña del usuario
+     * @return Devolverá un true si el nombre de usuario y la contraseña son correctas
+     */
     private boolean comprueba(String usuario, String contra){
         boolean salida = true;
         if(usuario.isEmpty()){
@@ -102,6 +124,11 @@ public class Login extends Activity {
         }
         return salida;
     }
+
+    /**
+     * Método para gestionar la acción de los botones
+     * @param view Instancia del objeto
+     */
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btLog:
@@ -111,12 +138,36 @@ public class Login extends Activity {
                     Intent intent = new Intent(this, Maps.class);
                     intent.putExtra("USER", usuario);
                     intent.putExtra("CONTRA", contra);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    actualizaToken("Token de prueba");
                     startActivity(intent);
                 }
                 break;
             case R.id.btRegistro:
                 Toast.makeText(this, "Por implementar", Toast.LENGTH_SHORT).show();
                 break;
+        }
+    }
+
+    /**
+     * Método para atender al cambio de una preferencia
+     * @param sharedPreferences preferencia
+     * @param key clave modificada
+     */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key){
+            case Ajustes.LISTABLANCA_pref:
+                if(sharedPreferences.getBoolean(key, true))
+                    Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
+                break;
+            case Ajustes.TOKEN_pref:
+                if(sharedPreferences.getString(key, " ") != " "){
+                    Intent intent = new Intent (getApplicationContext(), Maps.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
+                }
+            default:
         }
     }
 }

@@ -47,4 +47,8 @@
     <string name="recuperandoPosicion">Getting position...</string>
     <string name="exitT">Exit APP</string>
     <string name="exit">Are you sure?</string>
+    <string name="tituloErrorMarca">Problems with </string>
+    <string name="mensajeSolucionMarca">You need to add this app to the white list</string>
+    <string name="tituloListaBlancaPref">Dialog alert for white list</string>
+    <string name="descripcionListaBlancaPref">Show dialog alert in devices with problems with the process of localization</string>
 </resources>

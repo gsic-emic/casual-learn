@@ -46,4 +46,8 @@
     <string name="recuperandoPosicion">Obteniendo posición...</string>
     <string name="exitT">Salir de la APP</string>
     <string name="exit">¿Estás seguro?</string>
+    <string name="tituloErrorMarca">"Problemas con "</string>
+    <string name="mensajeSolucionMarca">Necesitas agregar esta app a la lista blanca</string>
+    <string name="tituloListaBlancaPref">Alerta para lista blanca</string>
+    <string name="descripcionListaBlancaPref">Mostrar la alerta en dispositivos con problemas en el proceso de localización</string>
 </resources>

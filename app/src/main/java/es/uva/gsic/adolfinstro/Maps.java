@@ -24,16 +24,18 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
-import org.osmdroid.views.overlay.OverlayItem;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
+import org.osmdroid.views.overlay.simplefastpoint.LabelledGeoPoint;
+
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 //https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library
 public class Maps extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener{
@@ -51,12 +53,9 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     private boolean noMolestar;
     /** Preferencias de la aplicación */
     private SharedPreferences sharedPreferences;
-    /** Aproximación del radio de la Tierra*/
-    private final double radioTierra = 6371;
-    /** Objeto con el que se mostrará la brújula del mapa*/
-    private CompassOverlay compassOverlay;
     /** Vector donde se almacena los puntos representados en el mapa */
-    private ArrayList<OverlayItem> items = new ArrayList<>();
+    //private ArrayList<OverlayItem> items = new ArrayList<>();
+    private List<IGeoPoint> items = new ArrayList<>();
     /** Vector con los id's de los puntos. Por ahora el id es el título del punto */
     private ArrayList<String> idItems = new ArrayList<>();
 
@@ -72,6 +71,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         //Se decide si se muestra el mapa
         if(noMolestar){
@@ -85,6 +85,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             mapController = map.getController();
             mapController.setCenter(telecoPoint); //Centramos la posición en algún lugar conocido
             mapController.setZoom(10.0);
+            map.setMinZoomLevel(4.0);
+            map.setMaxZoomLevel(20.0);
             GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
             gpsMyLocationProvider.setLocationUpdateMinTime(15000); //Recupera la posición cada 15 segundos
             gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
@@ -103,79 +105,54 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             map.getOverlays().add(scaleBarOverlay);
 
             //Se agrega la brújula
-            compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
+            /** Objeto con el que se mostrará la brújula del mapa*/
+            CompassOverlay compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
             compassOverlay.enableCompass();
             map.getOverlays().add(compassOverlay);
 
             putItems(); //Se agregan los puntos de prueba
-        }
-    }
-
-    /**
-     * Método para insertar los puntos de prueba
-     */
-    public void putItems(){
-        String id = "idPrueba";
-        OverlayItem overlayItem = new OverlayItem( id,"Punto", "Punto lejano", new GeoPoint(42.662357, -4.706005));
-        idItems.add(id);
-        overlayItem.setMarker(getDrawable(R.drawable.marker_default));
-        items.add(overlayItem);
-        id = "idPlazaMayor";
-        overlayItem = new OverlayItem(id, "Plaza Mayor", "Plaza Mayor, Valladolid", new GeoPoint(41.6520, -4.7286));
-        overlayItem.setMarker(getDrawable(R.drawable.marker_default));
-        idItems.add(id);
-        items.add(overlayItem);
-        id = "idLaAntigua";
-        overlayItem = new OverlayItem(id,"La Antigua", "La Antigua, Valladolid", new GeoPoint(41.6547, -4.7231));
-        overlayItem.setMarker(getDrawable(R.drawable.marker_default));
-        items.add(overlayItem);
-        pushItems();
-    }
-
-    /**
-     * Método para comprbar si un punto que nos llega estába siendo mostrado ya. Si estaba siendo mostrado no
-     * se vuelve a agregar a los vectores.
-     * @param overlayItem Punto en el que se incluye el id (título), descripción y GeoPoint.
-     */
-    public void putItem(OverlayItem overlayItem){
-        if(!items.contains(overlayItem.getUid())){
-            items.add(overlayItem);
             pushItems();
         }
     }
 
     /**
-     * Método que dibuja los puntos en el mapa. Se establece la acción que tiene que suceder cuando se pulsa.
+     * Este método almacena los puntos que se tenga en una lista para su posterior manipulación
+     */
+    public void putItems(){
+        //Valores de desarrollo. Estas posiciciones se obtendrán de manera dinámica
+        items.add(new LabelledGeoPoint(41.6520, -4.7286, "Plaza Mayor, Valladolid"));
+        items.add(new LabelledGeoPoint(41.6547, -4.7231, "La Antigua, Valladolid"));
+        items.add(new LabelledGeoPoint(42.662357, -4.706005, "Punto Lejano"));
+    }
+
+    /**
+     * Método para agregar un conjunto de marcadores al mapa
      */
     public void pushItems(){
-        final Context context = getApplicationContext();
-        ItemizedOverlayWithFocus<OverlayItem> overlay = new ItemizedOverlayWithFocus<OverlayItem>(items,
-                new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
-            @Override
-            public boolean onItemSingleTapUp(int index, OverlayItem item) {
-                double distancia;
-                final double distanciaError = -72.47699963546;
-                try{
-                    distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), item.getPoint());
-                } catch (Exception e){
-                    distancia = distanciaError;
+        List<Marker> markers = new ArrayList<>();
+        for(IGeoPoint punto : items){
+            Marker marker = new Marker(map);
+            marker.setPosition(new GeoPoint(punto.getLatitude(), punto.getLongitude()));
+            marker.setTitle(((LabelledGeoPoint) punto).getLabel());
+            marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    double distancia;
+                    String msg;
+                    try{
+                        distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
+                        msg = String.format(Locale.getDefault(), "%.3f km", distancia);
+                    } catch (Exception e){
+                        msg = getString(R.string.recuperandoPosicion);
+                    }
+                    marker.setSubDescription(msg);
+                    marker.showInfoWindow();
+                    return false;
                 }
-                Toast.makeText(context, item.getTitle()+"\r\n"+
-                        ((distancia==distanciaError)?"null km":String.format("%.3f km",distancia)), Toast.LENGTH_SHORT).show();
-                return false;
-            }
-
-            @Override
-            public boolean onItemLongPress(int index, OverlayItem item) {
-                if(item.getTitle() == "Plaza Mayor"){
-                    putItem(new OverlayItem("otroPunto", "OtroPunto", "otroPunto",
-                            new GeoPoint(41.7520, -4.6286)));
-                }
-                onItemSingleTapUp(index, item);
-                return false;
-            }
-        }, context);
-        map.getOverlays().add(overlay);
+            });
+            markers.add(marker);
+        }
+        map.getOverlays().addAll(markers);
     }
 
     /**
@@ -199,6 +176,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      * @return Distancia (en km) entre los dos puntos
      */
     private double calculaDistanciaDosPuntos(double lat1, double lon1, double lat2, double lon2){
+        /** Aproximación del radio de la Tierra*/
+        double radioTierra = 6371;
         return 2 * radioTierra *
                 Math.asin(Math.sqrt(
                         (1-Math.cos(Math.toRadians(lat2-lat1)))/2 +
@@ -237,7 +216,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             case R.id.btCentrar: //Solo centra la posición si se ha conseguido recuperar
                 if(myLocationNewOverlay.getMyLocation() != null) {
                     mapController.setZoom(18.0);
-                    mapController.setCenter(myLocationNewOverlay.getMyLocation());
+                    mapController.animateTo(myLocationNewOverlay.getMyLocation());
                 }else{ //Si aún no se conoce se muestra un mensaje
                     Toast.makeText(this, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                 }
@@ -289,13 +268,14 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
-            case Ajustes.INTERVALO_pref:
-                int intervalo = sharedPreferences.getInt(key, 1);
-                break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
                 if(!noMolestar)
                     lanzaServicioPosicionamiento();
+                break;
+            case Ajustes.LISTABLANCA_pref:
+                if(sharedPreferences.getBoolean(key, true))
+                    Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
                 break;
             default:
         }
