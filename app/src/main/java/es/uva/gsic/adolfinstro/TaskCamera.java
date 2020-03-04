@@ -63,7 +63,7 @@ public class TaskCamera extends AppCompatActivity {
         bt = findViewById(R.id.btCancelar);
         estadoFav = true;
         estadoBt = true;
-
+        getIntent().getExtras();
         tipo = getIntent().getExtras().getInt("TIPO");
     }
 

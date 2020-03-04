@@ -15,15 +15,15 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
         SeekBarPreference seekBarPreference = findPreference("intervalo");
-        seekBarPreference.setMax(60);
+        seekBarPreference.setMax(24);
         sharedPreferences = Ajustes.sharedPreferences;
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
     /**
      * Método que se ejecuta cuando el valor de una preferencia cambia
-     * @param sharedPreferences
-     * @param key
+     * @param sharedPreferences preferencia
+     * @param key llave
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -56,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
      * En la actualidad, solicita permisos de localización y cámara.
      */
     public void checkPermissions(){
-        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA))
+        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
             System.exit(-1);
         ArrayList<String> permisos = new ArrayList<>();
         Auxiliar.preQueryPermisos(this, permisos);
@@ -142,6 +141,13 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 break;
             case R.id.btPreguntaFoto:
                 intent = new Intent(this, Ask_camera.class);
+                break;
+            case R.id.btMapa:
+                intent = new Intent(this, Maps.class);
+                break;
+            case R.id.btLogin:
+                intent = new Intent( this, Login.class);
+                intent.putExtra("ERRORACCESO", true);
                 break;
             default:
                 System.exit(-2);

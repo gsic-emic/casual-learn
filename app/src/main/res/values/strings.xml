@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AdolfinstroAPP</string>
+    <string name="app_name" translatable="false">AdolfinstroAPP</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="acept">Ok</string>
@@ -27,7 +27,7 @@
     <string name="tresM">Three minutes</string>
     <string name="cincoM">Five minutes</string>
     <string name="sieteM">Seven minutes</string>
-    <string name="intervaloResumen">Minimum interval between each task</string>
+    <string name="intervaloResumen">Minimum interval between each task (hours)</string>
     <string name="textoNotificacionPersistente">Looking for new tasks..</string>
     <string name="Usuario">User</string>
     <string name="Password">Password</string>
@@ -35,4 +35,20 @@
     <string name="title_activity_ask_camera">ask_camera</string>
     <string name="canalTareas">Tasks channel</string>
     <string name="canalPersistente">Persistent channel</string>
+    <string name="pregunta">Ask</string>
+    <string name="camara">Camera</string>
+    <string name="mapa">Map</string>
+    <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
+    <string name="desactivaNoMolestar">Turn off \"don\'t disturb\" for use the map</string>
+    <string name="registro">Sign up</string>
+    <string name="emptyLoginUser">Empty username</string>
+    <string name="emptyLoginPass">Empty password</string>
+    <string name="incorrectLogin">Incorrect username or password</string>
+    <string name="recuperandoPosicion">Getting position...</string>
+    <string name="exitT">Exit APP</string>
+    <string name="exit">Are you sure?</string>
+    <string name="tituloErrorMarca">Problems with </string>
+    <string name="mensajeSolucionMarca">You need to add this app to the white list</string>
+    <string name="tituloListaBlancaPref">Dialog alert for white list</string>
+    <string name="descripcionListaBlancaPref">Show dialog alert in devices with problems with the process of localization</string>
 </resources>

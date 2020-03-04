@@ -8,6 +8,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import static es.uva.gsic.adolfinstro.Auxiliar.returnMain;
+
 public class Ask extends AppCompatActivity {
 
     /** Instancia del objeto donde el usuario introduce la respuesta*/
@@ -33,15 +35,12 @@ public class Ask extends AppCompatActivity {
         switch (view.getId()){
             case R.id.btAceptar:
                 if(guardaRespuesta()) {
-                    Intent intent = new Intent(this, MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+                    //SALVAR LA RESPUESTA EN BBDD ¿ENVIARLA?
+                    returnMain(this);
                 }
                 break;
             case R.id.btSalir:
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
+                returnMain(this);
                 break;
         }
     }

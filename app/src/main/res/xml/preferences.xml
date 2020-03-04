@@ -15,11 +15,21 @@
         app:key="intervalo"
         app:title="@string/intervalo"
         app:summary="@string/intervaloResumen"
-        app:defaultValue="0"
-        app:min="0"
+        app:defaultValue="3"
+        app:min="1"
         app:updatesContinuously="false"
         app:showSeekBarValue="true"
-        app:seekBarIncrement="5"
+        app:seekBarIncrement="2"
         app:adjustable="true" />
+    <CheckBoxPreference
+        app:key="listaBlanca"
+        app:title="@string/tituloListaBlancaPref"
+        app:summary="@string/descripcionListaBlancaPref"
+        app:defaultValue="true" />
+    <EditTextPreference
+        app:key="token"
+        app:enableCopying="false"
+        app:defaultValue=" "
+        app:enabled="false" />
 
 </PreferenceScreen>
