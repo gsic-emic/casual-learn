@@ -38,7 +38,7 @@
     <string name="pregunta">Ask</string>
     <string name="camara">Camera</string>
     <string name="mapa">Map</string>
-    <string name="openstreetmap_contributors" translatable="false">© OpenStreetMap contributors</string>
+    <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
     <string name="desactivaNoMolestar">Turn off \"don\'t disturb\" for use the map</string>
     <string name="registro">Sign up</string>
     <string name="emptyLoginUser">Empty username</string>
