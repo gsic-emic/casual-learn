@@ -51,4 +51,6 @@
     <string name="tituloListaBlancaPref">Alerta para lista blanca</string>
     <string name="descripcionListaBlancaPref">Mostrar la alerta en dispositivos con problemas en el proceso de localización</string>
     <string name="openstreetmap_contributors" translatable="false">© Colaboradores de OpenStreetMap</string>
+    <string name="imagenDescripcionTarea">Imagen descriptiva de la tarea</string>
+    <string name="sinDescripcion">Tarea sin descripción</string>
 </resources>

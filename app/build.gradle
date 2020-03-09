@@ -85,3 +85,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:+'
     implementation 'androidx.lifecycle:lifecycle-extensions:+'
 }
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:+'
+    implementation 'androidx.constraintlayout:constraintlayout:+'
+}

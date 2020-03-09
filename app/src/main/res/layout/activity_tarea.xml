@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context=".Tarea">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp">
+
+        <TextView
+            android:id="@+id/tvDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivImagenDescripcion"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:textSize="20sp"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:id="@+id/ivImagenDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="500dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/imagenDescripcionTarea"
+            android:visibility="gone"/>
+
+        <EditText
+            android:id="@+id/etRespuestaTextual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:maxLength="600"
+            android:hint="@string/hintRespuesta"
+            android:maxLines="10"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDescripcion"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"
+            android:inputType="textMultiLine"
+            android:autofillHints="no" />
+
+        <Button
+            android:id="@+id/btVolver"
+            android:layout_width="150dp"
+            android:layout_height="75dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            android:layout_marginTop="20dp"
+            android:text="@string/cancel"
+            android:visibility="visible"
+            android:onClick="boton"/>
+
+        <Button
+            android:id="@+id/btAceptar"
+            android:layout_width="150dp"
+            android:layout_height="75dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            android:layout_marginTop="20dp"
+            android:text="@string/cancel"
+            android:visibility="gone"
+            android:onClick="boton"/>
+
+        <Button
+            android:id="@+id/btCamara"
+            android:layout_width="150dp"
+            android:layout_height="75dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            android:drawableStart="@android:drawable/ic_menu_camera"
+            android:layout_marginTop="20dp"
+            android:text="@string/camara"
+            android:visibility="gone"
+            android:onClick="boton"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

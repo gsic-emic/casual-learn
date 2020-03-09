@@ -51,4 +51,6 @@
     <string name="mensajeSolucionMarca">You need to add this app to the white list</string>
     <string name="tituloListaBlancaPref">Dialog alert for white list</string>
     <string name="descripcionListaBlancaPref">Show dialog alert in devices with problems with the process of localization</string>
+    <string name="imagenDescripcionTarea">Task description image</string>
+    <string name="sinDescripcion">Task whitout description</string>
 </resources>

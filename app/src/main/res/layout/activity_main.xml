@@ -30,12 +30,39 @@
         android:padding="15dp"/>
 
     <Button
+        android:id="@+id/btSinRespuesta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tarea Sin Respuesta"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvLatitudLongitud"
+        android:onClick="boton"/>
+
+    <Button
         android:id="@+id/btTexto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tarea texto"
+        android:text="Tarea respuesta corta"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvLatitudLongitud"
+        app:layout_constraintTop_toBottomOf="@id/btSinRespuesta"
+        android:onClick="boton"/>
+
+    <Button
+        android:id="@+id/btTextoLargo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tarea respuesta larga"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btTexto"
+        android:onClick="boton"/>
+
+    <Button
+        android:id="@+id/btTextoFoto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tarea Texto foto"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btTextoLargo"
         android:onClick="boton"/>
 
     <Button
@@ -44,7 +71,7 @@
         android:layout_height="wrap_content"
         android:text="Tarea Una foto"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btTexto"
+        app:layout_constraintTop_toBottomOf="@id/btTextoFoto"
         android:onClick="boton"/>
 
     <Button
@@ -66,21 +93,12 @@
         android:onClick="boton"/>
 
     <Button
-        android:id="@+id/btPreguntaFoto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Pregunta + foto"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btVideo"
-        android:onClick="boton" />
-
-    <Button
         android:id="@+id/btMapa"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Mapa"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btPreguntaFoto"
+        app:layout_constraintTop_toBottomOf="@id/btVideo"
         android:onClick="boton" />
 
     <Button
