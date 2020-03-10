@@ -4,13 +4,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -66,7 +70,10 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        final Context context = getBaseContext(); //contexto de la app
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+        final Context context = getApplicationContext(); //contexto de la app
+        Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -93,6 +100,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
             myLocationNewOverlay = new MyLocationNewOverlay( gpsMyLocationProvider, map);
             myLocationNewOverlay.enableMyLocation();
+            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.osm_ic_follow_me_on), BitmapFactory.decodeResource(getResources(), R.drawable.osm_ic_follow_me_on));
             myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
             myLocationNewOverlay.setEnableAutoStop(true);
             map.getOverlays().add(myLocationNewOverlay); //Se centra en el usuario. Si no lo consigue porque la
@@ -134,6 +142,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             Marker marker = new Marker(map);
             marker.setPosition(new GeoPoint(punto.getLatitude(), punto.getLongitude()));
             marker.setTitle(((LabelledGeoPoint) punto).getLabel());
+            marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
             marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
@@ -242,6 +251,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             latitude = myLocationNewOverlay.getMyLocation().getLatitude();
             longitude = myLocationNewOverlay.getMyLocation().getLongitude();
         }
+        bundle.putDouble("ZOOM", map.getZoomLevelDouble());
         bundle.putDouble("LATITUDE", latitude);
         bundle.putDouble("LONGITUDE", longitude);
         super.onSaveInstanceState(bundle);
@@ -254,6 +264,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     @Override
     protected void onRestoreInstanceState(Bundle bundle){
         super.onRestoreInstanceState(bundle);
+        mapController.setZoom(bundle.getDouble("ZOOM"));
         latitude = bundle.getDouble("LATITUDE");
         longitude = bundle.getDouble("LONGITUDE");
         GeoPoint lastCenter = new GeoPoint(latitude, longitude);
@@ -316,7 +327,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             case R.id.ajustes:
                 Intent intent = new Intent(this, Ajustes.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(new Intent(this, Ajustes.class));
+                startActivity(intent);
                 return true;
             case R.id.acerca:
                 Toast.makeText(this, getString(R.string.gsic), Toast.LENGTH_LONG).show();

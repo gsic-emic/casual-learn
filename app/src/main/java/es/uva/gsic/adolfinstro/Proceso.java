@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationServices;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Random;
 
 
 public class Proceso extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -163,7 +164,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         String l = getString(R.string.latitud) + ": " + latitud + " || " +
                 getString(R.string.longitud) + ": " + longitud;
         if(!noMolestar){
-            Boolean comprueba = true;
+            //Boolean comprueba = true;
             /*if(ultimaMedida == 0){
                 date = new Date();
             }
@@ -174,10 +175,10 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     comprueba = false;
                 }
             }*/
-            if(comprueba){
+            /*if(comprueba){
                 //ultimaMedida = date.getTime();
                 int idTarea = -1;
-                //AQUÍ SE REALIZARÁ LA PETECIÓN SPARQL --> TIENE QUE HACERSE EN UN SERVICIO
+
                 if(plazaMayorLat == latitud && plazaMayorLong == longitud){ //Respuesta texto
                     idTarea = 0; //La tomará de la respuesta a la consulta
                     setIdentificadorTarea(idTarea);
@@ -209,6 +210,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                         pintaNotificacion(location, idTarea);
                     }
                 }
+            }*/
+        if(plazaMayorLat == latitud && plazaMayorLong == longitud){ //Respuesta texto
+                pintaNotificacion(location, ((int) (Math.random()*6)));
             }
         }
     }
@@ -238,33 +242,45 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             String l = getString(R.string.latitud) + ": " + location.getLatitude() + " || " +
                     getString(R.string.longitud) + ": " + location.getLongitude();
             String titu = "";
-            Intent intent = null;
+            Intent intent = new Intent(this, Tarea.class);
+            String recursoAsociadoTexto = "El Castillo de Calatañazor, también conocido como Castillo de los Padilla es un fortaleza medieval ubicada en la localidad española de igual nombre, en la provincia de Soria.";
+            intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion");
+            intent.putExtra("recursoAsociadoTexto", recursoAsociadoTexto);
+            //intent.putExtra("recursoAsociadoImagen", "https://upload.wikimedia.org/wikipedia/commons/6/69/Salamanca_Parroquia_Arrabal.jpg");
+            intent.putExtra("recursoAsociadoImagen", "https://commons.wikimedia.org/wiki/Special:FilePath/Calatañazor-Castillo.jpg");
             switch (idTarea){
                 case 0:
-                    titu = "Tarea de pregunta";
-                    intent = new Intent(this, Ask.class);
+                    titu = "sinRespuesta";
+                    intent.putExtra("tipoRespuesta", "sinRespuesta");
                     break;
                 case 1:
-                    titu = "Tarea de una foto";
-                    intent = new Intent(this, TaskCamera.class);
-                    intent.putExtra("TIPO", R.id.btUnaFoto);
+                    titu = "preguntaCorta";
+                    intent.putExtra("tipoRespuesta", "preguntaCorta");
                     break;
                 case 2:
-                    titu = "Tarea de varias fotos";
-                    intent = new Intent(this, TaskCamera.class);
-                    intent.putExtra("TIPO", R.id.btVariasFotos);
+                    titu = "preguntaLarga";
+                    intent.putExtra("tipoRespuesta", "preguntaLarga");
                     break;
                 case 3:
-                    titu = "Tarea de un vídeo";
-                    intent = new Intent(this, TaskCamera.class);
-                    intent.putExtra("TIPO", R.id.btVideo);
+                    titu = "preguntaImagen";
+                    intent.putExtra("tipoRespuesta", "preguntaImagen");
                     break;
                 case 4:
-                    titu = "Tarea de pregunta y foto";
-                    intent = new Intent(this, Ask_camera.class);
+                    titu = "imagen";
+                    intent.putExtra("tipoRespuesta", "imagen");
                     break;
+                case 5:
+                    titu = "imagenMultiple";
+                    intent.putExtra("tipoRespuesta", "imagenMultiple");
+                    break;
+                case 6:
+                    titu = "video";
+                    intent.putExtra("tipoRespuesta", "video");
+                    break;
+                default:
+                    return;
             }
-            builder.setContentTitle(titu).setContentText(l);
+            builder.setContentTitle(titu).setContentText(recursoAsociadoTexto);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), incr, intent, PendingIntent.FLAG_CANCEL_CURRENT);
             ++incr;

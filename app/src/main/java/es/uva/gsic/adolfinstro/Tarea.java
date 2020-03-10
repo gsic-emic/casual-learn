@@ -14,6 +14,9 @@ import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -167,7 +170,7 @@ public class Tarea extends AppCompatActivity {
                 photoURI = FileProvider.getUriForFile(context, "es.uva.gsic.adolfinstro.fileprovider", photoFile);
 
                 takePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                startActivityForResult(takePicture, 0);//Los requestCode solo pueden ser de 16 bits
+                startActivityForResult(takePicture, tipo);//Los requestCode solo pueden ser de 16 bits
             }
         } else{
             Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
@@ -179,7 +182,7 @@ public class Tarea extends AppCompatActivity {
         Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
         File videoFile = null;
         try {
-            videoFile = Auxiliar.createFile(2, this);
+            videoFile = Auxiliar.createFile(3, this);
         }catch (IOException e){
 
         }
@@ -299,6 +302,31 @@ public class Tarea extends AppCompatActivity {
         return salida;
     }
 
+    /**
+     * Método que se utiliza para almacenar el valor de algunas variables de la clase
+     * @param bundle Objeto donde se almacenan las variables de la clase
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle bundle){
+        super.onSaveInstanceState(bundle);
+        bundle.putInt("RESTANTES", restantes);
+        bundle.putBoolean("ESTADOCAMARA", estadoBtCamara);
+        bundle.putBoolean("ESTADOCANCELAR", estadoBtCancelar);
+    }
+
+    /**
+     * Método utilizado para restablecer el valor de algunas variables de la clase
+     * @param bundle Objeto donde están almacenadas las variables de la clase entre otras cosas
+     */
+    @Override
+    protected void onRestoreInstanceState(Bundle bundle){
+        super.onRestoreInstanceState(bundle);
+        restantes = bundle.getInt("RESTANTES");
+        estadoBtCamara = bundle.getBoolean("ESTADOCAMARA");
+        estadoBtCancelar = bundle.getBoolean("ESTADOCANCELAR");
+        setBotones();
+    }
+
 
     /**
      * Clase que se encarga de obtener la imagen del servidor
@@ -312,6 +340,13 @@ public class Tarea extends AppCompatActivity {
          */
         protected Bitmap doInBackground(URL... urls) {
             try {
+                ivImagenDescripcion.setImageResource(R.drawable.ic_cloud_download_blue_80dp);
+                ivImagenDescripcion.setVisibility(View.VISIBLE);
+                RotateAnimation rotateAnimation = new RotateAnimation(0f, 359f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                rotateAnimation.setInterpolator(new LinearInterpolator());
+                rotateAnimation.setRepeatCount(Animation.INFINITE);
+                rotateAnimation.setDuration(1200);
+                ivImagenDescripcion.startAnimation(rotateAnimation);
                 return BitmapFactory.decodeStream(urls[0].openConnection().getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -323,8 +358,10 @@ public class Tarea extends AppCompatActivity {
          * Método que carga la imagen descargada en la interfaz gráfica de la aplicación
          * @param bitmap Imagen que se va a mostrar
          */
+        @Override
         protected void onPostExecute(Bitmap bitmap){
             if (bitmap != null) {
+                ivImagenDescripcion.setAnimation(null);
                 ivImagenDescripcion.setImageBitmap(bitmap);
                 ivImagenDescripcion.setAdjustViewBounds(true);
             } else {

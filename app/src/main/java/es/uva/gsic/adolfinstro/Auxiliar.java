@@ -22,9 +22,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class Auxiliar {
+class Auxiliar {
 
-    private static final String[] listaFabricantes = {"huawei"};
+    private static final String[] listaFabricantes = {"huawei", "xiaomi"};
 
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
@@ -32,14 +32,16 @@ public class Auxiliar {
      * @return fichero donde se almacena la foto/vídeo
      * @throws IOException Se lanza una excepción cuando se produzca un error al crear el fichero vacío
      */
-    public static File createFile(int type, Context context) throws IOException{
+    static File createFile(int type, Context context) throws IOException{
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS").format(new Date());
         File mediaFile = null;
         switch (type){
+            case 0:
             case 1:
+            case 2:
                 mediaFile = File.createTempFile("JPG_"+timeStamp,".jpg", context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
                 break;
-            case 2:
+            case 3:
                 mediaFile = File.createTempFile("VID_"+timeStamp, ".mp4", context.getExternalFilesDir(Environment.DIRECTORY_MOVIES));
                 break;
             default:
@@ -50,7 +52,7 @@ public class Auxiliar {
     /**
      * Método utilizado para volver a la actividad principal
      */
-    public static void returnMain(Context context){
+    static void returnMain(Context context){
         Intent intent = new Intent(context, Maps.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(intent);
@@ -59,7 +61,7 @@ public class Auxiliar {
     /**
      * Impreme un toast para indicar al usuario que ha sucedido algún problema
      */
-    public static void errorToast(Context context) {
+    static void errorToast(Context context) {
         Toast.makeText(context, context.getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
     }
 
@@ -68,7 +70,7 @@ public class Auxiliar {
      * @param context Contexto
      * @param permisos Vector donde agregar los permisos a los que el usuario aún no haya dado permiso
      */
-    public static void preQueryPermisos(Context context, ArrayList<String> permisos){
+    static void preQueryPermisos(Context context, ArrayList<String> permisos){
         if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
@@ -89,7 +91,7 @@ public class Auxiliar {
      * @param context contexto
      * @param sharedPreferences preferencias
      */
-    public static void dialogoAyudaListaBlanca(Context context, final SharedPreferences sharedPreferences){
+    static void dialogoAyudaListaBlanca(Context context, final SharedPreferences sharedPreferences){
         List<String> fabricantesProblemas = Arrays.asList(listaFabricantes);
         if (fabricantesProblemas.contains(Build.MANUFACTURER.toLowerCase())) {
             AlertDialog.Builder brandBuilder = new AlertDialog.Builder(context);
