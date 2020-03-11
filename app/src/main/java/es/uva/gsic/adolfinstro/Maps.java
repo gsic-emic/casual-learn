@@ -100,7 +100,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
             myLocationNewOverlay = new MyLocationNewOverlay( gpsMyLocationProvider, map);
             myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.osm_ic_follow_me_on), BitmapFactory.decodeResource(getResources(), R.drawable.osm_ic_follow_me_on));
+            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person), BitmapFactory.decodeResource(getResources(), R.drawable.person));
             myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
             myLocationNewOverlay.setEnableAutoStop(true);
             map.getOverlays().add(myLocationNewOverlay); //Se centra en el usuario. Si no lo consigue porque la
@@ -251,7 +251,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             latitude = myLocationNewOverlay.getMyLocation().getLatitude();
             longitude = myLocationNewOverlay.getMyLocation().getLongitude();
         }
-        bundle.putDouble("ZOOM", map.getZoomLevelDouble());
+        if(map!=null)
+            bundle.putDouble("ZOOM", map.getZoomLevelDouble());
         bundle.putDouble("LATITUDE", latitude);
         bundle.putDouble("LONGITUDE", longitude);
         super.onSaveInstanceState(bundle);
@@ -264,7 +265,11 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     @Override
     protected void onRestoreInstanceState(Bundle bundle){
         super.onRestoreInstanceState(bundle);
-        mapController.setZoom(bundle.getDouble("ZOOM"));
+        try {
+            mapController.setZoom(bundle.getDouble("ZOOM"));
+        }catch (Exception e){
+
+        }
         latitude = bundle.getDouble("LATITUDE");
         longitude = bundle.getDouble("LONGITUDE");
         GeoPoint lastCenter = new GeoPoint(latitude, longitude);
@@ -323,14 +328,17 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+        Intent intent;
         switch (item.getItemId()){
             case R.id.ajustes:
-                Intent intent = new Intent(this, Ajustes.class);
+                intent = new Intent(this, Ajustes.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 return true;
             case R.id.acerca:
-                Toast.makeText(this, getString(R.string.gsic), Toast.LENGTH_LONG).show();
+                intent = new Intent(this, Acerca.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

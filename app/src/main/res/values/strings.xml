@@ -2,7 +2,7 @@
     <string name="app_name" translatable="false">AdolfinstroAPP</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
-    <string name="acept">Ok</string>
+    <string name="acept">OK</string>
     <string name="exi">Exit</string>
     <string name="title_activity_task_camera">task_camera</string>
     <string name="task">Task</string>
@@ -13,10 +13,10 @@
     <string name="hintRespuesta">Your answer…</string>
     <string name="by">About the app…</string>
     <string name="settings">Settings</string>
-    <string name="imagenG">Saved image</string>
-    <string name="videoG">Saved video</string>
-    <string name="imagenesG">Saved images</string>
-    <string name="imagenGN">Saved image. Take the next photo</string>
+    <string name="imagenG">Image saved</string>
+    <string name="videoG">Video saved</string>
+    <string name="imagenesG">Images saved</string>
+    <string name="imagenGN">Image saved. Take the next photo</string>
     <string name="errorOpera">Operation error</string>
     <string name="gsic">GSIC/EMIC</string>
     <string name="respuestaVacia">The answer is empty!!</string>
@@ -46,7 +46,7 @@
     <string name="tituloErrorMarca">Problems with </string>
     <string name="mensajeSolucionMarca">You need to add this app to the white list</string>
     <string name="tituloListaBlancaPref">Dialog alert for white list</string>
-    <string name="descripcionListaBlancaPref">Show dialog alert in devices with problems with the process of localization</string>
+    <string name="descripcionListaBlancaPref">Show dialog alert in devices with problems with the process of location</string>
     <string name="imagenDescripcionTarea">Task description image</string>
     <string name="sinDescripcion">Task without description</string>
 </resources>

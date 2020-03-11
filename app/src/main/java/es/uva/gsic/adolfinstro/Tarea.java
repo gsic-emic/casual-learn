@@ -27,6 +27,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import es.uva.gsic.adolfinstro.persistencia.GrupoTareas;
+import es.uva.gsic.adolfinstro.persistencia.GrupoTareasDatabase;
+
 import static es.uva.gsic.adolfinstro.Auxiliar.returnMain;
 import static java.util.Objects.*;
 
@@ -37,8 +40,10 @@ public class Tarea extends AppCompatActivity {
     EditText etRespuestaTextual;
     Button btVolver, btAceptar, btCamara;
     String tipo;
+    String idTarea;
     Bundle extras;
     int restantes = 3; //Este valor habrá que obtenerlo del intent
+    GrupoTareasDatabase db;
 
     Uri photoURI, videoURI;
 
@@ -51,10 +56,18 @@ public class Tarea extends AppCompatActivity {
 
         ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
         extras = getIntent().getExtras();
+        idTarea = extras.getString("id");
         try {//ImagenDescriptiva
             new DownloadImages().execute(new URL(extras.getString("recursoAsociadoImagen")));
         }catch (Exception e){//Saltará cuando no tenga un recurso de imagen asociado
         }
+        tipo = requireNonNull(extras.getString("tipoRespuesta"));
+        db = GrupoTareasDatabase.getInstance(getBaseContext());
+        //Por ahora se almacena la pregunta en la base de datos CUANDO ENTRA EN LA TAREA. En un futuro esta
+        //tarea se deberá hacer en la creación de la notificación
+        GrupoTareas tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA);
+        db.grupoTareasDao().insertTarea(tarea);
+
         tvDescripcion = findViewById(R.id.tvDescripcion);
         etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
         btVolver = findViewById(R.id.btVolver);
@@ -67,7 +80,7 @@ public class Tarea extends AppCompatActivity {
         }catch (Exception e){
             tvDescripcion.setText(getString(R.string.sinDescripcion));
         }
-        tipo = requireNonNull(extras.getString("tipoRespuesta"));
+
         switch (tipo){
             case "preguntaCorta":
                 etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -104,14 +117,14 @@ public class Tarea extends AppCompatActivity {
                 returnMain(this);
                 break;
             case R.id.btAceptar:
-                if(guardaRespuesta()) {
+                if(guardaRespuestaPregunta()) {
                     returnMain(this);
                 }
                 break;
             case R.id.btCamara:
                 switch (tipo){
                     case "preguntaImagen":
-                        if(guardaRespuesta()) {
+                        if(guardaRespuestaPregunta()) {
                             bloqueaBotones();
                             realizaCaptura(0);
                         }
@@ -172,6 +185,10 @@ public class Tarea extends AppCompatActivity {
                 takePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePicture, tipo);//Los requestCode solo pueden ser de 16 bits
             }
+            else{
+                Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                desbloqueaBt();
+            }
         } else{
             Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
             desbloqueaBt();
@@ -179,7 +196,8 @@ public class Tarea extends AppCompatActivity {
     }
 
     private void realizaVideo(){
-        Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+        Intent takeVideo = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+
         File videoFile = null;
         try {
             videoFile = Auxiliar.createFile(3, this);
@@ -188,16 +206,20 @@ public class Tarea extends AppCompatActivity {
         }
         if(videoFile != null){
             videoURI = FileProvider.getUriForFile(getBaseContext(), "es.uva.gsic.adolfinstro.fileprovider", videoFile);
-            takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, videoURI);
-            if(takeVideoIntent.resolveActivity(getPackageManager()) != null){
+            takeVideo.putExtra(MediaStore.EXTRA_OUTPUT, videoURI);
+            if(takeVideo.resolveActivity(getPackageManager()) != null){
                 //CALIDAD MMS
                 //https://developer.android.com/reference/android/provider/MediaStore#EXTRA_VIDEO_QUALITY
-                takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
-                startActivityForResult(takeVideoIntent, 3);
+                takeVideo.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
+                startActivityForResult(takeVideo, 3);
             }else{
                 Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
                 desbloqueaBt();
             }
+        }
+        else{
+            Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            desbloqueaBt();
         }
     }
 
@@ -218,30 +240,41 @@ public class Tarea extends AppCompatActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        GrupoTareas tarea = db.grupoTareasDao().getTarea(idTarea);
+        String respuesta = "";
+        if(tipo.equals("preguntaImagen") || tipo.equals("imagenMultiple"))
+            respuesta = tarea.getRespuestaTarea();
+        db.grupoTareasDao().deleteTarea(tarea.getUid());
         switch (requestCode){
             case 0: //Pregunta + imagen
                 switch (resultCode){
                     case RESULT_OK:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, respuesta + ";" + photoURI.toString());
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
                         desbloqueaBt();
                         break;
                     default:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
                         Auxiliar.errorToast(this);
                 }
                 break;
             case 1://imagen
                 switch (resultCode){
                     case RESULT_OK:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, photoURI.toString());
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, "");
                         desbloqueaBt();
                         break;
                     default:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, "");
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -249,6 +282,7 @@ public class Tarea extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         --restantes;
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, respuesta + ";" + photoURI.toString());
                         if(restantes==0){
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
                             Auxiliar.returnMain(this);
@@ -259,26 +293,32 @@ public class Tarea extends AppCompatActivity {
                         }
                         break;
                     case RESULT_CANCELED:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
                         desbloqueaBt();
                         break;
                     default:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
                         Auxiliar.errorToast(this);
                 }
                 break;
             case 3://video
                 switch (resultCode){
                     case RESULT_OK:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, videoURI.toString());
                         Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
                         desbloqueaBt();
                         break;
                     default:
+                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
                         Auxiliar.errorToast(this);
                 }
                 break;
         }
+        db.grupoTareasDao().insertTarea(tarea);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -287,7 +327,7 @@ public class Tarea extends AppCompatActivity {
      * @return Devolverá true cuando la respuestas esté correctamente almacenada y
      * false en cualquier otro caso
      */
-    private boolean guardaRespuesta(){
+    private boolean guardaRespuestaPregunta(){
         String respuesta = etRespuestaTextual.getText().toString();
         respuesta = respuesta.trim();
         boolean salida = false;
@@ -295,7 +335,14 @@ public class Tarea extends AppCompatActivity {
             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
         }
         else{
-            //SALVAR LA RESPUESTA EN BBDD ¿ENVIARLA? SE UTILIZA TAMBIÉN PARA LA PREGUNTA CAMARA!!
+            GrupoTareas tarea;
+            tarea = db.grupoTareasDao().getTarea(idTarea);
+            db.grupoTareasDao().deleteTarea(tarea.getUid());
+            if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga"))
+                tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, respuesta);
+            else
+                tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
+            db.grupoTareasDao().insertTarea(tarea);
             Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
             salida = true;
         }
@@ -312,6 +359,8 @@ public class Tarea extends AppCompatActivity {
         bundle.putInt("RESTANTES", restantes);
         bundle.putBoolean("ESTADOCAMARA", estadoBtCamara);
         bundle.putBoolean("ESTADOCANCELAR", estadoBtCancelar);
+        bundle.putString("IDTAREA", idTarea);
+        bundle.putString("TIPOTAREA", tipo);
     }
 
     /**
@@ -324,6 +373,8 @@ public class Tarea extends AppCompatActivity {
         restantes = bundle.getInt("RESTANTES");
         estadoBtCamara = bundle.getBoolean("ESTADOCAMARA");
         estadoBtCancelar = bundle.getBoolean("ESTADOCANCELAR");
+        idTarea = bundle.getString("IDTAREA");
+        tipo = bundle.getString("TIPOTAREA");
         setBotones();
     }
 
@@ -369,5 +420,34 @@ public class Tarea extends AppCompatActivity {
             }
             ivImagenDescripcion.setVisibility(View.VISIBLE);
         }
+    }
+
+    public void onResume() {
+        super.onResume();
+        if(db == null) {
+            db = GrupoTareasDatabase.getInstance(getBaseContext());
+        }
+    }
+
+    public void onPause() {
+        super.onPause();
+       /* if (db != null) {
+            db.close(); db=null;
+        }*/
+    }
+
+    public void onStop() {
+        super.onStop();
+        /*if (db != null) {
+            db.close(); db=null;
+        }*/
+    }
+
+    public void onDestroy(){
+        super.onDestroy();
+        /*if (db != null) {
+            db.close();
+            db = null;
+        }*/
     }
 }

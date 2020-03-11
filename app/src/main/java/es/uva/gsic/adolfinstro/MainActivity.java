@@ -31,18 +31,20 @@ public class MainActivity extends AppCompatActivity {
      */
     public void boton(View view){
         Intent intent = new Intent(this, Tarea.class);
-        intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion");
         intent.putExtra("recursoAsociadoTexto", "El Castillo de Calatañazor, también conocido como Castillo de los Padilla es un fortaleza medieval ubicada en la localidad española de igual nombre, en la provincia de Soria.");
-        intent.putExtra("recursoAsociadoImagen", "https://upload.wikimedia.org/wikipedia/commons/6/69/Salamanca_Parroquia_Arrabal.jpg");
+        //intent.putExtra("recursoAsociadoImagen", "https://upload.wikimedia.org/wikipedia/commons/6/69/Salamanca_Parroquia_Arrabal.jpg");
         //intent.putExtra("recursoAsociadoImagen", "https://commons.wikimedia.org/wiki/Special:FilePath/Calatañazor-Castillo.jpg");
         switch (view.getId()){
             case R.id.btSinRespuesta:
+                intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion0");
                 intent.putExtra("tipoRespuesta", "sinRespuesta");
                 break;
             case R.id.btTexto:
+                intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion1");
                 intent.putExtra("tipoRespuesta", "preguntaCorta");
                 break;
             case R.id.btTextoLargo:
+                intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion2");
                 intent.putExtra("tipoRespuesta", "preguntaLarga");
                 break;
             case R.id.btUnaFoto:
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("tipoRespuesta", "video");
                 break;
             case R.id.btTextoFoto:
+                intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion3");
                 intent.putExtra("tipoRespuesta", "preguntaImagen");
                 break;
             case R.id.btMapa:
