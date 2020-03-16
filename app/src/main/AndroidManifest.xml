@@ -25,7 +25,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Acerca"></activity>
+        <activity android:name=".ImagenCompleta">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="es.uva.gsic.adolfinstro.Login" />
+        </activity>
+        <activity android:name=".Acerca" />
         <activity android:name=".Tarea">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

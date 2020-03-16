@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">AdolfinstroAPP</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
@@ -49,4 +49,5 @@
     <string name="descripcionListaBlancaPref">Show dialog alert in devices with problems with the process of location</string>
     <string name="imagenDescripcionTarea">Task description image</string>
     <string name="sinDescripcion">Task without description</string>
+    <string name="recursoMaximaResolucion">It\'s already the maximum resolution</string>
 </resources>

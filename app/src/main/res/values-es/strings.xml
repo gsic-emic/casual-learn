@@ -49,4 +49,5 @@
     <string name="openstreetmap_contributors">© Colaboradores de OpenStreetMap</string>
     <string name="imagenDescripcionTarea">Imagen descriptiva de la tarea</string>
     <string name="sinDescripcion">Tarea sin descripción</string>
+    <string name="recursoMaximaResolucion">Ya está en máxima resolución</string>
 </resources>

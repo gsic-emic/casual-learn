@@ -38,6 +38,7 @@ import org.osmdroid.views.overlay.simplefastpoint.LabelledGeoPoint;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -60,6 +61,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     /** Vector donde se almacena los puntos representados en el mapa */
     //private ArrayList<OverlayItem> items = new ArrayList<>();
     private List<IGeoPoint> items = new ArrayList<>();
+    private HashMap<String, Integer> itemsTask = new HashMap<>();
     /** Vector con los id's de los puntos. Por ahora el id es el título del punto */
     private ArrayList<String> idItems = new ArrayList<>();
 
@@ -100,7 +102,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
             myLocationNewOverlay = new MyLocationNewOverlay( gpsMyLocationProvider, map);
             myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person), BitmapFactory.decodeResource(getResources(), R.drawable.person));
+            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
             myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
             myLocationNewOverlay.setEnableAutoStop(true);
             map.getOverlays().add(myLocationNewOverlay); //Se centra en el usuario. Si no lo consigue porque la
@@ -118,8 +121,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             compassOverlay.enableCompass();
             map.getOverlays().add(compassOverlay);
 
-            putItems(); //Se agregan los puntos de prueba
-            pushItems();
+            putItems();//Puntos de prueba
         }
     }
 
@@ -128,40 +130,58 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      */
     public void putItems(){
         //Valores de desarrollo. Estas posiciciones se obtendrán de manera dinámica
-        items.add(new LabelledGeoPoint(41.6520, -4.7286, "Plaza Mayor, Valladolid"));
-        items.add(new LabelledGeoPoint(41.6547, -4.7231, "La Antigua, Valladolid"));
-        items.add(new LabelledGeoPoint(42.662357, -4.706005, "Punto Lejano"));
+        newMarker(41.6520, -4.7286, "Plaza Mayor, Valladolid", 25);
+        newMarker(41.6547, -4.7231, "La Antigua, Valladolid", 2);
+        newMarker(41.6501, -4.7221, "Punto3", 6);
+        newMarker(41.6576, -4.7267, "Punto4", 9);
     }
 
     /**
-     * Método para agregar un conjunto de marcadores al mapa
+     * Método que se utiliza para agregar un marcador al mapa
+     *
+     * @param latitude Latitud del marcador
+     * @param longitude Longitud del marcador
+     * @param titule Título del marcador
+     * @param nTask Número de tareas que encontrará el usuario en la posición indicada por el marcador
      */
-    public void pushItems(){
-        List<Marker> markers = new ArrayList<>();
-        for(IGeoPoint punto : items){
+    public void newMarker(double latitude, double longitude, String titule, final int nTask){
+        LabelledGeoPoint labelledGeoPoint = new LabelledGeoPoint(latitude, longitude, titule);
+        if(!items.contains(labelledGeoPoint)){
+            items.add(labelledGeoPoint);
             Marker marker = new Marker(map);
-            marker.setPosition(new GeoPoint(punto.getLatitude(), punto.getLongitude()));
-            marker.setTitle(((LabelledGeoPoint) punto).getLabel());
-            marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
+            marker.setPosition(new GeoPoint(latitude, longitude));
+            marker.setTitle(titule);
+            if(nTask < 5)
+                marker.setIcon(getResources().getDrawable(R.drawable.ic_3_tareas));
+            else{
+                if(nTask < 8)
+                    marker.setIcon(getResources().getDrawable(R.drawable.ic_5_tareas));
+                else{
+                    if(nTask < 11)
+                        marker.setIcon(getResources().getDrawable(R.drawable.ic_8_tareas));
+                    else
+                        marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
+                }
+            }
             marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
                     double distancia;
-                    String msg;
+                    String msg = getResources().getString(R.string.task) + "s " + nTask + " || ";
                     try{
                         distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
-                        msg = String.format(Locale.getDefault(), "%.3f km", distancia);
+                        msg += String.format(Locale.getDefault(), " %.3f km", distancia);
                     } catch (Exception e){
-                        msg = getString(R.string.recuperandoPosicion);
+                        msg += getString(R.string.recuperandoPosicion);
                     }
                     marker.setSubDescription(msg);
                     marker.showInfoWindow();
                     return false;
                 }
             });
-            markers.add(marker);
+            map.getOverlays().add(marker);
         }
-        map.getOverlays().addAll(markers);
+
     }
 
     /**

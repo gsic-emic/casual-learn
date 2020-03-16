@@ -36,6 +36,13 @@ import es.uva.gsic.adolfinstro.persistencia.GrupoTareasDatabase;
 import static es.uva.gsic.adolfinstro.Auxiliar.returnMain;
 import static java.util.Objects.*;
 
+/**
+ * Clase encargada de mostrar la tarea al usuario. A medida que complete la actividad se irá almacenando
+ * la respuesta en una base de datos.
+ *
+ * @author GSIC
+ * @version 20200316
+ */
 public class Tarea extends AppCompatActivity {
 
     /** Instancia donde se colocará la imagen descriptiva de la tarea*/
@@ -50,6 +57,10 @@ public class Tarea extends AppCompatActivity {
     private String tipo;
     /** Instancia donde se almacena el identificador de la tarea */
     private String idTarea;
+    /** Imagen descriptiva en baja resolución */
+    private String recursoAsociadoImagen300px;
+    /** Imagen descriptiva en alta resolución */
+    private String recursoAsociadoImagen;
     /** Número de fotos de la serie */
     private int restantes = 3; //Este valor habrá que obtenerlo del intent
     /** Instancia de la base de datos*/
@@ -64,6 +75,10 @@ public class Tarea extends AppCompatActivity {
     private boolean estadoBtCamara;
     /** Estado del botón para volver a la actividad principal*/
     private boolean estadoBtCancelar;
+
+    public final String recursoImagenBaja = "recursoAsociadoImagen300px";
+    public final String recursoImagen = "recursoAsociadoImagen";
+
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -81,9 +96,17 @@ public class Tarea extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         assert extras != null;
         idTarea = extras.getString("id");
-        try {//ImagenDescriptiva
-            new DownloadImages().execute(new URL(extras.getString("recursoAsociadoImagen")));
-        }catch (Exception e){//Saltará cuando no tenga un recurso de imagen asociado
+        try {//ImagenDescriptiva. Se intenta mostrar la imagen de baja resolución
+            new DownloadImages().execute(new URL(extras.getString(recursoImagenBaja)));
+            recursoAsociadoImagen300px = extras.getString(recursoImagenBaja);
+            recursoAsociadoImagen = extras.getString(recursoImagen);
+        }catch (Exception e){//Saltará cuando no tenga una imagen de baja resolución asociada
+            try{
+                new DownloadImages().execute(new URL(extras.getString(recursoImagen)));
+                recursoAsociadoImagen = extras.getString(recursoImagen);
+            } catch (Exception e2){//No tiene ni la imagen principal ni el icono
+
+            }
         }
         tipo = requireNonNull(extras.getString("tipoRespuesta"));
         db = GrupoTareasDatabase.getInstance(getBaseContext());
@@ -92,10 +115,10 @@ public class Tarea extends AppCompatActivity {
 
         GrupoTareas tarea;
 
-        if(tipo.equals("sinRespuesta"))
-            tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA);
+        if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue()))
+            tarea = new GrupoTareas(idTarea, tipo, EstadoTarea.COMPLETADA);
         else
-            tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA);
+            tarea = new GrupoTareas(idTarea, tipo, EstadoTarea.NO_COMPLETADA);
 
         db.grupoTareasDao().insertTarea(tarea);
 
@@ -112,26 +135,33 @@ public class Tarea extends AppCompatActivity {
             tvDescripcion.setText(getString(R.string.sinDescripcion));
         }
 
-        switch (tipo){
-            case "preguntaCorta":
-                etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
-                etRespuestaTextual.setFilters(new InputFilter[] {new InputFilter.LengthFilter(40)});
-                etRespuestaTextual.setVisibility(View.VISIBLE);
-                btAceptar.setVisibility(View.VISIBLE);
-                break;
-            case "preguntaLarga":
-                etRespuestaTextual.setVisibility(View.VISIBLE);
-                btAceptar.setVisibility(View.VISIBLE);
-                break;
-            case "preguntaImagen":
-                etRespuestaTextual.setVisibility(View.VISIBLE);
-                btCamara.setVisibility(View.VISIBLE);
-                break;
-            case "imagen":
-            case "imagenMultiple":
-            case "video":
-                btCamara.setVisibility(View.VISIBLE);
-                break;
+        try {
+            switch (tipo) {
+                case "preguntaCorta":
+                    etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
+                    etRespuestaTextual.setFilters(new InputFilter[]{new InputFilter.LengthFilter(40)});
+                    etRespuestaTextual.setVisibility(View.VISIBLE);
+                    btAceptar.setVisibility(View.VISIBLE);
+                    break;
+                case "preguntaLarga":
+                    etRespuestaTextual.setVisibility(View.VISIBLE);
+                    btAceptar.setVisibility(View.VISIBLE);
+                    break;
+                case "preguntaImagen":
+                    etRespuestaTextual.setVisibility(View.VISIBLE);
+                    btCamara.setVisibility(View.VISIBLE);
+                    break;
+                case "imagen":
+                case "video":
+                case "imagenMultiple":
+                    btCamara.setVisibility(View.VISIBLE);
+                    break;
+                default:
+                    break;
+            }
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
 
         estadoBtCamara = true;
@@ -174,6 +204,19 @@ public class Tarea extends AppCompatActivity {
                         break;
                 }
                 break;
+            case R.id.ivImagenDescripcion:
+                if(recursoAsociadoImagen != null) {
+                    if(recursoAsociadoImagen300px != null) {//Está visible la imagene en resolución baja y va a saltar a la resolución alta
+                        Intent intent = new Intent(this, ImagenCompleta.class);
+                        intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
+                        startActivity(intent);
+                    }
+                    else{//Ya está visible la imagen de resolución alta
+                        Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
+                    }
+                }else{//Ya está visible la imagen de resolución baja y no hay una alta asociada
+                    Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
+                }
         }
     }
 
@@ -283,16 +326,16 @@ public class Tarea extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         tarea.setRespuestaTarea(tarea.getRespuestaTarea() + ";" + photoURI.toString());
-                        tarea.setEstadoTarea(estadoTarea.COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -300,16 +343,16 @@ public class Tarea extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         tarea.setRespuestaTarea(photoURI.toString());
-                        tarea.setEstadoTarea(estadoTarea.COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -324,22 +367,22 @@ public class Tarea extends AppCompatActivity {
                             tarea.setRespuestaTarea(respuesta + ";" + photoURI.toString());
                         }
                         if(restantes==0){
-                            tarea.setEstadoTarea(estadoTarea.COMPLETADA);
+                            tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
                             Auxiliar.returnMain(this);
                         }
                         else {
-                            tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                            tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                             Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
                             realizaCaptura(2);
                         }
                         break;
                     case RESULT_CANCELED:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -347,16 +390,16 @@ public class Tarea extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         tarea.setRespuestaTarea(videoURI.toString());
-                        tarea.setEstadoTarea(estadoTarea.COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
+                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -382,7 +425,7 @@ public class Tarea extends AppCompatActivity {
             GrupoTareas tarea;
             tarea = db.grupoTareasDao().getTarea(idTarea);
             if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga")) {
-                tarea.setEstadoTarea(estadoTarea.COMPLETADA);
+                tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                 tarea.setRespuestaTarea(respuesta);
             }
             else {
@@ -410,6 +453,8 @@ public class Tarea extends AppCompatActivity {
         bundle.putBoolean("ESTADOCANCELAR", estadoBtCancelar);
         bundle.putString("IDTAREA", idTarea);
         bundle.putString("TIPOTAREA", tipo);
+        bundle.putString("RECURSOIMAGEN300", recursoAsociadoImagen300px);
+        bundle.putString("RECURSOIMAGEN", recursoAsociadoImagen);
     }
 
     /**
@@ -424,6 +469,8 @@ public class Tarea extends AppCompatActivity {
         estadoBtCancelar = bundle.getBoolean("ESTADOCANCELAR");
         idTarea = bundle.getString("IDTAREA");
         tipo = bundle.getString("TIPOTAREA");
+        recursoAsociadoImagen300px = bundle.getString("RECURSOIMAGEN300");
+        recursoAsociadoImagen = bundle.getString("RECURSOIMAGEN");
         setBotones();
     }
 

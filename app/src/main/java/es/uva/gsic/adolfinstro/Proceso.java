@@ -161,57 +161,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void compruebaLocalizacion(Location location) {
         double latitud = Math.round(location.getLatitude()*10000d)/10000d;
         double longitud = Math.round(location.getLongitude()*10000d)/10000d;
-        String l = getString(R.string.latitud) + ": " + latitud + " || " +
-                getString(R.string.longitud) + ": " + longitud;
-        if(!noMolestar){
-            //Boolean comprueba = true;
-            /*if(ultimaMedida == 0){
-                date = new Date();
-            }
-            else{
-                date = new Date();
-                Log.i("Resta: ", String.format("%d",(date.getTime() - ultimaMedida)));
-                if(date.getTime() - ultimaMedida < intervalo * 60 * 1000){
-                    comprueba = false;
-                }
-            }*/
-            /*if(comprueba){
-                //ultimaMedida = date.getTime();
-                int idTarea = -1;
 
-                if(plazaMayorLat == latitud && plazaMayorLong == longitud){ //Respuesta texto
-                    idTarea = 0; //La tomará de la respuesta a la consulta
-                    setIdentificadorTarea(idTarea);
-                }else{
-                    if(laAntiguaLat == latitud && laAntiguaLong == longitud){ // Una foto
-                        idTarea = 1;
-                        setIdentificadorTarea(idTarea);
-                    }else{
-                        if(castilloPLat == latitud && castilloPLong == longitud){ //Varias fotos
-                            idTarea = 2;
-                            setIdentificadorTarea(idTarea);
-                        }else{
-                            if(plazaMayorSLat == latitud && plazaMayorSLong == longitud) { // Un vídeo
-                                idTarea = 3;
-                                setIdentificadorTarea(idTarea);
-                            }else{
-                                if(cigalesLat == latitud && cigalesLong == longitud) {
-                                    idTarea = 4;
-                                    setIdentificadorTarea(4);
-                                }
-                                else
-                                    return;
-                            }
-                        }
-                    }
-                }
-                if(idTarea != -1){
-                    if(getEstado(idTarea)==0){
-                        pintaNotificacion(location, idTarea);
-                    }
-                }
-            }*/
-        if(plazaMayorLat == latitud && plazaMayorLong == longitud){ //Respuesta texto
+        if(!noMolestar){
+            if(plazaMayorLat == latitud && plazaMayorLong == longitud){ //Actividad aleatoria
                 pintaNotificacion(location, ((int) (Math.random()*6)));
             }
         }

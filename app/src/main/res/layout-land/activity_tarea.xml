@@ -22,9 +22,11 @@
                 android:id="@+id/ivImagenDescripcion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:maxWidth="300dp"
+                android:maxWidth="200dp"
+                android:maxHeight="200dp"
                 android:contentDescription="@string/imagenDescripcionTarea"
-                android:visibility="gone"/>
+                android:visibility="gone"
+                android:onClick="boton"/>
 
             <TextView
                 android:id="@+id/tvDescripcion"

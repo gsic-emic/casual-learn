@@ -6,7 +6,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-import es.uva.gsic.adolfinstro.estadoTarea;
+import es.uva.gsic.adolfinstro.EstadoTarea;
 
 @Entity(tableName = "grupoTareas")
 public class GrupoTareas {
@@ -21,7 +21,7 @@ public class GrupoTareas {
     @ColumnInfo(name = "tipoTarea")
     private String tipoTarea;
 
-    @ColumnInfo(name = "estadoTarea")
+    @ColumnInfo(name = "EstadoTarea")
     private int estadoTarea;
 
     @ColumnInfo(name = "respuestaTarea")
@@ -34,14 +34,14 @@ public class GrupoTareas {
     }
 
     @Ignore
-    public GrupoTareas(@NonNull String idTarea, @NonNull String tipoTarea, estadoTarea estadoTarea){
+    public GrupoTareas(@NonNull String idTarea, @NonNull String tipoTarea, EstadoTarea estadoTarea){
         this.idTarea = idTarea;
         this.tipoTarea = tipoTarea;
         this.estadoTarea = estadoTarea.getValue();
     }
 
     @Ignore
-    public GrupoTareas(@NonNull String idTarea, @NonNull String tipoTarea, estadoTarea estadoTarea, @NonNull String respuestaTarea) {
+    public GrupoTareas(@NonNull String idTarea, @NonNull String tipoTarea, EstadoTarea estadoTarea, @NonNull String respuestaTarea) {
         this.idTarea = idTarea;
         this.tipoTarea = tipoTarea;
         this.estadoTarea = estadoTarea.getValue();
@@ -49,7 +49,7 @@ public class GrupoTareas {
     }
 
     public GrupoTareas(){
-        this("a","b", es.uva.gsic.adolfinstro.estadoTarea.NO_COMPLETADA,"d");
+        this("a","b", EstadoTarea.NO_COMPLETADA,"d");
     }
 
     public Long getUid(){
@@ -80,7 +80,7 @@ public class GrupoTareas {
         return estadoTarea;
     }
 
-    public void setEstadoTarea(estadoTarea estadoTarea){
+    public void setEstadoTarea(EstadoTarea estadoTarea){
         setEstadoTarea(estadoTarea.getValue());
     }
 

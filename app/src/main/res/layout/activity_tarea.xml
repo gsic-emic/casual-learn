@@ -15,12 +15,14 @@
             android:id="@+id/ivImagenDescripcion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxHeight="500dp"
+            android:maxHeight="200dp"
+            android:maxWidth="200dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:contentDescription="@string/imagenDescripcionTarea"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:onClick="boton"/>
 
         <TextView
             android:id="@+id/tvDescripcion"
