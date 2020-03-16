@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -22,6 +23,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,27 +38,48 @@ import static java.util.Objects.*;
 
 public class Tarea extends AppCompatActivity {
 
-    TextView tvDescripcion;
-    ImageView ivImagenDescripcion;
-    EditText etRespuestaTextual;
-    Button btVolver, btAceptar, btCamara;
-    String tipo;
-    String idTarea;
-    Bundle extras;
-    int restantes = 3; //Este valor habrá que obtenerlo del intent
-    GrupoTareasDatabase db;
+    /** Instancia donde se colocará la imagen descriptiva de la tarea*/
+    private ImageView ivImagenDescripcion;
+    /** Instancia del campo de texto donde introduce el usuario la respuesta*/
+    private EditText etRespuestaTextual;
+    /** Instancia para volver a la actividad principal sin finalizar la tarea*/
+    private Button btVolver;
+    /** Instancia del botón de la cámara*/
+    private Button btCamara;
+    /** Instancia donde se almacena el tipo de tarea*/
+    private String tipo;
+    /** Instancia donde se almacena el identificador de la tarea */
+    private String idTarea;
+    /** Número de fotos de la serie */
+    private int restantes = 3; //Este valor habrá que obtenerlo del intent
+    /** Instancia de la base de datos*/
+    private GrupoTareasDatabase db;
 
-    Uri photoURI, videoURI;
+    /** URI de la imagen que se acaba de tomar */
+    private Uri photoURI;
+    /** URI del vídeo que se acaba de tomar */
+    private Uri videoURI;
 
-    boolean estadoBtCamara, estadoBtCancelar;
+    /** Estado del botón de la cámara */
+    private boolean estadoBtCamara;
+    /** Estado del botón para volver a la actividad principal*/
+    private boolean estadoBtCancelar;
 
+    /**
+     * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
+     * gráfica sobre la que va a trabajar el cliente. Establece la conexión con la base de datos
+     * para que se consiga la persistencia.
+     *
+     * @param savedInstanceState Bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tarea);
 
         ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
-        extras = getIntent().getExtras();
+        Bundle extras = getIntent().getExtras();
+        assert extras != null;
         idTarea = extras.getString("id");
         try {//ImagenDescriptiva
             new DownloadImages().execute(new URL(extras.getString("recursoAsociadoImagen")));
@@ -63,15 +87,22 @@ public class Tarea extends AppCompatActivity {
         }
         tipo = requireNonNull(extras.getString("tipoRespuesta"));
         db = GrupoTareasDatabase.getInstance(getBaseContext());
+        //db.grupoTareasDao().deleteTodasLasTareas();
         //Por ahora se almacena la pregunta en la base de datos CUANDO ENTRA EN LA TAREA. En un futuro esta
-        //tarea se deberá hacer en la creación de la notificación
-        GrupoTareas tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA);
+
+        GrupoTareas tarea;
+
+        if(tipo.equals("sinRespuesta"))
+            tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA);
+        else
+            tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA);
+
         db.grupoTareasDao().insertTarea(tarea);
 
-        tvDescripcion = findViewById(R.id.tvDescripcion);
+        TextView tvDescripcion = findViewById(R.id.tvDescripcion);
         etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
         btVolver = findViewById(R.id.btVolver);
-        btAceptar = findViewById(R.id.btAceptar);
+        Button btAceptar = findViewById(R.id.btAceptar);
         btCamara = findViewById(R.id.btCamara);
 
         try{//Descripcion
@@ -177,7 +208,7 @@ public class Tarea extends AppCompatActivity {
             try{
                 photoFile = Auxiliar.createFile(tipo,this);
             }catch (IOException e){
-
+                Log.e("realizaCaptura", "Error al crear el fichero base");
             }
             if(photoFile != null){
                 photoURI = FileProvider.getUriForFile(context, "es.uva.gsic.adolfinstro.fileprovider", photoFile);
@@ -195,6 +226,11 @@ public class Tarea extends AppCompatActivity {
         }
     }
 
+    /**
+     * Método encargado de realizar las tareas necesarias para que el usuario pueda grabar un vídeo
+     * con la aplicación. Realiza una llamada a la cámara del sistema. Para ahorrar espacio, los
+     * vídeos se realizan en baja calidad.
+     */
     private void realizaVideo(){
         Intent takeVideo = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 
@@ -202,7 +238,7 @@ public class Tarea extends AppCompatActivity {
         try {
             videoFile = Auxiliar.createFile(3, this);
         }catch (IOException e){
-
+            Log.e("realizaVideo", "Error al crear el fichero base");
         }
         if(videoFile != null){
             videoURI = FileProvider.getUriForFile(getBaseContext(), "es.uva.gsic.adolfinstro.fileprovider", videoFile);
@@ -241,40 +277,39 @@ public class Tarea extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         GrupoTareas tarea = db.grupoTareasDao().getTarea(idTarea);
-        String respuesta = "";
-        if(tipo.equals("preguntaImagen") || tipo.equals("imagenMultiple"))
-            respuesta = tarea.getRespuestaTarea();
-        db.grupoTareasDao().deleteTarea(tarea.getUid());
+        tarea.getUid();
         switch (requestCode){
             case 0: //Pregunta + imagen
                 switch (resultCode){
                     case RESULT_OK:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, respuesta + ";" + photoURI.toString());
+                        tarea.setRespuestaTarea(tarea.getRespuestaTarea() + ";" + photoURI.toString());
+                        tarea.setEstadoTarea(estadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
             case 1://imagen
                 switch (resultCode){
                     case RESULT_OK:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, photoURI.toString());
+                        tarea.setRespuestaTarea(photoURI.toString());
+                        tarea.setEstadoTarea(estadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, "");
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, "");
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -282,43 +317,52 @@ public class Tarea extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         --restantes;
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, respuesta + ";" + photoURI.toString());
+                        String respuesta;
+                        if((respuesta = tarea.getRespuestaTarea()) == null) {//Primera imagen de la serie
+                            tarea.setRespuestaTarea(photoURI.toString());
+                        } else {
+                            tarea.setRespuestaTarea(respuesta + ";" + photoURI.toString());
+                        }
                         if(restantes==0){
+                            tarea.setEstadoTarea(estadoTarea.COMPLETADA);
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
                             Auxiliar.returnMain(this);
                         }
                         else {
+                            tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                             Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
                             realizaCaptura(2);
                         }
                         break;
                     case RESULT_CANCELED:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
             case 3://video
                 switch (resultCode){
                     case RESULT_OK:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, videoURI.toString());
+                        tarea.setRespuestaTarea(videoURI.toString());
+                        tarea.setEstadoTarea(estadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
                         break;
                     case RESULT_CANCELED:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         desbloqueaBt();
                         break;
                     default:
-                        tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
+                        tarea.setEstadoTarea(estadoTarea.NO_COMPLETADA);
                         Auxiliar.errorToast(this);
                 }
                 break;
         }
-        db.grupoTareasDao().insertTarea(tarea);
+        //Se actualiza el estado de la base de datos
+        db.grupoTareasDao().updateTarea(tarea);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -337,12 +381,17 @@ public class Tarea extends AppCompatActivity {
         else{
             GrupoTareas tarea;
             tarea = db.grupoTareasDao().getTarea(idTarea);
-            db.grupoTareasDao().deleteTarea(tarea.getUid());
-            if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga"))
-                tarea = new GrupoTareas(idTarea, tipo, estadoTarea.COMPLETADA, respuesta);
-            else
-                tarea = new GrupoTareas(idTarea, tipo, estadoTarea.NO_COMPLETADA, respuesta);
-            db.grupoTareasDao().insertTarea(tarea);
+            if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga")) {
+                tarea.setEstadoTarea(estadoTarea.COMPLETADA);
+                tarea.setRespuestaTarea(respuesta);
+            }
+            else {
+                tarea.setRespuestaTarea(respuesta);
+            }
+            db.grupoTareasDao().updateTarea(tarea);
+
+            tarea = db.grupoTareasDao().getTarea(idTarea);
+            tarea.getUid();
             Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
             salida = true;
         }
@@ -354,7 +403,7 @@ public class Tarea extends AppCompatActivity {
      * @param bundle Objeto donde se almacenan las variables de la clase
      */
     @Override
-    protected void onSaveInstanceState(Bundle bundle){
+    protected void onSaveInstanceState(@NotNull Bundle bundle){
         super.onSaveInstanceState(bundle);
         bundle.putInt("RESTANTES", restantes);
         bundle.putBoolean("ESTADOCAMARA", estadoBtCamara);
@@ -368,7 +417,7 @@ public class Tarea extends AppCompatActivity {
      * @param bundle Objeto donde están almacenadas las variables de la clase entre otras cosas
      */
     @Override
-    protected void onRestoreInstanceState(Bundle bundle){
+    protected void onRestoreInstanceState(@NotNull Bundle bundle){
         super.onRestoreInstanceState(bundle);
         restantes = bundle.getInt("RESTANTES");
         estadoBtCamara = bundle.getBoolean("ESTADOCAMARA");
@@ -422,32 +471,13 @@ public class Tarea extends AppCompatActivity {
         }
     }
 
+    /**
+     * Método que establece la conexión con la base de datos si no existiera
+     */
     public void onResume() {
         super.onResume();
         if(db == null) {
             db = GrupoTareasDatabase.getInstance(getBaseContext());
         }
-    }
-
-    public void onPause() {
-        super.onPause();
-       /* if (db != null) {
-            db.close(); db=null;
-        }*/
-    }
-
-    public void onStop() {
-        super.onStop();
-        /*if (db != null) {
-            db.close(); db=null;
-        }*/
-    }
-
-    public void onDestroy(){
-        super.onDestroy();
-        /*if (db != null) {
-            db.close();
-            db = null;
-        }*/
     }
 }

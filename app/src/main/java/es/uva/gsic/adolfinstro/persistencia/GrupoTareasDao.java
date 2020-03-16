@@ -4,16 +4,15 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
-
-import io.reactivex.Completable;
 
 @Dao
 public
 interface GrupoTareasDao {
     @Query(value = "SELECT * FROM grupoTareas")
-    List<GrupoTareas> getGrupoTareas();
+    List<GrupoTareas> listTareas();
 
     @Query(value = "SELECT * FROM grupoTareas WHERE idTarea = :id")
     GrupoTareas getTarea(final String id);
@@ -22,8 +21,12 @@ interface GrupoTareasDao {
     void insertTarea(GrupoTareas tarea);
 
     @Query(value = "DELETE FROM grupoTareas")
-    int deleteGrupoTareas();
+    int deleteTodasLasTareas();
 
     @Query(value = "DELETE FROM grupoTareas WHERE uid = :Uid")
     int deleteTarea(long Uid);
+
+    @Update(entity = GrupoTareas.class)
+    int updateTarea(GrupoTareas tarea);
+
 }

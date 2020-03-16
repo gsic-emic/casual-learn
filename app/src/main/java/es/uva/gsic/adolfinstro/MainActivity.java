@@ -48,12 +48,15 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("tipoRespuesta", "preguntaLarga");
                 break;
             case R.id.btUnaFoto:
+                intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion4");
                 intent.putExtra("tipoRespuesta", "imagen");
                 break;
             case R.id.btVariasFotos:
+                intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion5");
                 intent.putExtra("tipoRespuesta", "imagenMultiple");
                 break;
             case R.id.btVideo:
+                intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion6");
                 intent.putExtra("tipoRespuesta", "video");
                 break;
             case R.id.btTextoFoto:
