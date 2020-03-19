@@ -8,12 +8,18 @@
     android:layout_margin="20dp"
     android:fillViewport="true">
 
-    <ImageView
+    <!--<ImageView
         android:id="@+id/imagenCompleta"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@string/imagenDescripcionTarea"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <com.github.chrisbanes.photoview.PhotoView
+        android:id="@+id/photoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

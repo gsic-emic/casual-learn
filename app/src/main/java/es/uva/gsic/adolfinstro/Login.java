@@ -7,57 +7,95 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class Login extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener{
+/**
+ * Clase que permite a los usuarios identificarse frente al sistema.
+ *
+ * @author GSIC
+ */
+public class Login extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
 
-    /** Objetos donde estará la respuesta del usuario*/
-    private EditText etUser, etPassword;
-    /** Objeto para inidicar que ha ocurrido un error al realizar la autenticación */
-    private TextView tvErrorLogin;
     /** Código de identificación para la solicitud de los permisos de la app */
     private static final int requestCodePermissions = 1000;
 
+    /** Código con el que se lanza la actividad de identificación del usuario con cuenta Google */
+    private static final int requestAuth = 101010;
+
+    /** Instancia para auntenticación con la cuenta Google */
+    private GoogleSignInClient googleSignInClient;
+
     private SharedPreferences sharedPreferences;
+
+    /** Análisis comportamiento usuario */
+    private FirebaseAnalytics firebaseAnalytics;
 
     @Override
     public void onCreate(Bundle sI){
         super.onCreate(sI);
+        //Análisis
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
         checkPermissions(); //Compruebo los permisos antes de seguir
+
         //Aquí irá la comprobación de si el usuario ya se ha autenticado previamente
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.TOKEN_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         setContentView(R.layout.activity_login);
-        etUser = findViewById(R.id.etUsuario);
-        etPassword = findViewById(R.id.etContrase);
 
-        tvErrorLogin = findViewById(R.id.tvAcessoIncorrecto);
+        //https://developers.google.com/identity/sign-in/android/sign-in
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail().build();
 
-        try {
-            if (getIntent().getExtras().getBoolean("ERRORACCESO")) {
-                tvErrorLogin.setText(getString(R.string.incorrectLogin));
-            }
-        }catch (NullPointerException e){
-            //No se ha pasado como parámetro "ERRORACCESO"
-        }
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
 
+        SignInButton btGoogle = findViewById(R.id.btGoogle);
+        //Se tiene que registrar las pulsaciones del botón desde el código ya que no es un botón estándar
+        //Se podría evitar tener que implementar el OnClickListener utilizando un botón estándar con una imagen
+        btGoogle.setOnClickListener(this);
     }
 
+    /**
+     * Método que es llamada cuando se pulsa un objeto clicklable
+     * @param v Objeto pulsado
+     */
+    @Override
+    public void onClick(View v){
+        switch (v.getId()){
+            case R.id.btGoogle:
+                //Se lanza la actividad de identificación de Google y se espera al resultado
+                Intent intent = googleSignInClient.getSignInIntent();
+                startActivityForResult(intent, requestAuth);
+                break;
+            default:
+        }
+    }
+
+    /**
+     * Método para almacenar el token en las preferencias de la aplicación
+     * @param token Identificador único del usuario
+     */
     private void actualizaToken(String token) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(Ajustes.TOKEN_pref, token);
+        //Tiene que ser un commit, con aply() no funciona
         editor.commit();
     }
 
@@ -69,6 +107,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults){
+        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
         for(int i : grantResults){
             if(i == -1){
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
@@ -77,12 +116,16 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 alertBuilder.setPositiveButton(getString(R.string.acept), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                        // motivo se puede salir del for directamente
                         checkPermissions();
                     }
                 });
                 alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
+                        //cierra
                         System.exit(0);
                     }
                 });
@@ -106,48 +149,53 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     }
 
     /**
-     * Método que realiza las operaciones necesarias para comprobar si el par usuario contraseña está registrado
-     * en el sistema
-     * @param usuario Nombre del usuario
-     * @param contra Contraseña del usuario
-     * @return Devolverá un true si el nombre de usuario y la contraseña son correctas
+     * Método al que se le llamará cuando se vuelva de otra actividad.
+     * @param requestCode Código con el que se ha lanzado el intent
+     * @param result Valor que devuelve la actividad lanzada
+     * @param data datos
      */
-    private boolean comprueba(String usuario, String contra){
-        boolean salida = true;
-        if(usuario.isEmpty()){
-            etUser.setError(getString(R.string.emptyLoginUser));
-            salida = false;
+    @Override
+    public void onActivityResult(int requestCode, int result, Intent data){
+        switch (requestCode){
+            case requestAuth:
+                //No es necesario comprobar el resultado de la petición según la ayuda oficial
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                tareaCuenta(task);
+            break;
+            default:
+
         }
-        if(contra.isEmpty()){
-            etPassword.setError(getString(R.string.emptyLoginPass));
-            salida = false;
-        }
-        return salida;
     }
 
     /**
-     * Método para gestionar la acción de los botones
-     * @param view Instancia del objeto
+     * Método que recupera el identificador único de la cuenta de Google con el que el usuario se
+     * quiere identificar. Para probar el comportamiento de Firebase se manda un evento con el
+     * nuevo usuario identificado
+     * @param task Tarea
      */
-    public void boton(View view) {
-        switch (view.getId()){
-            case R.id.btLog:
-                String usuario=etUser.getText().toString().trim(), contra=etPassword.getText().toString().trim();
+    private void tareaCuenta(Task<GoogleSignInAccount> task) {
+        try{
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            assert account != null;
+            String idCuenta = account.getId();
 
-                if(comprueba(usuario, contra)) {
-                    Intent intent = new Intent(this, Maps.class);
-                    intent.putExtra("USER", usuario);
-                    intent.putExtra("CONTRA", contra);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    actualizaToken("Token de prueba");
-                    startActivity(intent);
-                }
-                break;
-            case R.id.btRegistro:
-                Toast.makeText(this, "Por implementar", Toast.LENGTH_SHORT).show();
-                break;
+            actualizaToken(idCuenta);
+
+            Bundle bundle = new Bundle();
+            final String nuevaIdentificacion = "nuevaIdentificacion";
+            bundle.putString("ID", nuevaIdentificacion);
+            bundle.putString("Cuenta", idCuenta);
+            firebaseAnalytics.logEvent(nuevaIdentificacion, bundle);
+            bundle = null;
+
+            Intent intent = new Intent(this, Maps.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
+
 
     /**
      * Método para atender al cambio de una preferencia
@@ -162,7 +210,9 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                     Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
                 break;
             case Ajustes.TOKEN_pref:
-                if(sharedPreferences.getString(key, " ") != " "){
+                //Si existe un token no se identifica al usuario y se salta directamente a la
+                //actividad del mapa
+                if(!sharedPreferences.getString(key, " ").equals(" ")){
                     Intent intent = new Intent (getApplicationContext(), Maps.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);

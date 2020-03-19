@@ -376,7 +376,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         alertBuilder.setPositiveButton(getString(R.string.acept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                finishAffinity();//Se cierra la app. //El proceso puede seguir activox
+                finishAffinity();//Se cierra la app. //El proceso puede seguir activo
             }
         });
         alertBuilder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {

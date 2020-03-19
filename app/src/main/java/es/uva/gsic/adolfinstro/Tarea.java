@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -34,6 +33,7 @@ import es.uva.gsic.adolfinstro.persistencia.GrupoTareas;
 import es.uva.gsic.adolfinstro.persistencia.GrupoTareasDatabase;
 
 import static es.uva.gsic.adolfinstro.Auxiliar.returnMain;
+import static es.uva.gsic.adolfinstro.Auxiliar.separador;
 import static java.util.Objects.*;
 
 /**
@@ -41,7 +41,7 @@ import static java.util.Objects.*;
  * la respuesta en una base de datos.
  *
  * @author GSIC
- * @version 20200316
+ * @version 20200319
  */
 public class Tarea extends AppCompatActivity {
 
@@ -63,8 +63,11 @@ public class Tarea extends AppCompatActivity {
     private String recursoAsociadoImagen;
     /** Número de fotos de la serie */
     private int restantes = 3; //Este valor habrá que obtenerlo del intent
+
     /** Instancia de la base de datos*/
     private GrupoTareasDatabase db;
+    /** Objeto donde se almacena la tarea con la que se va a trabajar*/
+    private GrupoTareas tarea;
 
     /** URI de la imagen que se acaba de tomar */
     private Uri photoURI;
@@ -76,9 +79,8 @@ public class Tarea extends AppCompatActivity {
     /** Estado del botón para volver a la actividad principal*/
     private boolean estadoBtCancelar;
 
-    public final String recursoImagenBaja = "recursoAsociadoImagen300px";
-    public final String recursoImagen = "recursoAsociadoImagen";
-
+    public static final String recursoImagenBaja = "recursoAsociadoImagen300px";
+    public static final String recursoImagen = "recursoAsociadoImagen";
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -100,27 +102,29 @@ public class Tarea extends AppCompatActivity {
             new DownloadImages().execute(new URL(extras.getString(recursoImagenBaja)));
             recursoAsociadoImagen300px = extras.getString(recursoImagenBaja);
             recursoAsociadoImagen = extras.getString(recursoImagen);
-        }catch (Exception e){//Saltará cuando no tenga una imagen de baja resolución asociada
-            try{
+        } catch (Exception e) {//Saltará cuando no tenga una imagen de baja resolución asociada
+            try {
                 new DownloadImages().execute(new URL(extras.getString(recursoImagen)));
                 recursoAsociadoImagen = extras.getString(recursoImagen);
-            } catch (Exception e2){//No tiene ni la imagen principal ni el icono
+            } catch (Exception e2) {//No tiene ni la imagen principal ni el icono
 
             }
         }
         tipo = requireNonNull(extras.getString("tipoRespuesta"));
         db = GrupoTareasDatabase.getInstance(getBaseContext());
         //db.grupoTareasDao().deleteTodasLasTareas();
-        //Por ahora se almacena la pregunta en la base de datos CUANDO ENTRA EN LA TAREA. En un futuro esta
 
-        GrupoTareas tarea;
+        /*for (GrupoTareas t : db.grupoTareasDao().listTareas()) {
+            long uid = t.getUid();
+            String id = t.getIdTarea();
+            String respuesta = t.getRespuestaTarea();
+        }*/
 
-        if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue()))
-            tarea = new GrupoTareas(idTarea, tipo, EstadoTarea.COMPLETADA);
-        else
-            tarea = new GrupoTareas(idTarea, tipo, EstadoTarea.NO_COMPLETADA);
-
-        db.grupoTareasDao().insertTarea(tarea);
+        /*if (tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())) {
+            tarea = db.grupoTareasDao().getTarea(idTarea);
+            tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
+            db.grupoTareasDao().updateTarea(tarea);
+        }*/
 
         TextView tvDescripcion = findViewById(R.id.tvDescripcion);
         etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
@@ -128,15 +132,19 @@ public class Tarea extends AppCompatActivity {
         Button btAceptar = findViewById(R.id.btAceptar);
         btCamara = findViewById(R.id.btCamara);
 
-        try{//Descripcion
+        try {//Descripcion
             tvDescripcion.setText(getIntent().getExtras().getString("recursoAsociadoTexto"));
             tvDescripcion.setVisibility(View.VISIBLE);
-        }catch (Exception e){
+        } catch (Exception e) {
             tvDescripcion.setText(getString(R.string.sinDescripcion));
         }
 
         try {
             switch (tipo) {
+                case "sinRespuesta":
+                    btAceptar.setText(R.string.voy);
+                    btAceptar.setVisibility(View.VISIBLE);
+                    break;
                 case "preguntaCorta":
                     etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
                     etRespuestaTextual.setFilters(new InputFilter[]{new InputFilter.LengthFilter(40)});
@@ -159,7 +167,7 @@ public class Tarea extends AppCompatActivity {
                 default:
                     break;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
@@ -178,9 +186,14 @@ public class Tarea extends AppCompatActivity {
                 returnMain(this);
                 break;
             case R.id.btAceptar:
-                if(guardaRespuestaPregunta()) {
+                if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())){
+                    tarea = db.grupoTareasDao().getTarea(idTarea);
+                    tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
+                    db.grupoTareasDao().updateTarea(tarea);
                     returnMain(this);
-                }
+                } else
+                    if(guardaRespuestaPregunta())
+                        returnMain(this);
                 break;
             case R.id.btCamara:
                 switch (tipo){
@@ -205,17 +218,19 @@ public class Tarea extends AppCompatActivity {
                 }
                 break;
             case R.id.ivImagenDescripcion:
-                if(recursoAsociadoImagen != null) {
-                    if(recursoAsociadoImagen300px != null) {//Está visible la imagene en resolución baja y va a saltar a la resolución alta
+                if(recursoAsociadoImagen != null) {//Si la imagen en alta resolución existe se salta simpre a ella para la vista en detalle
+                    Intent intent = new Intent(this, ImagenCompleta.class);
+                    intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
+                    startActivity(intent);
+                }else{//Ya está visible la imagen de resolución baja y no hay una alta asociada
+                    if(recursoAsociadoImagen300px != null){
                         Intent intent = new Intent(this, ImagenCompleta.class);
                         intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
                         startActivity(intent);
                     }
-                    else{//Ya está visible la imagen de resolución alta
+                    else{//No hay ninguna imagen. Este mensaje no debería aparecer nunca
                         Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
                     }
-                }else{//Ya está visible la imagen de resolución baja y no hay una alta asociada
-                    Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
                 }
         }
     }
@@ -251,7 +266,7 @@ public class Tarea extends AppCompatActivity {
             try{
                 photoFile = Auxiliar.createFile(tipo,this);
             }catch (IOException e){
-                Log.e("realizaCaptura", "Error al crear el fichero base");
+                System.err.println("realizaCaptura: Error al crear el fichero base");
             }
             if(photoFile != null){
                 photoURI = FileProvider.getUriForFile(context, "es.uva.gsic.adolfinstro.fileprovider", photoFile);
@@ -281,7 +296,7 @@ public class Tarea extends AppCompatActivity {
         try {
             videoFile = Auxiliar.createFile(3, this);
         }catch (IOException e){
-            Log.e("realizaVideo", "Error al crear el fichero base");
+            System.err.println("realizaVideo: Error al crear el fichero base");
         }
         if(videoFile != null){
             videoURI = FileProvider.getUriForFile(getBaseContext(), "es.uva.gsic.adolfinstro.fileprovider", videoFile);
@@ -319,13 +334,12 @@ public class Tarea extends AppCompatActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        GrupoTareas tarea = db.grupoTareasDao().getTarea(idTarea);
-        tarea.getUid();
+        tarea = db.grupoTareasDao().getTarea(idTarea);
         switch (requestCode){
             case 0: //Pregunta + imagen
                 switch (resultCode){
                     case RESULT_OK:
-                        tarea.setRespuestaTarea(tarea.getRespuestaTarea() + ";" + photoURI.toString());
+                        tarea.setRespuestaTarea(tarea.getRespuestaTarea() + separador + photoURI.toString());
                         tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                         Auxiliar.returnMain(this);
@@ -364,7 +378,7 @@ public class Tarea extends AppCompatActivity {
                         if((respuesta = tarea.getRespuestaTarea()) == null) {//Primera imagen de la serie
                             tarea.setRespuestaTarea(photoURI.toString());
                         } else {
-                            tarea.setRespuestaTarea(respuesta + ";" + photoURI.toString());
+                            tarea.setRespuestaTarea(respuesta + separador + photoURI.toString());
                         }
                         if(restantes==0){
                             tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
@@ -422,7 +436,6 @@ public class Tarea extends AppCompatActivity {
             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
         }
         else{
-            GrupoTareas tarea;
             tarea = db.grupoTareasDao().getTarea(idTarea);
             if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga")) {
                 tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
@@ -433,8 +446,6 @@ public class Tarea extends AppCompatActivity {
             }
             db.grupoTareasDao().updateTarea(tarea);
 
-            tarea = db.grupoTareasDao().getTarea(idTarea);
-            tarea.getUid();
             Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
             salida = true;
         }
@@ -489,7 +500,14 @@ public class Tarea extends AppCompatActivity {
             try {
                 ivImagenDescripcion.setImageResource(R.drawable.ic_cloud_download_blue_80dp);
                 ivImagenDescripcion.setVisibility(View.VISIBLE);
-                RotateAnimation rotateAnimation = new RotateAnimation(0f, 359f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                RotateAnimation rotateAnimation = new RotateAnimation(
+                        0f,
+                        359f,
+                        Animation.RELATIVE_TO_SELF,
+                        0.5f,
+                        Animation.RELATIVE_TO_SELF,
+                        0.5f
+                );
                 rotateAnimation.setInterpolator(new LinearInterpolator());
                 rotateAnimation.setRepeatCount(Animation.INFINITE);
                 rotateAnimation.setDuration(1200);
@@ -507,8 +525,8 @@ public class Tarea extends AppCompatActivity {
          */
         @Override
         protected void onPostExecute(Bitmap bitmap){
+            ivImagenDescripcion.setAnimation(null);
             if (bitmap != null) {
-                ivImagenDescripcion.setAnimation(null);
                 ivImagenDescripcion.setImageBitmap(bitmap);
                 ivImagenDescripcion.setAdjustViewBounds(true);
             } else {

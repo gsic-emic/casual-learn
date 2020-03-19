@@ -38,13 +38,13 @@
         </activity>
         <activity
             android:name=".Ajustes"
-            android:parentActivityName=".Maps" />
+            android:parentActivityName=".Maps"
+            android:label="@string/settings" />
         <activity
             android:name=".Maps"
             android:label="@string/app_name"
             android:theme="@style/AppTheme" />
         <activity android:name=".Login">
-
             <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -54,7 +54,7 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:label="DEBUG"
+            android:label="@string/debug"
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -67,7 +67,8 @@
             android:name=".Proceso"
             android:directBootAware="true"
             android:foregroundServiceType="location"
-            android:icon="@drawable/ic_launcher_foreground" />
+            android:icon="@drawable/ic_launcher_foreground"
+            />
 
         <provider
             android:name="androidx.core.content.FileProvider"

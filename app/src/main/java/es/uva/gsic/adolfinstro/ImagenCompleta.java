@@ -12,18 +12,20 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 
+import com.github.chrisbanes.photoview.PhotoView;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 
 public class ImagenCompleta extends AppCompatActivity {
 
-    ImageView ivImagenCompleta;
+    PhotoView photoView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imagen_completa);
-        ivImagenCompleta = findViewById(R.id.imagenCompleta);
+        photoView = findViewById(R.id.photoView);
         try {
             new DownloadImages().execute(new URL(Objects.requireNonNull(
                     getIntent().getExtras()).getString("IMAGENCOMPLETA")));
@@ -44,12 +46,12 @@ public class ImagenCompleta extends AppCompatActivity {
          */
         protected Bitmap doInBackground(URL... urls) {
             try {
-                ivImagenCompleta.setImageResource(R.drawable.ic_cloud_download_blue_80dp);
+                photoView.setImageDrawable(getResources().getDrawable(R.drawable.ic_cloud_download_blue_80dp));
                 RotateAnimation rotateAnimation = new RotateAnimation(0f, 359f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
                 rotateAnimation.setInterpolator(new LinearInterpolator());
                 rotateAnimation.setRepeatCount(Animation.INFINITE);
                 rotateAnimation.setDuration(1200);
-                ivImagenCompleta.startAnimation(rotateAnimation);
+                photoView.startAnimation(rotateAnimation);
                 return BitmapFactory.decodeStream(urls[0].openConnection().getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -64,12 +66,12 @@ public class ImagenCompleta extends AppCompatActivity {
         @Override
         protected void onPostExecute(Bitmap bitmap){
             if (bitmap != null) {
-                ivImagenCompleta.setAnimation(null);
-                ivImagenCompleta.setImageBitmap(bitmap);
+                photoView.setAnimation(null);
+                photoView.setImageBitmap(bitmap);
             } else {
-                ivImagenCompleta.setImageResource(R.drawable.ic_close_red_80dp);
+                photoView.setAnimation(null);
+                photoView.setImageDrawable(getResources().getDrawable(R.drawable.ic_close_red_80dp));
             }
-            ivImagenCompleta.setVisibility(View.VISIBLE);
         }
     }
 }

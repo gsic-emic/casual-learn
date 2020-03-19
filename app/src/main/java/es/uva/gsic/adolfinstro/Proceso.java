@@ -11,7 +11,6 @@ import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -23,11 +22,16 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Random;
 
+import es.uva.gsic.adolfinstro.persistencia.GrupoTareas;
+import es.uva.gsic.adolfinstro.persistencia.GrupoTareasDatabase;
 
+/**
+ * Clase encargada de mantener el proceso en memoria y lanzar las notificaciones de tareas cuando sea
+ * necesario. Recupera la posición del usuario periódicamente.
+ *
+ * @author GSIC
+ */
 public class Proceso extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     /**
@@ -39,8 +43,14 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private LocationRequest locationRequest;
     /** Instancia donde están asociadas las tareas a realizar cuando se recupera la posición */
     private LocationCallback locationCallback;
-    private NotificationChannel channel, channelPersis;
+
+    /** Canal utilizado para las notificaciones de las tareas */
+    private NotificationChannel channel;
+    /** Canal utilizado para la notificación persistente */
+    private NotificationChannel channelPersis;
+    /** Identificador del canal de tareas */
     private static String channelId = "notiTareas";
+    /** Identificador del canal por donde irá la notificación persistente */
     private static String channelPersisId = "notiPersistencia";
     private NotificationManager notificationManager;
 
@@ -48,9 +58,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private int intervalo;
     private int incr = 0;
     private boolean noMolestar;
-    //private long ultimaMedida;
-    //private Date date;
-    private HashMap<Integer, Integer> identificadorRealizada;//0 no contesta, 1 realizada, 2 rechazada
+
+    /** Instancia de la base de datos*/
+    private GrupoTareasDatabase db;
 
     public class ProcesoBinder extends Binder {
         Proceso getService() {
@@ -72,6 +82,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     public void onCreate(){
         ArrayList<String> permisos = new ArrayList<>();
         Auxiliar.preQueryPermisos(this, permisos);
+        db = GrupoTareasDatabase.getInstance(getBaseContext());
         if(permisos.size()>0){ // Si se le han revocado permisos a la aplicación se mata el proceso
             terminaServicio();
         }
@@ -86,7 +97,6 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 Log.i("Wifi", "no es wifi");
             }
         }*/
-        identificadorRealizada = new HashMap<>();
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
             channel = new NotificationChannel(channelId, getString(R.string.canalTareas), NotificationManager.IMPORTANCE_HIGH);
@@ -94,6 +104,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             channelPersis = new NotificationChannel(channelPersisId, getString(R.string.canalPersistente), NotificationManager.IMPORTANCE_LOW);
             channelPersis.setDescription(getString(R.string.canalPersistente));
             notificationManager = this.getSystemService(NotificationManager.class);
+            assert notificationManager != null;
             notificationManager.createNotificationChannel(channel);
             notificationManager.createNotificationChannel(channelPersis);
         }
@@ -104,7 +115,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             }
         }
-        //Se crea la notificación  SE NECESITA CAMBIAR PARA TENER MÁS DE UNA NOTIFICACIÓN DE LA APP
+        //Se crea la notificación
         builder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(NotificationCompat.PRIORITY_HIGH);
@@ -126,15 +137,13 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(inter)
                 .setFastestInterval(inter);
-        Log.i("Intervalo: ", ""+(inter));
-        Log.i("Inter. locationRequest", ""+locationRequest.getInterval());
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult){
                 if(locationResult == null){
                     return;
                 }
-                for(Location location :locationResult.getLocations()){
+                for(Location location : locationResult.getLocations()){
                     compruebaLocalizacion(location);
                 }
             }
@@ -168,21 +177,6 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             }
         }
     }
-    private void setIdentificadorTarea(int idTarea){
-        synchronized (identificadorRealizada){
-            if(identificadorRealizada.get(idTarea) == null){
-                identificadorRealizada.put(idTarea, 0);
-            }
-        }
-    }
-
-    private int getEstado(int idTarea){
-        int salida;
-        synchronized (identificadorRealizada){
-            salida = identificadorRealizada.get(idTarea);
-        }
-        return salida;
-    }
 
     /**
      * Método que lanza la notificación y actualiza el valor del TextView
@@ -191,47 +185,71 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      */
     private void pintaNotificacion(Location location, int idTarea) {
         if (location != null) {
-            String l = getString(R.string.latitud) + ": " + location.getLatitude() + " || " +
-                    getString(R.string.longitud) + ": " + location.getLongitude();
+            String id = "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion";
+            //todo
+            //todo
+            //todo
+            //todo
+            //todo
+            //todo
+            //todo
+            //todo
+            //¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡CUANDO NO SE ESTÉ DEPURANDO PARA QUE EL IDENTIFICADOR DE LA TAREA SEA ÚNICO!!!!!!!!!!!!!!!!!!!!!!
+            //todo
+            //todo
+            //todo
+            //todo
+            //todo
+            id = id + System.nanoTime();
+            GrupoTareas tarea;
             String titu = "";
             Intent intent = new Intent(this, Tarea.class);
             String recursoAsociadoTexto = "El Castillo de Calatañazor, también conocido como Castillo de los Padilla es un fortaleza medieval ubicada en la localidad española de igual nombre, en la provincia de Soria.";
-            intent.putExtra("id", "https://casssualearn.gsic.uva.es/resource/Castillo_de_Calatañazor/informacion");
+            intent.putExtra("id", id);
             intent.putExtra("recursoAsociadoTexto", recursoAsociadoTexto);
-            //intent.putExtra("recursoAsociadoImagen", "https://upload.wikimedia.org/wikipedia/commons/6/69/Salamanca_Parroquia_Arrabal.jpg");
-            intent.putExtra("recursoAsociadoImagen", "https://commons.wikimedia.org/wiki/Special:FilePath/Calatañazor-Castillo.jpg");
+            //intent.putExtra(Tarea.recursoImagen, "https://upload.wikimedia.org/wikipedia/commons/6/69/Salamanca_Parroquia_Arrabal.jpg");
+            intent.putExtra(Tarea.recursoImagen, "https://commons.wikimedia.org/wiki/Special:FilePath/Calatañazor-Castillo.jpg");
+            intent.putExtra(Tarea.recursoImagenBaja, "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Calata%C3%B1azor-Castillo.jpg/300px-Calata%C3%B1azor-Castillo.jpg");
             switch (idTarea){
                 case 0:
                     titu = "sinRespuesta";
-                    intent.putExtra("tipoRespuesta", "sinRespuesta");
+                    intent.putExtra("tipoRespuesta", TiposTareas.SIN_RESPUESTA.getValue());
+                    tarea = new GrupoTareas(id, TiposTareas.SIN_RESPUESTA.getValue(), EstadoTarea.NO_COMPLETADA);
                     break;
                 case 1:
                     titu = "preguntaCorta";
-                    intent.putExtra("tipoRespuesta", "preguntaCorta");
+                    intent.putExtra("tipoRespuesta", TiposTareas.PREGUNTA_CORTA.getValue());
+                    tarea = new GrupoTareas(id, TiposTareas.PREGUNTA_CORTA.getValue(), EstadoTarea.NO_COMPLETADA);
                     break;
                 case 2:
                     titu = "preguntaLarga";
-                    intent.putExtra("tipoRespuesta", "preguntaLarga");
+                    intent.putExtra("tipoRespuesta", TiposTareas.PREGUNTA_LARGA.getValue());
+                    tarea = new GrupoTareas(id, TiposTareas.PREGUNTA_LARGA.getValue(), EstadoTarea.NO_COMPLETADA);
                     break;
                 case 3:
                     titu = "preguntaImagen";
-                    intent.putExtra("tipoRespuesta", "preguntaImagen");
+                    intent.putExtra("tipoRespuesta", TiposTareas.PREGUNTA_IMAGEN.getValue());
+                    tarea = new GrupoTareas(id, TiposTareas.PREGUNTA_IMAGEN.getValue(), EstadoTarea.NO_COMPLETADA);
                     break;
                 case 4:
                     titu = "imagen";
-                    intent.putExtra("tipoRespuesta", "imagen");
+                    intent.putExtra("tipoRespuesta", TiposTareas.IMAGEN.getValue());
+                    tarea = new GrupoTareas(id, TiposTareas.IMAGEN.getValue(), EstadoTarea.NO_COMPLETADA);
                     break;
                 case 5:
                     titu = "imagenMultiple";
-                    intent.putExtra("tipoRespuesta", "imagenMultiple");
+                    intent.putExtra("tipoRespuesta", TiposTareas.IMAGEN_MULTIPLE.getValue());
+                    tarea = new GrupoTareas(id, TiposTareas.IMAGEN_MULTIPLE.getValue(), EstadoTarea.NO_COMPLETADA);
                     break;
                 case 6:
                     titu = "video";
-                    intent.putExtra("tipoRespuesta", "video");
+                    intent.putExtra("tipoRespuesta", TiposTareas.VIDEO.getValue());
+                    tarea = new GrupoTareas(id, TiposTareas.VIDEO.getValue(), EstadoTarea.NO_COMPLETADA);
                     break;
                 default:
                     return;
             }
+            db.grupoTareasDao().insertTarea(tarea);
             builder.setContentTitle(titu).setContentText(recursoAsociadoTexto);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), incr, intent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -261,8 +279,10 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * Método para crear el servicio en primer plano
      */
     private void mantenServicio(){
-        Intent intent = new Intent(this, Proceso.class);
+        //Intent intent = new Intent(this, Proceso.class);
+        Intent intent = new Intent(this, Maps.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se diferencia las versiones de android
             Notification notification = new Notification.Builder(this, channelPersisId)
                     .setContentTitle(getString(R.string.app_name))

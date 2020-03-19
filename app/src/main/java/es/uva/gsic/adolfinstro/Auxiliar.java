@@ -26,6 +26,8 @@ class Auxiliar {
 
     private static final String[] listaFabricantes = {"huawei", "xiaomi"};
 
+    public static final String separador = "a;a;;a;;;a!!..sjfeasdfe238923";
+
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
      * @param type 1 foto, 2 vídeo
