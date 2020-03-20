@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-path name="images" path="Android/data/es.uva.gsic.adolfinstro/files/Pictures" />
-    <external-path name="movies" path="Android/data/es.uva.gsic.adolfinstro/files/Movies" />
+    <external-files-path
+        name="files"
+        path="Android/data/es.uva.gsic.adolfinstro/files/Files" />
+    <external-path
+        name="images"
+        path="Android/data/es.uva.gsic.adolfinstro/files/Pictures" />
+    <external-path
+        name="movies"
+        path="Android/data/es.uva.gsic.adolfinstro/files/Movies" />
 </paths>

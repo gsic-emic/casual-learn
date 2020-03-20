@@ -90,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btLogin:
                 intent = new Intent( this, Login.class);
                 break;
+            case R.id.btPuntua:
+                intent = new Intent(this, Score.class);
+                break;
             default:
                 System.exit(-2);
                 intent = null;

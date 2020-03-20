@@ -18,4 +18,10 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+
+    <style name="barraPuntua" parent="Theme.AppCompat">
+        <item name="colorControlNormal">@color/colorStarOff</item>
+        <item name="colorControlActivated">@color/colorStarOn</item>
+    </style>
+
 </resources>

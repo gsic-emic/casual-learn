@@ -32,6 +32,7 @@ import java.net.URL;
 import es.uva.gsic.adolfinstro.persistencia.GrupoTareas;
 import es.uva.gsic.adolfinstro.persistencia.GrupoTareasDatabase;
 
+import static es.uva.gsic.adolfinstro.Auxiliar.puntuaTarea;
 import static es.uva.gsic.adolfinstro.Auxiliar.returnMain;
 import static es.uva.gsic.adolfinstro.Auxiliar.separador;
 import static java.util.Objects.*;
@@ -190,10 +191,12 @@ public class Tarea extends AppCompatActivity {
                     tarea = db.grupoTareasDao().getTarea(idTarea);
                     tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                     db.grupoTareasDao().updateTarea(tarea);
-                    returnMain(this);
+                    //returnMain(this);
+                    puntuaTarea(this, idTarea);
                 } else
                     if(guardaRespuestaPregunta())
-                        returnMain(this);
+                        //returnMain(this);
+                        puntuaTarea(this, idTarea);
                 break;
             case R.id.btCamara:
                 switch (tipo){
@@ -342,7 +345,8 @@ public class Tarea extends AppCompatActivity {
                         tarea.setRespuestaTarea(tarea.getRespuestaTarea() + separador + photoURI.toString());
                         tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
-                        Auxiliar.returnMain(this);
+                        //Auxiliar.returnMain(this);
+                        puntuaTarea(this, idTarea);
                         break;
                     case RESULT_CANCELED:
                         tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
@@ -359,7 +363,8 @@ public class Tarea extends AppCompatActivity {
                         tarea.setRespuestaTarea(photoURI.toString());
                         tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
-                        Auxiliar.returnMain(this);
+                        //Auxiliar.returnMain(this);
+                        puntuaTarea(this, idTarea);
                         break;
                     case RESULT_CANCELED:
                         tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
@@ -383,7 +388,8 @@ public class Tarea extends AppCompatActivity {
                         if(restantes==0){
                             tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                            Auxiliar.returnMain(this);
+                            //Auxiliar.returnMain(this);
+                            puntuaTarea(this, idTarea);
                         }
                         else {
                             tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
@@ -406,7 +412,8 @@ public class Tarea extends AppCompatActivity {
                         tarea.setRespuestaTarea(videoURI.toString());
                         tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
                         Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
-                        Auxiliar.returnMain(this);
+                        //Auxiliar.returnMain(this);
+                        puntuaTarea(this, idTarea);
                         break;
                     case RESULT_CANCELED:
                         tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
@@ -544,5 +551,14 @@ public class Tarea extends AppCompatActivity {
         if(db == null) {
             db = GrupoTareasDatabase.getInstance(getBaseContext());
         }
+    }
+
+    /**
+     * Método para controlar la llamada del usuario al botón atrás
+     */
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        returnMain(this);
     }
 }

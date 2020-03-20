@@ -57,6 +57,7 @@ class Auxiliar {
     static void returnMain(Context context){
         Intent intent = new Intent(context, Maps.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 
@@ -99,7 +100,7 @@ class Auxiliar {
             AlertDialog.Builder brandBuilder = new AlertDialog.Builder(context);
             brandBuilder.setTitle(context.getString(R.string.tituloErrorMarca) + Build.MANUFACTURER.toLowerCase())
                     .setMessage(context.getString(R.string.mensajeSolucionMarca))
-                    .setPositiveButton(context.getString(R.string.acept), new Dialog.OnClickListener() {
+                    .setPositiveButton(context.getString(R.string.accept), new Dialog.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             actualizaListaBlanca(false, sharedPreferences);
@@ -125,6 +126,18 @@ class Auxiliar {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(Ajustes.LISTABLANCA_pref, listaBlanca);
         editor.commit();
+    }
+
+    /**
+     * Método para puntuar una tarea una vez que se ha completado
+     * @param context Contexto
+     * @param idTarea Identificador de la tarea a puntuar
+     */
+    public static void puntuaTarea(Context context, String idTarea){
+        Intent intent = new Intent(context, Score.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("ID", idTarea);
+        context.startActivity(intent);
     }
 
 }

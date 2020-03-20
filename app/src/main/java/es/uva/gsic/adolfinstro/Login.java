@@ -113,7 +113,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                 alertBuilder.setTitle(getString(R.string.permi));
                 alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.acept), new DialogInterface.OnClickListener() {
+                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Se comprueba todos los permisos que necesite la app de nuevo, por este

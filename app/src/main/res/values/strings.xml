@@ -2,7 +2,7 @@
     <string name="app_name" translatable="false">FYTAPP</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
-    <string name="acept">OK</string>
+    <string name="accept">OK</string>
     <string name="exi">Exit</string>
     <string name="title_activity_task_camera">task_camera</string>
     <string name="task">Task</string>
@@ -52,4 +52,6 @@
     <string name="recursoMaximaResolucion">It\'s already the maximum resolution</string>
     <string name="voy">I\'m going!</string>
     <string name="debug" translatable="false">DEBUG</string>
+    <string name="score">Rate this task!</string>
+    <string name="thanks">Thank you for rate this task!</string>
 </resources>

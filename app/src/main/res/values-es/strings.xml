@@ -2,7 +2,7 @@
 <resources>
     <string name="permiM">La aplicación necesita todos los permisos solicitados</string>
     <string name="permi">Permisos</string>
-    <string name="acept">Aceptar</string>
+    <string name="accept">Aceptar</string>
     <string name="exi">Salir</string>
     <string name="task">Tarea</string>
     <string name="next">Siguiente</string>
@@ -51,4 +51,6 @@
     <string name="sinDescripcion">Tarea sin descripción</string>
     <string name="recursoMaximaResolucion">Ya está en máxima resolución</string>
     <string name="voy">¡Voy!</string>
+    <string name="score">¡Puntua la tarea!</string>
+    <string name="thanks">¡Gracias por puntuar la tarea!</string>
 </resources>

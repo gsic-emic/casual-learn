@@ -144,3 +144,8 @@ apply plugin: 'com.google.gms.google-services'
 dependencies {
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 }
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:+'
+    implementation 'androidx.constraintlayout:constraintlayout:+'
+}
