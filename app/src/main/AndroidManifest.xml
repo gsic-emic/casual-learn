@@ -25,7 +25,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".Score"></activity>
+
+        <activity android:name=".Puntuacion" />
         <activity android:name=".ImagenCompleta">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -33,9 +34,9 @@
         </activity>
         <activity android:name=".Acerca" />
         <activity android:name=".Tarea">
-            <meta-data
+            <!--<meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="es.uva.gsic.adolfinstro.Login" />
+                android:value="es.uva.gsic.adolfinstro.Login" />-->
         </activity>
         <activity
             android:name=".Ajustes"
@@ -70,6 +71,15 @@
             android:directBootAware="true"
             android:foregroundServiceType="location"
             android:icon="@drawable/ic_launcher_foreground" />
+
+        <receiver android:name=".RecepcionNotificaciones"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="AHORA_NO" />
+                <action android:name="NUNCA_MAS" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"

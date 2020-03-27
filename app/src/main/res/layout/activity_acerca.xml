@@ -24,6 +24,92 @@
             android:onClick="boton"
             android:contentDescription="@string/gsic" />
 
+        <TextView
+            android:id="@+id/tvCreditos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imagenGsic"
+            android:text="@string/creditos"
+            android:textSize="22sp"/>
+        <View
+            android:id="@+id/linea1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCreditos"
+            android:background="@android:color/darker_gray"/>
+
+        <TextView
+            android:id="@+id/tvOpenStreetMap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linea1"
+            android:textSize="16sp"
+            android:text="@string/openstreetmap_contributors"
+            android:drawableStart="@drawable/iconoopenstreetmap"
+            android:gravity="fill"
+            android:onClick="boton"/>
+
+        <TextView
+            android:id="@+id/tvBibliotecas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOpenStreetMap"
+            android:text="@string/libraries"
+            android:textSize="18sp" />
+        <View
+            android:id="@+id/linea2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvBibliotecas"
+            android:background="@android:color/darker_gray"/>
+
+        <TextView
+            android:id="@+id/tvOsmdroid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linea2"
+            android:textSize="14sp"
+            android:text="@string/Osmdroid"
+            android:drawableStart="@drawable/ic_punto_6dp"
+            android:onClick="boton" />
+
+        <TextView
+            android:id="@+id/tvFused"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOsmdroid"
+            android:textSize="14sp"
+            android:text="@string/fused"
+            android:drawableStart="@drawable/ic_punto_6dp"
+            android:onClick="boton"/>
+
+        <TextView
+            android:id="@+id/tvPhotoView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvFused"
+            android:textSize="14sp"
+            android:text="@string/PhotoView"
+            android:drawableStart="@drawable/ic_punto_6dp"
+            android:onClick="boton"/>
+
+
+
+
+
+
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

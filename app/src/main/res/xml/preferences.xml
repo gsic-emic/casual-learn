@@ -16,10 +16,10 @@
         app:title="@string/intervalo"
         app:summary="@string/intervaloResumen"
         app:defaultValue="3"
-        app:min="1"
+        app:min="0"
         app:updatesContinuously="false"
         app:showSeekBarValue="true"
-        app:seekBarIncrement="2"
+        app:seekBarIncrement="1"
         app:adjustable="true" />
     <CheckBoxPreference
         app:key="listaBlanca"

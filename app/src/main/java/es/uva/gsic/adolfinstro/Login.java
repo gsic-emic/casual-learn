@@ -7,11 +7,19 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -22,8 +30,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 
 /**
  * Clase que permite a los usuarios identificarse frente al sistema.
@@ -51,7 +65,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         super.onCreate(sI);
         //Análisis
         firebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        checkPermissions(); //Compruebo los permisos antes de seguir
 
         //Aquí irá la comprobación de si el usuario ya se ha autenticado previamente
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -70,6 +83,31 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         //Se tiene que registrar las pulsaciones del botón desde el código ya que no es un botón estándar
         //Se podría evitar tener que implementar el OnClickListener utilizando un botón estándar con una imagen
         btGoogle.setOnClickListener(this);
+        //pruebaGet();
+        //pruebaPut();
+    }
+
+    public void pruebaPut(){
+        String url = "http://192.168.1.14:8080";
+        JSONObject json = new JSONObject();
+        try {
+            json.put("prueba", "10");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.PUT, url, json, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                //TODO PROCESADO DEL JSONARRAY
+                System.out.println("Correcto");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.err.println("Error en el listen");
+            }
+        });
+        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonArrayRequest);
     }
 
     /**
@@ -100,16 +138,29 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     }
 
     /**
+     * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
+     * En la actualidad, solicita permisos de localización y cámara.
+     */
+    public void checkPermissions(){
+        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
+            System.exit(-1);
+        ArrayList<String> permisos = new ArrayList<>();
+        Auxiliar.preQueryPermisos(this, permisos);
+        if (permisos.size()>0) //Evitamos hacer una petición con un array nulo
+            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
+    }
+
+    /**
      * Método que devuelve el resultado de la solicitud de permisos.
      * @param requestCode Código de la petición de permismos.
      * @param permissions Permisos que se han solicitado.
      * @param grantResults Valor otorgado por el usuario al permiso.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults){
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
         //Se comprueba uno a uno si alguno de los permisos no se había aceptado
-        for(int i : grantResults){
-            if(i == -1){
+        for (int i : grantResults) {
+            if (i == -1) {
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                 alertBuilder.setTitle(getString(R.string.permi));
                 alertBuilder.setMessage(getString(R.string.permiM));
@@ -133,19 +184,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 break;
             }
         }
-    }
-
-    /**
-     * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
-     * En la actualidad, solicita permisos de localización y cámara.
-     */
-    public void checkPermissions(){
-        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
-            System.exit(-1);
-        ArrayList<String> permisos = new ArrayList<>();
-        Auxiliar.preQueryPermisos(this, permisos);
-        if (permisos.size()>0) //Evitamos hacer una petición con un array nulo
-            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
     }
 
     /**
@@ -215,7 +253,9 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 if(!sharedPreferences.getString(key, " ").equals(" ")){
                     Intent intent = new Intent (getApplicationContext(), Maps.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+                    //(startActivity(intent);
+                }else {
+                    checkPermissions(); //Compruebo los permisos antes de seguir
                 }
             default:
         }

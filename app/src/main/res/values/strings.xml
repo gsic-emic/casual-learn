@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name" translatable="false">FYTAPP</string>
+    <string name="app_name" translatable="false">GYT APP</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="accept">OK</string>
@@ -54,4 +54,17 @@
     <string name="debug" translatable="false">DEBUG</string>
     <string name="score">Rate this task!</string>
     <string name="thanks">Thank you for rate this task!</string>
+    <string name="ahoraNo">Not now</string>
+    <string name="nuncaMas">Anymore</string>
+    <string name="ErrorBBDD">The task is not found in the database</string>
+    <string name="tituErrorBBDD">Error in database</string>
+    <string name="creditos">Credits</string>
+    <string name="openStreetMap" translatable="false">OpenStreetMap</string>
+    <string name="libraries">Libraries</string>
+    <string name="Osmdroid" translatable="false">"     osmdroid"</string>
+    <string name="PhotoView" translatable="false">"     PhotoView"</string>
+    <string name="fused">"     Fused Location Provider API"</string>
+    <string name="respuestaEspeTitulo">Expected response</string>
+    <string name="respuestaEspeCorrecta">Correct answer!</string>
+    <string name="respuestaEspeIncrrecta">Wrong answer!</string>
 </resources>

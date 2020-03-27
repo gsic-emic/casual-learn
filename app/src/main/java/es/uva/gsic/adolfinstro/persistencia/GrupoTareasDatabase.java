@@ -1,4 +1,4 @@
-package es.uva.gsic.adolfinstro.persistencia;
+/*package es.uva.gsic.adolfinstro.persistencia;
 
 import android.content.Context;
 
@@ -28,4 +28,4 @@ public abstract class GrupoTareasDatabase extends RoomDatabase {
         }
         return BBDD;
     }
-}
+}*/

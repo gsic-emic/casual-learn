@@ -32,7 +32,7 @@
     <string name="canalTareas">Canal de tareas</string>
     <string name="canalPersistente">Canal de notificación persistente</string>
     <string name="pregunta">Pregunta</string>
-    <string name="camara">Camara</string>
+    <string name="camara">Cámara</string>
     <string name="mapa">Mapa</string>
     <string name="desactivaNoMolestar">Debes desactivar la opción \"no molestar\" para utilizar el mapa</string>
     <string name="registro">Registro</string>
@@ -53,4 +53,14 @@
     <string name="voy">¡Voy!</string>
     <string name="score">¡Puntua la tarea!</string>
     <string name="thanks">¡Gracias por puntuar la tarea!</string>
+    <string name="ahoraNo">Ahora no</string>
+    <string name="nuncaMas">Nunca más</string>
+    <string name="ErrorBBDD">La tarea no existe en la base de datos</string>
+    <string name="tituErrorBBDD">Error en la base de datos</string>
+    <string name="creditos">Créditos</string>
+    <string name="libraries">Bibliotecas</string>
+    <string name="fused">"     Fused Location Provider API"</string>
+    <string name="respuestaEspeTitulo">Respuesta esperada</string>
+    <string name="respuestaEspeCorrecta">¡Respuesta correcta!</string>
+    <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
 </resources>

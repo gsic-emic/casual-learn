@@ -62,6 +62,7 @@
             android:layout_height="75dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
             android:layout_marginTop="20dp"
             android:text="@string/cancel"
             android:visibility="visible"
