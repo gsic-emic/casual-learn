@@ -107,11 +107,16 @@ public class Tarea extends AppCompatActivity {
                 new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagen)));
                 recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
             } catch (Exception e2) {//No tiene ni la imagen principal ni el icono
-
+                recursoAsociadoImagen300px = null;
+                recursoAsociadoImagen = null;
             }
         }
         tipo = requireNonNull(extras.getString(Auxiliar.tipoRespuesta));
-        respuestaEsperada = extras.getString(Auxiliar.respuestaEsperada);
+        try {
+            respuestaEsperada = extras.getString(Auxiliar.respuestaEsperada);
+        }catch (NullPointerException npe){
+            respuestaEsperada = null;
+        }
         TextView tvDescripcion = findViewById(R.id.tvDescripcion);
         etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
         btVolver = findViewById(R.id.btVolver);

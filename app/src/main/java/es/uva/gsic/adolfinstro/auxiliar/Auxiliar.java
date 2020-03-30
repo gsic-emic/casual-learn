@@ -1,7 +1,10 @@
 package es.uva.gsic.adolfinstro.auxiliar;
 
 import android.Manifest;
+import android.app.Application;
 import android.app.Dialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,6 +16,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,11 +29,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import es.uva.gsic.adolfinstro.Ajustes;
+import es.uva.gsic.adolfinstro.EstadoTarea;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
+import es.uva.gsic.adolfinstro.RecepcionNotificaciones;
+import es.uva.gsic.adolfinstro.Tarea;
+import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Auxiliar {
 
@@ -37,10 +50,17 @@ public class Auxiliar {
     public static final String recursoImagen = "recursoAsociadoImagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
+    public static final String titulo = "titulo";
+
+    public static final String radio = "radio";
+
+    /** Identificador del canal de tareas */
+    public static String channelId = "notiTareas";
+
+    private static Random random = new Random();
+
 
     private static final String[] listaFabricantes = {"huawei", "xiaomi"};
-
-    public static final String separador = "a;a;;a;;;a!!..sjfeasdfe238923";
 
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
@@ -183,4 +203,57 @@ public class Auxiliar {
         return string[string.length - 1];
     }
 
+    /**
+     * Método para obtener la tarea más cercana al usuario. Si hay varias tareas a la misma
+     * distancia se obtiene una de ellas aleatoriamente.
+     *
+     * @param app Aplicación
+     * @param latitudUsuario Latitud de la posción del usuario
+     * @param longitudUsuario Longitud de la posición del usuario
+     * @return JSONObject con la tarea a realizar o null
+     */
+    public static JSONObject tareaMasCercana(Application app, double latitudUsuario, double longitudUsuario){
+        //Inicializo la lista de tareas a la misma distancia
+        List<JSONObject> tarea = new ArrayList<>();
+        //Creo la referencia al objeto JSONObject para que no se esté creando y destruyendo en cada
+        //iteración del bucle
+        JSONObject tareaEvaluada;
+        //Distancia a la que se encuentra el usuario de la tarea
+        double distancia;
+        //Distancia más pequeña encontrada del usuario a una tarea
+        double distanciaMin = 10000;
+        try{
+            //Se obtienen las tareas del fichero
+            JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareas);
+            for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
+                tareaEvaluada = vectorTareas.getJSONObject(i);
+                if(!tarea.isEmpty()){
+                    distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                            tareaEvaluada.getDouble(Auxiliar.longitud),
+                            latitudUsuario,
+                            longitudUsuario);
+                    if(distancia < distanciaMin){
+                        distanciaMin = distancia;
+                        tarea = new ArrayList<>();
+                        tarea.add(tareaEvaluada);
+                    }else{
+                        if(distancia == distanciaMin){
+                            tarea.add(tareaEvaluada);
+                        }
+                    }
+                }else {//Solo se va entrar aquí con la primera tarea
+                    tarea.add(tareaEvaluada);
+                    distanciaMin = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                            tareaEvaluada.getDouble(Auxiliar.longitud),
+                            latitudUsuario,
+                            longitudUsuario);
+                }
+            }
+            //Devolvemos una de las tareas del vector escogida de manera aleatorio
+            return tarea.get(random.nextInt(tarea.size()));
+        }
+        catch (Exception e){
+            return null;
+        }
+    }
 }

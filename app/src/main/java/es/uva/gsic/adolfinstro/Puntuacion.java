@@ -15,6 +15,11 @@ import org.json.JSONObject;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
+/**
+ * Clase para gestionar la puntuación de las tareas
+ *
+ * @author GSIC
+ */
 public class Puntuacion extends AppCompatActivity {
 
     private String idTarea;

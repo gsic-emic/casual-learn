@@ -87,29 +87,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         //pruebaPut();
     }
 
-    public void pruebaPut(){
-        String url = "http://192.168.1.14:8080";
-        JSONObject json = new JSONObject();
-        try {
-            json.put("prueba", "10");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JsonObjectRequest jsonArrayRequest = new JsonObjectRequest(Request.Method.PUT, url, json, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                //TODO PROCESADO DEL JSONARRAY
-                System.out.println("Correcto");
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.err.println("Error en el listen");
-            }
-        });
-        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonArrayRequest);
-    }
-
     /**
      * Método que es llamada cuando se pulsa un objeto clicklable
      * @param v Objeto pulsado
@@ -226,12 +203,37 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
             firebaseAnalytics.logEvent(nuevaIdentificacion, bundle);
             bundle = null;
 
-            Intent intent = new Intent(this, Maps.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
+            enviaUsuario(account);
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    public void enviaUsuario(GoogleSignInAccount cuenta){
+        String url = "http://192.168.1.14:8080/usuarios";
+        JSONObject json = new JSONObject();
+        try {
+            json.put("id", cuenta.getId());
+            json.put("nombre", cuenta.getDisplayName());
+            json.put("email", cuenta.getEmail());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        final Intent intent = new Intent(this, Maps.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        JsonObjectRequest jsonObj = new JsonObjectRequest(Request.Method.PUT, url, json, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                //TODO PROCESADO DEL JSONARRAY
+                startActivity(intent);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.err.println("Error en el listen");
+            }
+        });
+        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObj);
     }
 
 
@@ -253,7 +255,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 if(!sharedPreferences.getString(key, " ").equals(" ")){
                     Intent intent = new Intent (getApplicationContext(), Maps.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    //(startActivity(intent);
+                    startActivity(intent);
                 }else {
                     checkPermissions(); //Compruebo los permisos antes de seguir
                 }

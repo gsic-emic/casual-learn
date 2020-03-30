@@ -35,7 +35,7 @@ public class PersistenciaDatos {
      * @return JSONArray con el contenido del fichero o un JSONArray inicializado pero vacío si el
      *      fichero estaba vacío o se ha producido algún error.
      */
-    private static JSONArray leeFichero(Application app, String fichero){
+    public static JSONArray leeFichero(Application app, String fichero){
         JSONArray array;
         File f = new File(app.getFilesDir(), fichero);
         if (f.exists()) { //Lectura del fichero existente

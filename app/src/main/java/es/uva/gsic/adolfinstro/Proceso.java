@@ -61,8 +61,6 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private NotificationChannel channel;
     /** Canal utilizado para la notificación persistente */
     private NotificationChannel channelPersis;
-    /** Identificador del canal de tareas */
-    private static String channelId = "notiTareas";
     /** Identificador del canal por donde irá la notificación persistente */
     private static String channelPersisId = "notiPersistencia";
     /** Instancia del NotificationManager*/
@@ -88,14 +86,16 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private long instanteUltimaNotif = 0;
 
     /** Latitiud desde donde se han recuperado las tareas del servidor */
-    public static double latitudGet = -5;
+    public static double latitudGet = 0;
     /** Longitud desde donde se han recuperado las tareas del servidor */
-    public static double longitudGet = -5;
+    public static double longitudGet = 0;
+
+    public static boolean tareasActualizadas = false;
 
     /** Última latitud obtenida */
-    private double latitudAnt = -5;
+    private double latitudAnt = 0;
     /** Última longitud obtenida */
-    private double longitudAnt = -5;
+    private double longitudAnt = 0;
 
     // Métodos necesarios para heredar de Service
     public class ProcesoBinder extends Binder {
@@ -124,7 +124,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         }
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
-            channel = new NotificationChannel(channelId, getString(R.string.canalTareas), NotificationManager.IMPORTANCE_HIGH);
+            channel = new NotificationChannel(Auxiliar.channelId, getString(R.string.canalTareas), NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription(getString(R.string.canalTareas));
             channelPersis = new NotificationChannel(channelPersisId, getString(R.string.canalPersistente), NotificationManager.IMPORTANCE_LOW);
             channelPersis.setDescription(getString(R.string.canalPersistente));
@@ -181,8 +181,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void compruebaTareas(Location location) {
         double latitud = location.getLatitude();
         double longitud = location.getLongitude();
-        //TODO PETICIÓN GET AL SERVIDOR Y ACTUALIZACIÓN DEL FICHERO CON TAREAS (SOBRESCTRITURA). Si se consigue guardar el fichero se guarda la posición en latitudGet y longitudGet
-        if(latitudGet<0 || longitudGet<0){//Inicio del servicio, se tiene que recuperar la tarea del servidor
+        if(latitudGet==0 || longitudGet==0){//Inicio del servicio, se tiene que recuperar la tarea del servidor
             peticionTareasServidor(location);
         }else{
             double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, latitudGet, longitudGet);
@@ -201,9 +200,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             String url = "http://192.168.1.14:8080/tareas?latitude="+location.getLatitude()
                     +"&longitude="+location.getLongitude()
                     +"&radio=1.25";
-            jsonObject.put("latitud", location.getLatitude());
-            jsonObject.put("longitud", location.getLongitude());
-            jsonObject.put("radio", "1.25");
+            jsonObject.put(Auxiliar.latitud, location.getLatitude());
+            jsonObject.put(Auxiliar.longitud, location.getLongitude());
+            jsonObject.put(Auxiliar.radio, "1.25");
             array.put(jsonObject);
             JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
                 @Override
@@ -211,6 +210,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareas, response, Context.MODE_PRIVATE);
                     latitudGet = location.getLatitude();
                     longitudGet = location.getLongitude();
+                    tareasActualizadas = true;
                     compruebaLocalizacion(location);
                 }
             }, new Response.ErrorListener() {
@@ -247,7 +247,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void compruebaLocalizacion(Location location) {
         double distanciaAndada=1200, latitud=0, longitud=0;
         boolean datosValidos = false;
-        if(latitudAnt < 0){//Se acaba de iniciar el servicio
+        if(latitudAnt == 0 && longitudAnt == 0){//Se acaba de iniciar el servicio
             latitudAnt = location.getLatitude();
             longitudAnt = location.getLongitude();
         }
@@ -261,16 +261,28 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
 
         Date date = new Date();
         long instante = date.getTime();
-        boolean comprueba = instante >= instanteUltimaNotif + ((intervalo * 3600 > 0)?intervalo*3600:59000);
+
+        boolean comprueba = instante >= instanteUltimaNotif + ((intervalo > 0)?intervalo*3600*1000:59000);
         if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
             if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
                 if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
                     //Comprobación de la ubucación actual a las tareas almacenadas
-                    //TODO FALTA COMPROBAR EL MÉTODO TAREAS
+                    JSONObject tarea = Auxiliar.tareaMasCercana(getApplication(), latitud, longitud);
                     //Se obtiene la distancia más baja a la tarea
-                    double distancia = Auxiliar.calculaDistanciaDosPuntos(latitud,longitud,plazaMayorLat,plazaMayorLong);
-                    if(distancia < 0.15){//Si el usuario está lo suficientemente cerca, se le envía una notificación
-                        pintaNotificacion(String.format("%d",(int) (Math.random()*6)));
+                    if(tarea != null) {
+                        double distancia;
+                        try {
+                            distancia = Auxiliar.calculaDistanciaDosPuntos(latitud,
+                                    longitud,
+                                    tarea.getDouble(Auxiliar.latitud),
+                                    tarea.getDouble(Auxiliar.longitud));
+                        } catch (JSONException je) {
+                            distancia = 10;
+                        }
+                        if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
+                            //pintaNotificacion(String.format("%d",(int) (Math.random()*6)));
+                            pintaNotificacion(tarea);
+                        }
                     }
                 }
             }
@@ -341,7 +353,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, jsonObject, Context.MODE_PRIVATE))
                 throw new Exception();
             //Se crea aquí la notificación para que la hora a la que se lanza la notificación sea el correcto
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setContentTitle(titu)
@@ -407,12 +419,13 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     throw new Exception();
                 Intent intent = new Intent(context, Tarea.class);
                 intent.putExtra(Auxiliar.id, id);
+                intent.putExtra(Auxiliar.tipoRespuesta, tipoRespuesta);
                 intent.putExtra(Auxiliar.recursoAsociadoTexto, recursoAsociadoTexto);
                 intent.putExtra(Auxiliar.recursoImagen, recursoAsociadoImagen);
                 intent.putExtra(Auxiliar.recursoImagenBaja, recursoAsociadoImagenBaja);
                 intent.putExtra(Auxiliar.respuestaEsperada, respuestaEsperada);
 
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(tipoRespuesta)
