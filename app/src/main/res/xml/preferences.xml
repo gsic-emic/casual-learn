@@ -19,7 +19,7 @@
         app:min="1"
         app:updatesContinuously="false"
         app:showSeekBarValue="true"
-        app:seekBarIncrement="2"
+        app:seekBarIncrement="1"
         app:adjustable="true" />
     <CheckBoxPreference
         app:key="listaBlanca"

@@ -2,9 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
 

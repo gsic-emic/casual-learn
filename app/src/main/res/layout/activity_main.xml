@@ -110,5 +110,14 @@
         app:layout_constraintTop_toBottomOf="@id/btMapa"
         android:onClick="boton" />
 
+    <Button
+        android:id="@+id/btPuntua"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Puntua"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btLogin"
+        android:onClick="boton" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

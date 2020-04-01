@@ -76,7 +76,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
             android:layout_marginTop="20dp"
-            android:text="@string/acept"
+            android:text="@string/accept"
             android:visibility="gone"
             android:onClick="boton"/>
 

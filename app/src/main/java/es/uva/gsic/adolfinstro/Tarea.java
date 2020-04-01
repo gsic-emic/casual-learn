@@ -1,10 +1,15 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+import android.app.Application;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -24,16 +29,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 
-import es.uva.gsic.adolfinstro.persistencia.GrupoTareas;
-import es.uva.gsic.adolfinstro.persistencia.GrupoTareasDatabase;
+import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
-import static es.uva.gsic.adolfinstro.Auxiliar.returnMain;
-import static es.uva.gsic.adolfinstro.Auxiliar.separador;
 import static java.util.Objects.*;
 
 /**
@@ -61,13 +67,10 @@ public class Tarea extends AppCompatActivity {
     private String recursoAsociadoImagen300px;
     /** Imagen descriptiva en alta resolución */
     private String recursoAsociadoImagen;
+    /** Texto que se espera que tenga la respuesta del alumno*/
+    private String respuestaEsperada;
     /** Número de fotos de la serie */
-    private int restantes = 3; //Este valor habrá que obtenerlo del intent
-
-    /** Instancia de la base de datos*/
-    private GrupoTareasDatabase db;
-    /** Objeto donde se almacena la tarea con la que se va a trabajar*/
-    private GrupoTareas tarea;
+    private int restantes = 3; //Este valor habrá que obtenerlo del intento
 
     /** URI de la imagen que se acaba de tomar */
     private Uri photoURI;
@@ -79,8 +82,7 @@ public class Tarea extends AppCompatActivity {
     /** Estado del botón para volver a la actividad principal*/
     private boolean estadoBtCancelar;
 
-    public static final String recursoImagenBaja = "recursoAsociadoImagen300px";
-    public static final String recursoImagen = "recursoAsociadoImagen";
+    private JSONObject respuesta;
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -97,35 +99,26 @@ public class Tarea extends AppCompatActivity {
         ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
         Bundle extras = getIntent().getExtras();
         assert extras != null;
-        idTarea = extras.getString("id");
+        idTarea = extras.getString(Auxiliar.id);
         try {//ImagenDescriptiva. Se intenta mostrar la imagen de baja resolución
-            new DownloadImages().execute(new URL(extras.getString(recursoImagenBaja)));
-            recursoAsociadoImagen300px = extras.getString(recursoImagenBaja);
-            recursoAsociadoImagen = extras.getString(recursoImagen);
+            new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagenBaja)));
+            recursoAsociadoImagen300px = extras.getString(Auxiliar.recursoImagenBaja);
+            recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
         } catch (Exception e) {//Saltará cuando no tenga una imagen de baja resolución asociada
             try {
-                new DownloadImages().execute(new URL(extras.getString(recursoImagen)));
-                recursoAsociadoImagen = extras.getString(recursoImagen);
+                new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagen)));
+                recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
             } catch (Exception e2) {//No tiene ni la imagen principal ni el icono
-
+                recursoAsociadoImagen300px = null;
+                recursoAsociadoImagen = null;
             }
         }
-        tipo = requireNonNull(extras.getString("tipoRespuesta"));
-        db = GrupoTareasDatabase.getInstance(getBaseContext());
-        //db.grupoTareasDao().deleteTodasLasTareas();
-
-        /*for (GrupoTareas t : db.grupoTareasDao().listTareas()) {
-            long uid = t.getUid();
-            String id = t.getIdTarea();
-            String respuesta = t.getRespuestaTarea();
-        }*/
-
-        /*if (tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())) {
-            tarea = db.grupoTareasDao().getTarea(idTarea);
-            tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
-            db.grupoTareasDao().updateTarea(tarea);
-        }*/
-
+        tipo = requireNonNull(extras.getString(Auxiliar.tipoRespuesta));
+        try {
+            respuestaEsperada = extras.getString(Auxiliar.respuestaEsperada);
+        }catch (NullPointerException npe){
+            respuestaEsperada = null;
+        }
         TextView tvDescripcion = findViewById(R.id.tvDescripcion);
         etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
         btVolver = findViewById(R.id.btVolver);
@@ -133,7 +126,7 @@ public class Tarea extends AppCompatActivity {
         btCamara = findViewById(R.id.btCamara);
 
         try {//Descripcion
-            tvDescripcion.setText(getIntent().getExtras().getString("recursoAsociadoTexto"));
+            tvDescripcion.setText(getIntent().getExtras().getString(Auxiliar.recursoAsociadoTexto));
             tvDescripcion.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             tvDescripcion.setText(getString(R.string.sinDescripcion));
@@ -174,6 +167,100 @@ public class Tarea extends AppCompatActivity {
 
         estadoBtCamara = true;
         estadoBtCancelar = true;
+
+        checkPermissions();
+
+        if(!PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroRespuestas, idTarea))
+            mensajeError();
+        else{
+            try {
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        idTarea);
+                tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
+                PersistenciaDatos.guardaJSON(getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        tarea,
+                        Context.MODE_PRIVATE);
+            }catch (JSONException e){
+                //No se ha modificado el valor del estado en la respuesta
+            }
+        }
+
+    }
+
+    private void mensajeError(){
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+        alertBuilder.setTitle(getString(R.string.tituErrorBBDD));
+        alertBuilder.setMessage(getString(R.string.ErrorBBDD));
+        alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        idTarea);
+                PersistenciaDatos.guardaJSON(getApplication(),
+                        PersistenciaDatos.ficheroTareas,
+                        tarea,
+                        Context.MODE_PRIVATE);
+                Auxiliar.returnMain(getBaseContext());
+            }
+        });
+        alertBuilder.show();
+    }
+
+    /** Código de identificación para la solicitud de los permisos de la app */
+    private static final int requestCodePermissions = 1002;
+
+    /**
+     * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
+     * En la actualidad, solicita permisos de localización y cámara.
+     */
+    public void checkPermissions() {
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
+            System.exit(-1);
+        ArrayList<String> permisos = new ArrayList<>();
+        Auxiliar.preQueryPermisos(this, permisos);
+        if (permisos.size() > 0) //Evitamos hacer una petición con un array nulo
+            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
+    }
+
+    /**
+     * Método que devuelve el resultado de la solicitud de permisos.
+     * @param requestCode Código de la petición de permismos.
+     * @param permissions Permisos que se han solicitado.
+     * @param grantResults Valor otorgado por el usuario al permiso.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
+        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
+        for (int i : grantResults) {
+            if (i == -1) {
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                alertBuilder.setTitle(getString(R.string.permi));
+                alertBuilder.setMessage(getString(R.string.permiM));
+                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                        // motivo se puede salir del for directamente
+                        checkPermissions();
+                    }
+                });
+                alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
+                        //cierra
+                        System.exit(0);
+                    }
+                });
+                alertBuilder.show();
+                break;
+            }
+        }
     }
 
     /**
@@ -183,17 +270,36 @@ public class Tarea extends AppCompatActivity {
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btVolver:
-                returnMain(this);
+                //Se pasa la tarea del fichero de noficaciones al de tareas globales
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        idTarea);
+                PersistenciaDatos.guardaJSON(getApplication(),
+                        PersistenciaDatos.ficheroTareas,
+                        tarea,
+                        Context.MODE_PRIVATE);
+                Auxiliar.returnMain(this);
                 break;
             case R.id.btAceptar:
                 if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())){
-                    tarea = db.grupoTareasDao().getTarea(idTarea);
-                    tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
-                    db.grupoTareasDao().updateTarea(tarea);
-                    returnMain(this);
+                    try {
+                        JSONObject respuesta = PersistenciaDatos.recuperaTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroRespuestas,
+                                idTarea);
+                        respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                        PersistenciaDatos.guardaJSON(getApplication(),
+                                PersistenciaDatos.ficheroCompletadas,
+                                respuesta,
+                                Context.MODE_PRIVATE);
+                    }catch (Exception e){
+                        mensajeError();
+                    }
+                    Auxiliar.puntuaTarea(this, idTarea);
                 } else
                     if(guardaRespuestaPregunta())
-                        returnMain(this);
+                        Auxiliar.puntuaTarea(this, idTarea);
                 break;
             case R.id.btCamara:
                 switch (tipo){
@@ -296,7 +402,7 @@ public class Tarea extends AppCompatActivity {
         try {
             videoFile = Auxiliar.createFile(3, this);
         }catch (IOException e){
-            System.err.println("realizaVideo: Error al crear el fichero base");
+            //
         }
         if(videoFile != null){
             videoURI = FileProvider.getUriForFile(getBaseContext(), "es.uva.gsic.adolfinstro.fileprovider", videoFile);
@@ -334,39 +440,37 @@ public class Tarea extends AppCompatActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        tarea = db.grupoTareasDao().getTarea(idTarea);
         switch (requestCode){
             case 0: //Pregunta + imagen
+            case 1: //Imagen
                 switch (resultCode){
                     case RESULT_OK:
-                        tarea.setRespuestaTarea(tarea.getRespuestaTarea() + separador + photoURI.toString());
-                        tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
-                        Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
-                        Auxiliar.returnMain(this);
+                        try {
+                            JSONObject respuesta = PersistenciaDatos.recuperaTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroRespuestas,
+                                    idTarea);
+                            respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                            if (!PersistenciaDatos.guardaTareaRespuesta(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroCompletadas,
+                                    respuesta,
+                                    photoURI.toString(),
+                                    Context.MODE_PRIVATE))
+                                mensajeError();
+                            Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
+
+                            Auxiliar.puntuaTarea(this, idTarea);
+                        }catch (Exception e){
+                            mensajeError();
+                        }
                         break;
                     case RESULT_CANCELED:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
+                        mensajeError();
                         desbloqueaBt();
                         break;
                     default:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
-                        Auxiliar.errorToast(this);
-                }
-                break;
-            case 1://imagen
-                switch (resultCode){
-                    case RESULT_OK:
-                        tarea.setRespuestaTarea(photoURI.toString());
-                        tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
-                        Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
-                        Auxiliar.returnMain(this);
-                        break;
-                    case RESULT_CANCELED:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
-                        desbloqueaBt();
-                        break;
-                    default:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
+                        mensajeError();
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -374,52 +478,74 @@ public class Tarea extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         --restantes;
-                        String respuesta;
-                        if((respuesta = tarea.getRespuestaTarea()) == null) {//Primera imagen de la serie
-                            tarea.setRespuestaTarea(photoURI.toString());
-                        } else {
-                            tarea.setRespuestaTarea(respuesta + separador + photoURI.toString());
-                        }
+                        /*String respuesta;
+                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
+                                photoURI.toString(), Context.MODE_PRIVATE))
+                            mensajeError();*/
                         if(restantes==0){
-                            tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
-                            Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                            Auxiliar.returnMain(this);
-                        }
-                        else {
-                            tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
+                            try {
+                                JSONObject json = PersistenciaDatos.recuperaTarea(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroRespuestas,
+                                        idTarea);
+                                json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                                if (!PersistenciaDatos.guardaTareaRespuesta(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroCompletadas,
+                                        json,
+                                        photoURI.toString(),
+                                        Context.MODE_PRIVATE))
+                                    mensajeError();
+                                Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
+                                Auxiliar.puntuaTarea(this, idTarea);
+                            }catch (Exception e){
+                                mensajeError();
+                            }
+                        } else {
+                            if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                                    PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
+                                    Context.MODE_PRIVATE))
+                                mensajeError();
                             Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
                             realizaCaptura(2);
                         }
                         break;
                     case RESULT_CANCELED:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
+                        mensajeError();
                         desbloqueaBt();
                         break;
                     default:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
+                        mensajeError();
                         Auxiliar.errorToast(this);
                 }
                 break;
             case 3://video
                 switch (resultCode){
                     case RESULT_OK:
-                        tarea.setRespuestaTarea(videoURI.toString());
-                        tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
+                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA),
+                                videoURI.toString(), Context.MODE_PRIVATE))
+                            mensajeError();
                         Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
-                        Auxiliar.returnMain(this);
+                        Auxiliar.puntuaTarea(this, idTarea);
                         break;
                     case RESULT_CANCELED:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
+                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
+                                Context.MODE_PRIVATE))
+                            mensajeError();
                         desbloqueaBt();
                         break;
                     default:
-                        tarea.setEstadoTarea(EstadoTarea.NO_COMPLETADA);
+                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
+                                Context.MODE_PRIVATE))
+                            mensajeError();
                         Auxiliar.errorToast(this);
                 }
                 break;
         }
-        //Se actualiza el estado de la base de datos
-        db.grupoTareasDao().updateTarea(tarea);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
@@ -436,20 +562,63 @@ public class Tarea extends AppCompatActivity {
             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
         }
         else{
-            tarea = db.grupoTareasDao().getTarea(idTarea);
             if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga")) {
-                tarea.setEstadoTarea(EstadoTarea.COMPLETADA);
-                tarea.setRespuestaTarea(respuesta);
+                try {
+                    JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroRespuestas,
+                            idTarea);
+                    tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+
+                    if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
+                            PersistenciaDatos.ficheroCompletadas,
+                            tarea,
+                            respuesta,
+                            Context.MODE_PRIVATE))
+                        mensajeError();
+                }catch (Exception e){
+                    mensajeError();
+                }
             }
             else {
-                tarea.setRespuestaTarea(respuesta);
+                if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                        PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
+                        respuesta, Context.MODE_PRIVATE))
+                    mensajeError();
             }
-            db.grupoTareasDao().updateTarea(tarea);
-
-            Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
+            if(respuestaEsperada!=null){
+                if (respuesta.contains(respuestaEsperada)) {
+                    Toast.makeText(this, R.string.respuestaEspeCorrecta, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, R.string.respuestaEspeIncrrecta + " " + respuestaEsperada, Toast.LENGTH_SHORT).show();
+                }
+            }else {
+                Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
+            }
             salida = true;
         }
+
         return salida;
+    }
+
+    private void mensaje(boolean acierto){
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+        alertBuilder.setTitle(getString(R.string.respuestaEspeTitulo));
+        if(acierto){
+            alertBuilder.setIcon(R.drawable.ic_check_green_24dp);
+            alertBuilder.setMessage(R.string.respuestaEspeCorrecta);
+        }else{
+            alertBuilder.setIcon(R.drawable.ic_thumb_down_red_24dp);
+            alertBuilder.setMessage(getString(R.string.respuestaEspeIncrrecta)+"\r\n"+respuestaEsperada);
+        }
+
+        alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        alertBuilder.show();
     }
 
     /**
@@ -541,8 +710,22 @@ public class Tarea extends AppCompatActivity {
      */
     public void onResume() {
         super.onResume();
-        if(db == null) {
-            db = GrupoTareasDatabase.getInstance(getBaseContext());
-        }
+    }
+
+    /**
+     * Método para controlar la llamada del usuario al botón atrás
+     */
+    @Override
+    public void onBackPressed(){
+        super.onBackPressed();
+        JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                getApplication(),
+                PersistenciaDatos.ficheroRespuestas,
+                idTarea);
+        PersistenciaDatos.guardaJSON(getApplication(),
+                PersistenciaDatos.ficheroTareas,
+                tarea,
+                Context.MODE_PRIVATE);
+        Auxiliar.returnMain(this);
     }
 }

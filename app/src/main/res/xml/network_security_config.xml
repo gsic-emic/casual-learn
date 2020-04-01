@@ -2,5 +2,17 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">openptmap.org</domain>
+        <domain includeSubdomains="true">192.168.1.14</domain>
     </domain-config>
+    <!--<base-config>
+        <trust-anchors>
+            <certificates src="@raw/server_gyt"/>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>-->
+    <!--<debug-overrides>
+        <trust-anchors>
+            <certificates src="@raw/server_gyt"/>
+        </trust-anchors>
+    </debug-overrides>-->
 </network-security-config>

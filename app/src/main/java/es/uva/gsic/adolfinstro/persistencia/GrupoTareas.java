@@ -1,4 +1,4 @@
-package es.uva.gsic.adolfinstro.persistencia;
+/*package es.uva.gsic.adolfinstro.persistencia;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
@@ -95,4 +95,4 @@ public class GrupoTareas {
     public void setRespuestaTarea(String respuestaTarea){
         this.respuestaTarea = respuestaTarea;
     }
-}
+}*/

@@ -1,4 +1,4 @@
-package es.uva.gsic.adolfinstro.persistencia;
+/*package es.uva.gsic.adolfinstro.persistencia;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
@@ -29,4 +29,4 @@ interface GrupoTareasDao {
     @Update(entity = GrupoTareas.class)
     int updateTarea(GrupoTareas tarea);
 
-}
+}*/
