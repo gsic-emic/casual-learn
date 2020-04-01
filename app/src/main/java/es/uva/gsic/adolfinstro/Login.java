@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
+import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase que permite a los usuarios identificarse frente al sistema.
@@ -178,7 +180,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 tareaCuenta(task);
             break;
             default:
-
         }
     }
 
@@ -219,6 +220,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        PersistenciaDatos.creaFichero(getApplication(), PersistenciaDatos.ficheroUsuario, json, Context.MODE_PRIVATE);
         final Intent intent = new Intent(this, Maps.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         JsonObjectRequest jsonObj = new JsonObjectRequest(Request.Method.PUT, url, json, new Response.Listener<JSONObject>() {
@@ -235,7 +237,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         });
         ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObj);
     }
-
 
     /**
      * Método para atender al cambio de una preferencia

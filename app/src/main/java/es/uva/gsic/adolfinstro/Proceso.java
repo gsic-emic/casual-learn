@@ -82,20 +82,15 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     /** Distancia máxima que podría andar en el intervalo de comprobación*/
     private final double maxAndado = (5 * ((double)intervaloComprobacion/1000) / 3600);
 
-    /** Instante en el que se realizó la última notificación automática */
-    private long instanteUltimaNotif = 0;
-
-    /** Latitiud desde donde se han recuperado las tareas del servidor */
-    public static double latitudGet = 0;
-    /** Longitud desde donde se han recuperado las tareas del servidor */
-    public static double longitudGet = 0;
-
     public static boolean tareasActualizadas = false;
 
     /** Última latitud obtenida */
     private double latitudAnt = 0;
     /** Última longitud obtenida */
     private double longitudAnt = 0;
+
+    private String idInstanteGET = "instanteGET";
+    private String idInstanteNotAuto = "instanteNotAuto";
 
     // Métodos necesarios para heredar de Service
     public class ProcesoBinder extends Binder {
@@ -179,8 +174,22 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * @param location Objeto que contiene la ubicación del alumno
      */
     private void compruebaTareas(Location location) {
+        //Latitiud desde donde se han recuperado las tareas del servidor
+        double latitudGet = 0;
+        //Longitud desde donde se han recuperado las tareas del servidor
+        double longitudGet = 0;long momento;
         double latitud = location.getLatitude();
         double longitud = location.getLongitude();
+        //Se comprueba si existe el fichero y el objeto
+        if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idInstanteGET)){
+            try {
+                JSONObject instante = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idInstanteGET);
+                latitudGet = instante.getDouble(Auxiliar.latitud);
+                longitudGet = instante.getDouble(Auxiliar.longitud);
+            }catch (Exception e){
+                //
+            }
+        }
         if(latitudGet==0 || longitudGet==0){//Inicio del servicio, se tiene que recuperar la tarea del servidor
             peticionTareasServidor(location);
         }else{
@@ -208,8 +217,16 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 @Override
                 public void onResponse(JSONArray response) {
                     PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareas, response, Context.MODE_PRIVATE);
-                    latitudGet = location.getLatitude();
-                    longitudGet = location.getLongitude();
+                    try {
+                        JSONObject j = new JSONObject();
+                        j.put("id", idInstanteGET);
+                        j.put(Auxiliar.latitud, location.getLatitude());
+                        j.put(Auxiliar.longitud, location.getLongitude());
+                        j.put(Auxiliar.instante, new Date().getTime());
+                        PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroInstantes, j);
+                    }catch (JSONException e){
+                        //No se ha guardado el get en el registro, volverá a pedirlo en la siguiente iteración
+                    }
                     tareasActualizadas = true;
                     compruebaLocalizacion(location);
                 }
@@ -227,7 +244,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     }
 
 
-    /* PRUEBAS */
+    /* PRUEBAS
     final double plazaMayorLat = 41.6520;
     final double plazaMayorLong = -4.7286;
     final double laAntiguaLat = 41.6547;
@@ -239,7 +256,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     final double cigalesLat = 41.7581;
     final double cigalesLong = -4.698;
     final double tareaLat = 42.0076;
-    final double tareaLong = -4.52449;
+    final double tareaLong = -4.52449;*/
     /**
      * Método de pruebas
      * @param location Posición
@@ -259,10 +276,16 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             datosValidos = true;
         }
 
-        Date date = new Date();
-        long instante = date.getTime();
+        long instanteUltimaNotif;
 
-        boolean comprueba = instante >= instanteUltimaNotif + ((intervalo > 0)?intervalo*3600*1000:59000);
+        try {
+            JSONObject instante = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idInstanteNotAuto);
+            instanteUltimaNotif = instante.getLong(Auxiliar.instante);
+        }catch (Exception e){
+            instanteUltimaNotif = 0;
+        }
+
+        boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((intervalo > 0)?intervalo*3600*1000:59000);
         if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
             if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
                 if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
@@ -281,112 +304,18 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                         }
                         if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
                             //pintaNotificacion(String.format("%d",(int) (Math.random()*6)));
-                            pintaNotificacion(tarea);
+                            try {
+                                PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareas, tarea.getString(Auxiliar.id));
+                                pintaNotificacion(tarea); //Si no se ha eliminado la tarea del otro fichero no se lanza la notificación
+                            }catch (Exception e){
+                                //NO se ha extraido de las tareas
+                            }
                         }
                     }
                 }
             }
         }
     }
-
-    //TODO Método únicamente utilizado para desarrollo BORRAR!!
-    private void pintaNotificacion(String idTarea) {
-        String id = "https://casssualearn.gsic.uva.es/resource/Ermita_de_San_Juan_Bautista_(Palencia)/compararPortadaRomanicoGotico/10";
-        id = id + System.nanoTime();
-        //GrupoTareas tarea;
-        String titu;
-        Intent intent = new Intent(context, Tarea.class);
-        String recursoAsociadoTexto = "Fotografía la portada que da acceso a la Ermita de San Juan Bautista. Luego puedes acercarte a la Iglesia de San Francisco. Fotografía también su portada y compara ambas";
-        intent.putExtra(Auxiliar.id, id);
-        intent.putExtra(Auxiliar.recursoAsociadoTexto, recursoAsociadoTexto);
-        //intent.putExtra(Tarea.recursoImagen, "https://upload.wikimedia.org/wikipedia/commons/6/69/Salamanca_Parroquia_Arrabal.jpg");
-        //intent.putExtra(Tarea.recursoImagen, "https://commons.wikimedia.org/wiki/Special:FilePath/Calatañazor-Castillo.jpg");
-        //intent.putExtra(Tarea.recursoImagenBaja, "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Calata%C3%B1azor-Castillo.jpg/300px-Calata%C3%B1azor-Castillo.jpg");
-        intent.putExtra(Auxiliar.recursoImagen, "https://upload.wikimedia.org/wikipedia/commons/1/13/Iglesia_de_San_Francisco_%28Palencia%29._Fachada.jpg");
-        intent.putExtra(Auxiliar.recursoImagenBaja, "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Iglesia_de_San_Francisco_%28Palencia%29._Fachada.jpg/300px-Iglesia_de_San_Francisco_%28Palencia%29._Fachada.jpg");
-        idTarea = "1";
-        switch (idTarea){
-            case "0":
-                titu = "sinRespuesta";
-                intent.putExtra("tipoRespuesta", TiposTareas.SIN_RESPUESTA.getValue());
-                //tarea = new GrupoTareas(id, TiposTareas.SIN_RESPUESTA.getValue(), EstadoTarea.NOTIFICADA);
-                break;
-            case "1":
-                titu = "preguntaCorta";
-                intent.putExtra("tipoRespuesta", TiposTareas.PREGUNTA_CORTA.getValue());
-                //tarea = new GrupoTareas(id, TiposTareas.PREGUNTA_CORTA.getValue(), EstadoTarea.NOTIFICADA);
-                break;
-            case "2":
-                titu = "preguntaLarga";
-                intent.putExtra("tipoRespuesta", TiposTareas.PREGUNTA_LARGA.getValue());
-                //tarea = new GrupoTareas(id, TiposTareas.PREGUNTA_LARGA.getValue(), EstadoTarea.NOTIFICADA);
-                break;
-            case "3":
-                titu = "preguntaImagen";
-                intent.putExtra("tipoRespuesta", TiposTareas.PREGUNTA_IMAGEN.getValue());
-                //tarea = new GrupoTareas(id, TiposTareas.PREGUNTA_IMAGEN.getValue(), EstadoTarea.NOTIFICADA);
-                break;
-            case "4":
-                titu = "imagen";
-                intent.putExtra("tipoRespuesta", TiposTareas.IMAGEN.getValue());
-                //tarea = new GrupoTareas(id, TiposTareas.IMAGEN.getValue(), EstadoTarea.NOTIFICADA);
-                break;
-            case "5":
-                titu = "imagenMultiple";
-                intent.putExtra("tipoRespuesta", TiposTareas.IMAGEN_MULTIPLE.getValue());
-                //tarea = new GrupoTareas(id, TiposTareas.IMAGEN_MULTIPLE.getValue(), EstadoTarea.NOTIFICADA);
-                break;
-            case "6":
-                titu = "video";
-                intent.putExtra("tipoRespuesta", TiposTareas.VIDEO.getValue());
-                //tarea = new GrupoTareas(id, TiposTareas.VIDEO.getValue(), EstadoTarea.NOTIFICADA);
-                break;
-            default:
-                return;
-        }
-        //db.grupoTareasDao().insertTarea(tarea);
-        try {
-            //JSONArray jsonArray = Auxiliar.leeFichero(getApplication(), Auxiliar.ficheroRespuestas);
-            //No se comprueba si la tarea existía en la base de datos ya que se ha realizado esta comprobación el método previo
-            JSONObject jsonObject = PersistenciaDatos.generaJSON(id, titu, EstadoTarea.NOTIFICADA);
-            //jsonArray.put(jsonObject);
-            if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, jsonObject, Context.MODE_PRIVATE))
-                throw new Exception();
-            //Se crea aquí la notificación para que la hora a la que se lanza la notificación sea el correcto
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
-                    .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setContentTitle(titu)
-                    .setContentText(recursoAsociadoTexto);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, incr, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-
-            builder.setContentIntent(pendingIntent);
-            builder.setAutoCancel(true);
-            //builder.setTimeoutAfter(tiempoNotificacion); No es necesario en este tipo de notificaciones
-
-            //Botones extra
-            Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
-            intentBoton.setAction("AHORA_NO");
-            intentBoton.putExtra("id", id);
-            intentBoton.putExtra("idNotificacion", incr);
-            PendingIntent ahoraNoPending = PendingIntent.getBroadcast(context, incr + 999, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
-
-            intentBoton.setAction("NUNCA_MAS");
-            PendingIntent nuncaMasP = PendingIntent.getBroadcast(context, incr + 1000, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.addAction(R.drawable.ic_delete_black_24dp, getString(R.string.nuncaMas), nuncaMasP);
-
-            notificationManager.notify(incr, builder.build());
-
-            instanteUltimaNotif = new Date().getTime();
-
-            ++incr;
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
 
     /**
      * Método encargado de lanzar la notificación automática
@@ -414,8 +343,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             }
             //GrupoTareas tarea = new GrupoTareas(id, tipoRespuesta, EstadoTarea.NOTIFICADA);
             try {
-                JSONObject json = PersistenciaDatos.generaJSON(id, tipoRespuesta, EstadoTarea.NOTIFICADA);
-                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, json, Context.MODE_PRIVATE))
+                jsonObject.put(Auxiliar.tipoRespuesta, tipoRespuesta);
+                jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
+                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, jsonObject, Context.MODE_PRIVATE))
                     throw new Exception();
                 Intent intent = new Intent(context, Tarea.class);
                 intent.putExtra(Auxiliar.id, id);
@@ -428,8 +358,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setContentTitle(tipoRespuesta)
-                        .setContentText(recursoAsociadoTexto);
+                        .setContentTitle(getString(R.string.nuevaTarea))
+                        .setContentText(jsonObject.getString(Auxiliar.titulo));
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, incr, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -440,17 +370,22 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 //Botones extra
                 Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
                 intentBoton.setAction("AHORA_NO");
-                intentBoton.putExtra("id", id);
+                intentBoton.putExtra(Auxiliar.id, id);
                 intentBoton.putExtra("idNotificacion", incr);
                 PendingIntent ahoraNoPending = PendingIntent.getBroadcast(context, incr + 999, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
+                builder.setDeleteIntent(ahoraNoPending);
 
                 intentBoton.setAction("NUNCA_MAS");
                 PendingIntent nuncaMasP = PendingIntent.getBroadcast(context, incr + 1000, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.addAction(R.drawable.ic_delete_black_24dp, getString(R.string.nuncaMas), nuncaMasP);
                 notificationManager.notify(incr, builder.build()); //Notificación lanzada
 
-                instanteUltimaNotif = new Date().getTime(); //Actualizamos el instante
+                long instanteUltimaNotif = new Date().getTime(); //Actualizamos el instante
+                JSONObject j = new JSONObject();
+                j.put(Auxiliar.id, idInstanteNotAuto);
+                j.put(Auxiliar.instante, instanteUltimaNotif);
+                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroInstantes, j);
                 ++incr; //Para que no tengan dos notificaciones el mismo valor
             }catch (Exception e){
                 e.printStackTrace();
@@ -480,8 +415,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * Método para crear el servicio en primer plano
      */
     private void mantenServicio(){
-        //Intent intent = new Intent(this, Proceso.class);
-        Intent intent = new Intent(context, Maps.class);
+        Intent intent = new Intent(this, Proceso.class);
+        //Intent intent = new Intent(context, Maps.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se diferencia las versiones de android

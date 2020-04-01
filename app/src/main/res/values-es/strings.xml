@@ -51,7 +51,7 @@
     <string name="sinDescripcion">Tarea sin descripción</string>
     <string name="recursoMaximaResolucion">Ya está en máxima resolución</string>
     <string name="voy">¡Voy!</string>
-    <string name="score">¡Puntua la tarea!</string>
+    <string name="score">¡Puntúa la tarea!</string>
     <string name="thanks">¡Gracias por puntuar la tarea!</string>
     <string name="ahoraNo">Ahora no</string>
     <string name="nuncaMas">Nunca más</string>
@@ -63,4 +63,5 @@
     <string name="respuestaEspeTitulo">Respuesta esperada</string>
     <string name="respuestaEspeCorrecta">¡Respuesta correcta!</string>
     <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
+    <string name="nuevaTarea">¡¡Nueva tarea!!</string>
 </resources>

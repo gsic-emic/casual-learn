@@ -67,4 +67,5 @@
     <string name="respuestaEspeTitulo">Expected response</string>
     <string name="respuestaEspeCorrecta">Correct answer!</string>
     <string name="respuestaEspeIncrrecta">Wrong answer!</string>
+    <string name="nuevaTarea">New task!!</string>
 </resources>

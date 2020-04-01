@@ -25,8 +25,16 @@ public class PersistenciaDatos {
     public static final String ficheroTareas = "tareas";
     /** Fichero donde se almacenan las respuestas del alumno */
     public static final String ficheroRespuestas = "respuestas";
+    /** Fichero con las tareas rechazadas */
+    public static final String ficheroTareasRechazadas = "rechazadas";
     /** Fichero donde se almacenan las puntuacines que el usuario hace de las tareas */
     public static final String ficheroPuntuaciones = "puntuaciones";
+    /** Fichero con los datos del usuario */
+    public static final String ficheroUsuario = "usario";
+    /** Fichero con fechas de instantes de eventos */
+    public static final String ficheroInstantes = "eventos";
+    /** Fichero con las tareas completadas */
+    public static final String ficheroCompletadas = "completadas";
 
     /**
      * Método para obtener el contenido de un fichero que se sabe que está estructurado en forma de JSON
@@ -79,6 +87,21 @@ public class PersistenciaDatos {
     }
 
     /**
+     * Método para guardar un fichero con un JSONbject. Para reutilizar la mayor cantidad de código
+     * posible, el JSONObject está contenido en un JSONArray (Context.MODE_PRIVATE)
+     *
+     * @param app App
+     * @param fichero Nombre del fichero que se va a crear
+     * @param jsonObject Objeto que se va a almacenar en el fichero
+     * @param modo Modo de estritura del fichero
+     * @return Devolverá true si el fichero se ha almacenado correctamente
+     */
+    public static synchronized boolean creaFichero(Application app, String fichero, JSONObject jsonObject, int modo){
+        JSONArray array = new JSONArray();
+        array.put(jsonObject);
+        return guardaFichero(app, fichero, array, modo);
+    }
+    /**
      * Método para almacenar un JSONObject al final de un fichero (dentro de un JSONArray)
      *
      * @param app Aplicación
@@ -105,7 +128,7 @@ public class PersistenciaDatos {
      * @param modo Modo de escritura con el que se va a guardar el fichero (Context.MODE_PRIVATE -> sobrescritura)
      * @return True si todas las operaciones se han llevado a cabo de manera correcta
      */
-    public static synchronized boolean guardaJSON(Application app, String fichero, JSONObject jsonObject, String respuesta, int modo){
+    public static synchronized boolean guardaTareaRespuesta(Application app, String fichero, JSONObject jsonObject, String respuesta, int modo){
         try {
             JSONObject tarea = obtenTarea(app, fichero, (String) jsonObject.get("id"));
             JSONArray vectorRespuestas = null;
@@ -125,6 +148,41 @@ public class PersistenciaDatos {
             array.put(tarea); tarea = null;
             return guardaFichero(app, fichero, array, modo);
         } catch (Exception e){
+            return false;
+        }
+    }
+
+    /**
+     * Método para reemplazar un objeto JSON que exista dentro de un fichero por otro. Si el objeto no
+     * existe en el fichero se almacena sin sustituir nada
+     *
+     * @param app Application
+     * @param fichero Nombre del fichero
+     * @param jsonObject Fichero a reemplazar por el existento en el fichero. Tiene que tener un
+     *                   String con el identificador ("id")
+     * @return Devolverá true si se ha conseguido almacenar el JSON en el fichero
+     */
+    public static synchronized boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject){
+        try {
+            int modo = Context.MODE_PRIVATE;
+            JSONArray array = leeFichero(app, fichero);
+            String id = jsonObject.getString("id");
+            JSONObject base;
+            boolean encontrado = false;
+            int i;
+            for (i = 0; i < array.length(); i++) {
+                base = array.getJSONObject(i);
+                if(base.getString("id").equals(id)){
+                    encontrado = true;
+                    break;
+                }
+            }
+            if(encontrado){
+                array.remove(i);
+            }
+            array.put(jsonObject);
+            return guardaFichero(app, fichero, array, modo);
+        }catch (Exception e){
             return false;
         }
     }
@@ -162,7 +220,7 @@ public class PersistenciaDatos {
      * @return JSONObject que corresponde con el identificador y el fichero
      * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
      */
-    private static synchronized JSONObject obtenTarea(Application app, String fichero, String idTarea) throws Exception {
+    public static synchronized JSONObject obtenTarea(Application app, String fichero, String idTarea) throws Exception {
         JSONArray jsonArray = leeFichero(app, fichero);
         JSONObject jsonObject = null;
         boolean encontrado = false;
@@ -206,6 +264,17 @@ public class PersistenciaDatos {
             return null;
         }
         return null;
+    }
+
+    /**
+     * Método para comprobar si un fichero tiene objetos almacenados
+     *
+     * @param app Aplicación
+     * @param fichero Nombre del fichero
+     * @return Verdadero si el fichero tiene objetos
+     */
+    public static boolean tieneObjetos(Application app, String fichero){
+        return leeFichero(app, fichero).length() > 0;
     }
 
     /**

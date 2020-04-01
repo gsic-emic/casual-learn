@@ -3,8 +3,6 @@ package es.uva.gsic.adolfinstro.auxiliar;
 import android.Manifest;
 import android.app.Application;
 import android.app.Dialog;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,10 +14,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -32,12 +28,9 @@ import java.util.List;
 import java.util.Random;
 
 import es.uva.gsic.adolfinstro.Ajustes;
-import es.uva.gsic.adolfinstro.EstadoTarea;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
-import es.uva.gsic.adolfinstro.RecepcionNotificaciones;
-import es.uva.gsic.adolfinstro.Tarea;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Auxiliar {
@@ -51,6 +44,8 @@ public class Auxiliar {
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
     public static final String titulo = "titulo";
+    public static final String instante = "instante";
+    public static final String estadoTarea = "estadoTarea";
 
     public static final String radio = "radio";
 

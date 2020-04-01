@@ -103,9 +103,12 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
 
     private boolean primerosPuntos;
 
-    private long ultimaPosicionInstante;
+    private String idUltimaPosicionMapa = "ultimaPosicionMapa";
+    private String idinstanteUltimaNoti = "ultimaNoti";
+
+    /*private long ultimaPosicionInstante;
     private double ultimaPosicionLatitud;
-    private double ultimaPosicionLogintud;
+    private double ultimaPosicionLogintud;*/
 
 
 
@@ -313,7 +316,9 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 punto2.getLatitude(), punto2.getLongitude());
     }
 
-    private LocationManager lm;
+    private LocationManager locationManager;
+    private LocationListener locationListenerGPS;
+    private LocationListener locationListenerNETWORK;
 
     /**
      * Se restaura el mapa tal y como se indica en la guía.
@@ -322,14 +327,14 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     public void onResume() {
         super.onResume();
         if(!noMolestar) {
-            lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
             try {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     checkPermissions();
                 } else {
-                    lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
-                    lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, this);
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000, 0, this);
+                    //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, this);
                 }
             } catch (Exception e) {
                 //TODO
@@ -338,7 +343,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 map.onResume();
         }
         else
-            lm = null;
+            locationManager = null;
     }
 
     /**
@@ -349,6 +354,12 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         super.onPause();
         if(map != null)
             map.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        locationManager.removeUpdates(this);
     }
 
     /**
@@ -510,12 +521,11 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
 
     @Override
     public void onLocationChanged(Location location){
-        double latitudGet = Proceso.latitudGet;
-        double longitudGet = Proceso.longitudGet;
         double latitud = location.getLatitude();
         double longitud = location.getLongitude();
         long instante = new Date().getTime();
-        if(latitudGet != 0 || longitudGet != 0){//El fichero está creado
+
+        if(PersistenciaDatos.tieneObjetos(getApplication(), PersistenciaDatos.ficheroTareas)){//El fichero tiene tareas que representar
             if(Proceso.tareasActualizadas || primerosPuntos){
                 Proceso.tareasActualizadas = false;
                 map.getOverlays().clear();
@@ -549,34 +559,76 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                         newMarker(j.getDouble(Auxiliar.latitud), j.getDouble(Auxiliar.longitud), j.getString(Auxiliar.titulo), posiciones.get(j));
                     }
                     primerosPuntos = false;
+                    map.invalidate();
                 }catch (Exception e){
                     //TODO
                 }
             }
 
             //Si el usuario está cerca de una tarea se le notifica
-            //TODO Se comprueba qué tarea es la más cercana a través del método calculaDistanciaDosPuntos. Se actualiza el valor de distancia y se tiene la tarea en un JSONObject
             try{
                 JSONObject tarea = Auxiliar.tareaMasCercana(getApplication(), latitud, longitud);
                 double distancia = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
                 //Con esta distancia se notifia al usuario si está lo suficientemente cerca
+                long ultimaPosicionInstante;
+                double ultimaPosicionLatitud, ultimaPosicionLogintud;
+                if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idUltimaPosicionMapa)){
+                    try {
+                        JSONObject json = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idUltimaPosicionMapa);
+                        ultimaPosicionInstante = json.getLong(Auxiliar.instante);
+                        ultimaPosicionLatitud = json.getDouble(Auxiliar.latitud);
+                        ultimaPosicionLogintud = json.getDouble(Auxiliar.longitud);
+                        json = null;
+                    }catch (Exception e){
+                        ultimaPosicionInstante = 0;
+                        ultimaPosicionLatitud = 0;
+                        ultimaPosicionLogintud = 0;
+                    }
+                }
+                else{
+                    ultimaPosicionInstante = 0;
+                    ultimaPosicionLatitud = 0;
+                    ultimaPosicionLogintud = 0;
+                }
                 if(distancia < 0.075){
                     //Se comprueba si va andando:
                     if(ultimaPosicionInstante != 0){//No es la primera iteración
                         long tiempo = instante - ultimaPosicionInstante;
                         double maxAndada = tiempo * ((double) 5/3600000);
                         distancia = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, ultimaPosicionLatitud, ultimaPosicionLogintud);
-                        if(distancia <= maxAndada)
-                            if(new Date().getTime() > (ultimaNotificacion + 60000))
-                                pintaNotificacion(tarea);
+                        if(distancia <= maxAndada) {
+                            long ultimaNotificacion;
+                            try {
+                                JSONObject json = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idinstanteUltimaNoti);
+                                ultimaNotificacion = json.getLong(Auxiliar.instante);
+                                json = null;
+                            }catch (Exception e){
+                                ultimaNotificacion = 0;
+                            }
+                            if (new Date().getTime() > (ultimaNotificacion + 60000)) {
+                                try {
+                                    PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareas, tarea.getString(Auxiliar.id));
+                                    pintaNotificacion(tarea);
+                                } catch (Exception e) {
+                                    //NO se ha extraido de las tareas
+                                }
+                            }
+                        }
                     }
                 }
-                ultimaPosicionInstante = instante;
-                ultimaPosicionLogintud = longitud;
-                ultimaPosicionLatitud = latitud;
+                JSONObject j = new JSONObject();
+                j.put("id", idUltimaPosicionMapa);
+                j.put(Auxiliar.latitud, location.getLatitude());
+                j.put(Auxiliar.longitud, location.getLongitude());
+                j.put(Auxiliar.instante, new Date().getTime());
+                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroInstantes, j);
             }catch (Exception e){
                 //TODO
             }
+        }
+        else{
+            map.getOverlays().clear();
+            pintaItemsfijos();
         }
     }
 
@@ -604,10 +656,10 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             } catch (Exception e){
                 //No tiene respuestaEsperada
             }
-            //GrupoTareas tarea = new GrupoTareas(id, tipoRespuesta, EstadoTarea.NOTIFICADA);
             try {
-                JSONObject json = PersistenciaDatos.generaJSON(id, tipoRespuesta, EstadoTarea.NOTIFICADA);
-                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, json, Context.MODE_PRIVATE))
+                jsonObject.put(Auxiliar.tipoRespuesta, tipoRespuesta);
+                jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
+                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, jsonObject, Context.MODE_PRIVATE))
                     throw new Exception();
                 Intent intent = new Intent(context, Tarea.class);
                 intent.putExtra(Auxiliar.id, id);
@@ -620,8 +672,9 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setContentTitle(tipoRespuesta)
-                        .setContentText(recursoAsociadoTexto);
+                        .setContentTitle(getString(R.string.nuevaTarea))
+                        .setContentText(jsonObject.getString(Auxiliar.titulo))
+                        .setTimeoutAfter(180000);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, incr, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -632,21 +685,25 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 //Botones extra
                 Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
                 intentBoton.setAction("AHORA_NO");
-                intentBoton.putExtra("id", id);
+                intentBoton.putExtra(Auxiliar.id, id);
                 intentBoton.putExtra("idNotificacion", incr);
                 PendingIntent ahoraNoPending = PendingIntent.getBroadcast(context, incr + 999, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
+                builder.setDeleteIntent(ahoraNoPending);
 
                 intentBoton.setAction("NUNCA_MAS");
                 PendingIntent nuncaMasP = PendingIntent.getBroadcast(context, incr + 1000, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
                 builder.addAction(R.drawable.ic_delete_black_24dp, getString(R.string.nuncaMas), nuncaMasP);
+
                 notificationManager.notify(incr, builder.build()); //Notificación lanzada
-                ultimaNotificacion = new Date().getTime();
+                JSONObject j = new JSONObject();
+                j.put(Auxiliar.id, idinstanteUltimaNoti);
+                j.put(Auxiliar.instante, new Date().getTime());
+                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroInstantes, j);
                 ++incr; //Para que no tengan dos notificaciones el mismo valor
             }catch (Exception e){
                 e.printStackTrace();
             }
-            //db.grupoTareasDao().insertTarea(tarea);//Guardo en la base de datos
         }catch (JSONException je){
             //Si alguno de los campos que siempre deberían existir no existen
         }

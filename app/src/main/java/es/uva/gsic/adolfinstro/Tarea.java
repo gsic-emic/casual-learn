@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -170,6 +172,21 @@ public class Tarea extends AppCompatActivity {
 
         if(!PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroRespuestas, idTarea))
             mensajeError();
+        else{
+            try {
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        idTarea);
+                tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
+                PersistenciaDatos.guardaJSON(getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        tarea,
+                        Context.MODE_PRIVATE);
+            }catch (JSONException e){
+                //No se ha modificado el valor del estado en la respuesta
+            }
+        }
 
     }
 
@@ -180,6 +197,14 @@ public class Tarea extends AppCompatActivity {
         alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        idTarea);
+                PersistenciaDatos.guardaJSON(getApplication(),
+                        PersistenciaDatos.ficheroTareas,
+                        tarea,
+                        Context.MODE_PRIVATE);
                 Auxiliar.returnMain(getBaseContext());
             }
         });
@@ -245,13 +270,29 @@ public class Tarea extends AppCompatActivity {
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btVolver:
+                //Se pasa la tarea del fichero de noficaciones al de tareas globales
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroRespuestas,
+                        idTarea);
+                PersistenciaDatos.guardaJSON(getApplication(),
+                        PersistenciaDatos.ficheroTareas,
+                        tarea,
+                        Context.MODE_PRIVATE);
                 Auxiliar.returnMain(this);
                 break;
             case R.id.btAceptar:
                 if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())){
                     try {
-                        respuesta = PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA);
-                        PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, respuesta, Context.MODE_PRIVATE);
+                        JSONObject respuesta = PersistenciaDatos.recuperaTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroRespuestas,
+                                idTarea);
+                        respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                        PersistenciaDatos.guardaJSON(getApplication(),
+                                PersistenciaDatos.ficheroCompletadas,
+                                respuesta,
+                                Context.MODE_PRIVATE);
                     }catch (Exception e){
                         mensajeError();
                     }
@@ -404,26 +445,32 @@ public class Tarea extends AppCompatActivity {
             case 1: //Imagen
                 switch (resultCode){
                     case RESULT_OK:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA),
-                                photoURI.toString(), Context.MODE_PRIVATE))
-                            mensajeError();
-                        Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
+                        try {
+                            JSONObject respuesta = PersistenciaDatos.recuperaTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroRespuestas,
+                                    idTarea);
+                            respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                            if (!PersistenciaDatos.guardaTareaRespuesta(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroCompletadas,
+                                    respuesta,
+                                    photoURI.toString(),
+                                    Context.MODE_PRIVATE))
+                                mensajeError();
+                            Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
 
-                        Auxiliar.puntuaTarea(this, idTarea);
+                            Auxiliar.puntuaTarea(this, idTarea);
+                        }catch (Exception e){
+                            mensajeError();
+                        }
                         break;
                     case RESULT_CANCELED:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                Context.MODE_PRIVATE))
-                            mensajeError();
+                        mensajeError();
                         desbloqueaBt();
                         break;
                     default:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                Context.MODE_PRIVATE))
-                            mensajeError();
+                        mensajeError();
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -431,20 +478,31 @@ public class Tarea extends AppCompatActivity {
                 switch (resultCode){
                     case RESULT_OK:
                         --restantes;
-                        String respuesta;
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                        /*String respuesta;
+                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
                                 PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
                                 photoURI.toString(), Context.MODE_PRIVATE))
-                            mensajeError();
+                            mensajeError();*/
                         if(restantes==0){
-                            if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                    PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA),
-                                    photoURI.toString(), Context.MODE_PRIVATE))
+                            try {
+                                JSONObject json = PersistenciaDatos.recuperaTarea(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroRespuestas,
+                                        idTarea);
+                                json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                                if (!PersistenciaDatos.guardaTareaRespuesta(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroCompletadas,
+                                        json,
+                                        photoURI.toString(),
+                                        Context.MODE_PRIVATE))
+                                    mensajeError();
+                                Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
+                                Auxiliar.puntuaTarea(this, idTarea);
+                            }catch (Exception e){
                                 mensajeError();
-                            Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                            Auxiliar.puntuaTarea(this, idTarea);
-                        }
-                        else {
+                            }
+                        } else {
                             if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
                                     PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
                                     Context.MODE_PRIVATE))
@@ -454,24 +512,18 @@ public class Tarea extends AppCompatActivity {
                         }
                         break;
                     case RESULT_CANCELED:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                Context.MODE_PRIVATE))
-                            mensajeError();
+                        mensajeError();
                         desbloqueaBt();
                         break;
                     default:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                Context.MODE_PRIVATE))
-                            mensajeError();
+                        mensajeError();
                         Auxiliar.errorToast(this);
                 }
                 break;
             case 3://video
                 switch (resultCode){
                     case RESULT_OK:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
                                 PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA),
                                 videoURI.toString(), Context.MODE_PRIVATE))
                             mensajeError();
@@ -511,13 +563,25 @@ public class Tarea extends AppCompatActivity {
         }
         else{
             if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga")) {
-                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                        PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA),
-                        respuesta, Context.MODE_PRIVATE))
+                try {
+                    JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroRespuestas,
+                            idTarea);
+                    tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+
+                    if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
+                            PersistenciaDatos.ficheroCompletadas,
+                            tarea,
+                            respuesta,
+                            Context.MODE_PRIVATE))
+                        mensajeError();
+                }catch (Exception e){
                     mensajeError();
+                }
             }
             else {
-                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
                         PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
                         respuesta, Context.MODE_PRIVATE))
                     mensajeError();
@@ -654,6 +718,14 @@ public class Tarea extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         super.onBackPressed();
+        JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                getApplication(),
+                PersistenciaDatos.ficheroRespuestas,
+                idTarea);
+        PersistenciaDatos.guardaJSON(getApplication(),
+                PersistenciaDatos.ficheroTareas,
+                tarea,
+                Context.MODE_PRIVATE);
         Auxiliar.returnMain(this);
     }
 }
