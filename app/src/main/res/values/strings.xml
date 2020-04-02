@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name" translatable="false">GYT APP</string>
+    <string name="app_name" translatable="false">GYTApp</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="accept">OK</string>
@@ -68,4 +68,6 @@
     <string name="respuestaEspeCorrecta">Correct answer!</string>
     <string name="respuestaEspeIncrrecta">Wrong answer!</string>
     <string name="nuevaTarea">New task!!</string>
+    <string name="enviar">Send</string>
+    <string name="gracias">Thanks!!</string>
 </resources>

@@ -64,4 +64,6 @@
     <string name="respuestaEspeCorrecta">¡Respuesta correcta!</string>
     <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
     <string name="nuevaTarea">¡¡Nueva tarea!!</string>
+    <string name="enviar">Enviar</string>
+    <string name="gracias">¡¡Gracias!!</string>
 </resources>
