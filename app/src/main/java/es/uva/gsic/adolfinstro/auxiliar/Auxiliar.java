@@ -46,6 +46,7 @@ public class Auxiliar {
     public static final String titulo = "titulo";
     public static final String instante = "instante";
     public static final String estadoTarea = "estadoTarea";
+    public static final String rating = "rating";
 
     public static final String radio = "radio";
 

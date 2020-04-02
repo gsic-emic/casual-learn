@@ -359,7 +359,9 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     @Override
     public void onStop() {
         super.onStop();
-        locationManager.removeUpdates(this);
+        if(locationManager != null) {
+            locationManager.removeUpdates(this);
+        }
     }
 
     /**
