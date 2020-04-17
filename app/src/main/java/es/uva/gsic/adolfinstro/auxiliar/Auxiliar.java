@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -23,9 +24,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Maps;
@@ -47,13 +48,30 @@ public class Auxiliar {
     public static final String instante = "instante";
     public static final String estadoTarea = "estadoTarea";
     public static final String rating = "rating";
+    public static final String fechaNotificiacion = "fechaNotificacion";
+    public static final String fechaUltimaModificacion = "fechaUltimaModificacion";
 
     public static final String radio = "radio";
+    public static final String nunca_mas = "NUNCA_MAS";
+    public static final String ahora_no = "AHORA_NO";
 
     /** Identificador del canal de tareas */
-    public static String channelId = "notiTareas";
+    public static final String channelId = "notiTareas";
+    public static final String cargaImagenPreview = "imagenPreview";
+    public static final String cargaImagenTarea = "imagenTarea";
+    public static final String cargaImagenDetalles = "imagenDetalles";
 
-    private static Random random = new Random();
+    public static final String tipoSinRespuesta = "sinRespuesta";
+    public static final String tipoImagen = "imagen";
+    public static final String tipoImagenMultiple = "imagenMultiple";
+    public static final String tipoVideo = "video";
+    public static final String tipoPreguntaCorta = "preguntaCorta";
+    public static final String tipoPreguntaLarga = "preguntaLarga";
+    public static final String tipoPreguntaImagen = "preguntaImagen";
+
+    private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
+
+    //private static Random random = new Random();
 
 
     private static final String[] listaFabricantes = {"huawei", "xiaomi"};
@@ -220,7 +238,7 @@ public class Auxiliar {
         double distanciaMin = 10000;
         try{
             //Se obtienen las tareas del fichero
-            JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareas);
+            JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareasUsuario);
             for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
                 tareaEvaluada = vectorTareas.getJSONObject(i);
                 if(!tarea.isEmpty()){
@@ -246,10 +264,52 @@ public class Auxiliar {
                 }
             }
             //Devolvemos una de las tareas del vector escogida de manera aleatorio
-            return tarea.get(random.nextInt(tarea.size()));
+            return tarea.get((int)(Math.random()*tarea.size()));
         }
         catch (Exception e){
             return null;
         }
+    }
+
+    public static String horaFechaActual() {
+        return formatoFecha.format(Calendar.getInstance().getTime());
+    }
+
+    public static IntentFilter intentFilter() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Auxiliar.nunca_mas);
+        intentFilter.addAction(Auxiliar.ahora_no);
+        return intentFilter;
+    }
+
+    public static int iconoTipoTarea(String tR) {
+        int iconoTarea;
+        switch (tR){
+            case Auxiliar.tipoSinRespuesta:
+                iconoTarea = R.drawable.ic_sin_respuesta;
+                break;
+            case Auxiliar.tipoPreguntaCorta:
+                iconoTarea = R.drawable.ic_preguntacorta;
+                break;
+            case Auxiliar.tipoPreguntaLarga:
+                iconoTarea = R.drawable.ic_preguntalarga;
+                break;
+            case Auxiliar.tipoPreguntaImagen:
+                iconoTarea = R.drawable.ic_preguntaimagen;
+                break;
+            case Auxiliar.tipoImagen:
+                iconoTarea = R.drawable.ic_imagen;
+                break;
+            case Auxiliar.tipoImagenMultiple:
+                iconoTarea = R.drawable.ic_imagenmultiple;
+                break;
+            case Auxiliar.tipoVideo:
+                iconoTarea = R.drawable.ic_video;
+                break;
+            default:
+                iconoTarea = 0;
+                break;
+        }
+        return iconoTarea;
     }
 }

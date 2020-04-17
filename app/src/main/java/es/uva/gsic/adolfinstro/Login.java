@@ -60,7 +60,8 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     private SharedPreferences sharedPreferences;
 
     /** Análisis comportamiento usuario */
-    private FirebaseAnalytics firebaseAnalytics;
+    private static FirebaseAnalytics firebaseAnalytics;
+
 
     @Override
     public void onCreate(Bundle sI){
@@ -85,8 +86,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         //Se tiene que registrar las pulsaciones del botón desde el código ya que no es un botón estándar
         //Se podría evitar tener que implementar el OnClickListener utilizando un botón estándar con una imagen
         btGoogle.setOnClickListener(this);
-        //pruebaGet();
-        //pruebaPut();
     }
 
     /**

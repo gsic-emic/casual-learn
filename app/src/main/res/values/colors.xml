@@ -6,4 +6,5 @@
     <color name="colorStarOn">#FF9800</color>
     <color name="colorStarOff">#757472</color>
     <color name="errorLogin">#FFE10808</color>
+    <color name="texto">#131313</color>
 </resources>

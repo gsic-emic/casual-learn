@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
 import es.uva.gsic.adolfinstro.EstadoTarea;
+import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 
 /**
  * Clase que gestiona las llamadas a los ficheros para la persistencia de datos
@@ -21,12 +22,18 @@ import es.uva.gsic.adolfinstro.EstadoTarea;
  * @author GSIC
  */
 public class PersistenciaDatos {
-    /** Fichero donde se almacen las tareas recibidas desde el servidor */
-    public static final String ficheroTareas = "tareas";
-    /** Fichero donde se almacenan las respuestas del alumno */
-    public static final String ficheroRespuestas = "respuestas";
+    /** Fichero donde se almacenan las tareas recibidas desde el servidor que el usuario puede iniciar*/
+    public static final String ficheroTareasUsuario = "tareasUsuario";
+    /** Fichero donde se almacenan las tareas recibidas del servidor para poner los marcadores en el mapa*/
+    public static final String ficheroTareasZona = "tareasZona";
+    /** Fichero donde se encuentras las tareas notificadas al alumno */
+    public static final String ficheroNotificadas = "notificadas";
+    ///** Fichero donde se almacenan las respuestas del alumno */
+    //public static final String ficheroRespuestas = "respuestas";
     /** Fichero con las tareas rechazadas */
     public static final String ficheroTareasRechazadas = "rechazadas";
+    /** Fichero con las tareas pospuestas */
+    public static final String ficheroTareasPospuestas = "pospuestas";
     /** Fichero donde se almacenan las puntuacines que el usuario hace de las tareas */
     public static final String ficheroPuntuaciones = "puntuaciones";
     /** Fichero con los datos del usuario */
@@ -130,7 +137,7 @@ public class PersistenciaDatos {
      */
     public static synchronized boolean guardaTareaRespuesta(Application app, String fichero, JSONObject jsonObject, String respuesta, int modo){
         try {
-            JSONObject tarea = obtenTarea(app, fichero, (String) jsonObject.get("id"));
+            JSONObject tarea = obtenTarea(app, fichero, jsonObject.getString(Auxiliar.id));
             JSONArray vectorRespuestas = null;
             try{
                 vectorRespuestas = tarea.getJSONArray("respuestaTarea");
@@ -200,7 +207,7 @@ public class PersistenciaDatos {
             JSONObject jsonObject;
             for (int i = 0; i < jsonArray.length(); i++) {
                 jsonObject = jsonArray.getJSONObject(i);
-                if (jsonObject.get("id").equals(idTarea)) {
+                if (jsonObject.get(Auxiliar.id).equals(idTarea)) {
                     return true;
                 }
             }
@@ -227,13 +234,13 @@ public class PersistenciaDatos {
         int i;
         for (i = 0; i < jsonArray.length(); i++) {
             jsonObject = jsonArray.getJSONObject(i);
-            if (jsonObject.get("id").equals(idTarea)) {
+            if (jsonObject.get(Auxiliar.id).equals(idTarea)) {
                 encontrado = true;
                 break;
             }
         }
         if(encontrado){
-            jsonArray.remove(i);
+            JSONObject jo = (JSONObject) jsonArray.remove(i);
             guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
             return jsonObject;
         }
@@ -255,7 +262,7 @@ public class PersistenciaDatos {
         try{
             for (int i = 0; i < jsonArray.length(); i++) {
                 jsonObject = jsonArray.getJSONObject(i);
-                if (jsonObject.get("id").equals(idTarea)) {
+                if (jsonObject.get(Auxiliar.id).equals(idTarea)) {
                     return jsonObject;
                 }
             }
@@ -287,9 +294,9 @@ public class PersistenciaDatos {
     public static JSONObject generaJSON(String idTarea, String tipo, EstadoTarea estadoTarea) {
         try {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("id", idTarea);
-            jsonObject.put("tipoTarea", tipo);
-            jsonObject.put("estadoTarea", estadoTarea.getValue());
+            jsonObject.put(Auxiliar.id, idTarea);
+            jsonObject.put(Auxiliar.tipoRespuesta, tipo);
+            jsonObject.put(Auxiliar.estadoTarea, estadoTarea.getValue());
             return jsonObject;
         }catch (Exception w){
             return null;

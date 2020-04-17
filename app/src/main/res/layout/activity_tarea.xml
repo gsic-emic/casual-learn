@@ -9,7 +9,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp">
+        android:layout_margin="5dp">
 
         <ImageView
             android:id="@+id/ivImagenDescripcion"
@@ -22,7 +22,17 @@
             app:layout_constraintTop_toTopOf="parent"
             android:contentDescription="@string/imagenDescripcionTarea"
             android:visibility="gone"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            android:adjustViewBounds="true"/>
+
+        <ImageView
+            android:id="@+id/ivDenunciarPregunta"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_error_outline_red_32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:onClick="boton" />
 
         <TextView
             android:id="@+id/tvDescripcion"
@@ -54,19 +64,32 @@
 
         <Button
             android:id="@+id/btVolver"
-            android:layout_width="150dp"
+            android:layout_width="wrap_content"
             android:layout_height="75dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
             android:layout_marginTop="20dp"
-            android:text="@string/cancel"
+            android:text="@string/ahoraNo"
             android:visibility="visible"
             android:onClick="boton"/>
 
         <Button
+            android:id="@+id/btTerminar"
+            android:layout_width="wrap_content"
+            android:layout_height="75dp"
+            app:layout_constraintStart_toEndOf="@id/btVolver"
+            app:layout_constraintEnd_toStartOf="@id/btCamara"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            android:layout_marginTop="20dp"
+            android:text="@string/terminar"
+            android:visibility="gone"
+            android:onClick="boton"/>
+
+        <Button
             android:id="@+id/btAceptar"
-            android:layout_width="150dp"
+            android:layout_width="wrap_content"
             android:layout_height="75dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -78,7 +101,7 @@
 
         <Button
             android:id="@+id/btCamara"
-            android:layout_width="150dp"
+            android:layout_width="wrap_content"
             android:layout_height="75dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"

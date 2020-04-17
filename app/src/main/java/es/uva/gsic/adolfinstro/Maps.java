@@ -36,9 +36,14 @@ import org.json.JSONObject;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.DelayedMapListener;
+import org.osmdroid.events.MapListener;
+import org.osmdroid.events.ScrollEvent;
+import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.CopyrightOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
@@ -146,7 +151,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(map);
             rotationGestureOverlay.setEnabled(true);
             map.setMinZoomLevel(4.0);
-            map.setMaxZoomLevel(20.0);
+            map.setMaxZoomLevel(16.9);
             GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
             //gpsMyLocationProvider.setLocationUpdateMinTime(15000); //Recupera la posición cada 15 segundos
             gpsMyLocationProvider.setLocationUpdateMinDistance(5);
@@ -189,6 +194,19 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                     notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 }
             }
+            map.addMapListener(new DelayedMapListener(new MapListener() {
+                @Override
+                public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
+                    //Toast.makeText(context, "Scroll "+map.getMapCenter().getLatitude()+" "+map.getMapCenter().getLongitude(), Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+
+                @Override
+                public boolean onZoom(ZoomEvent event) {//Zoom con botones
+                    Toast.makeText(context, "zoom "+map.getZoomLevelDouble(), Toast.LENGTH_SHORT).show();
+                    return false;
+                }
+            }, 200));
         }
     }
 
@@ -301,7 +319,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             });
             map.getOverlays().add(marker);
         }
-
     }
 
     /**
@@ -372,7 +389,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         switch (view.getId()){
             case R.id.btCentrar: //Solo centra la posición si se ha conseguido recuperar
                 if(myLocationNewOverlay.getMyLocation() != null) {
-                    mapController.setZoom(18.0);
+                    mapController.setZoom(16.9);
                     mapController.animateTo(myLocationNewOverlay.getMyLocation());
                 }else{ //Si aún no se conoce se muestra un mensaje
                     Toast.makeText(this, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
@@ -493,6 +510,21 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 return true;
+            case R.id.menuTareasPospuestas:
+                intent = new Intent(this, ListaTareas.class);
+                intent.putExtra("peticion", PersistenciaDatos.ficheroTareasPospuestas);
+                startActivity(intent);
+                return true;
+            case R.id.menuTareasRechazadas:
+                intent = new Intent(this, ListaTareas.class);
+                intent.putExtra("peticion", PersistenciaDatos.ficheroTareasRechazadas);
+                startActivity(intent);
+                return true;
+            case R.id.menuTareasCompletadas:
+                intent = new Intent(this, ListaTareas.class);
+                intent.putExtra("peticion", PersistenciaDatos.ficheroCompletadas);
+                startActivity(intent);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -527,13 +559,13 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         double longitud = location.getLongitude();
         long instante = new Date().getTime();
 
-        if(PersistenciaDatos.tieneObjetos(getApplication(), PersistenciaDatos.ficheroTareas)){//El fichero tiene tareas que representar
+        if(PersistenciaDatos.tieneObjetos(getApplication(), PersistenciaDatos.ficheroTareasUsuario)){//El fichero tiene tareas que representar
             if(Proceso.tareasActualizadas || primerosPuntos){
                 Proceso.tareasActualizadas = false;
                 map.getOverlays().clear();
                 pintaItemsfijos();
                 try {
-                    JSONArray arrayTareas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareas);
+                    JSONArray arrayTareas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareasUsuario);
                     Map<JSONObject, Integer> posiciones = new HashMap<>();
                     JSONObject json;
                     boolean existia;
@@ -609,8 +641,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                             }
                             if (new Date().getTime() > (ultimaNotificacion + 60000)) {
                                 try {
-                                    PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareas, tarea.getString(Auxiliar.id));
-                                    pintaNotificacion(tarea);
+                                    //PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareas, tarea.getString(Auxiliar.id));
+                                    //pintaNotificacion(tarea);
                                 } catch (Exception e) {
                                     //NO se ha extraido de las tareas
                                 }
@@ -661,7 +693,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             try {
                 jsonObject.put(Auxiliar.tipoRespuesta, tipoRespuesta);
                 jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
-                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, jsonObject, Context.MODE_PRIVATE))
+                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, jsonObject, Context.MODE_PRIVATE))
                     throw new Exception();
                 Intent intent = new Intent(context, Tarea.class);
                 intent.putExtra(Auxiliar.id, id);

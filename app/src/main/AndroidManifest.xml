@@ -26,7 +26,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-
+        <activity android:name=".ListaTareas"></activity>
+        <activity
+            android:name=".Preview"
+            android:label="@string/infoTarea" />
         <activity android:name=".Puntuacion" />
         <activity android:name=".ImagenCompleta">
             <meta-data
@@ -34,7 +37,9 @@
                 android:value="es.uva.gsic.adolfinstro.Login" />
         </activity>
         <activity android:name=".Acerca" />
-        <activity android:name=".Tarea">
+        <activity
+            android:name=".Tarea"
+            android:label="@string/app_name">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="es.uva.gsic.adolfinstro.Login" />
@@ -48,15 +53,24 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme" />
         <activity android:name=".Login">
+
+            <!--
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            -->
         </activity>
         <activity
             android:name=".MainActivity"
             android:label="@string/debug"
             android:theme="@style/AppTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <service
@@ -65,9 +79,10 @@
             android:foregroundServiceType="location"
             android:icon="@drawable/ic_launcher_foreground" />
 
-        <receiver android:name=".RecepcionNotificaciones"
-            android:exported="true"
-            android:enabled="true">
+        <receiver
+            android:name=".RecepcionNotificaciones"
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="AHORA_NO" />
                 <action android:name="NUNCA_MAS" />
