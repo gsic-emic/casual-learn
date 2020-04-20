@@ -512,17 +512,17 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 return true;
             case R.id.menuTareasPospuestas:
                 intent = new Intent(this, ListaTareas.class);
-                intent.putExtra("peticion", PersistenciaDatos.ficheroTareasPospuestas);
+                intent.putExtra(Auxiliar.peticion, PersistenciaDatos.ficheroTareasPospuestas);
                 startActivity(intent);
                 return true;
             case R.id.menuTareasRechazadas:
                 intent = new Intent(this, ListaTareas.class);
-                intent.putExtra("peticion", PersistenciaDatos.ficheroTareasRechazadas);
+                intent.putExtra(Auxiliar.peticion, PersistenciaDatos.ficheroTareasRechazadas);
                 startActivity(intent);
                 return true;
             case R.id.menuTareasCompletadas:
                 intent = new Intent(this, ListaTareas.class);
-                intent.putExtra("peticion", PersistenciaDatos.ficheroCompletadas);
+                intent.putExtra(Auxiliar.peticion, PersistenciaDatos.ficheroCompletadas);
                 startActivity(intent);
                 return true;
             default:

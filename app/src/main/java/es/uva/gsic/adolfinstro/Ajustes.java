@@ -11,7 +11,10 @@ import androidx.preference.PreferenceManager;
 public class Ajustes extends AppCompatActivity{
 
     public static final String NO_MOLESTAR_pref = "noMolestar";
-    public static final String INTERVALO_pref = "intervalo";
+    public static final String INTERVALODIA_pref = "intervaloD";
+    public static final String INTERVALOHORA_pref = "intervalo";
+    public static final String INTERVALOMIN_pref = "intervaloM";
+    public static final String FINDES_pref = "tareasFindes";
     public static final String LISTABLANCA_pref = "listaBlanca";
     public static final String TOKEN_pref = "token";
     public static SharedPreferences sharedPreferences;

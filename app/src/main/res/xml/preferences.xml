@@ -12,15 +12,37 @@
         app:entryValues="@array/minu"
         app:defaultValue="3"/>-->
     <SeekBarPreference
-        app:key="intervalo"
+        app:key="intervaloD"
         app:title="@string/intervalo"
-        app:summary="@string/intervaloResumen"
+        app:summary="@string/intervaloDias"
+        app:defaultValue="0"
+        app:min="0"
+        app:updatesContinuously="false"
+        app:showSeekBarValue="true"
+        app:seekBarIncrement="1"
+        app:adjustable="true" />
+    <SeekBarPreference
+        app:key="intervalo"
+        app:summary="@string/intervaloHoras"
         app:defaultValue="3"
         app:min="0"
         app:updatesContinuously="false"
         app:showSeekBarValue="true"
         app:seekBarIncrement="1"
         app:adjustable="true" />
+    <SeekBarPreference
+        app:key="intervaloM"
+        app:summary="@string/intervaloMinutos"
+        app:defaultValue="0"
+        app:min="0"
+        app:updatesContinuously="false"
+        app:showSeekBarValue="true"
+        app:seekBarIncrement="1"
+        app:adjustable="true" />
+    <SwitchPreference
+        app:key="tareasFindes"
+        app:title="@string/tareasFindes"
+        app:defaultValue="true"/>
     <CheckBoxPreference
         app:key="listaBlanca"
         app:title="@string/tituloListaBlancaPref"

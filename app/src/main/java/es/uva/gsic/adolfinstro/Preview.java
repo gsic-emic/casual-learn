@@ -109,8 +109,10 @@ public class Preview extends AppCompatActivity {
         titulo.setText(extras.getString(Auxiliar.titulo));
         TextView descripcion = findViewById(R.id.textoPreview);
         descripcion.setText(extras.getString(Auxiliar.recursoAsociadoTexto));
-        TextView tipoTarea = findViewById(R.id.tipoPreview);
-        tipoTarea.setText(String.format("%s%s", getString(R.string.tipoDeTarea), extras.getString(Auxiliar.tipoRespuesta)));
+        ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
+        String tipo = extras.getString(Auxiliar.tipoRespuesta);
+        tipoTarea.setContentDescription(String.format("%s%s", getString(R.string.tipoDeTarea), tipo));
+        tipoTarea.setImageResource(Auxiliar.iconoTipoTarea(tipo));
 
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(extras.getDouble(Auxiliar.latitud), extras.getDouble(Auxiliar.longitud)));
@@ -148,11 +150,11 @@ public class Preview extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
-        Intent intent = new Intent();
+        /*Intent intent = new Intent();
         intent.setAction(Auxiliar.ahora_no);
         intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
         sendBroadcast(intent);
-        Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();*/
         Auxiliar.returnMain(context);
     }
 

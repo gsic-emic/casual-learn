@@ -11,18 +11,53 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_margin="20dp">
+        android:layout_margin="10dp">
+
+        <TextView
+            android:id="@+id/tvDesarrolladoPorAcercade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/desarrolladoPor"
+            android:textSize="25sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <View
+            android:id="@+id/linea0"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladoPorAcercade"
+            android:background="@android:color/darker_gray" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guiaVerticalAcerca"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.6" />
 
         <ImageView
             android:id="@+id/imagenGsic"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/guiaVerticalAcerca"
+            app:layout_constraintTop_toBottomOf="@id/linea0"
             android:src="@drawable/gsicemic"
             android:onClick="boton"
             android:contentDescription="@string/gsic" />
+
+        <ImageView
+            android:id="@+id/imagenUva"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toStartOf="@id/guiaVerticalAcerca"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/linea0"
+            app:layout_constraintBottom_toBottomOf="@id/imagenGsic"
+            android:src="@drawable/uva"
+            android:onClick="boton" />
+
 
         <TextView
             android:id="@+id/tvCreditos"
@@ -32,7 +67,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/imagenGsic"
             android:text="@string/creditos"
-            android:textSize="22sp"/>
+            android:textSize="25sp"/>
         <View
             android:id="@+id/linea1"
             android:layout_width="match_parent"
@@ -61,7 +96,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvOpenStreetMap"
             android:text="@string/libraries"
-            android:textSize="18sp" />
+            android:textSize="25sp" />
         <View
             android:id="@+id/linea2"
             android:layout_width="match_parent"
@@ -102,13 +137,6 @@
             android:text="@string/PhotoView"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"/>
-
-
-
-
-
-
-
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

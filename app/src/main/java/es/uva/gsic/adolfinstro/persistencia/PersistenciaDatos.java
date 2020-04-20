@@ -28,14 +28,12 @@ public class PersistenciaDatos {
     public static final String ficheroTareasZona = "tareasZona";
     /** Fichero donde se encuentras las tareas notificadas al alumno */
     public static final String ficheroNotificadas = "notificadas";
-    ///** Fichero donde se almacenan las respuestas del alumno */
-    //public static final String ficheroRespuestas = "respuestas";
     /** Fichero con las tareas rechazadas */
     public static final String ficheroTareasRechazadas = "rechazadas";
     /** Fichero con las tareas pospuestas */
     public static final String ficheroTareasPospuestas = "pospuestas";
-    /** Fichero donde se almacenan las puntuacines que el usuario hace de las tareas */
-    public static final String ficheroPuntuaciones = "puntuaciones";
+    ///** Fichero donde se almacenan las puntuacines que el usuario hace de las tareas */
+    //public static final String ficheroPuntuaciones = "puntuaciones";
     /** Fichero con los datos del usuario */
     public static final String ficheroUsuario = "usario";
     /** Fichero con fechas de instantes de eventos */

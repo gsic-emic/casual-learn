@@ -103,13 +103,15 @@ public class Puntuacion extends AppCompatActivity {
             case R.id.btEnviarPuntuacion:
                 if(puntuacion > 0){
                     //SE GUARDA LA PUNTUACIÓN
-                    JSONObject json = new JSONObject();
+                    JSONObject json = null;
                     try {
-                        json.put(Auxiliar.id, idTarea);
+                        json = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroCompletadas, idTarea);
                         json.put(Auxiliar.rating, puntuacion);
-                        PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroPuntuaciones, json, Context.MODE_PRIVATE);
-                    }catch (JSONException e){
-                        Toast.makeText(getApplication().getApplicationContext(), "Error JSON", Toast.LENGTH_SHORT).show();
+                        json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                        PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, json, Context.MODE_PRIVATE);
+                    }catch (Exception e){
+                        if(json != null)
+                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, json, Context.MODE_PRIVATE);
                         Auxiliar.returnMain(getApplication().getApplicationContext());
                     }
                     Toast.makeText(this, getString(R.string.gracias), Toast.LENGTH_SHORT).show();

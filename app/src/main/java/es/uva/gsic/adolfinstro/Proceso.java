@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -49,7 +50,6 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase encargada de mantener el proceso en memoria y lanzar las notificaciones de tareas cuando sea
  * necesario. Recupera la posición del usuario periódicamente.
  *
- * @author GSIC
  */
 public class Proceso extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -77,7 +77,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     /** Valor actual de la preferencia no Molestar */
     private boolean noMolestar;
     /** Valor actual de la preferencia intervalo por la que se muestra la notificación automática */
-    private int intervalo;
+    private int intervaloDias, intervaloHoras, intervaloMinutos;
+
+    private boolean tareaFindes;
 
     /** Contexto del proceso */
     private Context context;
@@ -97,6 +99,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
 
     private String idInstanteGET = "instanteGET";
     private String idInstanteNotAuto = "instanteNotAuto";
+
+    private boolean servicioIniciado = false;
 
     // Métodos necesarios para heredar de Service
     public class ProcesoBinder extends Binder {
@@ -145,7 +149,10 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         posicionamiento();
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALODIA_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALOHORA_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALOMIN_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.FINDES_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
 
         mantenServicio();
@@ -270,6 +277,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void compruebaLocalizacion(Location location) {
         double distanciaAndada=1200, latitud=0, longitud=0;
         boolean datosValidos = false;
+        //TODO COMPROBAR SI ES FIN DE SEMANA ANTES DE SEGUIR
         if(latitudAnt == 0 && longitudAnt == 0){//Se acaba de iniciar el servicio
             latitudAnt = location.getLatitude();
             longitudAnt = location.getLongitude();
@@ -291,7 +299,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             instanteUltimaNotif = 0;
         }
 
-        boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((intervalo > 0)?intervalo*3600*1000:59000);
+        int tiempoPreferenciaUser = intervaloDias * 1440 + intervaloHoras * 60 + intervaloMinutos;
+        boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((tiempoPreferenciaUser > 0)?tiempoPreferenciaUser*60*1000:20000);
         if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
             if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
                 if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
@@ -311,7 +320,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                         if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
                             //pintaNotificacion(String.format("%d",(int) (Math.random()*6)));
                             try {
-                                //PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasUsuario, tarea.getString(Auxiliar.id));
+                                PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasUsuario, tarea.getString(Auxiliar.id));
                                 pintaNotificacion(tarea); //Si no se ha eliminado la tarea del otro fichero no se lanza la notificación
                             }catch (Exception e){
                                 //NO se ha extraido de las tareas
@@ -436,6 +445,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * Inicializador del bucle que obtiene la posición
      */
     private void startLocation(){
+        servicioIniciado = true;
         fusedLocationProviderClient
                 .requestLocationUpdates(locationRequest, locationCallback,null);
     }
@@ -444,6 +454,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * Detiene la tarea de recogida de posición
      */
     private void stopLocation(){
+        servicioIniciado = false;
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
@@ -476,8 +487,14 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
-            case Ajustes.INTERVALO_pref:
-                intervalo = sharedPreferences.getInt(key, 1);
+            case Ajustes.INTERVALODIA_pref:
+                intervaloDias = sharedPreferences.getInt(key, 0);
+                break;
+            case Ajustes.INTERVALOHORA_pref:
+                intervaloHoras = sharedPreferences.getInt(key, 3);
+                break;
+            case Ajustes.INTERVALOMIN_pref:
+                intervaloMinutos = sharedPreferences.getInt(key, 0);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
@@ -486,7 +503,23 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     terminaServicio();
                 }
                 break;
+            case Ajustes.FINDES_pref:
+                tareaFindes = sharedPreferences.getBoolean(key, true);
+                if(!tareaFindes && esFinde()){
+                    if(servicioIniciado)
+                        stopLocation();
+                }else{
+                    if(!servicioIniciado)
+                        startLocation();
+                }
+                break;
         }
+    }
+
+    private boolean esFinde() {
+        Calendar c = Calendar.getInstance();
+        int dia = c.get(Calendar.DAY_OF_WEEK);
+        return (dia == Calendar.SATURDAY || dia == Calendar.SUNDAY);
     }
 
     /**

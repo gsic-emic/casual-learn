@@ -68,6 +68,7 @@ public class Auxiliar {
     public static final String tipoPreguntaCorta = "preguntaCorta";
     public static final String tipoPreguntaLarga = "preguntaLarga";
     public static final String tipoPreguntaImagen = "preguntaImagen";
+    public static final String peticion = "peticion";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
 

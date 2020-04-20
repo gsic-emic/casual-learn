@@ -71,14 +71,13 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="5dp"/>
 
-    <TextView
-        android:id="@+id/tipoPreview"
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/ivTipoTareaPreview"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/textoPreview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:textStyle="bold"
         android:layout_marginTop="5dp"/>
 
     <Button
@@ -89,7 +88,7 @@
         android:onClick="boton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/botonAhoraNoPreview"
-        app:layout_constraintTop_toBottomOf="@id/tipoPreview"
+        app:layout_constraintTop_toBottomOf="@id/ivTipoTareaPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="5dp"/>
 
@@ -101,7 +100,7 @@
         android:onClick="boton"
         app:layout_constraintStart_toEndOf="@id/botonRechazarPreview"
         app:layout_constraintEnd_toStartOf="@id/botonAceptarPreview"
-        app:layout_constraintTop_toBottomOf="@id/tipoPreview"
+        app:layout_constraintTop_toBottomOf="@id/ivTipoTareaPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="5dp"/>
 
@@ -113,7 +112,7 @@
         android:onClick="boton"
         app:layout_constraintStart_toEndOf="@id/botonAhoraNoPreview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tipoPreview"
+        app:layout_constraintTop_toBottomOf="@id/ivTipoTareaPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="5dp"/>
 

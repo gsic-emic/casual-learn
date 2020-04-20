@@ -81,4 +81,11 @@
     <string name="tareasRechazadas">Reject tasks</string>
     <string name="tareasCompletadas">Completed tasks</string>
     <string name="sinTareas">The list has not got any task.</string>
+    <string name="restaurarTarea">Undo rejection</string>
+    <string name="restaurarTareaTexto">Do you want this task to be able to come out again?</string>
+    <string name="desarrolladoPor">Developed by</string>
+    <string name="intervaloDias">Days</string>
+    <string name="intervaloHoras">Hours</string>
+    <string name="intervaloMinutos">Minutes</string>
+    <string name="tareasFindes">Tasks on weekends</string>
 </resources>

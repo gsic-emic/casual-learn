@@ -77,4 +77,11 @@
     <string name="tareasCompletadas">Tareas completadas</string>
     <string name="sinTareas">La lista no tiene registrada ninguna tarea.</string>
     <string name="tareaPospuesta">Tarea pospuesta</string>
+    <string name="restaurarTarea">Restaurar tarea</string>
+    <string name="restaurarTareaTexto">¿Quieres que la tarea pueda aparecer de nuevo?</string>
+    <string name="desarrolladoPor">Desarrollado por</string>
+    <string name="intervaloDias">Días</string>
+    <string name="intervaloHoras">Horas</string>
+    <string name="intervaloMinutos">Minutos</string>
+    <string name="tareasFindes">Tareas los fines de semana</string>
 </resources>
