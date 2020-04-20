@@ -76,4 +76,5 @@
     <string name="tareasRechazadas">Tareas rechazadas</string>
     <string name="tareasCompletadas">Tareas completadas</string>
     <string name="sinTareas">La lista no tiene registrada ninguna tarea.</string>
+    <string name="tareaPospuesta">Tarea pospuesta</string>
 </resources>

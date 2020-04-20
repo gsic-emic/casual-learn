@@ -31,16 +31,26 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.overlay.simplefastpoint.LabelledGeoPoint;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 
 public class Preview extends AppCompatActivity {
 
+    /** Contexto */
     private Context context;
+    /** Vista donde se incluye la vista del mapa */
     private MapView map;
+    /** Objeto para adecuar la vista del mapa */
     private MyLocationNewOverlay myLocationNewOverlay;
-
+    /** Receptor de notificaciones */
     private RecepcionNotificaciones recepcionNotificaciones;
+
+    /**
+     * Se crea la vista de la interfaz de usuario.
+     *
+     * @param savedInstanceState Bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -59,7 +69,7 @@ public class Preview extends AppCompatActivity {
             Picasso.get()
                     .load(extras.getString(Auxiliar.recursoImagenBaja))
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                    .tag("imagen")
+                    .tag(Auxiliar.cargaImagenPreview)
                     .into(imageView);
             map = findViewById(R.id.mapPreview);
             imageView.setVisibility(View.VISIBLE);
@@ -68,7 +78,7 @@ public class Preview extends AppCompatActivity {
                 Picasso.get()
                         .load(extras.getString(Auxiliar.recursoImagen))
                         .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                        .tag("imagen")
+                        .tag(Auxiliar.cargaImagenPreview)
                         .into(imageView);
                 map = findViewById(R.id.mapPreview);
                 imageView.setVisibility(View.VISIBLE);
@@ -131,40 +141,55 @@ public class Preview extends AppCompatActivity {
 
     }
 
+    /**
+     * Método que se ejecuta cuando el usuario presiona el botón de atras de su teléfono. Se pasa la
+     * tarea a pospuesta y se muestra un toast antes de volver al mapa.
+     */
     @Override
     public void onBackPressed(){
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
-        Toast.makeText(context, "Pospuesta", Toast.LENGTH_SHORT).show();
-        startActivity(new Intent(this, MainActivity.class));
+        Intent intent = new Intent();
+        intent.setAction(Auxiliar.ahora_no);
+        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+        sendBroadcast(intent);
+        Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
+        Auxiliar.returnMain(context);
     }
 
-
+    /**
+     * Método ejecutado cuando se pulsa sobre un botón de la vista preview
+     *
+     * @param view Vista que se ha pulsado
+     */
     public void boton(View view) {
         Intent intent;
         switch (view.getId()){
             case R.id.botonAceptarPreview:
                 intent = new Intent(context, Tarea.class);
-                intent.putExtras(getIntent().getExtras());
+                intent.putExtras(Objects.requireNonNull(getIntent().getExtras()));
                 startActivity(intent);
                 break;
             case R.id.botonAhoraNoPreview:
                 intent = new Intent();
                 intent.setAction(Auxiliar.ahora_no);
-                intent.putExtra(Auxiliar.id, getIntent().getExtras().getString(Auxiliar.id));
+                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
                 sendBroadcast(intent);
                 Auxiliar.returnMain(context);
                 break;
             case R.id.botonRechazarPreview:
                 intent = new Intent();
                 intent.setAction(Auxiliar.nunca_mas);
-                intent.putExtra(Auxiliar.id, getIntent().getExtras().getString(Auxiliar.id));
+                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
                 sendBroadcast(intent);
                 Auxiliar.returnMain(context);
                 break;
         }
-
     }
 
+    /**
+     * Se sobrescribe le método onResume para activar la recepción de notificaciones y restaurar el mapa.
+     * Se realiza la llamada al método que se sobrescribe
+     */
     @Override
     protected void onResume(){
         super.onResume();
@@ -173,6 +198,11 @@ public class Preview extends AppCompatActivity {
         if(map != null)
             map.onResume();
     }
+
+    /**
+     * Se sobrescribe el método onPause para desactivar la recepción de notificaciones y pausar el mapa.
+     * Se realiza la llamada al método que se sobrescribe.
+     */
     @Override
     protected void onPause(){
         super.onPause();
