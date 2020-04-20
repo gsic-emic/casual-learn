@@ -5,28 +5,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -34,7 +32,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -59,6 +56,8 @@ public class Tarea extends AppCompatActivity {
     private Button btVolver;
     /** Instancia del botón de la cámara*/
     private Button btCamara;
+    /** Instancia del botón para finalizar la toma de imágenes */
+    private Button btTerminar;
     /** Instancia donde se almacena el tipo de tarea*/
     private String tipo;
     /** Instancia donde se almacena el identificador de la tarea */
@@ -70,7 +69,7 @@ public class Tarea extends AppCompatActivity {
     /** Texto que se espera que tenga la respuesta del alumno*/
     private String respuestaEsperada;
     /** Número de fotos de la serie */
-    private int restantes = 3; //Este valor habrá que obtenerlo del intento
+    //private int restantes = 3; //Este valor habrá que obtenerlo del intento
 
     /** URI de la imagen que se acaba de tomar */
     private Uri photoURI;
@@ -82,7 +81,9 @@ public class Tarea extends AppCompatActivity {
     /** Estado del botón para volver a la actividad principal*/
     private boolean estadoBtCancelar;
 
-    private JSONObject respuesta;
+    FirebaseAnalytics firebaseAnalytics;
+
+    RecepcionNotificaciones recepcionNotificaciones;
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -93,24 +94,32 @@ public class Tarea extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tarea);
+
+
+        requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
 
         ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
         Bundle extras = getIntent().getExtras();
         assert extras != null;
         idTarea = extras.getString(Auxiliar.id);
-        try {//ImagenDescriptiva. Se intenta mostrar la imagen de baja resolución
-            new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagenBaja)));
-            recursoAsociadoImagen300px = extras.getString(Auxiliar.recursoImagenBaja);
+        recursoAsociadoImagen300px = extras.getString(Auxiliar.recursoImagenBaja);
+        if(recursoAsociadoImagen300px != null){// Se intenta mostrar la imagen de baja resolución
+            Picasso.get().load(recursoAsociadoImagen300px).tag(Auxiliar.cargaImagenTarea).into(ivImagenDescripcion);
+            //new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagenBaja)));
             recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
-        } catch (Exception e) {//Saltará cuando no tenga una imagen de baja resolución asociada
-            try {
-                new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagen)));
-                recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
-            } catch (Exception e2) {//No tiene ni la imagen principal ni el icono
-                recursoAsociadoImagen300px = null;
-                recursoAsociadoImagen = null;
+            ivImagenDescripcion.setVisibility(View.VISIBLE);
+        }else{
+            recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
+            if(recursoAsociadoImagen != null){
+                Picasso.get()
+                        .load(recursoAsociadoImagen)
+                        .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                        .tag(Auxiliar.cargaImagenTarea)
+                        .into(ivImagenDescripcion);
+                ivImagenDescripcion.setVisibility(View.VISIBLE);
             }
         }
         tipo = requireNonNull(extras.getString(Auxiliar.tipoRespuesta));
@@ -124,6 +133,7 @@ public class Tarea extends AppCompatActivity {
         btVolver = findViewById(R.id.btVolver);
         Button btAceptar = findViewById(R.id.btAceptar);
         btCamara = findViewById(R.id.btCamara);
+        btTerminar = findViewById(R.id.btTerminar);
 
         try {//Descripcion
             tvDescripcion.setText(getIntent().getExtras().getString(Auxiliar.recursoAsociadoTexto));
@@ -170,24 +180,23 @@ public class Tarea extends AppCompatActivity {
 
         checkPermissions();
 
-        if(!PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroRespuestas, idTarea))
+        if(!PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea))
             mensajeError();
         else{
             try {
                 JSONObject tarea = PersistenciaDatos.recuperaTarea(
                         getApplication(),
-                        PersistenciaDatos.ficheroRespuestas,
+                        PersistenciaDatos.ficheroNotificadas,
                         idTarea);
                 tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
-                PersistenciaDatos.guardaJSON(getApplication(),
-                        PersistenciaDatos.ficheroRespuestas,
-                        tarea,
-                        Context.MODE_PRIVATE);
+                PersistenciaDatos.reemplazaJSON(
+                        getApplication(),
+                        PersistenciaDatos.ficheroNotificadas,
+                        tarea);
             }catch (JSONException e){
                 //No se ha modificado el valor del estado en la respuesta
             }
         }
-
     }
 
     private void mensajeError(){
@@ -197,14 +206,17 @@ public class Tarea extends AppCompatActivity {
         alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                JSONObject tarea = PersistenciaDatos.recuperaTarea(
-                        getApplication(),
-                        PersistenciaDatos.ficheroRespuestas,
-                        idTarea);
-                PersistenciaDatos.guardaJSON(getApplication(),
-                        PersistenciaDatos.ficheroTareas,
-                        tarea,
-                        Context.MODE_PRIVATE);
+                try {
+                    JSONObject tarea = PersistenciaDatos.obtenTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            idTarea);
+                    PersistenciaDatos.reemplazaJSON(getApplication(),
+                            PersistenciaDatos.ficheroTareasUsuario,
+                            tarea);
+                }catch (Exception e){
+                    //
+                }
                 Auxiliar.returnMain(getBaseContext());
             }
         });
@@ -268,17 +280,15 @@ public class Tarea extends AppCompatActivity {
      * @param view Referencia al lanzador del evento
      */
     public void boton(View view) {
+        Intent intent;
         switch (view.getId()){
             case R.id.btVolver:
                 //Se pasa la tarea del fichero de noficaciones al de tareas globales
-                JSONObject tarea = PersistenciaDatos.recuperaTarea(
-                        getApplication(),
-                        PersistenciaDatos.ficheroRespuestas,
-                        idTarea);
-                PersistenciaDatos.guardaJSON(getApplication(),
-                        PersistenciaDatos.ficheroTareas,
-                        tarea,
-                        Context.MODE_PRIVATE);
+                intent = new Intent();
+                intent.setAction(Auxiliar.ahora_no);
+                intent.putExtra(Auxiliar.id, idTarea);
+                sendBroadcast(intent);
+                Picasso.get().cancelTag(Auxiliar.cargaImagenTarea);
                 Auxiliar.returnMain(this);
                 break;
             case R.id.btAceptar:
@@ -286,7 +296,7 @@ public class Tarea extends AppCompatActivity {
                     try {
                         JSONObject respuesta = PersistenciaDatos.recuperaTarea(
                                 getApplication(),
-                                PersistenciaDatos.ficheroRespuestas,
+                                PersistenciaDatos.ficheroNotificadas,
                                 idTarea);
                         respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                         PersistenciaDatos.guardaJSON(getApplication(),
@@ -325,12 +335,12 @@ public class Tarea extends AppCompatActivity {
                 break;
             case R.id.ivImagenDescripcion:
                 if(recursoAsociadoImagen != null) {//Si la imagen en alta resolución existe se salta simpre a ella para la vista en detalle
-                    Intent intent = new Intent(this, ImagenCompleta.class);
+                    intent = new Intent(this, ImagenCompleta.class);
                     intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
                     startActivity(intent);
                 }else{//Ya está visible la imagen de resolución baja y no hay una alta asociada
                     if(recursoAsociadoImagen300px != null){
-                        Intent intent = new Intent(this, ImagenCompleta.class);
+                        intent = new Intent(this, ImagenCompleta.class);
                         intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
                         startActivity(intent);
                     }
@@ -338,7 +348,83 @@ public class Tarea extends AppCompatActivity {
                         Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
                     }
                 }
+                break;
+            case R.id.btTerminar:
+                try {
+                    JSONObject json = PersistenciaDatos.obtenTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            idTarea);
+                    json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                    json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    if (!PersistenciaDatos.guardaJSON(
+                            getApplication(),
+                            PersistenciaDatos.ficheroCompletadas,
+                            json,
+                            Context.MODE_PRIVATE))
+                        mensajeError();
+                    Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
+                    Auxiliar.puntuaTarea(this, idTarea);
+                }catch (Exception e){
+                    mensajeError();
+                }
+                break;
+            case R.id.ivDenunciarPregunta:
+                final AlertDialog.Builder denuncia = new AlertDialog.Builder(this);
+                denuncia.setTitle(getString(R.string.denunciarPreguntaTitulo));
+                denuncia.setMessage(getString(R.string.denunciarPreguntaTexto));
+                final EditText respuestaDenuncia = new EditText(this);
+                respuestaDenuncia.setSingleLine();
+                InputFilter[] vector = new InputFilter[1];
+                vector[0] = new InputFilter.LengthFilter(80);
+                respuestaDenuncia.setFilters(vector);
+                respuestaDenuncia.setLayoutParams(
+                        new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT));
+                denuncia.setView(respuestaDenuncia);
+                boolean si = false;
+                denuncia.setPositiveButton(getString(R.string.enviar), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String textoDenuncia = respuestaDenuncia.getText().toString();
+                        textoDenuncia = textoDenuncia.trim();
+                        if(textoDenuncia.equals("")){
+                            Toast.makeText(Tarea.this, getString(R.string.respuestaVacia), Toast.LENGTH_SHORT).show();
+                        }else {
+                            enviaDenuncia(textoDenuncia);
+                        }
+                    }
+                });
+                denuncia.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+                denuncia.show();
+                break;
         }
+    }
+
+    public void enviaDenuncia(String textoUsuario){
+        Intent intent = new Intent();
+        intent.setAction(Auxiliar.nunca_mas);
+        intent.putExtra(Auxiliar.id, idTarea);
+        sendBroadcast(intent);
+
+        Bundle bundle = new Bundle();
+        bundle.putString("idTarea", idReducida());
+        bundle.putString("MensajeUsuario", textoUsuario);
+        firebaseAnalytics.logEvent("denuncia_tarea", bundle);
+        Auxiliar.returnMain(this);
+    }
+
+    public String idReducida(){
+        String[] vectorId = idTarea.split("/");
+        String salida = "";
+        for(int i = vectorId.length; i > (vectorId.length - 2); i--)
+            salida += vectorId[i-1] + "/";
+        return salida;
     }
 
     /**
@@ -357,6 +443,8 @@ public class Tarea extends AppCompatActivity {
     private void setBotones(){
         btVolver.setClickable(estadoBtCancelar);
         btCamara.setClickable(estadoBtCamara);
+        if(btTerminar.getVisibility() == View.VISIBLE)
+            btTerminar.setClickable(estadoBtCamara);
     }
 
     /**
@@ -428,6 +516,7 @@ public class Tarea extends AppCompatActivity {
      */
     private void desbloqueaBt(){
         estadoBtCancelar = true;
+        estadoBtCamara = true;
         setBotones();
     }
 
@@ -448,7 +537,7 @@ public class Tarea extends AppCompatActivity {
                         try {
                             JSONObject respuesta = PersistenciaDatos.recuperaTarea(
                                     getApplication(),
-                                    PersistenciaDatos.ficheroRespuestas,
+                                    PersistenciaDatos.ficheroNotificadas,
                                     idTarea);
                             respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                             if (!PersistenciaDatos.guardaTareaRespuesta(
@@ -466,7 +555,6 @@ public class Tarea extends AppCompatActivity {
                         }
                         break;
                     case RESULT_CANCELED:
-                        mensajeError();
                         desbloqueaBt();
                         break;
                     default:
@@ -477,42 +565,15 @@ public class Tarea extends AppCompatActivity {
             case 2://imagen multiple
                 switch (resultCode){
                     case RESULT_OK:
-                        --restantes;
-                        /*String respuesta;
-                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                photoURI.toString(), Context.MODE_PRIVATE))
-                            mensajeError();*/
-                        if(restantes==0){
-                            try {
-                                JSONObject json = PersistenciaDatos.recuperaTarea(
-                                        getApplication(),
-                                        PersistenciaDatos.ficheroRespuestas,
-                                        idTarea);
-                                json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
-                                if (!PersistenciaDatos.guardaTareaRespuesta(
-                                        getApplication(),
-                                        PersistenciaDatos.ficheroCompletadas,
-                                        json,
-                                        photoURI.toString(),
-                                        Context.MODE_PRIVATE))
-                                    mensajeError();
-                                Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                                Auxiliar.puntuaTarea(this, idTarea);
-                            }catch (Exception e){
-                                mensajeError();
-                            }
-                        } else {
-                            if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                    PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                    Context.MODE_PRIVATE))
-                                mensajeError();
-                            Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
-                            realizaCaptura(2);
-                        }
+                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
+                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA), photoURI.toString(),
+                                Context.MODE_PRIVATE))
+                            mensajeError();
+                        btTerminar.setVisibility(View.VISIBLE);
+                        desbloqueaBt();
+                        Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
                         break;
                     case RESULT_CANCELED:
-                        mensajeError();
                         desbloqueaBt();
                         break;
                     default:
@@ -523,7 +584,7 @@ public class Tarea extends AppCompatActivity {
             case 3://video
                 switch (resultCode){
                     case RESULT_OK:
-                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
                                 PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA),
                                 videoURI.toString(), Context.MODE_PRIVATE))
                             mensajeError();
@@ -531,14 +592,10 @@ public class Tarea extends AppCompatActivity {
                         Auxiliar.puntuaTarea(this, idTarea);
                         break;
                     case RESULT_CANCELED:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                Context.MODE_PRIVATE))
-                            mensajeError();
                         desbloqueaBt();
                         break;
                     default:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
                                 PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
                                 Context.MODE_PRIVATE))
                             mensajeError();
@@ -562,14 +619,14 @@ public class Tarea extends AppCompatActivity {
             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
         }
         else{
-            if(tipo.equals("preguntaCorta") || tipo.equals("preguntaLarga")) {
+            if(tipo.equals(TiposTareas.PREGUNTA_CORTA.getValue()) || tipo.equals(TiposTareas.PREGUNTA_LARGA.getValue())) {
                 try {
                     JSONObject tarea = PersistenciaDatos.recuperaTarea(
                             getApplication(),
-                            PersistenciaDatos.ficheroRespuestas,
+                            PersistenciaDatos.ficheroNotificadas,
                             idTarea);
                     tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
-
+                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
                             PersistenciaDatos.ficheroCompletadas,
                             tarea,
@@ -581,7 +638,7 @@ public class Tarea extends AppCompatActivity {
                 }
             }
             else {
-                if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroRespuestas,
+                if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
                         PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
                         respuesta, Context.MODE_PRIVATE))
                     mensajeError();
@@ -601,7 +658,7 @@ public class Tarea extends AppCompatActivity {
         return salida;
     }
 
-    private void mensaje(boolean acierto){
+    /*private void mensaje(boolean acierto){
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
         alertBuilder.setTitle(getString(R.string.respuestaEspeTitulo));
         if(acierto){
@@ -619,7 +676,7 @@ public class Tarea extends AppCompatActivity {
             }
         });
         alertBuilder.show();
-    }
+    }*/
 
     /**
      * Método que se utiliza para almacenar el valor de algunas variables de la clase
@@ -628,7 +685,7 @@ public class Tarea extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(@NotNull Bundle bundle){
         super.onSaveInstanceState(bundle);
-        bundle.putInt("RESTANTES", restantes);
+        //bundle.putInt("RESTANTES", restantes);
         bundle.putBoolean("ESTADOCAMARA", estadoBtCamara);
         bundle.putBoolean("ESTADOCANCELAR", estadoBtCancelar);
         bundle.putString("IDTAREA", idTarea);
@@ -644,7 +701,7 @@ public class Tarea extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(@NotNull Bundle bundle){
         super.onRestoreInstanceState(bundle);
-        restantes = bundle.getInt("RESTANTES");
+        //restantes = bundle.getInt("RESTANTES");
         estadoBtCamara = bundle.getBoolean("ESTADOCAMARA");
         estadoBtCancelar = bundle.getBoolean("ESTADOCANCELAR");
         idTarea = bundle.getString("IDTAREA");
@@ -655,17 +712,17 @@ public class Tarea extends AppCompatActivity {
     }
 
 
-    /**
-     * Clase que se encarga de obtener la imagen del servidor
+    ///**
+     /* Clase que se encarga de obtener la imagen del servidor
      */
-    private class DownloadImages extends AsyncTask<URL, Void, Bitmap> {
+    //private class DownloadImages extends AsyncTask<URL, Void, Bitmap> {
 
-        /**
-         * Método encargado de descargar las imágenes de las URLs que indiquen
+        ///**
+         /* Método encargado de descargar las imágenes de las URLs que indiquen
          * @param urls URLs a descargar. Según está implementado, solamente descarga la primera URL
          * @return Imagen descargada o null si no se pudo descargar
          */
-        protected Bitmap doInBackground(URL... urls) {
+        /*protected Bitmap doInBackground(URL... urls) {
             try {
                 ivImagenDescripcion.setImageResource(R.drawable.ic_cloud_download_blue_80dp);
                 ivImagenDescripcion.setVisibility(View.VISIBLE);
@@ -686,14 +743,14 @@ public class Tarea extends AppCompatActivity {
                 e.printStackTrace();
                 return null;
             }
-        }
+        }*/
 
-        /**
-         * Método que carga la imagen descargada en la interfaz gráfica de la aplicación
+        //**
+         /* Método que carga la imagen descargada en la interfaz gráfica de la aplicación
          * @param bitmap Imagen que se va a mostrar
          */
-        @Override
-        protected void onPostExecute(Bitmap bitmap){
+        //@Override
+        /*protected void onPostExecute(Bitmap bitmap){
             ivImagenDescripcion.setAnimation(null);
             if (bitmap != null) {
                 ivImagenDescripcion.setImageBitmap(bitmap);
@@ -703,13 +760,15 @@ public class Tarea extends AppCompatActivity {
             }
             ivImagenDescripcion.setVisibility(View.VISIBLE);
         }
-    }
+    }*/
 
     /**
      * Método que establece la conexión con la base de datos si no existiera
      */
     public void onResume() {
         super.onResume();
+        recepcionNotificaciones = new RecepcionNotificaciones();
+        registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
     }
 
     /**
@@ -720,12 +779,19 @@ public class Tarea extends AppCompatActivity {
         super.onBackPressed();
         JSONObject tarea = PersistenciaDatos.recuperaTarea(
                 getApplication(),
-                PersistenciaDatos.ficheroRespuestas,
+                PersistenciaDatos.ficheroNotificadas,
                 idTarea);
         PersistenciaDatos.guardaJSON(getApplication(),
-                PersistenciaDatos.ficheroTareas,
+                PersistenciaDatos.ficheroTareasPospuestas,
                 tarea,
                 Context.MODE_PRIVATE);
+        Picasso.get().cancelTag(Auxiliar.cargaImagenTarea);
         Auxiliar.returnMain(this);
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        unregisterReceiver(recepcionNotificaciones);
     }
 }

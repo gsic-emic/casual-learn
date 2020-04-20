@@ -10,6 +10,7 @@ import android.util.Log;
 
 import org.json.JSONObject;
 
+import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
@@ -32,7 +33,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String idTarea="", accion = intent.getAction();
         try {
-            idTarea = intent.getExtras().getString("id");
+            idTarea = intent.getExtras().getString(Auxiliar.id);
             NotificationManager notificationManager = (NotificationManager) context.
                     getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.cancel(intent.getExtras().getInt("idNotificacion"));
@@ -40,31 +41,33 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
             //Saltará en los reincios, pero es lo esperado
         }
             switch (accion) {
-                case "NUNCA_MAS":
+                case Auxiliar.nunca_mas:
                     //Sacamos la tarea del fichero de tareas pendientes para pasarla a la lista negra
                     try{
-                        PersistenciaDatos.obtenTarea((Application) context.getApplicationContext(),
-                                PersistenciaDatos.ficheroRespuestas, idTarea);
+                        JSONObject tarea = PersistenciaDatos.obtenTarea((Application) context.getApplicationContext(),
+                                PersistenciaDatos.ficheroNotificadas, idTarea);
+                        tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                         PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
                                 PersistenciaDatos.ficheroTareasRechazadas,
-                                new JSONObject().put("id", idTarea),
+                                tarea,
                                 Context.MODE_PRIVATE);
                     }catch (Exception e){
-                        Log.e("NUNCA_MAS", "El proceso ha lanzado una excepción");
+                        Log.e(Auxiliar.nunca_mas, "El proceso ha lanzado una excepción");
                     }
                     break;
-                case "AHORA_NO":
+                case Auxiliar.ahora_no:
                     try{
-                        JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        JSONObject tarea = PersistenciaDatos.obtenTarea(
                                 (Application) context.getApplicationContext(),
-                                PersistenciaDatos.ficheroRespuestas,
+                                PersistenciaDatos.ficheroNotificadas,
                                 idTarea);
+                        tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                         PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
-                                PersistenciaDatos.ficheroTareas,
+                                PersistenciaDatos.ficheroTareasPospuestas,
                                 tarea,
                                 Context.MODE_PRIVATE);
                     } catch (Exception e){
-                        Log.e("AHORA_NO", "El proceso ha lanzado una excepción");
+                        Log.e(Auxiliar.ahora_no, "El proceso ha lanzado una excepción");
                     }
                     break;
                 case Intent.ACTION_BOOT_COMPLETED:

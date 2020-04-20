@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name" translatable="false">GYTApp</string>
+    <string name="app_name" translatable="false">Casual Learn</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="accept">OK</string>
@@ -54,8 +54,8 @@
     <string name="debug" translatable="false">DEBUG</string>
     <string name="score">Rate this task!</string>
     <string name="thanks">Thank you for rate this task!</string>
-    <string name="ahoraNo">Not now</string>
-    <string name="nuncaMas">Anymore</string>
+    <string name="ahoraNo">Put off</string>
+    <string name="nuncaMas">Reject</string>
     <string name="ErrorBBDD">The task is not found in the database</string>
     <string name="tituErrorBBDD">Error in database</string>
     <string name="creditos">Credits</string>
@@ -70,4 +70,15 @@
     <string name="nuevaTarea">New task!!</string>
     <string name="enviar">Send</string>
     <string name="gracias">Thanks!!</string>
+    <string name="realizar">Do</string>
+    <string name="tipoDeTarea">Type of task:</string>
+    <string name="infoTarea">Task info.</string>
+    <string name="terminar">Finish task</string>
+    <string name="denunciarPreguntaTitulo">Report task</string>
+    <string name="denunciarPreguntaTexto">Could you explain why this task is wrong?</string>
+    <string name="tareasPospuestas">Pending tasks</string>
+    <string name="tareaPospuesta">Task put off</string>
+    <string name="tareasRechazadas">Reject tasks</string>
+    <string name="tareasCompletadas">Completed tasks</string>
+    <string name="sinTareas">The list has not got any task.</string>
 </resources>

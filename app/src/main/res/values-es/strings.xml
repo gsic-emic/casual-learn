@@ -53,8 +53,8 @@
     <string name="voy">¡Voy!</string>
     <string name="score">¡Puntúa la tarea!</string>
     <string name="thanks">¡Gracias por puntuar la tarea!</string>
-    <string name="ahoraNo">Ahora no</string>
-    <string name="nuncaMas">Nunca más</string>
+    <string name="ahoraNo">Posponer</string>
+    <string name="nuncaMas">Rechazar</string>
     <string name="ErrorBBDD">La tarea no existe en la base de datos</string>
     <string name="tituErrorBBDD">Error en la base de datos</string>
     <string name="creditos">Créditos</string>
@@ -66,4 +66,15 @@
     <string name="nuevaTarea">¡¡Nueva tarea!!</string>
     <string name="enviar">Enviar</string>
     <string name="gracias">¡¡Gracias!!</string>
+    <string name="realizar">Realizar</string>
+    <string name="tipoDeTarea">"Tipo de tarea: "</string>
+    <string name="infoTarea">Info. tarea</string>
+    <string name="terminar">Finalizar tarea</string>
+    <string name="denunciarPreguntaTitulo">Denunciar tarea</string>
+    <string name="denunciarPreguntaTexto">¿Prodrías decirnos por qué esta tarea es errónea?</string>
+    <string name="tareasPospuestas">Tareas pospuestas</string>
+    <string name="tareasRechazadas">Tareas rechazadas</string>
+    <string name="tareasCompletadas">Tareas completadas</string>
+    <string name="sinTareas">La lista no tiene registrada ninguna tarea.</string>
+    <string name="tareaPospuesta">Tarea pospuesta</string>
 </resources>

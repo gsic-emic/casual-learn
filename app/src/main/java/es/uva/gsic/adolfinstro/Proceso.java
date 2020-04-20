@@ -8,6 +8,11 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
@@ -32,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -216,7 +222,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
                 @Override
                 public void onResponse(JSONArray response) {
-                    PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareas, response, Context.MODE_PRIVATE);
+                    PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasUsuario, response, Context.MODE_PRIVATE);
                     try {
                         JSONObject j = new JSONObject();
                         j.put("id", idInstanteGET);
@@ -305,7 +311,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                         if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
                             //pintaNotificacion(String.format("%d",(int) (Math.random()*6)));
                             try {
-                                PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareas, tarea.getString(Auxiliar.id));
+                                //PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasUsuario, tarea.getString(Auxiliar.id));
                                 pintaNotificacion(tarea); //Si no se ha eliminado la tarea del otro fichero no se lanza la notificación
                             }catch (Exception e){
                                 //NO se ha extraido de las tareas
@@ -345,21 +351,35 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             try {
                 jsonObject.put(Auxiliar.tipoRespuesta, tipoRespuesta);
                 jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
-                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroRespuestas, jsonObject, Context.MODE_PRIVATE))
+                Date date = new Date();
+                jsonObject.put(Auxiliar.fechaNotificiacion, Auxiliar.horaFechaActual());
+                if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, jsonObject, Context.MODE_PRIVATE))
                     throw new Exception();
-                Intent intent = new Intent(context, Tarea.class);
+                //Intent intent = new Intent(context, Tarea.class);
+                Intent intent = new Intent(context, Preview.class);
                 intent.putExtra(Auxiliar.id, id);
                 intent.putExtra(Auxiliar.tipoRespuesta, tipoRespuesta);
                 intent.putExtra(Auxiliar.recursoAsociadoTexto, recursoAsociadoTexto);
-                intent.putExtra(Auxiliar.recursoImagen, recursoAsociadoImagen);
-                intent.putExtra(Auxiliar.recursoImagenBaja, recursoAsociadoImagenBaja);
+                intent.putExtra(Auxiliar.recursoImagen, (recursoAsociadoImagen.equals("")?null:recursoAsociadoImagen));
+                //intent.putExtra(Auxiliar.recursoImagen, "https://upload.wikimedia.org/wikipedia/commons/3/36/Nuestra_Se%C3%B1ora_de_las_Angustias%2C_Valladolid.jpg");
+                intent.putExtra(Auxiliar.recursoImagenBaja, (recursoAsociadoImagenBaja.equals("")?null:recursoAsociadoImagenBaja));
                 intent.putExtra(Auxiliar.respuestaEsperada, respuestaEsperada);
-
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
+                intent.putExtra(Auxiliar.latitud, jsonObject.getDouble(Auxiliar.latitud));
+                intent.putExtra(Auxiliar.longitud, jsonObject.getDouble(Auxiliar.longitud));
+                intent.putExtra(Auxiliar.titulo, jsonObject.getString(Auxiliar.titulo));
+                NotificationCompat.Builder builder;
+                int iconoTarea;
+                if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
+                    iconoTarea = R.drawable.ic_3_tareas;
+                //Bitmap iconoGrande = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_brush_black_128_dp);
+                builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(getString(R.string.nuevaTarea))
-                        .setContentText(jsonObject.getString(Auxiliar.titulo));
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(jsonObject.getString(Auxiliar.recursoAsociadoTexto)))
+                        .setContentText(jsonObject.getString(Auxiliar.recursoAsociadoTexto))
+                        .setLargeIcon(iconoGrandeNotificacion(context.getResources().getDrawable(iconoTarea)));
+
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(context, incr, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -373,12 +393,12 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 intentBoton.putExtra(Auxiliar.id, id);
                 intentBoton.putExtra("idNotificacion", incr);
                 PendingIntent ahoraNoPending = PendingIntent.getBroadcast(context, incr + 999, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
-                builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
+                //builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
                 builder.setDeleteIntent(ahoraNoPending);
 
-                intentBoton.setAction("NUNCA_MAS");
+                /*intentBoton.setAction("NUNCA_MAS");
                 PendingIntent nuncaMasP = PendingIntent.getBroadcast(context, incr + 1000, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
-                builder.addAction(R.drawable.ic_delete_black_24dp, getString(R.string.nuncaMas), nuncaMasP);
+                builder.addAction(R.drawable.ic_delete_black_24dp, getString(R.string.nuncaMas), nuncaMasP);*/
                 notificationManager.notify(incr, builder.build()); //Notificación lanzada
 
                 long instanteUltimaNotif = new Date().getTime(); //Actualizamos el instante
@@ -394,6 +414,22 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         }catch (JSONException je){
             //Si alguno de los campos que siempre deberían existir no existen
         }
+    }
+
+    /**
+     * Método para transformar un xml en un bitmap y poder representarlo en la notificación. Código
+     * obtenido de:
+     * https://stackoverflow.com/questions/24389043/bitmapfactory-decoderesource-returns-null-for-shape-defined-in-xml-drawable
+     *
+     * @param drawable Recurso a representar
+     * @return Recurso representable
+     */
+    private Bitmap iconoGrandeNotificacion(Drawable drawable) {
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 
     /**

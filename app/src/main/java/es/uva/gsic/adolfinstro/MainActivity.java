@@ -10,6 +10,7 @@ import android.widget.TextView;
 import org.jetbrains.annotations.NotNull;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -91,7 +92,8 @@ public class MainActivity extends AppCompatActivity {
                 intent = new Intent( this, Login.class);
                 break;
             case R.id.btPuntua:
-                intent = new Intent(this, Puntuacion.class);
+                intent = new Intent(this, ListaTareas.class);
+                intent.putExtra("peticion", PersistenciaDatos.ficheroTareasRechazadas);
                 break;
             default:
                 System.exit(-2);

@@ -9,7 +9,16 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp">
+        android:layout_margin="5dp">
+
+        <ImageView
+            android:id="@+id/ivDenunciarPregunta"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_error_outline_red_32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:onClick="boton" />
 
         <LinearLayout
             android:id="@+id/linearLayout"
@@ -77,6 +86,19 @@
             app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
             android:layout_marginTop="20dp"
             android:text="@string/accept"
+            android:visibility="gone"
+            android:onClick="boton"/>
+
+        <Button
+            android:id="@+id/btTerminar"
+            android:layout_width="wrap_content"
+            android:layout_height="75dp"
+            app:layout_constraintStart_toEndOf="@id/btVolver"
+            app:layout_constraintEnd_toStartOf="@id/btCamara"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            android:layout_marginTop="20dp"
+            android:text="@string/terminar"
             android:visibility="gone"
             android:onClick="boton"/>
 
