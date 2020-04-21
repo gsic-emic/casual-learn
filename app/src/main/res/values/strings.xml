@@ -88,4 +88,12 @@
     <string name="intervaloHoras">Hours</string>
     <string name="intervaloMinutos">Minutes</string>
     <string name="tareasFindes">Tasks on weekends</string>
+    <string name="sinRespuesta">Without answer</string>
+    <string name="preguntaCorta">Short answer</string>
+    <string name="preguntaLarga">Long answare</string>
+    <string name="preguntaImagen">Ask and photo</string>
+    <string name="imagen">Photo</string>
+    <string name="imagenMultiple">Multiple photo</string>
+    <string name="video">Video</string>
+    <string name="acercate">You should be closer to the task</string>
 </resources>

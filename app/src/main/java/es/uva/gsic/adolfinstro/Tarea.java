@@ -8,7 +8,6 @@ import androidx.core.content.FileProvider;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -48,8 +47,6 @@ import static java.util.Objects.*;
  */
 public class Tarea extends AppCompatActivity {
 
-    /** Instancia donde se colocará la imagen descriptiva de la tarea*/
-    private ImageView ivImagenDescripcion;
     /** Instancia del campo de texto donde introduce el usuario la respuesta*/
     private EditText etRespuestaTextual;
     /** Instancia para volver a la actividad principal sin finalizar la tarea*/
@@ -68,8 +65,6 @@ public class Tarea extends AppCompatActivity {
     private String recursoAsociadoImagen;
     /** Texto que se espera que tenga la respuesta del alumno*/
     private String respuestaEsperada;
-    /** Número de fotos de la serie */
-    //private int restantes = 3; //Este valor habrá que obtenerlo del intento
 
     /** URI de la imagen que se acaba de tomar */
     private Uri photoURI;
@@ -101,7 +96,9 @@ public class Tarea extends AppCompatActivity {
 
         requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
 
-        ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
+        // Instancia donde se colocará la imagen descriptiva de la tarea
+        ImageView ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
+
         Bundle extras = getIntent().getExtras();
         assert extras != null;
         idTarea = extras.getString(Auxiliar.id);
@@ -188,6 +185,7 @@ public class Tarea extends AppCompatActivity {
                         getApplication(),
                         PersistenciaDatos.ficheroNotificadas,
                         idTarea);
+                assert tarea != null;
                 tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
                 tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                 PersistenciaDatos.reemplazaJSON(
@@ -408,6 +406,11 @@ public class Tarea extends AppCompatActivity {
         }
     }
 
+    /**
+     * Método para envíar una denuncia de la tarea. Esta denuncia se recogerá mediante un evento de
+     * FIREBASE
+     * @param textoUsuario Texto del usuario a enviar.
+     */
     public void enviaDenuncia(String textoUsuario){
         Intent intent = new Intent();
         intent.setAction(Auxiliar.nunca_mas);
@@ -418,9 +421,22 @@ public class Tarea extends AppCompatActivity {
         bundle.putString("idTarea", idReducida());
         bundle.putString("MensajeUsuario", textoUsuario);
         firebaseAnalytics.logEvent("denuncia_tarea", bundle);
+        JSONObject tarea = null;
+        try{
+            tarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+            tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroDenunciadas, tarea, Context.MODE_PRIVATE);
+        }catch (Exception e){
+            if(tarea!=null)
+                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroTareasRechazadas, tarea, Context.MODE_PRIVATE);
+        }
         Auxiliar.returnMain(this);
     }
 
+    /**
+     * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
+     * @return Últimas dos partes del path
+     */
     public String idReducida(){
         String[] vectorId = idTarea.split("/");
         String salida = "";
@@ -644,6 +660,7 @@ public class Tarea extends AppCompatActivity {
                             getApplication(),
                             PersistenciaDatos.ficheroNotificadas,
                             idTarea);
+                    assert tarea != null;
                     tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, tarea, Context.MODE_PRIVATE);
@@ -663,6 +680,7 @@ public class Tarea extends AppCompatActivity {
                             getApplication(),
                             PersistenciaDatos.ficheroNotificadas,
                             idTarea);
+                    assert tarea != null;
                     tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,

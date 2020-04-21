@@ -301,6 +301,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
 
         int tiempoPreferenciaUser = intervaloDias * 1440 + intervaloHoras * 60 + intervaloMinutos;
         boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((tiempoPreferenciaUser > 0)?tiempoPreferenciaUser*60*1000:20000);
+        comprueba = comprueba && !(!tareaFindes && esFinde());
         if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
             if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
                 if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
@@ -398,9 +399,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
 
                 //Botones extra
                 Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
-                intentBoton.setAction("AHORA_NO");
+                intentBoton.setAction(Auxiliar.ahora_no);
                 intentBoton.putExtra(Auxiliar.id, id);
-                intentBoton.putExtra("idNotificacion", incr);
+                intentBoton.putExtra(Auxiliar.idNotificacion, incr);
                 PendingIntent ahoraNoPending = PendingIntent.getBroadcast(context, incr + 999, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
                 //builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
                 builder.setDeleteIntent(ahoraNoPending);
@@ -505,20 +506,17 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 break;
             case Ajustes.FINDES_pref:
                 tareaFindes = sharedPreferences.getBoolean(key, true);
-                if(!tareaFindes && esFinde()){
-                    if(servicioIniciado)
-                        stopLocation();
-                }else{
-                    if(!servicioIniciado)
-                        startLocation();
-                }
                 break;
         }
     }
 
+    /**
+     * Método para saber si es fin de semana o si no lo es.
+     *
+     * @return Devuelve verdadero si es sábado o domingo y falso si es un día de diario
+     */
     private boolean esFinde() {
-        Calendar c = Calendar.getInstance();
-        int dia = c.get(Calendar.DAY_OF_WEEK);
+        int dia = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
         return (dia == Calendar.SATURDAY || dia == Calendar.SUNDAY);
     }
 

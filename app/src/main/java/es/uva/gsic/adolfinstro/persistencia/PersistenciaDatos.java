@@ -32,14 +32,14 @@ public class PersistenciaDatos {
     public static final String ficheroTareasRechazadas = "rechazadas";
     /** Fichero con las tareas pospuestas */
     public static final String ficheroTareasPospuestas = "pospuestas";
-    ///** Fichero donde se almacenan las puntuacines que el usuario hace de las tareas */
-    //public static final String ficheroPuntuaciones = "puntuaciones";
     /** Fichero con los datos del usuario */
     public static final String ficheroUsuario = "usario";
     /** Fichero con fechas de instantes de eventos */
     public static final String ficheroInstantes = "eventos";
     /** Fichero con las tareas completadas */
     public static final String ficheroCompletadas = "completadas";
+    /** Fichero con las tareas denunciadas por el usuario */
+    public static final String ficheroDenunciadas = "denunciadas";
 
     /**
      * Método para obtener el contenido de un fichero que se sabe que está estructurado en forma de JSON

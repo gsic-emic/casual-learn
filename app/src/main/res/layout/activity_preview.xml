@@ -69,6 +69,7 @@
         app:layout_constraintTop_toBottomOf="@id/imagenPreview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:textSize="18sp"
         android:layout_marginTop="5dp"/>
 
     <ImageView

@@ -15,7 +15,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -276,31 +281,35 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
 
     /**
      * Método que se utiliza para agregar un marcador al mapa
-     *
-     * @param latitude Latitud del marcador
+     *  @param latitude Latitud del marcador
      * @param longitude Longitud del marcador
      * @param titule Título del marcador
-     * @param nTask Número de tareas que encontrará el usuario en la posición indicada por el marcador
+     * @param listaTareas Tipo de tareas que encontrará el usuario en la posición indicada por el marcador
      */
-    public void newMarker(double latitude, double longitude, String titule, final int nTask) {
+    public void newMarker(double latitude, double longitude, String titule, List<String> listaTareas) {
         LabelledGeoPoint labelledGeoPoint = new LabelledGeoPoint(latitude, longitude, titule);
         if (!items.contains(labelledGeoPoint)) {
             items.add(labelledGeoPoint);
             Marker marker = new Marker(map);
             marker.setPosition(new GeoPoint(latitude, longitude));
             marker.setTitle(titule);
-            if (nTask < 2)
+            final int nTask = listaTareas.size();
+            BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarker(listaTareas));
+            marker.setIcon(d);
+            //makerShape.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            /*if (nTask < 2) {
                 marker.setIcon(getResources().getDrawable(R.drawable.ic_3_tareas));
+            }
             else {
                 if (nTask < 4)
-                    marker.setIcon(getResources().getDrawable(R.drawable.ic_5_tareas));
+                    marker.setIcon(d);
                 else {
                     if (nTask < 6)
                         marker.setIcon(getResources().getDrawable(R.drawable.ic_8_tareas));
                     else
                         marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
                 }
-            }
+            }*/
             marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
@@ -319,6 +328,116 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             });
             map.getOverlays().add(marker);
         }
+    }
+
+    private Bitmap generaBitmapMarker(List<String> listaTareas){
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        float xy = (float)bitmap.getWidth()/2;
+        float radio = xy/2;
+        List<String> tipoTarea = new ArrayList<>();
+        List<Integer> numeroTipoTarea = new ArrayList<>();
+        int intermedio = 0;
+        /*if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoSinRespuesta)) > 0) {
+            tipoTarea.add(Auxiliar.tipoSinRespuesta);
+            numeroTipoTarea.add(intermedio);
+        }
+        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaCorta)) > 0){
+            tipoTarea.add(Auxiliar.tipoPreguntaCorta);
+            numeroTipoTarea.add(intermedio);
+        }
+        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaLarga)) > 0){
+            tipoTarea.add(Auxiliar.tipoPreguntaLarga);
+            numeroTipoTarea.add(intermedio);
+        }
+        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaImagen)) > 0){
+            tipoTarea.add(Auxiliar.tipoPreguntaImagen);
+            numeroTipoTarea.add(intermedio);
+        }
+        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoImagen)) > 0){
+            tipoTarea.add(Auxiliar.tipoImagen);
+            numeroTipoTarea.add(intermedio);
+        }
+        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoImagenMultiple)) > 0){
+            tipoTarea.add(Auxiliar.tipoImagenMultiple);
+            numeroTipoTarea.add(intermedio);
+        }
+        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoVideo)) > 0){
+            tipoTarea.add(Auxiliar.tipoVideo);
+            numeroTipoTarea.add(intermedio);
+        }*/
+
+
+            tipoTarea.add(Auxiliar.tipoSinRespuesta);
+            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoSinRespuesta));
+
+
+            tipoTarea.add(Auxiliar.tipoPreguntaCorta);
+            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaCorta));
+
+            tipoTarea.add(Auxiliar.tipoPreguntaLarga);
+            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaLarga));
+
+            tipoTarea.add(Auxiliar.tipoPreguntaImagen);
+            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaImagen));
+
+            tipoTarea.add(Auxiliar.tipoImagen);
+            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagen));
+
+
+            tipoTarea.add(Auxiliar.tipoImagenMultiple);
+            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagenMultiple));
+
+            tipoTarea.add(Auxiliar.tipoVideo);
+            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoVideo));
+
+        float resta = radio/tipoTarea.size();
+        for(int i = 0; i< tipoTarea.size(); i++){
+            if(numeroTipoTarea.get(i)>0) {
+                switch (tipoTarea.get(i)) {
+                    case Auxiliar.tipoSinRespuesta:
+                        paint.setARGB(255, 255, 51, 51);
+                        break;
+                    case Auxiliar.tipoPreguntaCorta:
+                        paint.setARGB(255, 160, 160, 160);
+                        break;
+                    case Auxiliar.tipoPreguntaLarga:
+                        paint.setARGB(255, 51, 255, 255);
+                        break;
+                    case Auxiliar.tipoPreguntaImagen:
+                        paint.setARGB(255, 255, 255, 51);
+                        break;
+                    case Auxiliar.tipoImagen:
+                        paint.setARGB(255, 32, 32, 32);
+                        break;
+                    case Auxiliar.tipoImagenMultiple:
+                        paint.setARGB(255, 51, 255, 51);
+                        break;
+                    case Auxiliar.tipoVideo:
+                        paint.setARGB(255, 51, 51, 255);
+                        break;
+                }
+            }else{
+                paint.setARGB(255, 255, 255, 255);
+            }
+            canvas.drawCircle(xy, xy, (int)radio, paint);
+            radio -= resta;
+        }
+
+        return bitmap;
+    }
+
+    private int compruebaVecesTipo(List<String> listaTareas, String tipoRespuesta){
+        if(listaTareas.contains(tipoRespuesta)){
+            int i = 0;
+            for(String s :listaTareas){
+                if(s.equals(tipoRespuesta))
+                    i++;
+            }
+            return i;
+        }
+        return 0;
     }
 
     /**
@@ -391,6 +510,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 if(myLocationNewOverlay.getMyLocation() != null) {
                     mapController.setZoom(16.9);
                     mapController.animateTo(myLocationNewOverlay.getMyLocation());
+                    onLocationChanged(myLocationNewOverlay.getMyLocationProvider().getLastKnownLocation());
                 }else{ //Si aún no se conoce se muestra un mensaje
                     Toast.makeText(this, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                 }
@@ -566,12 +686,15 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 pintaItemsfijos();
                 try {
                     JSONArray arrayTareas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareasUsuario);
-                    Map<JSONObject, Integer> posiciones = new HashMap<>();
+                    Map<JSONObject, List<String>> posiciones = new HashMap<>();
+                    List<String> lista;
                     JSONObject json;
                     boolean existia;
                     for (int i = 0; i < arrayTareas.length(); i++) {
                         if(posiciones.isEmpty()){
-                            posiciones.put(arrayTareas.getJSONObject(i), 1);
+                            lista = new ArrayList<>();
+                            lista.add(Auxiliar.ultimaParte(arrayTareas.getJSONObject(i).getString(Auxiliar.tipoRespuesta)));
+                            posiciones.put(arrayTareas.getJSONObject(i), lista);
                         }
                         else{
                             json = arrayTareas.getJSONObject(i);
@@ -579,13 +702,17 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                             for(JSONObject j : posiciones.keySet()){
                                 if(json.getString(Auxiliar.latitud).equals(j.getString(Auxiliar.latitud)) &&
                                 json.getString(Auxiliar.longitud).equals(j.getString(Auxiliar.longitud))){
-                                    posiciones.put(j, posiciones.get(j)+1);
+                                    lista = posiciones.get(j);
+                                    lista.add(Auxiliar.ultimaParte(json.getString(Auxiliar.tipoRespuesta)));
+                                    posiciones.put(j, lista);
                                     existia = true;
                                     break;
                                 }
                             }
                             if(!existia){
-                                posiciones.put(json, 1);
+                                lista = new ArrayList<>();
+                                lista.add(Auxiliar.ultimaParte(json.getString(Auxiliar.tipoRespuesta)));
+                                posiciones.put(json, lista);
                             }
                         }
                     }
@@ -601,7 +728,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
 
             //Si el usuario está cerca de una tarea se le notifica
             try{
-                JSONObject tarea = Auxiliar.tareaMasCercana(getApplication(), latitud, longitud);
+                JSONObject tarea = Auxiliar.tareaMasCercana(getApplication(), latitud, longitud); //TODO LA TAREA PUEDE SER NULL!!!
                 double distancia = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
                 //Con esta distancia se notifia al usuario si está lo suficientemente cerca
                 long ultimaPosicionInstante;

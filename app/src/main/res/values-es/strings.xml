@@ -84,4 +84,12 @@
     <string name="intervaloHoras">Horas</string>
     <string name="intervaloMinutos">Minutos</string>
     <string name="tareasFindes">Tareas los fines de semana</string>
+    <string name="sinRespuesta">Sin respuesta</string>
+    <string name="preguntaCorta">Respuesta corta</string>
+    <string name="preguntaLarga">Respuesta larga</string>
+    <string name="preguntaImagen">Pregunta y foto</string>
+    <string name="imagen">Foto</string>
+    <string name="imagenMultiple">Múltiples fotos</string>
+    <string name="video">Vídeo</string>
+    <string name="acercate">Deberías estar más cerca de la posición de la tarea</string>
 </resources>

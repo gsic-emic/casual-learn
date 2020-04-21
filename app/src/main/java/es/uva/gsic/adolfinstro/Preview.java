@@ -46,6 +46,8 @@ public class Preview extends AppCompatActivity {
     /** Receptor de notificaciones */
     private RecepcionNotificaciones recepcionNotificaciones;
 
+    private double latitud, longitud;
+
     /**
      * Se crea la vista de la interfaz de usuario.
      *
@@ -91,7 +93,9 @@ public class Preview extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         IMapController mapController = map.getController();
 
-        GeoPoint posicionTarea = new GeoPoint(extras.getDouble(Auxiliar.latitud), extras.getDouble(Auxiliar.longitud));
+        latitud = extras.getDouble(Auxiliar.latitud);
+        longitud = extras.getDouble(Auxiliar.longitud);
+        GeoPoint posicionTarea = new GeoPoint( latitud, longitud);
 
         mapController.setCenter(posicionTarea);
         mapController.setZoom(16.0);
@@ -150,11 +154,11 @@ public class Preview extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
-        /*Intent intent = new Intent();
+        Intent intent = new Intent();
         intent.setAction(Auxiliar.ahora_no);
         intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
         sendBroadcast(intent);
-        Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();*/
+        Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
         Auxiliar.returnMain(context);
     }
 
@@ -167,9 +171,21 @@ public class Preview extends AppCompatActivity {
         Intent intent;
         switch (view.getId()){
             case R.id.botonAceptarPreview:
-                intent = new Intent(context, Tarea.class);
-                intent.putExtras(Objects.requireNonNull(getIntent().getExtras()));
-                startActivity(intent);
+                if(myLocationNewOverlay.getMyLocation() != null){
+                    double distancia = Auxiliar.calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation().getLatitude(),
+                            myLocationNewOverlay.getMyLocation().getLongitude(),
+                            latitud,
+                            longitud);
+                    if(distancia<0.15) {
+                        intent = new Intent(context, Tarea.class);
+                        intent.putExtras(Objects.requireNonNull(getIntent().getExtras()));
+                        startActivity(intent);
+                    }else {
+                        Toast.makeText(context, getString(R.string.acercate), Toast.LENGTH_SHORT).show();
+                    }
+                }else {
+                    Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.botonAhoraNoPreview:
                 intent = new Intent();

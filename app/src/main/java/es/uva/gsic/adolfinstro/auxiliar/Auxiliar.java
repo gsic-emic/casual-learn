@@ -70,6 +70,8 @@ public class Auxiliar {
     public static final String tipoPreguntaImagen = "preguntaImagen";
     public static final String peticion = "peticion";
 
+    public static final String idNotificacion = "idNotificacion";
+
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
 
     //private static Random random = new Random();
@@ -90,10 +92,12 @@ public class Auxiliar {
             case 0:
             case 1:
             case 2:
-                mediaFile = File.createTempFile("JPG_"+timeStamp,".jpg", context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+                mediaFile = File.createTempFile("JPG_"+timeStamp,".jpg",
+                        context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
                 break;
             case 3:
-                mediaFile = File.createTempFile("VID_"+timeStamp, ".mp4", context.getExternalFilesDir(Environment.DIRECTORY_MOVIES));
+                mediaFile = File.createTempFile("VID_"+timeStamp, ".mp4",
+                        context.getExternalFilesDir(Environment.DIRECTORY_MOVIES));
                 break;
             default:
         }
@@ -242,26 +246,28 @@ public class Auxiliar {
             JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareasUsuario);
             for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
                 tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tarea.isEmpty()){
-                    distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
-                            tareaEvaluada.getDouble(Auxiliar.longitud),
-                            latitudUsuario,
-                            longitudUsuario);
-                    if(distancia < distanciaMin){
-                        distanciaMin = distancia;
-                        tarea = new ArrayList<>();
-                        tarea.add(tareaEvaluada);
-                    }else{
-                        if(distancia == distanciaMin){
+                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id))) {
+                    if (!tarea.isEmpty()) {
+                        distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                                tareaEvaluada.getDouble(Auxiliar.longitud),
+                                latitudUsuario,
+                                longitudUsuario);
+                        if (distancia < distanciaMin) {
+                            distanciaMin = distancia;
+                            tarea = new ArrayList<>();
                             tarea.add(tareaEvaluada);
+                        } else {
+                            if (distancia == distanciaMin) {
+                                tarea.add(tareaEvaluada);
+                            }
                         }
+                    } else {//Solo se va entrar aquí con la primera tarea
+                        tarea.add(tareaEvaluada);
+                        distanciaMin = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                                tareaEvaluada.getDouble(Auxiliar.longitud),
+                                latitudUsuario,
+                                longitudUsuario);
                     }
-                }else {//Solo se va entrar aquí con la primera tarea
-                    tarea.add(tareaEvaluada);
-                    distanciaMin = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
-                            tareaEvaluada.getDouble(Auxiliar.longitud),
-                            latitudUsuario,
-                            longitudUsuario);
                 }
             }
             //Devolvemos una de las tareas del vector escogida de manera aleatorio
@@ -272,10 +278,25 @@ public class Auxiliar {
         }
     }
 
+    public static boolean tareaRegistrada(Application app, String idTarea){
+        return PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasPospuestas, idTarea) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasRechazadas, idTarea) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroDenunciadas, idTarea);
+    }
+
+    /**
+     * Método para obtener la fecha y hora actual con el formato HH:mm - dd/MM/yyyy
+     * @return Cadena de texto con la hora y la fecha actual.
+     */
     public static String horaFechaActual() {
         return formatoFecha.format(Calendar.getInstance().getTime());
     }
 
+    /**
+     * Filtro neceario para activar el canal de notificaciones interno de la app
+     * @return IntentFilter con los posibles receptores de la notificación
+     */
     public static IntentFilter intentFilter() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Auxiliar.nunca_mas);
@@ -283,6 +304,11 @@ public class Auxiliar {
         return intentFilter;
     }
 
+    /**
+     * Devuelve el identificador único de la tarea dependiendo del tipo de respuestas esperado
+     * @param tR Tipo de respuesta esperado
+     * @return Identificador del icono en el sistema
+     */
     public static int iconoTipoTarea(String tR) {
         int iconoTarea;
         switch (tR){

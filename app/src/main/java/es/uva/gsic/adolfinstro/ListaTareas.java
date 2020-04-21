@@ -85,6 +85,10 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
         cargaTareas();
     }
 
+    /**
+     * Método para cargar las tareas dentro del contenedor.
+     * Si no existen tarea se le notifica al usuario mediante un mensaje
+     */
     private void cargaTareas(){
         //Lista de tareas
         JSONArray arrayTareas = PersistenciaDatos.leeFichero(getApplication(), peticion);
@@ -206,7 +210,31 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
     @Override
     public void onItemLongClick(View v, int position){
         String tipoTarea = adapter.getTipo(position);
-        Toast.makeText(this, tipoTarea, Toast.LENGTH_SHORT).show();
+        String mensaje = "";
+        switch (tipoTarea){
+            case Auxiliar.tipoSinRespuesta:
+                mensaje = getString(R.string.sinRespuesta);
+                break;
+            case Auxiliar.tipoPreguntaCorta:
+                mensaje = getString(R.string.preguntaCorta);
+                break;
+            case Auxiliar.tipoPreguntaLarga:
+                mensaje = getString(R.string.preguntaLarga);
+                break;
+            case Auxiliar.tipoPreguntaImagen:
+                mensaje = getString(R.string.preguntaImagen);
+                break;
+            case Auxiliar.tipoImagen:
+                mensaje = getString(R.string.imagen);
+                break;
+            case Auxiliar.tipoImagenMultiple:
+                mensaje = getString(R.string.imagenMultiple);
+                break;
+            case Auxiliar.tipoVideo:
+                mensaje = getString(R.string.video);
+                break;
+        }
+        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }
 
     /**
