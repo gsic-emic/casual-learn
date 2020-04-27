@@ -114,7 +114,7 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
                     tareas.add(new TareasLista(
                             jsonObject.getString(Auxiliar.id),
                             jsonObject.getString(Auxiliar.titulo),
-                            jsonObject.getString(Auxiliar.tipoRespuesta),
+                            Auxiliar.ultimaParte(jsonObject.getString(Auxiliar.tipoRespuesta)),
                             jsonObject.getString(Auxiliar.fechaUltimaModificacion),
                             puntuacion));
                 }
@@ -140,11 +140,15 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
         JSONObject jTarea;
         switch (peticion) {
             case PersistenciaDatos.ficheroTareasPospuestas:
+            case PersistenciaDatos.ficheroTareasRechazadas:
                 try {
-                    jTarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasPospuestas, idTarea);
+                    if(peticion.equals(PersistenciaDatos.ficheroTareasPospuestas))
+                        jTarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasPospuestas, idTarea);
+                    else
+                        jTarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasRechazadas, idTarea);
                     Intent intent = new Intent(this, Preview.class);
                     intent.putExtra(Auxiliar.id, idTarea);
-                    intent.putExtra(Auxiliar.tipoRespuesta, jTarea.getString(Auxiliar.tipoRespuesta));
+                    intent.putExtra(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(jTarea.getString(Auxiliar.tipoRespuesta)));
                     intent.putExtra(Auxiliar.recursoAsociadoTexto, jTarea.getString(Auxiliar.recursoAsociadoTexto));
                     String intermedio = null;
                     try{
@@ -178,11 +182,8 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
                     //
                 }
                 break;
-            case PersistenciaDatos.ficheroTareasRechazadas:
-                sacarRechazada(idTarea);
-                break;
             case PersistenciaDatos.ficheroCompletadas:
-                //TODO
+                //TODO actividad de la respuesta del usuario
                 break;
         }
     }

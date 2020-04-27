@@ -14,13 +14,13 @@
 
     <TextView
         android:id="@+id/tituloPreview"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textSize="30sp"
         android:textStyle="bold"
         android:textAlignment="center"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guiaVerticalPreview"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -28,38 +28,47 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.5" />
+        app:layout_constraintGuide_percent="0.85" />
 
+    <ImageView
+        android:id="@+id/ivTipoTareaPreview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/guiaVerticalPreview"
+        android:layout_marginTop="5dp"/>
 
     <org.osmdroid.views.MapView android:id="@+id/mapPreview"
         android:layout_width="0dp"
-        android:layout_height="300dp"
-        android:maxHeight="300dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/guiaVerticalPreview"
-        app:layout_constraintTop_toBottomOf="@id/tituloPreview"
-        android:layout_marginEnd="5dp"
-        android:visibility="invisible"/>
-
-    <org.osmdroid.views.MapView android:id="@+id/mapPreviewC"
-        android:layout_width="0dp"
-        android:layout_height="300dp"
-        android:maxHeight="300dp"
-        android:visibility="invisible"
+        android:layout_height="100dp"
+        android:maxHeight="100dp"
+        android:layout_marginTop="5dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tituloPreview" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/openstreetmap_contributors"
+        android:background="#dce1e8"
+        android:textColor="@android:color/black"
+        app:layout_constraintBottom_toBottomOf="@id/mapPreview"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="2dp"
+        android:textSize="12sp"/>
+
     <ImageView
         android:id="@+id/imagenPreview"
         android:layout_width="0dp"
-        android:layout_height="300dp"
-        android:maxHeight="300dp"
-        app:layout_constraintStart_toStartOf="@id/guiaVerticalPreview"
+        android:layout_height="250dp"
+        android:maxHeight="250dp"
+        android:layout_marginTop="5dp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tituloPreview"
-        android:layout_marginStart="5dp"
-        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@id/mapPreview"
+        android:visibility="gone"
         android:adjustViewBounds="true"/>
 
     <TextView
@@ -72,15 +81,6 @@
         android:textSize="18sp"
         android:layout_marginTop="5dp"/>
 
-    <ImageView
-        android:id="@+id/ivTipoTareaPreview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/textoPreview"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="5dp"/>
-
     <Button
         android:id="@+id/botonRechazarPreview"
         android:layout_width="wrap_content"
@@ -89,7 +89,7 @@
         android:onClick="boton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/botonAhoraNoPreview"
-        app:layout_constraintTop_toBottomOf="@id/ivTipoTareaPreview"
+        app:layout_constraintTop_toBottomOf="@id/textoPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="5dp"/>
 
@@ -101,7 +101,7 @@
         android:onClick="boton"
         app:layout_constraintStart_toEndOf="@id/botonRechazarPreview"
         app:layout_constraintEnd_toStartOf="@id/botonAceptarPreview"
-        app:layout_constraintTop_toBottomOf="@id/ivTipoTareaPreview"
+        app:layout_constraintTop_toBottomOf="@id/textoPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="5dp"/>
 
@@ -113,7 +113,7 @@
         android:onClick="boton"
         app:layout_constraintStart_toEndOf="@id/botonAhoraNoPreview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ivTipoTareaPreview"
+        app:layout_constraintTop_toBottomOf="@id/textoPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginTop="5dp"/>
 

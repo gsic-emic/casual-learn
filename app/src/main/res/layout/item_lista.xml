@@ -8,32 +8,22 @@
     android:layout_marginBottom="10dp"
     android:background="#46C5C5C5">
 
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guiaVerticalItemLista"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.2" />
+
     <ImageView
         android:id="@+id/ivListaTipoTarea"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/tvListaFechaTarea"/>
-
-    <TextView
-        android:id="@+id/tvListaTitulo"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textSize="22sp"
-        app:layout_constraintStart_toEndOf="@id/ivListaTipoTarea"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <TextView
-        android:id="@+id/tvListaFechaTarea"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        app:layout_constraintStart_toEndOf="@id/ivListaTipoTarea"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvListaTitulo" />
+        app:layout_constraintEnd_toStartOf="@id/guiaVerticalItemLista"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <RatingBar
         android:id="@+id/rbLista"
@@ -42,9 +32,28 @@
         style="?android:attr/ratingBarStyleSmall"
         android:numStars="5"
         android:isIndicator="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvListaFechaTarea"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivListaTipoTarea"
+        app:layout_constraintEnd_toStartOf="@id/guiaVerticalItemLista"
         android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/tvListaTitulo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvListaFechaTarea"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvListaTitulo" />
 
 
 

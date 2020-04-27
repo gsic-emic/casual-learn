@@ -22,7 +22,7 @@
     <string name="respuestaVacia">La respuesta no puede estar vacía</string>
     <string name="respuestaG">Respuesta almacenada</string>
     <string name="noMolestar">No molestar</string>
-    <string name="intervalo">Intervalo entre tareas</string>
+    <string name="intervalo">Intervalo mínimo entre cada notificación de nueva tarea</string>
     <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas (horas)</string>
     <string name="textoNotificacionPersistente">Buscando nuevas tareas…</string>
     <string name="Password">Contraseña</string>
@@ -92,4 +92,12 @@
     <string name="imagenMultiple">Múltiples fotos</string>
     <string name="video">Vídeo</string>
     <string name="acercate">Deberías estar más cerca de la posición de la tarea</string>
+    <string name="valorActual">Valor actual:</string>
+    <string name="minuto">minuto</string>
+    <string name="minutos">minutos</string>
+    <string name="hora">hora</string>
+    <string name="horas">horas</string>
+    <string name="dia">día</string>
+    <string name="dias">días</string>
+    <string name="pulsaMarker">Pulsa en un marcador para ver los tipos de tarea</string>
 </resources>

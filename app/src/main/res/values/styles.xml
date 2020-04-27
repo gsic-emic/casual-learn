@@ -25,4 +25,8 @@
         <item name="colorControlActivated">@color/colorStarOn</item>
     </style>
 
+    <style name="PreferenceScreen" parent="AppTheme">
+        <item name="colorAccent">@color/texto</item>
+    </style>
+
 </resources>

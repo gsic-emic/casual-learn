@@ -300,4 +300,21 @@ public class PersistenciaDatos {
             return null;
         }
     }
+
+    public static JSONArray tareasPosicion(Application app, String fichero, double latitud, double longitud){
+        JSONArray tareas = new JSONArray();
+        JSONArray todas = leeFichero(app, fichero);
+        JSONObject tarea;
+        for(int i = 0; i < todas.length(); i++){
+            try {
+                tarea = todas.getJSONObject(i);
+                if((tarea.getDouble(Auxiliar.latitud) == latitud) && (tarea.getDouble(Auxiliar.longitud) == longitud)){
+                    tareas.put(tarea);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return tareas;
+    }
 }

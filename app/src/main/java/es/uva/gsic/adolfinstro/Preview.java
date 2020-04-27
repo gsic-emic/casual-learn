@@ -9,8 +9,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.Layout;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -73,7 +75,6 @@ public class Preview extends AppCompatActivity {
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                     .tag(Auxiliar.cargaImagenPreview)
                     .into(imageView);
-            map = findViewById(R.id.mapPreview);
             imageView.setVisibility(View.VISIBLE);
         }else{
             if(extras.getString(Auxiliar.recursoImagen) != null) {
@@ -82,14 +83,10 @@ public class Preview extends AppCompatActivity {
                         .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                         .tag(Auxiliar.cargaImagenPreview)
                         .into(imageView);
-                map = findViewById(R.id.mapPreview);
                 imageView.setVisibility(View.VISIBLE);
-            } else{
-                //imageView.setImageResource(R.drawable.ic_camera_roll_black_24dp);
-                map = findViewById(R.id.mapPreviewC);
             }
         }
-        map.setVisibility(View.VISIBLE);
+        map = findViewById(R.id.mapPreview);
         map.setTileSource(TileSourceFactory.MAPNIK);
         IMapController mapController = map.getController();
 
@@ -113,6 +110,9 @@ public class Preview extends AppCompatActivity {
         titulo.setText(extras.getString(Auxiliar.titulo));
         TextView descripcion = findViewById(R.id.textoPreview);
         descripcion.setText(extras.getString(Auxiliar.recursoAsociadoTexto));
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            descripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+        }
         ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
         String tipo = extras.getString(Auxiliar.tipoRespuesta);
         tipoTarea.setContentDescription(String.format("%s%s", getString(R.string.tipoDeTarea), tipo));

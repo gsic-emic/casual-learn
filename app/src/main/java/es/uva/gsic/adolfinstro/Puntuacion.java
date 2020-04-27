@@ -35,13 +35,7 @@ public class Puntuacion extends AppCompatActivity {
 
         btEnviarPuntuacion = findViewById(R.id.btEnviarPuntuacion);
 
-        try {
-            idTarea = getIntent().getExtras().getString("ID");
-        }catch (NullPointerException e){
-            //TODO SOLO DEBERÍA SALTAR EN DESARROLLO ya que SIEMPRE se va a
-            System.err.println("No se va a puntuar una tarea que exista.");
-            idTarea = "AAA_123_IdentificadorTareaFalsoDesarrollo";
-        }
+        idTarea = getIntent().getExtras().getString("ID");
         RatingBar barraPuntuacion = findViewById(R.id.rbPuntuacion);
         barraPuntuacion.setOnRatingBarChangeListener( new RatingBar.OnRatingBarChangeListener() {
             /**

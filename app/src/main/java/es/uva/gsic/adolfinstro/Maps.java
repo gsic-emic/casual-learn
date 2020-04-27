@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.NotificationChannel;
@@ -19,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -28,10 +31,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
@@ -66,13 +71,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import es.uva.gsic.adolfinstro.auxiliar.AdaptadorLista;
+import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 //https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library
-public class Maps extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, LocationListener {
+public class Maps extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, LocationListener, AdaptadorListaMapa.ItemClickListener {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
+
+    private TextView sinPulsarTarea;
+    private RecyclerView contenedor;
     /** Objeto que almacenará, entre otras cosas, la última posición conocida del usuario*/
     private MyLocationNewOverlay myLocationNewOverlay;
     /** Objeto tuilizado para centrar el mapa en un punto específico*/
@@ -148,6 +158,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             primerosPuntos = true;
             setContentView(R.layout.activity_maps);
             map = findViewById(R.id.map);
+            sinPulsarTarea = findViewById(R.id.tvTareasMapa);
+            contenedor = findViewById(R.id.rvTareasMapa);
             map.setTileSource(TileSourceFactory.MAPNIK);
             map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zoom con dos dedos
             mapController = map.getController();
@@ -286,43 +298,29 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      * @param titule Título del marcador
      * @param listaTareas Tipo de tareas que encontrará el usuario en la posición indicada por el marcador
      */
-    public void newMarker(double latitude, double longitude, String titule, List<String> listaTareas) {
+    public void newMarker(final double latitude, final double longitude, String titule, int listaTareas) {
         LabelledGeoPoint labelledGeoPoint = new LabelledGeoPoint(latitude, longitude, titule);
         if (!items.contains(labelledGeoPoint)) {
             items.add(labelledGeoPoint);
             Marker marker = new Marker(map);
             marker.setPosition(new GeoPoint(latitude, longitude));
             marker.setTitle(titule);
-            final int nTask = listaTareas.size();
-            BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarker(listaTareas));
+            BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarkerNumero(listaTareas));
             marker.setIcon(d);
-            //makerShape.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
-            /*if (nTask < 2) {
-                marker.setIcon(getResources().getDrawable(R.drawable.ic_3_tareas));
-            }
-            else {
-                if (nTask < 4)
-                    marker.setIcon(d);
-                else {
-                    if (nTask < 6)
-                        marker.setIcon(getResources().getDrawable(R.drawable.ic_8_tareas));
-                    else
-                        marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
-                }
-            }*/
             marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
                     double distancia;
-                    String msg = getResources().getString(R.string.task) + "s " + nTask + " || ";
+                    String msg;
                     try {
                         distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
-                        msg += String.format(Locale.getDefault(), " %.3f km", distancia);
+                        msg = String.format(Locale.getDefault(), " %.3f km", distancia);
                     } catch (Exception e) {
-                        msg += getString(R.string.recuperandoPosicion);
+                        msg = getString(R.string.recuperandoPosicion);
                     }
                     marker.setSubDescription(msg);
                     marker.showInfoWindow();
+                    pintaLista(latitude, longitude);
                     return false;
                 }
             });
@@ -330,69 +328,157 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         }
     }
 
+
+    private AdaptadorListaMapa adaptadorListaMapa;
+    public void pintaLista(double latitude, double longitude){
+        JSONArray tareas = PersistenciaDatos.tareasPosicion(getApplication(), PersistenciaDatos.ficheroTareasUsuario, latitude, longitude);
+        if(tareas.length() > 0){
+            sinPulsarTarea.setVisibility(View.GONE);
+            contenedor.setVisibility(View.VISIBLE);
+            contenedor.setHasFixedSize(true);
+
+            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+            contenedor.setLayoutManager(layoutManager);
+
+            List<TareasMapaLista> tareasPunto = new ArrayList<>();
+            JSONObject jo;
+            for(int i = 0; i < tareas.length(); i++){
+                try {
+                    jo = tareas.getJSONObject(i);
+                    tareasPunto.add( new TareasMapaLista(jo.getString(Auxiliar.id), jo.getString(Auxiliar.titulo), Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta))));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            adaptadorListaMapa = new AdaptadorListaMapa(this, tareasPunto);
+            adaptadorListaMapa.setClickListener(this);
+            contenedor.setAdapter(adaptadorListaMapa);
+        }else {
+            sinPulsarTarea.setVisibility(View.VISIBLE);
+            contenedor.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onItemClick(View view, int posicion){
+        try {
+            JSONObject tarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasUsuario, adaptadorListaMapa.getId(posicion));
+            Intent intent = new Intent(this, Preview.class);
+            intent.putExtra(Auxiliar.id, tarea.getString(Auxiliar.id));
+            intent.putExtra(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
+            intent.putExtra(Auxiliar.recursoAsociadoTexto, tarea.getString(Auxiliar.recursoAsociadoTexto));
+            String intermedio = null;
+            try{
+                intermedio = tarea.getString(Auxiliar.recursoImagen);
+            }catch (Exception e){
+                //
+            }
+            assert intermedio != null;
+            intent.putExtra(Auxiliar.recursoImagen, (intermedio.equals("")?null:intermedio));
+            intermedio = null;
+            try{
+                intermedio = tarea.getString(Auxiliar.recursoImagenBaja);
+            }catch (Exception e){
+                //
+            }
+            assert intermedio != null;
+            intent.putExtra(Auxiliar.recursoImagenBaja, (intermedio.equals("")?null:intermedio));
+            try{
+                intermedio = tarea.getString(Auxiliar.respuestaEsperada);
+            }catch (Exception e){
+                //
+            }
+            intent.putExtra(Auxiliar.respuestaEsperada, (intermedio.equals("")?null:intermedio));
+            intent.putExtra(Auxiliar.latitud, tarea.getDouble(Auxiliar.latitud));
+            intent.putExtra(Auxiliar.longitud, tarea.getDouble(Auxiliar.longitud));
+            intent.putExtra(Auxiliar.titulo, tarea.getString(Auxiliar.titulo));
+            startActivity(intent);
+            tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea, Context.MODE_PRIVATE);
+        }catch (Exception e){
+
+        }
+
+    }
+
+
+
+    private Bitmap bitmap;
+    private Canvas canvas;
+    private Paint paint;
+    private Bitmap generaBitmapMarkerNumero(int size) {
+        int dimen = 75;
+        float mitad = (float)dimen/2;
+        bitmap = Bitmap.createBitmap(dimen, dimen, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(bitmap);
+        paint = new Paint();
+        paint.setARGB(255, 0, 0, 0);
+        canvas.drawCircle(mitad, mitad, mitad, paint);
+        float radio = mitad - 10;
+        paint.setARGB(255, 255, 255, 255);
+        canvas.drawCircle(mitad, mitad, radio, paint);
+
+        paint.setARGB(255, 255, 0, 0);
+
+
+        //paint.setStyle(Paint.Style.FILL);
+        int textSize = (int) (mitad+1);
+        paint.setTextSize(textSize);
+        paint.setTextAlign(Paint.Align.CENTER);
+        String texto;
+        if(size>9)
+            texto = "9+";
+        else
+            texto = String.valueOf(size);
+        canvas.drawText(texto, mitad, mitad + (float)textSize/3, paint);
+        return bitmap;
+    }
+
+    /**
+     * Método para representar las tareas de dentro de un marcador mediante quesitos.
+     *
+     * @deprecated Sustituido por generaBitmapMarkerNumer(int numeroTareas)
+     * @param listaTareas tipo de tareas que están presentes en el marcador
+     * @return Bitmap a representar
+     */
     private Bitmap generaBitmapMarker(List<String> listaTareas){
-        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint();
         float xy = (float)bitmap.getWidth()/2;
         float radio = xy/2;
         List<String> tipoTarea = new ArrayList<>();
         List<Integer> numeroTipoTarea = new ArrayList<>();
-        int intermedio = 0;
-        /*if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoSinRespuesta)) > 0) {
-            tipoTarea.add(Auxiliar.tipoSinRespuesta);
-            numeroTipoTarea.add(intermedio);
-        }
-        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaCorta)) > 0){
-            tipoTarea.add(Auxiliar.tipoPreguntaCorta);
-            numeroTipoTarea.add(intermedio);
-        }
-        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaLarga)) > 0){
-            tipoTarea.add(Auxiliar.tipoPreguntaLarga);
-            numeroTipoTarea.add(intermedio);
-        }
-        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaImagen)) > 0){
-            tipoTarea.add(Auxiliar.tipoPreguntaImagen);
-            numeroTipoTarea.add(intermedio);
-        }
-        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoImagen)) > 0){
-            tipoTarea.add(Auxiliar.tipoImagen);
-            numeroTipoTarea.add(intermedio);
-        }
-        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoImagenMultiple)) > 0){
-            tipoTarea.add(Auxiliar.tipoImagenMultiple);
-            numeroTipoTarea.add(intermedio);
-        }
-        if((intermedio = compruebaVecesTipo(listaTareas, Auxiliar.tipoVideo)) > 0){
-            tipoTarea.add(Auxiliar.tipoVideo);
-            numeroTipoTarea.add(intermedio);
-        }*/
+
+        tipoTarea.add(Auxiliar.tipoSinRespuesta);
+        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoSinRespuesta));
 
 
-            tipoTarea.add(Auxiliar.tipoSinRespuesta);
-            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoSinRespuesta));
+        tipoTarea.add(Auxiliar.tipoPreguntaCorta);
+        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaCorta));
+
+        tipoTarea.add(Auxiliar.tipoPreguntaLarga);
+        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaLarga));
+
+        tipoTarea.add(Auxiliar.tipoPreguntaImagen);
+        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaImagen));
+
+        tipoTarea.add(Auxiliar.tipoImagen);
+        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagen));
 
 
-            tipoTarea.add(Auxiliar.tipoPreguntaCorta);
-            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaCorta));
+        tipoTarea.add(Auxiliar.tipoImagenMultiple);
+        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagenMultiple));
 
-            tipoTarea.add(Auxiliar.tipoPreguntaLarga);
-            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaLarga));
-
-            tipoTarea.add(Auxiliar.tipoPreguntaImagen);
-            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaImagen));
-
-            tipoTarea.add(Auxiliar.tipoImagen);
-            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagen));
-
-
-            tipoTarea.add(Auxiliar.tipoImagenMultiple);
-            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagenMultiple));
-
-            tipoTarea.add(Auxiliar.tipoVideo);
-            numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoVideo));
+        tipoTarea.add(Auxiliar.tipoVideo);
+        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoVideo));
 
         float resta = radio/tipoTarea.size();
+        int casos = 7;
+        float angulo = (float)360/casos;
+        float anguloInicio;
+        anguloInicio = 0;
+        RectF rectF = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
         for(int i = 0; i< tipoTarea.size(); i++){
             if(numeroTipoTarea.get(i)>0) {
                 switch (tipoTarea.get(i)) {
@@ -421,10 +507,10 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             }else{
                 paint.setARGB(255, 255, 255, 255);
             }
-            canvas.drawCircle(xy, xy, (int)radio, paint);
+            canvas.drawArc(rectF, anguloInicio, angulo, true, paint);
+            anguloInicio += angulo;
             radio -= resta;
         }
-
         return bitmap;
     }
 
@@ -453,8 +539,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     }
 
     private LocationManager locationManager;
-    private LocationListener locationListenerGPS;
-    private LocationListener locationListenerNETWORK;
 
     /**
      * Se restaura el mapa tal y como se indica en la guía.
@@ -473,7 +557,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                     //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10000, 0, this);
                 }
             } catch (Exception e) {
-                //TODO
+                //
             }
             if (map != null)
                 map.onResume();
@@ -717,12 +801,12 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                         }
                     }
                     for(JSONObject j : posiciones.keySet()){
-                        newMarker(j.getDouble(Auxiliar.latitud), j.getDouble(Auxiliar.longitud), j.getString(Auxiliar.titulo), posiciones.get(j));
+                        newMarker(j.getDouble(Auxiliar.latitud), j.getDouble(Auxiliar.longitud), j.getString(Auxiliar.titulo), posiciones.get(j).size());
                     }
                     primerosPuntos = false;
                     map.invalidate();
                 }catch (Exception e){
-                    //TODO
+                    //
                 }
             }
 
@@ -778,13 +862,13 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                     }
                 }
                 JSONObject j = new JSONObject();
-                j.put("id", idUltimaPosicionMapa);
+                j.put(Auxiliar.id, idUltimaPosicionMapa);
                 j.put(Auxiliar.latitud, location.getLatitude());
                 j.put(Auxiliar.longitud, location.getLongitude());
                 j.put(Auxiliar.instante, new Date().getTime());
                 PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroInstantes, j);
             }catch (Exception e){
-                //TODO
+                //
             }
         }
         else{
@@ -906,6 +990,18 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    /**
+     * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
+     */
+    public static class TareasMapaLista{
+        public String id, titulo, tipoTarea;
+        TareasMapaLista(String id, String titulo, String tipoTarea){
+            this.id = id;
+            this.titulo = titulo;
+            this.tipoTarea = tipoTarea;
+        }
     }
 
 }

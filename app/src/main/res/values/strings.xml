@@ -96,4 +96,12 @@
     <string name="imagenMultiple">Multiple photo</string>
     <string name="video">Video</string>
     <string name="acercate">You should be closer to the task</string>
+    <string name="valorActual">Current value:</string>
+    <string name="minuto">minute</string>
+    <string name="minutos">minutes</string>
+    <string name="hora">hour</string>
+    <string name="horas">hours</string>
+    <string name="dia">day</string>
+    <string name="dias">days</string>
+    <string name="pulsaMarker">"Click on a marker to see the types of tasks "</string>
 </resources>

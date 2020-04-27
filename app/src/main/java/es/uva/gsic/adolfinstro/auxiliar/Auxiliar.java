@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
@@ -278,6 +279,12 @@ public class Auxiliar {
         }
     }
 
+    /**
+     * Método que se puede utilizar para comprobar si una tarea está registrada en algún fichero del sistema
+     * @param app Aplicación
+     * @param idTarea Identificador de la tarea
+     * @return Verdadero si el usuario ya ha interactuado con la tarea
+     */
     public static boolean tareaRegistrada(Application app, String idTarea){
         return PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasPospuestas, idTarea) ||
                 PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasRechazadas, idTarea) ||
@@ -338,5 +345,39 @@ public class Auxiliar {
                 break;
         }
         return iconoTarea;
+    }
+
+    public static String valorTexto(Resources resources, int posicion){
+        switch (posicion){
+            case 0:
+                return String.format("1 %s", resources.getString(R.string.minuto));
+            case 1:
+                return String.format("3 %s", resources.getString(R.string.minutos));
+            case 2:
+                return String.format("15 %s", resources.getString(R.string.minutos));
+            case 3:
+                return String.format("30 %s", resources.getString(R.string.minutos));
+            case 4:
+                return String.format("1 %s", resources.getString(R.string.hora));
+            case 5:
+                return String.format("3 %s", resources.getString(R.string.horas));
+            case 6:
+                return String.format("8 %s", resources.getString(R.string.horas));
+            case 7:
+                return String.format("12 %s", resources.getString(R.string.horas));
+            case 8:
+                return String.format("1 %s", resources.getString(R.string.dia));
+            case 9:
+                return String.format("4 %s", resources.getString(R.string.dias));
+            case 10:
+                return String.format("7 %s", resources.getString(R.string.dias));
+            default:
+                return resources.getString(R.string.valorActual);
+        }
+    }
+
+    private static final int[] minutosAjustes = {1, 3, 15, 30, 60, 180, 480, 720, 1440, 5790, 10080};
+    public static int intervaloMinutos(int intervalo) {
+        return minutosAjustes[intervalo];
     }
 }

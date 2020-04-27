@@ -77,9 +77,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     /** Valor actual de la preferencia no Molestar */
     private boolean noMolestar;
     /** Valor actual de la preferencia intervalo por la que se muestra la notificación automática */
-    private int intervaloDias, intervaloHoras, intervaloMinutos;
-
-    private boolean tareaFindes;
+    private int intervalo;
 
     /** Contexto del proceso */
     private Context context;
@@ -149,10 +147,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         posicionamiento();
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALODIA_pref);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALOHORA_pref);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALOMIN_pref);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.FINDES_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
 
         mantenServicio();
@@ -229,10 +224,36 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
                 @Override
                 public void onResponse(JSONArray response) {
-                    PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasUsuario, response, Context.MODE_PRIVATE);
+                    JSONArray nuevasTaras = new JSONArray();
+                    JSONObject j;
+                    boolean guarda;
+                    for(int i = 0; i < response.length(); i++){
+                        try {
+                            j = response.getJSONObject(i);
+                            if(Auxiliar.tareaRegistrada( getApplication(), j.getString(Auxiliar.id))){
+                                if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, j.getString(Auxiliar.id))){
+                                    try {
+                                        PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, j.getString(Auxiliar.id));
+                                        guarda = true;
+                                    } catch (Exception e) {
+                                        guarda = false;
+                                    }
+                                } else {
+                                    guarda = false;
+                                }
+                            }else{
+                                guarda = true;
+                            }
+                            if(guarda)
+                                nuevasTaras.put(j);
+                        } catch (JSONException e) {
+                            //Error al extrar el json
+                        }
+                    }
+                    PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasUsuario, nuevasTaras, Context.MODE_PRIVATE);
                     try {
-                        JSONObject j = new JSONObject();
-                        j.put("id", idInstanteGET);
+                        j = new JSONObject();
+                        j.put(Auxiliar.id, idInstanteGET);
                         j.put(Auxiliar.latitud, location.getLatitude());
                         j.put(Auxiliar.longitud, location.getLongitude());
                         j.put(Auxiliar.instante, new Date().getTime());
@@ -277,7 +298,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private void compruebaLocalizacion(Location location) {
         double distanciaAndada=1200, latitud=0, longitud=0;
         boolean datosValidos = false;
-        //TODO COMPROBAR SI ES FIN DE SEMANA ANTES DE SEGUIR
+
         if(latitudAnt == 0 && longitudAnt == 0){//Se acaba de iniciar el servicio
             latitudAnt = location.getLatitude();
             longitudAnt = location.getLongitude();
@@ -299,9 +320,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             instanteUltimaNotif = 0;
         }
 
-        int tiempoPreferenciaUser = intervaloDias * 1440 + intervaloHoras * 60 + intervaloMinutos;
-        boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((tiempoPreferenciaUser > 0)?tiempoPreferenciaUser*60*1000:20000);
-        comprueba = comprueba && !(!tareaFindes && esFinde());
+        boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((Auxiliar.intervaloMinutos(intervalo) > 0)?Auxiliar.intervaloMinutos(intervalo)*60*1000:20000);
         if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
             if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
                 if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
@@ -488,14 +507,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
-            case Ajustes.INTERVALODIA_pref:
-                intervaloDias = sharedPreferences.getInt(key, 0);
-                break;
-            case Ajustes.INTERVALOHORA_pref:
-                intervaloHoras = sharedPreferences.getInt(key, 3);
-                break;
-            case Ajustes.INTERVALOMIN_pref:
-                intervaloMinutos = sharedPreferences.getInt(key, 0);
+            case Ajustes.INTERVALO_pref:
+                intervalo = sharedPreferences.getInt(key, 0);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
@@ -503,9 +516,6 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     stopLocation();
                     terminaServicio();
                 }
-                break;
-            case Ajustes.FINDES_pref:
-                tareaFindes = sharedPreferences.getBoolean(key, true);
                 break;
         }
     }
