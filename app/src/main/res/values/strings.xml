@@ -104,4 +104,5 @@
     <string name="dia">day</string>
     <string name="dias">days</string>
     <string name="pulsaMarker">"Click on a marker to see the types of tasks "</string>
+    <string name="agrupacionTareas">Group of tasks</string>
 </resources>
