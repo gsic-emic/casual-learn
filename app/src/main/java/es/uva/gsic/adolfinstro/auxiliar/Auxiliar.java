@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
@@ -50,6 +51,7 @@ public class Auxiliar {
     public static final String rating = "rating";
     public static final String fechaNotificiacion = "fechaNotificacion";
     public static final String fechaUltimaModificacion = "fechaUltimaModificacion";
+    public static final String origen = "origen";
 
     public static final String radio = "radio";
     public static final String nunca_mas = "NUNCA_MAS";
@@ -62,12 +64,15 @@ public class Auxiliar {
     public static final String cargaImagenDetalles = "imagenDetalles";
 
     public static final String tipoSinRespuesta = "sinRespuesta";
-    public static final String tipoImagen = "imagen";
-    public static final String tipoImagenMultiple = "imagenMultiple";
+    public static final String tipoImagen = "fotografia";
+    public static final String tipoImagenMultiple = "multiplesFotografias";
     public static final String tipoVideo = "video";
-    public static final String tipoPreguntaCorta = "preguntaCorta";
+    public static final String tipoPreguntaCorta = "texto";
     public static final String tipoPreguntaLarga = "preguntaLarga";
-    public static final String tipoPreguntaImagen = "preguntaImagen";
+    public static final String tipoPreguntaImagen = "fotografiaYTexto";
+    public static final String peticion = "peticion";
+
+    public static final String idNotificacion = "idNotificacion";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
 
@@ -89,10 +94,12 @@ public class Auxiliar {
             case 0:
             case 1:
             case 2:
-                mediaFile = File.createTempFile("JPG_"+timeStamp,".jpg", context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+                mediaFile = File.createTempFile("JPG_"+timeStamp,".jpg",
+                        context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
                 break;
             case 3:
-                mediaFile = File.createTempFile("VID_"+timeStamp, ".mp4", context.getExternalFilesDir(Environment.DIRECTORY_MOVIES));
+                mediaFile = File.createTempFile("VID_"+timeStamp, ".mp4",
+                        context.getExternalFilesDir(Environment.DIRECTORY_MOVIES));
                 break;
             default:
         }
@@ -241,26 +248,28 @@ public class Auxiliar {
             JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareasUsuario);
             for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
                 tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tarea.isEmpty()){
-                    distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
-                            tareaEvaluada.getDouble(Auxiliar.longitud),
-                            latitudUsuario,
-                            longitudUsuario);
-                    if(distancia < distanciaMin){
-                        distanciaMin = distancia;
-                        tarea = new ArrayList<>();
-                        tarea.add(tareaEvaluada);
-                    }else{
-                        if(distancia == distanciaMin){
+                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id))) {
+                    if (!tarea.isEmpty()) {
+                        distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                                tareaEvaluada.getDouble(Auxiliar.longitud),
+                                latitudUsuario,
+                                longitudUsuario);
+                        if (distancia < distanciaMin) {
+                            distanciaMin = distancia;
+                            tarea = new ArrayList<>();
                             tarea.add(tareaEvaluada);
+                        } else {
+                            if (distancia == distanciaMin) {
+                                tarea.add(tareaEvaluada);
+                            }
                         }
+                    } else {//Solo se va entrar aquí con la primera tarea
+                        tarea.add(tareaEvaluada);
+                        distanciaMin = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                                tareaEvaluada.getDouble(Auxiliar.longitud),
+                                latitudUsuario,
+                                longitudUsuario);
                     }
-                }else {//Solo se va entrar aquí con la primera tarea
-                    tarea.add(tareaEvaluada);
-                    distanciaMin = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
-                            tareaEvaluada.getDouble(Auxiliar.longitud),
-                            latitudUsuario,
-                            longitudUsuario);
                 }
             }
             //Devolvemos una de las tareas del vector escogida de manera aleatorio
@@ -271,10 +280,31 @@ public class Auxiliar {
         }
     }
 
+    /**
+     * Método que se puede utilizar para comprobar si una tarea está registrada en algún fichero del sistema
+     * @param app Aplicación
+     * @param idTarea Identificador de la tarea
+     * @return Verdadero si el usuario ya ha interactuado con la tarea
+     */
+    public static boolean tareaRegistrada(Application app, String idTarea){
+        return PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasPospuestas, idTarea) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasRechazadas, idTarea) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroDenunciadas, idTarea);
+    }
+
+    /**
+     * Método para obtener la fecha y hora actual con el formato HH:mm - dd/MM/yyyy
+     * @return Cadena de texto con la hora y la fecha actual.
+     */
     public static String horaFechaActual() {
         return formatoFecha.format(Calendar.getInstance().getTime());
     }
 
+    /**
+     * Filtro neceario para activar el canal de notificaciones interno de la app
+     * @return IntentFilter con los posibles receptores de la notificación
+     */
     public static IntentFilter intentFilter() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Auxiliar.nunca_mas);
@@ -282,6 +312,11 @@ public class Auxiliar {
         return intentFilter;
     }
 
+    /**
+     * Devuelve el identificador único de la tarea dependiendo del tipo de respuestas esperado
+     * @param tR Tipo de respuesta esperado
+     * @return Identificador del icono en el sistema
+     */
     public static int iconoTipoTarea(String tR) {
         int iconoTarea;
         switch (tR){
@@ -311,5 +346,39 @@ public class Auxiliar {
                 break;
         }
         return iconoTarea;
+    }
+
+    public static String valorTexto(Resources resources, int posicion){
+        switch (posicion){
+            case 0:
+                return String.format("1 %s", resources.getString(R.string.minuto));
+            case 1:
+                return String.format("3 %s", resources.getString(R.string.minutos));
+            case 2:
+                return String.format("15 %s", resources.getString(R.string.minutos));
+            case 3:
+                return String.format("30 %s", resources.getString(R.string.minutos));
+            case 4:
+                return String.format("1 %s", resources.getString(R.string.hora));
+            case 5:
+                return String.format("3 %s", resources.getString(R.string.horas));
+            case 6:
+                return String.format("8 %s", resources.getString(R.string.horas));
+            case 7:
+                return String.format("12 %s", resources.getString(R.string.horas));
+            case 8:
+                return String.format("1 %s", resources.getString(R.string.dia));
+            case 9:
+                return String.format("4 %s", resources.getString(R.string.dias));
+            case 10:
+                return String.format("7 %s", resources.getString(R.string.dias));
+            default:
+                return resources.getString(R.string.valorActual);
+        }
+    }
+
+    private static final int[] minutosAjustes = {1, 3, 15, 30, 60, 180, 480, 720, 1440, 5790, 10080};
+    public static int intervaloMinutos(int intervalo) {
+        return minutosAjustes[intervalo];
     }
 }

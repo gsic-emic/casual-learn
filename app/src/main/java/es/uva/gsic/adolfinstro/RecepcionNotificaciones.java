@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
-import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -40,7 +39,8 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
         }catch (Exception ef){
             //Saltará en los reincios, pero es lo esperado
         }
-            switch (accion) {
+        assert accion != null;
+        switch (accion) {
                 case Auxiliar.nunca_mas:
                     //Sacamos la tarea del fichero de tareas pendientes para pasarla a la lista negra
                     try{
@@ -52,7 +52,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                                 tarea,
                                 Context.MODE_PRIVATE);
                     }catch (Exception e){
-                        Log.e(Auxiliar.nunca_mas, "El proceso ha lanzado una excepción");
+                        //
                     }
                     break;
                 case Auxiliar.ahora_no:
@@ -67,7 +67,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                                 tarea,
                                 Context.MODE_PRIVATE);
                     } catch (Exception e){
-                        Log.e(Auxiliar.ahora_no, "El proceso ha lanzado una excepción");
+                        //
                     }
                     break;
                 case Intent.ACTION_BOOT_COMPLETED:

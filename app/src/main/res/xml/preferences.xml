@@ -1,31 +1,42 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-    <SwitchPreference
-        app:key="noMolestar"
-        app:title="@string/noMolestar"
-        app:defaultValue="false"/>
-    <!--<ListPreference
-        app:key="intervalo"
-        app:title="@string/intervalo"
-        app:summary="@string/intervaloResumen"
-        app:dialogTitle="@string/intervalo"
-        app:entries="@array/minutos"
-        app:entryValues="@array/minu"
-        app:defaultValue="3"/>-->
-    <SeekBarPreference
-        app:key="intervalo"
-        app:title="@string/intervalo"
-        app:summary="@string/intervaloResumen"
-        app:defaultValue="3"
-        app:min="0"
-        app:updatesContinuously="false"
-        app:showSeekBarValue="true"
-        app:seekBarIncrement="1"
-        app:adjustable="true" />
-    <CheckBoxPreference
-        app:key="listaBlanca"
-        app:title="@string/tituloListaBlancaPref"
-        app:summary="@string/descripcionListaBlancaPref"
-        app:defaultValue="true" />
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory
+        android:key="noMolestarCategoria">
+        <SwitchPreference
+            app:key="noMolestar"
+            app:title="@string/noMolestar"
+            app:defaultValue="false"/>
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="categoriaPreferencias"
+        android:title="@string/intervalo">
+        <SeekBarPreference
+            app:key="intervalo"
+            app:defaultValue="3"
+            app:min="0"
+            app:updatesContinuously="false"
+            app:showSeekBarValue="false"
+            app:seekBarIncrement="1"
+            app:adjustable="true" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="listaBlancaCategoria">
+        <CheckBoxPreference
+            app:key="listaBlanca"
+            app:title="@string/tituloListaBlancaPref"
+            app:summary="@string/descripcionListaBlancaPref"
+            app:defaultValue="true" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="datosUsuario"
+        android:title="@string/datosUsuario">
+        <!--<EditTextPreference
+            android:key="nombre"
+            android:enabled="false"/>
+        <EditTextPreference
+            android:key="correo"
+            android:enabled="false"/>-->
+    </PreferenceCategory>
     <EditTextPreference
         app:key="token"
         app:enableCopying="false"

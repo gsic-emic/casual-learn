@@ -8,7 +8,6 @@ import androidx.core.content.FileProvider;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -48,8 +47,6 @@ import static java.util.Objects.*;
  */
 public class Tarea extends AppCompatActivity {
 
-    /** Instancia donde se colocará la imagen descriptiva de la tarea*/
-    private ImageView ivImagenDescripcion;
     /** Instancia del campo de texto donde introduce el usuario la respuesta*/
     private EditText etRespuestaTextual;
     /** Instancia para volver a la actividad principal sin finalizar la tarea*/
@@ -68,8 +65,6 @@ public class Tarea extends AppCompatActivity {
     private String recursoAsociadoImagen;
     /** Texto que se espera que tenga la respuesta del alumno*/
     private String respuestaEsperada;
-    /** Número de fotos de la serie */
-    //private int restantes = 3; //Este valor habrá que obtenerlo del intento
 
     /** URI de la imagen que se acaba de tomar */
     private Uri photoURI;
@@ -80,8 +75,6 @@ public class Tarea extends AppCompatActivity {
     private boolean estadoBtCamara;
     /** Estado del botón para volver a la actividad principal*/
     private boolean estadoBtCancelar;
-
-    FirebaseAnalytics firebaseAnalytics;
 
     RecepcionNotificaciones recepcionNotificaciones;
 
@@ -94,107 +87,117 @@ public class Tarea extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tarea);
 
 
         requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
 
-        ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
-        Bundle extras = getIntent().getExtras();
-        assert extras != null;
-        idTarea = extras.getString(Auxiliar.id);
-        recursoAsociadoImagen300px = extras.getString(Auxiliar.recursoImagenBaja);
-        if(recursoAsociadoImagen300px != null){// Se intenta mostrar la imagen de baja resolución
-            Picasso.get().load(recursoAsociadoImagen300px).tag(Auxiliar.cargaImagenTarea).into(ivImagenDescripcion);
-            //new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagenBaja)));
-            recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
-            ivImagenDescripcion.setVisibility(View.VISIBLE);
-        }else{
-            recursoAsociadoImagen = extras.getString(Auxiliar.recursoImagen);
-            if(recursoAsociadoImagen != null){
-                Picasso.get()
-                        .load(recursoAsociadoImagen)
-                        .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                        .tag(Auxiliar.cargaImagenTarea)
-                        .into(ivImagenDescripcion);
-                ivImagenDescripcion.setVisibility(View.VISIBLE);
-            }
-        }
-        tipo = requireNonNull(extras.getString(Auxiliar.tipoRespuesta));
-        try {
-            respuestaEsperada = extras.getString(Auxiliar.respuestaEsperada);
-        }catch (NullPointerException npe){
-            respuestaEsperada = null;
-        }
-        TextView tvDescripcion = findViewById(R.id.tvDescripcion);
-        etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
-        btVolver = findViewById(R.id.btVolver);
-        Button btAceptar = findViewById(R.id.btAceptar);
-        btCamara = findViewById(R.id.btCamara);
-        btTerminar = findViewById(R.id.btTerminar);
-
-        try {//Descripcion
-            tvDescripcion.setText(getIntent().getExtras().getString(Auxiliar.recursoAsociadoTexto));
-            tvDescripcion.setVisibility(View.VISIBLE);
-        } catch (Exception e) {
-            tvDescripcion.setText(getString(R.string.sinDescripcion));
-        }
-
-        try {
-            switch (tipo) {
-                case "sinRespuesta":
-                    btAceptar.setText(R.string.voy);
-                    btAceptar.setVisibility(View.VISIBLE);
-                    break;
-                case "preguntaCorta":
-                    etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
-                    etRespuestaTextual.setFilters(new InputFilter[]{new InputFilter.LengthFilter(40)});
-                    etRespuestaTextual.setVisibility(View.VISIBLE);
-                    btAceptar.setVisibility(View.VISIBLE);
-                    break;
-                case "preguntaLarga":
-                    etRespuestaTextual.setVisibility(View.VISIBLE);
-                    btAceptar.setVisibility(View.VISIBLE);
-                    break;
-                case "preguntaImagen":
-                    etRespuestaTextual.setVisibility(View.VISIBLE);
-                    btCamara.setVisibility(View.VISIBLE);
-                    break;
-                case "imagen":
-                case "video":
-                case "imagenMultiple":
-                    btCamara.setVisibility(View.VISIBLE);
-                    break;
-                default:
-                    break;
-            }
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
-        }
-
-        estadoBtCamara = true;
-        estadoBtCancelar = true;
-
-        checkPermissions();
-
+        idTarea = getIntent().getExtras().getString(Auxiliar.id);
         if(!PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea))
             mensajeError();
-        else{
+        else {
             try {
-                JSONObject tarea = PersistenciaDatos.recuperaTarea(
-                        getApplication(),
-                        PersistenciaDatos.ficheroNotificadas,
-                        idTarea);
+                // Instancia donde se colocará la imagen descriptiva de la tarea
+                ImageView ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
+
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+                try {
+                    recursoAsociadoImagen300px = tarea.getString(Auxiliar.recursoImagenBaja);
+                    if(recursoAsociadoImagen300px.equals(""))
+                        recursoAsociadoImagen300px = null;
+                }catch (Exception e){
+                    recursoAsociadoImagen300px = null;
+                }
+                if (recursoAsociadoImagen300px != null) {// Se intenta mostrar la imagen de baja resolución
+                    Picasso.get().load(recursoAsociadoImagen300px).tag(Auxiliar.cargaImagenTarea).into(ivImagenDescripcion);
+                    //new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagenBaja)));
+                    try{
+                        recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
+                        if(recursoAsociadoImagen.equals(""))
+                            recursoAsociadoImagen = null;
+                    }catch (Exception e){
+                        recursoAsociadoImagen = null;
+                    }
+                    ivImagenDescripcion.setVisibility(View.VISIBLE);
+                } else {
+                    try{
+                        recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
+                        if(recursoAsociadoImagen.equals(""))
+                            recursoAsociadoImagen = null;
+                    }catch (Exception e){
+                        recursoAsociadoImagen = null;
+                    }
+                    if (recursoAsociadoImagen != null) {
+                        Picasso.get()
+                                .load(recursoAsociadoImagen)
+                                .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                .tag(Auxiliar.cargaImagenTarea)
+                                .into(ivImagenDescripcion);
+                        ivImagenDescripcion.setVisibility(View.VISIBLE);
+                    }
+                }
+                tipo = tarea.getString(Auxiliar.tipoRespuesta);
+                try{
+                    respuestaEsperada = tarea.getString(Auxiliar.respuestaEsperada);
+                    if(respuestaEsperada.equals(""))
+                        respuestaEsperada = null;
+                }catch (Exception e){
+                    respuestaEsperada = null;
+                }
+
+                TextView tvDescripcion = findViewById(R.id.tvDescripcion);
+                etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
+                btVolver = findViewById(R.id.btVolver);
+                Button btAceptar = findViewById(R.id.btAceptar);
+                btCamara = findViewById(R.id.btCamara);
+                btTerminar = findViewById(R.id.btTerminar);
+
+                tvDescripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
+                tvDescripcion.setVisibility(View.VISIBLE);
+
+
+                switch (tipo) {
+                    case Auxiliar.tipoSinRespuesta:
+                        btAceptar.setText(R.string.voy);
+                        btAceptar.setVisibility(View.VISIBLE);
+                        break;
+                    case Auxiliar.tipoPreguntaCorta:
+                        etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
+                        etRespuestaTextual.setFilters(new InputFilter[]{new InputFilter.LengthFilter(40)});
+                        etRespuestaTextual.setVisibility(View.VISIBLE);
+                        btAceptar.setVisibility(View.VISIBLE);
+                        break;
+                    case Auxiliar.tipoPreguntaLarga:
+                        etRespuestaTextual.setVisibility(View.VISIBLE);
+                        btAceptar.setVisibility(View.VISIBLE);
+                        break;
+                    case Auxiliar.tipoPreguntaImagen:
+                        etRespuestaTextual.setVisibility(View.VISIBLE);
+                        btCamara.setVisibility(View.VISIBLE);
+                        break;
+                    case Auxiliar.tipoImagen:
+                    case Auxiliar.tipoVideo:
+                    case Auxiliar.tipoImagenMultiple:
+                        btCamara.setVisibility(View.VISIBLE);
+                        break;
+                    default:
+                        break;
+                }
+
+                estadoBtCamara = true;
+                estadoBtCancelar = true;
+
+                checkPermissions();
+
                 tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
+                tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                 PersistenciaDatos.reemplazaJSON(
                         getApplication(),
                         PersistenciaDatos.ficheroNotificadas,
                         tarea);
-            }catch (JSONException e){
-                //No se ha modificado el valor del estado en la respuesta
+            }catch (Exception e){
+                e.printStackTrace();
             }
         }
     }
@@ -206,17 +209,18 @@ public class Tarea extends AppCompatActivity {
         alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                try {
+                /*try {
                     JSONObject tarea = PersistenciaDatos.obtenTarea(
                             getApplication(),
                             PersistenciaDatos.ficheroNotificadas,
                             idTarea);
+                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.reemplazaJSON(getApplication(),
                             PersistenciaDatos.ficheroTareasUsuario,
                             tarea);
                 }catch (Exception e){
                     //
-                }
+                }*/
                 Auxiliar.returnMain(getBaseContext());
             }
         });
@@ -294,11 +298,12 @@ public class Tarea extends AppCompatActivity {
             case R.id.btAceptar:
                 if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())){
                     try {
-                        JSONObject respuesta = PersistenciaDatos.recuperaTarea(
+                        JSONObject respuesta = PersistenciaDatos.obtenTarea(
                                 getApplication(),
                                 PersistenciaDatos.ficheroNotificadas,
                                 idTarea);
                         respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                        respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                         PersistenciaDatos.guardaJSON(getApplication(),
                                 PersistenciaDatos.ficheroCompletadas,
                                 respuesta,
@@ -313,21 +318,21 @@ public class Tarea extends AppCompatActivity {
                 break;
             case R.id.btCamara:
                 switch (tipo){
-                    case "preguntaImagen":
+                    case Auxiliar.tipoPreguntaImagen:
                         if(guardaRespuestaPregunta()) {
                             bloqueaBotones();
                             realizaCaptura(0);
                         }
                         break;
-                    case "imagen":
+                    case Auxiliar.tipoImagen:
                             bloqueaBotones();
                             realizaCaptura(1);
                         break;
-                    case "imagenMultiple":
+                    case Auxiliar.tipoImagenMultiple:
                             bloqueaBotones();
                             realizaCaptura(2);
                         break;
-                    case "video":
+                    case Auxiliar.tipoVideo:
                             bloqueaBotones();
                             realizaVideo();
                         break;
@@ -383,7 +388,6 @@ public class Tarea extends AppCompatActivity {
                             LinearLayout.LayoutParams.MATCH_PARENT,
                             LinearLayout.LayoutParams.MATCH_PARENT));
                 denuncia.setView(respuestaDenuncia);
-                boolean si = false;
                 denuncia.setPositiveButton(getString(R.string.enviar), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -406,6 +410,11 @@ public class Tarea extends AppCompatActivity {
         }
     }
 
+    /**
+     * Método para envíar una denuncia de la tarea. Esta denuncia se recogerá mediante un evento de
+     * FIREBASE
+     * @param textoUsuario Texto del usuario a enviar.
+     */
     public void enviaDenuncia(String textoUsuario){
         Intent intent = new Intent();
         intent.setAction(Auxiliar.nunca_mas);
@@ -415,10 +424,23 @@ public class Tarea extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putString("idTarea", idReducida());
         bundle.putString("MensajeUsuario", textoUsuario);
-        firebaseAnalytics.logEvent("denuncia_tarea", bundle);
+        Login.firebaseAnalytics.logEvent("denuncia_tarea", bundle);
+        JSONObject tarea = null;
+        try{
+            tarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+            tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroDenunciadas, tarea, Context.MODE_PRIVATE);
+        }catch (Exception e){
+            if(tarea!=null)
+                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroTareasRechazadas, tarea, Context.MODE_PRIVATE);
+        }
         Auxiliar.returnMain(this);
     }
 
+    /**
+     * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
+     * @return Últimas dos partes del path
+     */
     public String idReducida(){
         String[] vectorId = idTarea.split("/");
         String salida = "";
@@ -460,7 +482,7 @@ public class Tarea extends AppCompatActivity {
             try{
                 photoFile = Auxiliar.createFile(tipo,this);
             }catch (IOException e){
-                System.err.println("realizaCaptura: Error al crear el fichero base");
+                //
             }
             if(photoFile != null){
                 photoURI = FileProvider.getUriForFile(context, "es.uva.gsic.adolfinstro.fileprovider", photoFile);
@@ -529,17 +551,21 @@ public class Tarea extends AppCompatActivity {
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        JSONObject respuesta = null;
         switch (requestCode){
             case 0: //Pregunta + imagen
             case 1: //Imagen
                 switch (resultCode){
                     case RESULT_OK:
                         try {
-                            JSONObject respuesta = PersistenciaDatos.recuperaTarea(
+                            respuesta = PersistenciaDatos.obtenTarea(
                                     getApplication(),
                                     PersistenciaDatos.ficheroNotificadas,
                                     idTarea);
                             respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                            respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas,
+                                    respuesta, Context.MODE_PRIVATE);
                             if (!PersistenciaDatos.guardaTareaRespuesta(
                                     getApplication(),
                                     PersistenciaDatos.ficheroCompletadas,
@@ -552,6 +578,8 @@ public class Tarea extends AppCompatActivity {
                             Auxiliar.puntuaTarea(this, idTarea);
                         }catch (Exception e){
                             mensajeError();
+                            if(respuesta != null)
+                                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, respuesta);
                         }
                         break;
                     case RESULT_CANCELED:
@@ -565,8 +593,9 @@ public class Tarea extends AppCompatActivity {
             case 2://imagen multiple
                 switch (resultCode){
                     case RESULT_OK:
+                        respuesta = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
                         if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA), photoURI.toString(),
+                                respuesta, photoURI.toString(),
                                 Context.MODE_PRIVATE))
                             mensajeError();
                         btTerminar.setVisibility(View.VISIBLE);
@@ -584,21 +613,30 @@ public class Tarea extends AppCompatActivity {
             case 3://video
                 switch (resultCode){
                     case RESULT_OK:
-                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.COMPLETADA),
-                                videoURI.toString(), Context.MODE_PRIVATE))
+                        try {
+                            respuesta = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+                            respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                            respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, respuesta, Context.MODE_PRIVATE);
+                            if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
+                                    PersistenciaDatos.ficheroCompletadas,
+                                    respuesta,
+                                    videoURI.toString(),
+                                    Context.MODE_PRIVATE))
+                                mensajeError();
+                            Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
+                            Auxiliar.puntuaTarea(this, idTarea);
+                        }catch (Exception e){
                             mensajeError();
-                        Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
-                        Auxiliar.puntuaTarea(this, idTarea);
+                            if(respuesta != null)
+                                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, respuesta);
+                        }
                         break;
                     case RESULT_CANCELED:
                         desbloqueaBt();
                         break;
                     default:
-                        if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                                PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                                Context.MODE_PRIVATE))
-                            mensajeError();
+                        mensajeError();
                         Auxiliar.errorToast(this);
                 }
                 break;
@@ -619,14 +657,17 @@ public class Tarea extends AppCompatActivity {
             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
         }
         else{
+            JSONObject tarea = null;
             if(tipo.equals(TiposTareas.PREGUNTA_CORTA.getValue()) || tipo.equals(TiposTareas.PREGUNTA_LARGA.getValue())) {
                 try {
-                    JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                    tarea = PersistenciaDatos.recuperaTarea(
                             getApplication(),
                             PersistenciaDatos.ficheroNotificadas,
                             idTarea);
+                    assert tarea != null;
                     tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, tarea, Context.MODE_PRIVATE);
                     if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
                             PersistenciaDatos.ficheroCompletadas,
                             tarea,
@@ -638,10 +679,24 @@ public class Tarea extends AppCompatActivity {
                 }
             }
             else {
-                if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                        PersistenciaDatos.generaJSON(idTarea, tipo, EstadoTarea.NO_COMPLETADA),
-                        respuesta, Context.MODE_PRIVATE))
-                    mensajeError();
+                try {
+                    tarea = PersistenciaDatos.recuperaTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            idTarea);
+                    assert tarea != null;
+                    tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
+                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
+                            tarea,
+                            respuesta, Context.MODE_PRIVATE))
+                        mensajeError();
+                }catch (Exception e){
+                    if(tarea != null)
+                        PersistenciaDatos.guardaJSON(getApplication(),
+                                PersistenciaDatos.ficheroNotificadas,
+                                tarea, Context.MODE_PRIVATE);
+                }
             }
             if(respuestaEsperada!=null){
                 if (respuesta.contains(respuestaEsperada)) {
@@ -777,15 +832,24 @@ public class Tarea extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         super.onBackPressed();
-        JSONObject tarea = PersistenciaDatos.recuperaTarea(
-                getApplication(),
-                PersistenciaDatos.ficheroNotificadas,
-                idTarea);
-        PersistenciaDatos.guardaJSON(getApplication(),
-                PersistenciaDatos.ficheroTareasPospuestas,
-                tarea,
-                Context.MODE_PRIVATE);
-        Picasso.get().cancelTag(Auxiliar.cargaImagenTarea);
+        JSONObject tarea = null;
+        try {
+            tarea = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroNotificadas,
+                    idTarea);
+            tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+            PersistenciaDatos.guardaJSON(getApplication(),
+                    PersistenciaDatos.ficheroTareasPospuestas,
+                    tarea,
+                    Context.MODE_PRIVATE);
+            Picasso.get().cancelTag(Auxiliar.cargaImagenTarea);
+        }catch (Exception e){
+            if(tarea!=null){
+                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
+                        tarea, Context.MODE_PRIVATE);
+            }
+        }
         Auxiliar.returnMain(this);
     }
 

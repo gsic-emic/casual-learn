@@ -28,20 +28,18 @@ public class PersistenciaDatos {
     public static final String ficheroTareasZona = "tareasZona";
     /** Fichero donde se encuentras las tareas notificadas al alumno */
     public static final String ficheroNotificadas = "notificadas";
-    ///** Fichero donde se almacenan las respuestas del alumno */
-    //public static final String ficheroRespuestas = "respuestas";
     /** Fichero con las tareas rechazadas */
     public static final String ficheroTareasRechazadas = "rechazadas";
     /** Fichero con las tareas pospuestas */
     public static final String ficheroTareasPospuestas = "pospuestas";
-    /** Fichero donde se almacenan las puntuacines que el usuario hace de las tareas */
-    public static final String ficheroPuntuaciones = "puntuaciones";
     /** Fichero con los datos del usuario */
     public static final String ficheroUsuario = "usario";
     /** Fichero con fechas de instantes de eventos */
     public static final String ficheroInstantes = "eventos";
     /** Fichero con las tareas completadas */
     public static final String ficheroCompletadas = "completadas";
+    /** Fichero con las tareas denunciadas por el usuario */
+    public static final String ficheroDenunciadas = "denunciadas";
 
     /**
      * Método para obtener el contenido de un fichero que se sabe que está estructurado en forma de JSON
@@ -301,5 +299,22 @@ public class PersistenciaDatos {
         }catch (Exception w){
             return null;
         }
+    }
+
+    public static JSONArray tareasPosicion(Application app, String fichero, double latitud, double longitud){
+        JSONArray tareas = new JSONArray();
+        JSONArray todas = leeFichero(app, fichero);
+        JSONObject tarea;
+        for(int i = 0; i < todas.length(); i++){
+            try {
+                tarea = todas.getJSONObject(i);
+                if((tarea.getDouble(Auxiliar.latitud) == latitud) && (tarea.getDouble(Auxiliar.longitud) == longitud)){
+                    tareas.put(tarea);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return tareas;
     }
 }

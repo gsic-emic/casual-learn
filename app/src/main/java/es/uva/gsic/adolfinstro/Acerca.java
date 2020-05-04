@@ -21,7 +21,9 @@ public class Acerca extends AppCompatActivity {
         switch (view.getId()){
             case R.id.imagenGsic:
                 intent.setData(Uri.parse("https://www.gsic.uva.es"));
-
+                break;
+            case R.id.imagenUva:
+                intent.setData(Uri.parse("https://www.uva.es"));
                 break;
             case R.id.tvOpenStreetMap:
                 intent.setData(Uri.parse("https://www.openstreetmap.org/copyright"));

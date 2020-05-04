@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -49,7 +50,6 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase encargada de mantener el proceso en memoria y lanzar las notificaciones de tareas cuando sea
  * necesario. Recupera la posición del usuario periódicamente.
  *
- * @author GSIC
  */
 public class Proceso extends Service implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -97,6 +97,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
 
     private String idInstanteGET = "instanteGET";
     private String idInstanteNotAuto = "instanteNotAuto";
+
+    private boolean servicioIniciado = false;
 
     // Métodos necesarios para heredar de Service
     public class ProcesoBinder extends Binder {
@@ -183,7 +185,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         //Latitiud desde donde se han recuperado las tareas del servidor
         double latitudGet = 0;
         //Longitud desde donde se han recuperado las tareas del servidor
-        double longitudGet = 0;long momento;
+        double longitudGet = 0;
         double latitud = location.getLatitude();
         double longitud = location.getLongitude();
         //Se comprueba si existe el fichero y el objeto
@@ -197,56 +199,78 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             }
         }
         if(latitudGet==0 || longitudGet==0){//Inicio del servicio, se tiene que recuperar la tarea del servidor
-            peticionTareasServidor(location);
+            peticionTareasServidor(location, 1.25);
         }else{
             double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, latitudGet, longitudGet);
             if(distanciaOrigen >= 0.75){//Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
-                peticionTareasServidor(location);
+                peticionTareasServidor(location, 1.25);
             }else {//El fichero sigue siendo válido
                 compruebaLocalizacion(location);
             }
         }
     }
 
-    public void peticionTareasServidor(final Location location){
-        try{
-            JSONArray array = new JSONArray();
-            JSONObject jsonObject = new JSONObject();
-            String url = "http://192.168.1.14:8080/tareas?latitude="+location.getLatitude()
-                    +"&longitude="+location.getLongitude()
-                    +"&radio=1.25";
-            jsonObject.put(Auxiliar.latitud, location.getLatitude());
-            jsonObject.put(Auxiliar.longitud, location.getLongitude());
-            jsonObject.put(Auxiliar.radio, "1.25");
-            array.put(jsonObject);
-            JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
-                @Override
-                public void onResponse(JSONArray response) {
-                    PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasUsuario, response, Context.MODE_PRIVATE);
+    /**
+     * Método que recupera del servidor las tareas que se encuentral cerca del usuario para lanzar las notificiaciones
+     * cuando sea preciso.
+     * @param location Posición del usuario
+     * @param radio Radio de la consulta
+     */
+    private void peticionTareasServidor(final Location location, double radio){
+        String url = "http://192.168.1.14:8080/tareas?latitude="+location.getLatitude()
+                +"&longitude="+location.getLongitude()
+                +"&radio="+radio;
+        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+            @Override
+            public void onResponse(JSONArray response) {
+                JSONArray nuevasTaras = new JSONArray();
+                JSONObject j;
+                boolean guarda;
+                for(int i = 0; i < response.length(); i++){
                     try {
-                        JSONObject j = new JSONObject();
-                        j.put("id", idInstanteGET);
-                        j.put(Auxiliar.latitud, location.getLatitude());
-                        j.put(Auxiliar.longitud, location.getLongitude());
-                        j.put(Auxiliar.instante, new Date().getTime());
-                        PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroInstantes, j);
-                    }catch (JSONException e){
-                        //No se ha guardado el get en el registro, volverá a pedirlo en la siguiente iteración
+                        j = response.getJSONObject(i);
+                        if(Auxiliar.tareaRegistrada(getApplication(), j.getString(Auxiliar.id))){
+                            if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, j.getString(Auxiliar.id))){
+                                try {
+                                    PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, j.getString(Auxiliar.id));
+                                    guarda = true;
+                                } catch (Exception e) {
+                                    guarda = false;
+                                }
+                            } else {
+                                guarda = false;
+                            }
+                        }else{
+                            guarda = true;
+                        }
+                        if(guarda)
+                            nuevasTaras.put(j);
+                    } catch (JSONException e) {
+                        //Error al extrar el json
                     }
-                    tareasActualizadas = true;
-                    compruebaLocalizacion(location);
                 }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    compruebaLocalizacion(location);
+                PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasUsuario, nuevasTaras, Context.MODE_PRIVATE);
+                try {
+                    j = new JSONObject();
+                    j.put(Auxiliar.id, idInstanteGET);
+                    j.put(Auxiliar.latitud, location.getLatitude());
+                    j.put(Auxiliar.longitud, location.getLongitude());
+                    j.put(Auxiliar.instante, new Date().getTime());
+                    PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroInstantes, j);
+                }catch (JSONException e){
+                    //No se ha guardado el get en el registro, volverá a pedirlo en la siguiente iteración
                 }
+                tareasActualizadas = true;
+                compruebaLocalizacion(location);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                compruebaLocalizacion(location);
+            }
 
-            });
-            ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
-        }catch (JSONException ex){
-            //
-        }
+        });
+        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
     }
 
 
@@ -264,12 +288,14 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     final double tareaLat = 42.0076;
     final double tareaLong = -4.52449;*/
     /**
-     * Método de pruebas
+     * Método que a partir de la localización del usuario y una serie de condiciones decide si se le
+     * debe avisar al usuario de la realización de una nueva tarea.
      * @param location Posición
      */
     private void compruebaLocalizacion(Location location) {
         double distanciaAndada=1200, latitud=0, longitud=0;
         boolean datosValidos = false;
+
         if(latitudAnt == 0 && longitudAnt == 0){//Se acaba de iniciar el servicio
             latitudAnt = location.getLatitude();
             longitudAnt = location.getLongitude();
@@ -291,7 +317,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             instanteUltimaNotif = 0;
         }
 
-        boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((intervalo > 0)?intervalo*3600*1000:59000);
+        boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + ((Auxiliar.intervaloMinutos(intervalo) > 0)?Auxiliar.intervaloMinutos(intervalo)*60*1000:20000);
         if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
             if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
                 if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
@@ -311,7 +337,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                         if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
                             //pintaNotificacion(String.format("%d",(int) (Math.random()*6)));
                             try {
-                                //PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasUsuario, tarea.getString(Auxiliar.id));
+                                PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasUsuario, tarea.getString(Auxiliar.id));
                                 pintaNotificacion(tarea); //Si no se ha eliminado la tarea del otro fichero no se lanza la notificación
                             }catch (Exception e){
                                 //NO se ha extraido de las tareas
@@ -333,44 +359,19 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             String id = jsonObject.getString(Auxiliar.id);
             String tipoRespuesta = jsonObject.getString(Auxiliar.tipoRespuesta);
             tipoRespuesta = Auxiliar.ultimaParte(tipoRespuesta);
-            String recursoAsociadoTexto = jsonObject.getString(Auxiliar.recursoAsociadoTexto);
-            String recursoAsociadoImagen = null, recursoAsociadoImagenBaja = null, respuestaEsperada = null;
-            try{
-                recursoAsociadoImagen = jsonObject.getString(Auxiliar.recursoImagen);
-                recursoAsociadoImagenBaja = jsonObject.getString(Auxiliar.recursoImagenBaja);
-            } catch (Exception e){
-                //Falta alguno de los dos recursos
-            }
-
-            try{
-                respuestaEsperada = jsonObject.getString(Auxiliar.respuestaEsperada);
-            } catch (Exception e){
-                //No tiene respuestaEsperada
-            }
-            //GrupoTareas tarea = new GrupoTareas(id, tipoRespuesta, EstadoTarea.NOTIFICADA);
             try {
                 jsonObject.put(Auxiliar.tipoRespuesta, tipoRespuesta);
                 jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
-                Date date = new Date();
+                jsonObject.put(Auxiliar.origen, PersistenciaDatos.ficheroTareasUsuario);
                 jsonObject.put(Auxiliar.fechaNotificiacion, Auxiliar.horaFechaActual());
                 if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, jsonObject, Context.MODE_PRIVATE))
                     throw new Exception();
-                //Intent intent = new Intent(context, Tarea.class);
                 Intent intent = new Intent(context, Preview.class);
                 intent.putExtra(Auxiliar.id, id);
-                intent.putExtra(Auxiliar.tipoRespuesta, tipoRespuesta);
-                intent.putExtra(Auxiliar.recursoAsociadoTexto, recursoAsociadoTexto);
-                intent.putExtra(Auxiliar.recursoImagen, (recursoAsociadoImagen.equals("")?null:recursoAsociadoImagen));
-                //intent.putExtra(Auxiliar.recursoImagen, "https://upload.wikimedia.org/wikipedia/commons/3/36/Nuestra_Se%C3%B1ora_de_las_Angustias%2C_Valladolid.jpg");
-                intent.putExtra(Auxiliar.recursoImagenBaja, (recursoAsociadoImagenBaja.equals("")?null:recursoAsociadoImagenBaja));
-                intent.putExtra(Auxiliar.respuestaEsperada, respuestaEsperada);
-                intent.putExtra(Auxiliar.latitud, jsonObject.getDouble(Auxiliar.latitud));
-                intent.putExtra(Auxiliar.longitud, jsonObject.getDouble(Auxiliar.longitud));
-                intent.putExtra(Auxiliar.titulo, jsonObject.getString(Auxiliar.titulo));
                 NotificationCompat.Builder builder;
                 int iconoTarea;
                 if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
-                    iconoTarea = R.drawable.ic_3_tareas;
+                    iconoTarea = R.drawable.ic_11_tareas;
                 //Bitmap iconoGrande = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_brush_black_128_dp);
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -389,9 +390,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
 
                 //Botones extra
                 Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
-                intentBoton.setAction("AHORA_NO");
+                intentBoton.setAction(Auxiliar.ahora_no);
                 intentBoton.putExtra(Auxiliar.id, id);
-                intentBoton.putExtra("idNotificacion", incr);
+                intentBoton.putExtra(Auxiliar.idNotificacion, incr);
                 PendingIntent ahoraNoPending = PendingIntent.getBroadcast(context, incr + 999, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
                 //builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
                 builder.setDeleteIntent(ahoraNoPending);
@@ -436,6 +437,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * Inicializador del bucle que obtiene la posición
      */
     private void startLocation(){
+        servicioIniciado = true;
         fusedLocationProviderClient
                 .requestLocationUpdates(locationRequest, locationCallback,null);
     }
@@ -444,6 +446,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * Detiene la tarea de recogida de posición
      */
     private void stopLocation(){
+        servicioIniciado = false;
         fusedLocationProviderClient.removeLocationUpdates(locationCallback);
     }
 
@@ -477,7 +480,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
             case Ajustes.INTERVALO_pref:
-                intervalo = sharedPreferences.getInt(key, 1);
+                intervalo = sharedPreferences.getInt(key, 0);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
@@ -486,7 +489,19 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     terminaServicio();
                 }
                 break;
+            default:
+                break;
         }
+    }
+
+    /**
+     * Método para saber si es fin de semana o si no lo es.
+     *
+     * @return Devuelve verdadero si es sábado o domingo y falso si es un día de diario
+     */
+    private boolean esFinde() {
+        int dia = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+        return (dia == Calendar.SATURDAY || dia == Calendar.SUNDAY);
     }
 
     /**
