@@ -3,7 +3,6 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,7 +21,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -31,7 +28,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -58,15 +54,10 @@ import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.CopyrightOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
-import org.osmdroid.views.overlay.compass.CompassOverlay;
-import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-import org.osmdroid.views.overlay.simplefastpoint.LabelledGeoPoint;
 
 
 import java.util.ArrayList;
@@ -76,14 +67,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import es.uva.gsic.adolfinstro.auxiliar.AdaptadorLista;
+
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 //https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library
-public class Maps extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, LocationListener, AdaptadorListaMapa.ItemClickListener {
+public class Maps extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, AdaptadorListaMapa.ItemClickListener {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
 
@@ -94,50 +85,35 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     /** Objeto tuilizado para centrar el mapa en un punto específico*/
     private IMapController mapController;
     /** Posición inicial del punto conocido */
-    private double latitude = 41.662357, longitude = -4.706005;
+    private double latitudeOrigen , longitudeOrigen;
     /** Punto del mapa en el que se centrará si no consigue recuperar la posición actual*/
-    private final GeoPoint telecoPoint = new GeoPoint(latitude, longitude);
+    private final GeoPoint telecoPoint = new GeoPoint(41.662357, -4.706005);
     /** Referencia a si la opción "no Molestar" está activada o no*/
     private boolean noMolestar;
     /** Preferencias de la aplicación */
     private SharedPreferences sharedPreferences;
-    /** Vector donde se almacena los puntos representados en el mapa */
-    //private ArrayList<OverlayItem> items = new ArrayList<>();
-    private List<IGeoPoint> items = new ArrayList<>();
-    private HashMap<String, Integer> itemsTask = new HashMap<>();
-    /** Vector con los id's de los puntos. Por ahora el id es el título del punto */
-    private ArrayList<String> idItems = new ArrayList<>();
     /** Regla sbore el mapa*/
     private ScaleBarOverlay scaleBarOverlay;
-    /** Brújula del dispositivo*/
-    private CompassOverlay compassOverlay;
+    ///** Brújula del dispositivo*/
+    //private CompassOverlay compassOverlay;
     /** Código de identificación para la solicitud de los permisos de la app */
     private final int requestCodePermissions = 1001;
-    /** Distancia (en km) por la que se recarga el fichero con tareas */
-    private final double radioMaxTareas = 0.75;
 
     /** Canal utilizado para las notificaciones de las tareas */
     private NotificationChannel channel;
     /** Instancia del NotificationManager*/
     private NotificationManager notificationManager;
 
-    private int incr = 2000;
-
     private Context context;
 
     private long ultimaNotificacion;
-
-    private boolean primerosPuntos;
-
-    private String idUltimaPosicionMapa = "ultimaPosicionMapa";
-    private String idinstanteUltimaNoti = "ultimaNoti";
 
     /*private long ultimaPosicionInstante;
     private double ultimaPosicionLatitud;
     private double ultimaPosicionLogintud;*/
 
-    private final double nivelMin = 10.5;
-    private final double nivelMax = 16.5;
+    private final double nivelMin = 11.5;
+    private final double nivelMax = 17.5;
 
 
     /**
@@ -163,7 +139,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         if (noMolestar) {
             setContentView(R.layout.no_molestar);
         } else {
-            primerosPuntos = true;
             setContentView(R.layout.activity_maps);
             map = findViewById(R.id.map);
             sinPulsarTarea = findViewById(R.id.tvTareasMapa);
@@ -171,8 +146,17 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             map.setTileSource(TileSourceFactory.MAPNIK);
             map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zoom con dos dedos
             mapController = map.getController();
-            mapController.setCenter(telecoPoint); //Centramos la posición en algún lugar conocido
-            mapController.setZoom(nivelMin);
+            if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idInstanteGETZONA)) {
+                JSONObject instante = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idInstanteGETZONA);
+                try {
+                    mapController.setCenter(new GeoPoint(instante.getDouble(Auxiliar.latitud), instante.getDouble(Auxiliar.longitud)));
+                } catch (JSONException e) {
+                    mapController.setCenter(telecoPoint);
+                }
+            }else {
+                mapController.setCenter(telecoPoint); //Centramos la posición en algún lugar conocido
+            }
+            mapController.setZoom(nivelMax - 5);
             //RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(map);
             //rotationGestureOverlay.setEnabled(true);
             //map.getOverlays().add(rotationGestureOverlay);
@@ -196,13 +180,20 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
             scaleBarOverlay = new ScaleBarOverlay(map);
             scaleBarOverlay.setCentred(true); //La barra de escala se queda en el centro
-            scaleBarOverlay.setScaleBarOffset(displayMetrics.widthPixels / 2, (int)(displayMetrics.heightPixels*0.2)); //posición en el el display
             //map.getOverlays().add(scaleBarOverlay);
 
             //Se agrega la brújula
-            compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
-            compassOverlay.enableCompass();
-            compassOverlay.setCompassCenter(35, 200); //posicón de la brújula
+            //compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
+            //compassOverlay.enableCompass();
+
+            if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+                scaleBarOverlay.setScaleBarOffset((int)(displayMetrics.widthPixels / 2), (int) (displayMetrics.heightPixels * 0.2)); //posición en el el display
+                //compassOverlay.setCompassCenter(35, (int) (displayMetrics.heightPixels * 0.2 + 50)); //posicón de la brújula
+            }else{
+                scaleBarOverlay.setScaleBarOffset((int)((displayMetrics.widthPixels*1.2) / 2), (int) (displayMetrics.heightPixels * 0.1));
+
+                //compassOverlay.setCompassCenter(200, (int) (displayMetrics.heightPixels * 0.1 + 25)); //posicón de la brújula
+            }
 
 
             pintaItemsfijos();
@@ -226,18 +217,26 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 @Override
                 public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
                     //Toast.makeText(context, "Scroll "+map.getMapCenter().getLatitude()+" "+map.getMapCenter().getLongitude(), Toast.LENGTH_SHORT).show();
-                    if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
+                    /*if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
                         compruebaZona(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude(),
                                 locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
+                    }*/
+                    if(map.getMapCenter() != null){
+                        IGeoPoint centro = map.getMapCenter();
+                        compruebaZona(centro.getLatitude(), centro.getLongitude());
                     }
                     return false;
                 }
 
                 @Override
                 public boolean onZoom(ZoomEvent event) {//Zoom con botones
-                    if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
+                    /*if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
                         compruebaZona(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude(),
                                 locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
+                    }*/
+                    if(map.getMapCenter() != null){
+                        IGeoPoint centro = map.getMapCenter();
+                        compruebaZona(centro.getLatitude(), centro.getLongitude());
                     }
                     return false;
                 }
@@ -297,7 +296,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     public void pintaItemsfijos() {
         map.getOverlays().add(myLocationNewOverlay);
         map.getOverlays().add(scaleBarOverlay);
-        map.getOverlays().add(compassOverlay);
+        //map.getOverlays().add(compassOverlay);
     }
 
     /*
@@ -317,7 +316,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
         marker.setTitle(marcador.getTitulo());
-        BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarkerNumero(marcador.numeroTareas));
+        BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()));
         marker.setIcon(d);
         marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
@@ -337,6 +336,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             }
         });
         map.getOverlays().add(marker);
+        map.invalidate();
     }
 
 
@@ -364,8 +364,15 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             contenedor.setVisibility(View.VISIBLE);
             contenedor.setHasFixedSize(true);
 
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-            contenedor.setLayoutManager(layoutManager);
+            RecyclerView.LayoutManager layoutManager;
+            if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+            }
+            else {
+                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+            }
+
+                contenedor.setLayoutManager(layoutManager);
 
             List<TareasMapaLista> tareasPunto = new ArrayList<>();
             JSONObject jo;
@@ -389,10 +396,11 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     @Override
     public void onItemClick(View view, int posicion){
         try {
-            JSONObject tarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasZona, adaptadorListaMapa.getId(posicion));
+            JSONObject tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroTareasZona, adaptadorListaMapa.getId(posicion));
+            tarea.put(Auxiliar.origen, PersistenciaDatos.ficheroTareasZona);
             Intent intent = new Intent(this, Preview.class);
             intent.putExtra(Auxiliar.id, tarea.getString(Auxiliar.id));
-            intent.putExtra(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
+            /*intent.putExtra(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
             intent.putExtra(Auxiliar.recursoAsociadoTexto, tarea.getString(Auxiliar.recursoAsociadoTexto));
             String intermedio = null;
             try{
@@ -418,12 +426,13 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             intent.putExtra(Auxiliar.respuestaEsperada, (intermedio.equals("")?null:intermedio));
             intent.putExtra(Auxiliar.latitud, tarea.getDouble(Auxiliar.latitud));
             intent.putExtra(Auxiliar.longitud, tarea.getDouble(Auxiliar.longitud));
-            intent.putExtra(Auxiliar.titulo, tarea.getString(Auxiliar.titulo));
+            intent.putExtra(Auxiliar.titulo, tarea.getString(Auxiliar.titulo));*/
             startActivity(intent);
             tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+            tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
             PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea, Context.MODE_PRIVATE);
         }catch (Exception e){
-
+            //
         }
 
     }
@@ -453,8 +462,9 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
         String texto;
-        if(size>9)
-            texto = "9+";
+        if(size>99) {
+            texto = "99+";
+        }
         else
             texto = String.valueOf(size);
         canvas.drawText(texto, mitad, mitad + (float)textSize/3, paint);
@@ -565,7 +575,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 punto2.getLatitude(), punto2.getLongitude());
     }
 
-    private LocationManager locationManager;
+    //private LocationManager locationManager;
 
     /**
      * Se restaura el mapa tal y como se indica en la guía.
@@ -574,27 +584,27 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     public void onResume() {
         super.onResume();
         if(!noMolestar) {
-            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+            //locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
             try {
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                         && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     checkPermissions();
-                } else {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 15000, 0, this);
-                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if(location!=null){
-                        mapController.setCenter(new GeoPoint(location.getLatitude(), location.getLongitude()));
-                        compruebaZona(location.getLatitude(), location.getLongitude());
-                    }
-                }
+                } //else {
+                    //locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 15000, 0, this);
+                    //Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    //if(location!=null){
+                        //mapController.setCenter(new GeoPoint(location.getLatitude(), location.getLongitude()));
+                        //compruebaZona(location.getLatitude(), location.getLongitude());
+                    //}
+                //}
             } catch (Exception e) {
                 //
             }
             if (map != null)
                 map.onResume();
         }
-        else
-            locationManager = null;
+        //else
+            //locationManager = null;
     }
 
     private void compruebaZona(double latitud, double longitud) {
@@ -615,43 +625,56 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         if(latitudGet==0 || longitudGet==0){//Inicio del servicio, se tiene que recuperar la tarea del servidor
             peticionTareasServidor(latitud, longitud, 3.0);
         }else{
-            double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, latitudGet, longitudGet);
-            if(distanciaOrigen >= 2.0){//Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
-                peticionTareasServidor(latitud, longitud, 3.0);
+            if(map.getZoomLevelDouble() >= (nivelMax - 4) ){
+                double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, latitudGet, longitudGet);
+                if(distanciaOrigen >= 2.5){//Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
+                    peticionTareasServidor(latitud, longitud, 3.0);
+                }else{
+                    map.getOverlays().clear();
+                    pintaItemsfijos();
+                    pintaZona(latitud, longitud);
+                }
             }else {//El fichero sigue siendo válido
                 map.getOverlays().clear();
                 pintaItemsfijos();
-                pintaZona();
+                pintaZona(latitud, longitud);
             }
         }
     }
 
-    double[] distanciaAgrupacion = {0, 0.2, 0.4, 0.8, 1.6, 3.2};
+    double[] distanciaAgrupacion = {0, 0.1, 0.2, 0.4, 0.8, 1.6, 3.2};
 
-    private void pintaZona(){
+    private void pintaZona(double latitude, double longitude){
         double nivelZum = map.getZoomLevelDouble();
         int caso;
-        if(nivelZum > nivelMax - 1){
+        if(nivelZum > nivelMax - 0.5){
             caso = 0;
         }else{
-            if(nivelZum > nivelMax - 2){
+            if(nivelZum > nivelMax - 1){
                 caso = 1;
-            }else{
-                if(nivelZum > nivelMax - 3){
+            }else {
+                if (nivelZum > nivelMax - 2) {
                     caso = 2;
-                }else{
-                    if(nivelZum > nivelMax - 4){
+                } else {
+                    if (nivelZum > nivelMax - 3) {
                         caso = 3;
-                    }else{
-                        if(nivelZum > nivelMax -5){
+                    } else {
+                        if (nivelZum > nivelMax - 4) {
                             caso = 4;
-                        }else{
-                            caso = 5;
+                        } else {
+                            if (nivelZum > nivelMax - 5) {
+                                caso = 5;
+                            } else {
+                                caso = 6;
+                            }
                         }
                     }
                 }
             }
         }
+
+        double distanciaMax = Auxiliar.calculaDistanciaDosPuntos(latitude, longitude,
+                map.getBoundingBox().getLatNorth(), map.getBoundingBox().getLonWest());
 
         nivelZum = distanciaAgrupacion[caso];
         JSONArray todasTareas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareasZona);
@@ -662,60 +685,64 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         Map<Integer, Double> latitudes, longitudes;
         boolean anterior = false, anterior2 = false;
         try {
-            while (todasTareas.length() > 0) {
+            while (todasTareas.length() > 0) {//Barro todas las tareas disponibles en el fichero
                 tarea = (JSONObject)todasTareas.remove(0);
-                if(listaMarcadores.isEmpty()){
-                    marcador = new Marcador();
-                    marcador.setTitulo(tarea.getString(Auxiliar.titulo));
-                    marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
-                    marcador.incrementaTareas();
-                    listaMarcadores.add(marcador);
-                }else{
-                    for(int i = 0; i < listaMarcadores.size(); i++){
-                        anterior = false;
-                        marcador = listaMarcadores.get(i);
-                        latitud = tarea.getDouble(Auxiliar.latitud);
-                        longitud = tarea.getDouble(Auxiliar.longitud);
-                        if(latitud == marcador.getLatitud() &&
-                                longitud == marcador.getLongitud()){ //La tarea es de la misma posición
-                            marcador.incrementaTareas();
-                            listaMarcadores.set(i, marcador);
-                            anterior = true;
-                            break;
-                        }else{//Se comprueba la distancia a la tarea del marcador
-                            if(Auxiliar.calculaDistanciaDosPuntos(marcador.latitud, marcador.longitud,
-                                    latitud, longitud)
-                                    <= nivelZum){ //Se agrega al marcador ya que se debe agrupar
-                                marcador.setTitulo(getString(R.string.agrupacionTareas));
-                                marcador.incrementaTareas();
-                                if(marcador.getLatitudes().isEmpty()){
-                                    marcador.agregaPosicion(latitud, longitud);
-                                }else{
-                                    latitudes = marcador.getLatitudes();
-                                    longitudes = marcador.getLongitudes();
-                                    for(int j = 0; j < latitudes.size(); j++){
-                                        anterior2 = false;
-                                        if(latitudes.get(j) == latitud && longitudes.get(j) == longitud){
-                                            anterior2 = true;
-                                            break;
-                                        }
-                                    }
-                                    if(!anterior2){//No existía la posición en la tarea
-                                        marcador.agregaPosicion(latitud, longitud);
-                                    }
-                                }
-                                listaMarcadores.set(i, marcador);
-                                anterior = true;
-                                break;
-                            }
-                        }
-                    }
-                    if(!anterior){//Hay que agregar un nuevo marcador
+                latitud = tarea.getDouble(Auxiliar.latitud);
+                longitud = tarea.getDouble(Auxiliar.longitud);
+                //Comprobación de la zona
+                if(Auxiliar.calculaDistanciaDosPuntos(latitude, longitude, latitud, longitud) <= distanciaMax) {
+                    //Si no hay ningún punto guardado se guarda directamente
+                    if (listaMarcadores.isEmpty()) {
                         marcador = new Marcador();
                         marcador.setTitulo(tarea.getString(Auxiliar.titulo));
                         marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
                         marcador.incrementaTareas();
                         listaMarcadores.add(marcador);
+                    } else {
+                        for (int i = 0; i < listaMarcadores.size(); i++) {
+                            anterior = false;
+                            marcador = listaMarcadores.get(i);
+                            if (latitud == marcador.getLatitud() &&
+                                    longitud == marcador.getLongitud()) { //La tarea es de la misma posición
+                                marcador.incrementaTareas();
+                                listaMarcadores.set(i, marcador);
+                                anterior = true;
+                                break;
+                            } else {//Se comprueba la distancia a la tarea del marcador
+                                if (Auxiliar.calculaDistanciaDosPuntos(marcador.latitud, marcador.longitud,
+                                        latitud, longitud)
+                                        <= nivelZum) { //Se agrega al marcador ya que se debe agrupar
+                                    marcador.setTitulo(getString(R.string.agrupacionTareas));
+                                    marcador.incrementaTareas();
+                                    if (marcador.getLatitudes().isEmpty()) {
+                                        marcador.agregaPosicion(latitud, longitud);
+                                    } else {
+                                        latitudes = marcador.getLatitudes();
+                                        longitudes = marcador.getLongitudes();
+                                        for (int j = 0; j < latitudes.size(); j++) {
+                                            anterior2 = false;
+                                            if (latitudes.get(j) == latitud && longitudes.get(j) == longitud) {
+                                                anterior2 = true;
+                                                break;
+                                            }
+                                        }
+                                        if (!anterior2) {//No existía la posición en la tarea
+                                            marcador.agregaPosicion(latitud, longitud);
+                                        }
+                                    }
+                                    listaMarcadores.set(i, marcador);
+                                    anterior = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!anterior) {//Hay que agregar un nuevo marcador
+                            marcador = new Marcador();
+                            marcador.setTitulo(tarea.getString(Auxiliar.titulo));
+                            marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
+                            marcador.incrementaTareas();
+                            listaMarcadores.add(marcador);
+                        }
                     }
                 }
             }
@@ -743,9 +770,9 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     @Override
     public void onStop() {
         super.onStop();
-        if(locationManager != null) {
+        /*if(locationManager != null) {
             locationManager.removeUpdates(this);
-        }
+        }*/
     }
 
     /**
@@ -758,7 +785,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 if(myLocationNewOverlay.getMyLocation() != null) {
                     mapController.setZoom(nivelMax);
                     mapController.setCenter(myLocationNewOverlay.getMyLocation());
-                    compruebaZona(myLocationNewOverlay.getMyLocation().getLatitude(), myLocationNewOverlay.getMyLocation().getLongitude());
                     //onLocationChanged(myLocationNewOverlay.getMyLocationProvider().getLastKnownLocation());
                 }else{ //Si aún no se conoce se muestra un mensaje
                     Toast.makeText(this, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
@@ -780,17 +806,16 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      * @param bundle Bundle
      */
     @Override
-    protected void onSaveInstanceState(Bundle bundle){
+    protected void onSaveInstanceState(@NotNull Bundle bundle){
         if(myLocationNewOverlay!=null && myLocationNewOverlay.getMyLocation()!=null){
-            latitude = myLocationNewOverlay.getMyLocation().getLatitude();
-            longitude = myLocationNewOverlay.getMyLocation().getLongitude();
+            latitudeOrigen = myLocationNewOverlay.getMyLocation().getLatitude();
+            longitudeOrigen = myLocationNewOverlay.getMyLocation().getLongitude();
         }
         if(map!=null)
             bundle.putDouble("ZOOM", map.getZoomLevelDouble());
-        bundle.putDouble("LATITUDE", latitude);
-        bundle.putDouble("LONGITUDE", longitude);
+        bundle.putDouble("LATITUDE", latitudeOrigen);
+        bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putLong("ULTIMANOTIFICACION", ultimaNotificacion);
-        bundle.putBoolean("PRIMEROSPUNTOS", primerosPuntos);
         super.onSaveInstanceState(bundle);
     }
 
@@ -799,19 +824,18 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      * @param bundle Bundle
      */
     @Override
-    protected void onRestoreInstanceState(Bundle bundle){
+    protected void onRestoreInstanceState(@NotNull Bundle bundle){
         super.onRestoreInstanceState(bundle);
         try {
             mapController.setZoom(bundle.getDouble("ZOOM"));
         }catch (Exception e){
-
+            //
         }
 
-        latitude = bundle.getDouble("LATITUDE");
-        longitude = bundle.getDouble("LONGITUDE");
+        latitudeOrigen = bundle.getDouble("LATITUDE");
+        longitudeOrigen = bundle.getDouble("LONGITUDE");
         ultimaNotificacion = bundle.getLong("ULTIMANOTIFICACION");
-        //primerosPuntos = bundle.getBoolean("PRIMEROSPUNTOS");
-        GeoPoint lastCenter = new GeoPoint(latitude, longitude);
+        GeoPoint lastCenter = new GeoPoint(latitudeOrigen, longitudeOrigen);
         mapController.setCenter(lastCenter);
     }
 
@@ -833,6 +857,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                     Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
                 break;
             default:
+                break;
         }
     }
 
@@ -922,9 +947,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         alertBuilder.show();
     }
 
-    @Override
+    /*@Override
     public void onLocationChanged(Location location){
-        /*
         if(PersistenciaDatos.tieneObjetos(getApplication(), PersistenciaDatos.ficheroTareasZona)){//El fichero tiene tareas que representar
             if(Proceso.tareasActualizadas || primerosPuntos){
                 Proceso.tareasActualizadas = false;
@@ -976,46 +1000,21 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             map.getOverlays().clear();
             pintaItemsfijos();
         }
-         */
     }
 
-    /**
-     * This callback will never be invoked and providers can be considers as always in the
-     * LocationProvider#AVAILABLE state.
-     *
-     * @param provider
-     * @param status
-     * @param extras
-     * @deprecated This callback will never be invoked.
-     */
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
 
     }
-
-    /**
-     * Called when the provider is enabled by the user.
-     *
-     * @param provider the name of the location provider associated with this
-     *                 update.
-     */
     @Override
     public void onProviderEnabled(String provider) {
 
     }
 
-    /**
-     * Called when the provider is disabled by the user. If requestLocationUpdates
-     * is called on an already disabled provider, this method is called
-     * immediately.
-     *
-     * @param provider the name of the location provider associated with this
-     *                 update.
-     */
     @Override
     public void onProviderDisabled(String provider) {
 
-    }
+    }*/
 
     /**
      * Método que recupera del servidor las tareas que se encuentral cerca del usuario para lanzar las notificiaciones
@@ -1041,7 +1040,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                             if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, j.getString(Auxiliar.id))){
                                 try {
                                     PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, j.getString(Auxiliar.id));
-                                    guarda = true;
+                                    guarda = !PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroTareasZona, j.getString(Auxiliar.id));
                                 } catch (Exception e) {
                                     guarda = false;
                                 }
@@ -1049,7 +1048,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                                 guarda = false;
                             }
                         }else{
-                            guarda = true;
+                            guarda = !PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroTareasZona, j.getString(Auxiliar.id));
                         }
                         if(guarda)
                             nuevasTareas.put(j);
@@ -1057,7 +1056,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                         //Error al extrar el json
                     }
                 }
-                PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasZona, nuevasTareas, Context.MODE_PRIVATE);
+                PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasZona, nuevasTareas, Context.MODE_APPEND);
                 try {
                     j = new JSONObject();
                     j.put(Auxiliar.id, idInstanteGETZONA);
@@ -1068,12 +1067,12 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 }catch (JSONException e){
                     //No se ha guardado el get en el registro, volverá a pedirlo en la siguiente iteración
                 }
-                pintaZona();
+                pintaZona(latitud, longitud);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                pintaZona();
+                pintaZona(latitud, longitud);
             }
 
         });
@@ -1094,7 +1093,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         }
     }
 
-    public class Marcador{
+    private static class Marcador{
         private String titulo;
         private double latitud, longitud;
         private Map<Integer, Double> latitudes, longitudes;
@@ -1120,42 +1119,42 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             posiciones = 0;
         }
 
-        public void setTitulo(String titulo) {
+        void setTitulo(String titulo) {
             this.titulo = titulo;
         }
 
-        public String getTitulo(){
+        String getTitulo(){
             return titulo;
         }
 
-        public void setPosicionMarcador(double latitud, double longitud) {
+        void setPosicionMarcador(double latitud, double longitud) {
             this.latitud = latitud;
             this.longitud = longitud;
         }
 
-        public double getLatitud() {
+        double getLatitud() {
             return latitud;
         }
 
-        public double getLongitud() {
+        double getLongitud() {
             return longitud;
         }
 
-        public void agregaPosicion(double latitud, double longitud){
+        void agregaPosicion(double latitud, double longitud){
             latitudes.put(posiciones, latitud);
             longitudes.put(posiciones, longitud);
             ++posiciones;
         }
 
-        public Map<Integer, Double> getLatitudes(){
+        Map<Integer, Double> getLatitudes(){
             return latitudes;
         }
 
-        public Map<Integer, Double> getLongitudes() {
+        Map<Integer, Double> getLongitudes() {
             return longitudes;
         }
 
-        public void incrementaTareas(){
+        void incrementaTareas(){
             ++numeroTareas;
         }
 

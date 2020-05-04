@@ -51,6 +51,7 @@ public class Auxiliar {
     public static final String rating = "rating";
     public static final String fechaNotificiacion = "fechaNotificacion";
     public static final String fechaUltimaModificacion = "fechaUltimaModificacion";
+    public static final String origen = "origen";
 
     public static final String radio = "radio";
     public static final String nunca_mas = "NUNCA_MAS";
@@ -63,12 +64,12 @@ public class Auxiliar {
     public static final String cargaImagenDetalles = "imagenDetalles";
 
     public static final String tipoSinRespuesta = "sinRespuesta";
-    public static final String tipoImagen = "imagen";
-    public static final String tipoImagenMultiple = "imagenMultiple";
+    public static final String tipoImagen = "fotografia";
+    public static final String tipoImagenMultiple = "multiplesFotografias";
     public static final String tipoVideo = "video";
-    public static final String tipoPreguntaCorta = "preguntaCorta";
+    public static final String tipoPreguntaCorta = "texto";
     public static final String tipoPreguntaLarga = "preguntaLarga";
-    public static final String tipoPreguntaImagen = "preguntaImagen";
+    public static final String tipoPreguntaImagen = "fotografiaYTexto";
     public static final String peticion = "peticion";
 
     public static final String idNotificacion = "idNotificacion";

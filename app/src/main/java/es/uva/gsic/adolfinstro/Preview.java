@@ -14,19 +14,24 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.Layout;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
@@ -36,6 +41,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Preview extends AppCompatActivity {
 
@@ -49,6 +55,9 @@ public class Preview extends AppCompatActivity {
     private RecepcionNotificaciones recepcionNotificaciones;
 
     private double latitud, longitud;
+    private boolean grande = false;
+
+    private JSONObject tarea;
 
     /**
      * Se crea la vista de la interfaz de usuario.
@@ -65,65 +74,99 @@ public class Preview extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_preview);
-        Bundle extras = getIntent().getExtras();
 
         ImageView imageView = findViewById(R.id.imagenPreview);
-
-        if(extras.getString(Auxiliar.recursoImagenBaja) != null) {
-            Picasso.get()
-                    .load(extras.getString(Auxiliar.recursoImagenBaja))
-                    .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                    .tag(Auxiliar.cargaImagenPreview)
-                    .into(imageView);
-            imageView.setVisibility(View.VISIBLE);
-        }else{
-            if(extras.getString(Auxiliar.recursoImagen) != null) {
+        String idTarea = getIntent().getExtras().getString(Auxiliar.id);
+        tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+        try {
+            if (!tarea.getString(Auxiliar.recursoImagenBaja).equals("")) {
                 Picasso.get()
-                        .load(extras.getString(Auxiliar.recursoImagen))
+                        .load(tarea.getString(Auxiliar.recursoImagenBaja))
                         .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                         .tag(Auxiliar.cargaImagenPreview)
                         .into(imageView);
                 imageView.setVisibility(View.VISIBLE);
+            } else {
+                if (!tarea.getString(Auxiliar.recursoImagen).equals("")) {
+                    Picasso.get()
+                            .load(tarea.getString(Auxiliar.recursoImagen))
+                            .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                            .tag(Auxiliar.cargaImagenPreview)
+                            .into(imageView);
+                    imageView.setVisibility(View.VISIBLE);
+                }
             }
-        }
-        map = findViewById(R.id.mapPreview);
-        map.setTileSource(TileSourceFactory.MAPNIK);
-        IMapController mapController = map.getController();
+            map = findViewById(R.id.mapPreview);
+            map.setTileSource(TileSourceFactory.MAPNIK);
+            IMapController mapController = map.getController();
 
-        latitud = extras.getDouble(Auxiliar.latitud);
-        longitud = extras.getDouble(Auxiliar.longitud);
-        GeoPoint posicionTarea = new GeoPoint( latitud, longitud);
+            latitud = tarea.getDouble(Auxiliar.latitud);
+            longitud = tarea.getDouble(Auxiliar.longitud);
+            GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
 
-        mapController.setCenter(posicionTarea);
-        mapController.setZoom(16.0);
-        map.setMaxZoomLevel(16.0);
-        map.setMinZoomLevel(16.0);
-        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-        myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-        myLocationNewOverlay.enableMyLocation();
-        myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        map.getOverlays().add(myLocationNewOverlay);
+            mapController.setCenter(posicionTarea);
+            mapController.setZoom(17.5);
+            map.setMaxZoomLevel(17.5);
+            map.setMinZoomLevel(17.5);
+            map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+            myLocationNewOverlay.enableMyLocation();
+            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
+            map.getOverlays().add(myLocationNewOverlay);
 
-        TextView titulo = findViewById(R.id.tituloPreview);
-        titulo.setText(extras.getString(Auxiliar.titulo));
-        TextView descripcion = findViewById(R.id.textoPreview);
-        descripcion.setText(extras.getString(Auxiliar.recursoAsociadoTexto));
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-            descripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
-        }
-        ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
-        String tipo = extras.getString(Auxiliar.tipoRespuesta);
-        tipoTarea.setContentDescription(String.format("%s%s", getString(R.string.tipoDeTarea), tipo));
-        tipoTarea.setImageResource(Auxiliar.iconoTipoTarea(tipo));
+            map.setMultiTouchControls(true);
+            TextView titulo = findViewById(R.id.tituloPreview);
+            titulo.setText(tarea.getString(Auxiliar.titulo));
+            TextView descripcion = findViewById(R.id.textoPreview);
+            descripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                descripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+            }
+            ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
+            String tipo = tarea.getString(Auxiliar.tipoRespuesta);
+            tipoTarea.setContentDescription(String.format("%s%s", getString(R.string.tipoDeTarea), tipo));
+            tipoTarea.setImageResource(Auxiliar.iconoTipoTarea(tipo));
 
-        Marker marker = new Marker(map);
-        marker.setPosition(new GeoPoint(extras.getDouble(Auxiliar.latitud), extras.getDouble(Auxiliar.longitud)));
-        marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
-        marker.setTitle(extras.getString(Auxiliar.titulo));
+            Marker marker = new Marker(map);
+            marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
+            marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
+            //marker.setTitle(extras.getString(Auxiliar.titulo));
+            marker.setInfoWindow(null);
 
-        marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+                @Override
+                public boolean singleTapConfirmedHelper(GeoPoint p) {
+                    ViewGroup.LayoutParams params = map.getLayoutParams();
+                    if (grande) {
+                        params.height -= getResources().getDisplayMetrics().heightPixels / 2;
+                        map.setMaxZoomLevel(17.5);
+                        map.setMinZoomLevel(17.5);
+                        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+                        map.setMultiTouchControls(false);
+                        map.getController().setCenter(new GeoPoint(latitud, longitud));
+                        map.invalidate();
+                        grande = false;
+                    } else {
+                        params.height += getResources().getDisplayMetrics().heightPixels / 2;
+                        map.setMaxZoomLevel(17.5);
+                        map.setMinZoomLevel(13.5);
+                        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
+                        map.invalidate();
+                        grande = true;
+                    }
+                    map.setLayoutParams(params);
+                    return false;
+                }
+
+                @Override
+                public boolean longPressHelper(GeoPoint p) {
+                    return false;
+                }
+            }));
+
+       /* marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
                 double distancia;
@@ -142,8 +185,11 @@ public class Preview extends AppCompatActivity {
                 marker.showInfoWindow();
                 return false;
             }
-        });
-        map.getOverlays().add(marker);
+        });*/
+            map.getOverlays().add(marker);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
     }
 
@@ -154,12 +200,20 @@ public class Preview extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
-        Intent intent = new Intent();
-        intent.setAction(Auxiliar.ahora_no);
-        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-        sendBroadcast(intent);
-        Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
-        Auxiliar.returnMain(context);
+        try {
+            if (tarea.getString(Auxiliar.origen).equals(PersistenciaDatos.ficheroTareasUsuario)) {
+                Intent intent = new Intent();
+                intent.setAction(Auxiliar.ahora_no);
+                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                sendBroadcast(intent);
+                Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
+            }else{//La tarea viene del mapa
+                PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea.getString(Auxiliar.id));
+            }
+            Auxiliar.returnMain(context);
+        }catch (Exception e){
+            Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -168,39 +222,48 @@ public class Preview extends AppCompatActivity {
      * @param view Vista que se ha pulsado
      */
     public void boton(View view) {
-        Intent intent;
-        switch (view.getId()){
-            case R.id.botonAceptarPreview:
-                if(myLocationNewOverlay.getMyLocation() != null){
-                    double distancia = Auxiliar.calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation().getLatitude(),
-                            myLocationNewOverlay.getMyLocation().getLongitude(),
-                            latitud,
-                            longitud);
-                    if(distancia<0.15) {
-                        intent = new Intent(context, Tarea.class);
-                        intent.putExtras(Objects.requireNonNull(getIntent().getExtras()));
-                        startActivity(intent);
-                    }else {
-                        Toast.makeText(context, getString(R.string.acercate), Toast.LENGTH_SHORT).show();
-                    }
-                }else {
-                    Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+        try {
+            Intent intent;
+            if (Auxiliar.tareaRegistrada(getApplication(), tarea.getString(Auxiliar.id))) {
+                Toast.makeText(context, getString(R.string.tareaRegistrada), Toast.LENGTH_LONG).show();
+            } else {
+                switch (view.getId()) {
+                    case R.id.botonAceptarPreview:
+                        if (myLocationNewOverlay.getMyLocation() != null) {
+                            double distancia = Auxiliar.calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation().getLatitude(),
+                                    myLocationNewOverlay.getMyLocation().getLongitude(),
+                                    latitud,
+                                    longitud);
+                            if (distancia < 0.15) {
+                                intent = new Intent(context, Tarea.class);
+                                intent.putExtras(Objects.requireNonNull(getIntent().getExtras()));
+                                startActivity(intent);
+                            } else {
+                                Toast.makeText(context, getString(R.string.acercate), Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                        }
+
+                        break;
+                    case R.id.botonAhoraNoPreview:
+                        intent = new Intent();
+                        intent.setAction(Auxiliar.ahora_no);
+                        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        sendBroadcast(intent);
+                        Auxiliar.returnMain(context);
+                        break;
+                    case R.id.botonRechazarPreview:
+                        intent = new Intent();
+                        intent.setAction(Auxiliar.nunca_mas);
+                        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        sendBroadcast(intent);
+                        Auxiliar.returnMain(context);
+                        break;
                 }
-                break;
-            case R.id.botonAhoraNoPreview:
-                intent = new Intent();
-                intent.setAction(Auxiliar.ahora_no);
-                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                sendBroadcast(intent);
-                Auxiliar.returnMain(context);
-                break;
-            case R.id.botonRechazarPreview:
-                intent = new Intent();
-                intent.setAction(Auxiliar.nunca_mas);
-                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                sendBroadcast(intent);
-                Auxiliar.returnMain(context);
-                break;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

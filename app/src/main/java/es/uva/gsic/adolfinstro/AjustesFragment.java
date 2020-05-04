@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
@@ -27,6 +28,12 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
         preferenceCategory = findPreference("categoriaPreferencias");
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
+        PreferenceCategory datosUsuario=findPreference("datosUsuario");
+        datosUsuario.setSummary(Login.firebaseAuth.getUid());
+        /*EditTextPreference et = findPreference("nombre");
+        et.setSummary(Login.firebaseAuth.getCurrentUser().getDisplayName());
+        et = findPreference("correo");
+        et.setSummary(Login.firebaseAuth.getCurrentUser().getEmail());*/
     }
 
     /**

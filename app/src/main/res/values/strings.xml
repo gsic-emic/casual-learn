@@ -105,4 +105,8 @@
     <string name="dias">days</string>
     <string name="pulsaMarker">"Click on a marker to see the types of tasks "</string>
     <string name="agrupacionTareas">Group of tasks</string>
+    <string name="tareaRegistrada">The task has been completed, reported, postponed or rejected</string>
+    <string name="hola">"Hi "</string>
+    <string name="errorAutentica">Authentication failure</string>
+    <string name="datosUsuario">User data</string>
 </resources>

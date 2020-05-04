@@ -10,28 +10,31 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,8 +63,10 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     private SharedPreferences sharedPreferences;
 
     /** Análisis comportamiento usuario */
-    private static FirebaseAnalytics firebaseAnalytics;
+    public static FirebaseAnalytics firebaseAnalytics;
 
+    /** Firebase autenticación */
+    public static FirebaseAuth firebaseAuth;
 
     @Override
     public void onCreate(Bundle sI){
@@ -71,13 +76,14 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
         //Aquí irá la comprobación de si el usuario ya se ha autenticado previamente
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.TOKEN_pref);
+        //onSharedPreferenceChanged(sharedPreferences, Ajustes.TOKEN_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         setContentView(R.layout.activity_login);
 
         //https://developers.google.com/identity/sign-in/android/sign-in
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail().build();
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -86,6 +92,17 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         //Se tiene que registrar las pulsaciones del botón desde el código ya que no es un botón estándar
         //Se podría evitar tener que implementar el OnClickListener utilizando un botón estándar con una imagen
         btGoogle.setOnClickListener(this);
+
+        firebaseAuth = FirebaseAuth.getInstance();
+
+        checkPermissions();
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        updateUI(firebaseUser, false);
     }
 
     /**
@@ -191,21 +208,47 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     private void tareaCuenta(Task<GoogleSignInAccount> task) {
         try{
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            assert account != null;
-            String idCuenta = account.getId();
+            firebaseAuthWithGoogle(account);
+            //String idCuenta = account.getIdToken();
 
-            actualizaToken(idCuenta);
+            //actualizaToken(idCuenta);
 
-            Bundle bundle = new Bundle();
-            final String nuevaIdentificacion = "nuevaIdentificacion";
-            bundle.putString("ID", nuevaIdentificacion);
-            bundle.putString("Cuenta", idCuenta);
-            firebaseAnalytics.logEvent(nuevaIdentificacion, bundle);
-            bundle = null;
-
-            enviaUsuario(account);
+            //enviaUsuario(account);
         }catch (Exception e){
             e.printStackTrace();
+            updateUI(null, true);
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
+        firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>(){
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                    updateUI(firebaseUser, true);
+                }else{
+                    Toast.makeText(Login.this, getString(R.string.errorAutentica), Toast.LENGTH_SHORT).show();
+                    updateUI(null, true);
+                }
+            }
+        });
+    }
+
+    private void updateUI(FirebaseUser firebaseUser, boolean registro){
+        if(firebaseUser != null){
+            firebaseAnalytics.setUserId(firebaseUser.getUid());
+            Bundle bundle = new Bundle();
+            bundle.putString("uid", firebaseUser.getUid());
+            if(registro)
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
+            else
+                firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+            Toast.makeText(this, String.format("%s%s",getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent (getApplicationContext(), Maps.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
         }
     }
 
@@ -213,7 +256,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         String url = "http://192.168.1.14:8080/usuarios";
         JSONObject json = new JSONObject();
         try {
-            json.put("id", cuenta.getId());
+            json.put("id", cuenta.getIdToken());
             json.put("nombre", cuenta.getDisplayName());
             json.put("email", cuenta.getEmail());
         } catch (JSONException e) {
@@ -226,7 +269,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
             @Override
             public void onResponse(JSONObject response) {
                 //TODO PROCESADO DEL JSONARRAY
-                startActivity(intent);
+                //startActivity(intent);
             }
         }, new Response.ErrorListener() {
             @Override
@@ -249,16 +292,16 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 if(sharedPreferences.getBoolean(key, true))
                     Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
                 break;
-            case Ajustes.TOKEN_pref:
+            /*case Ajustes.TOKEN_pref:
                 //Si existe un token no se identifica al usuario y se salta directamente a la
                 //actividad del mapa
                 if(!sharedPreferences.getString(key, " ").equals(" ")){
                     Intent intent = new Intent (getApplicationContext(), Maps.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+                    //startActivity(intent);
                 }else {
                     checkPermissions(); //Compruebo los permisos antes de seguir
-                }
+                }*/
             default:
         }
     }

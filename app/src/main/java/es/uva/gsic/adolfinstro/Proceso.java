@@ -288,7 +288,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     final double tareaLat = 42.0076;
     final double tareaLong = -4.52449;*/
     /**
-     * Método de pruebas
+     * Método que a partir de la localización del usuario y una serie de condiciones decide si se le
+     * debe avisar al usuario de la realización de una nueva tarea.
      * @param location Posición
      */
     private void compruebaLocalizacion(Location location) {
@@ -358,44 +359,19 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             String id = jsonObject.getString(Auxiliar.id);
             String tipoRespuesta = jsonObject.getString(Auxiliar.tipoRespuesta);
             tipoRespuesta = Auxiliar.ultimaParte(tipoRespuesta);
-            String recursoAsociadoTexto = jsonObject.getString(Auxiliar.recursoAsociadoTexto);
-            String recursoAsociadoImagen = null, recursoAsociadoImagenBaja = null, respuestaEsperada = null;
-            try{
-                recursoAsociadoImagen = jsonObject.getString(Auxiliar.recursoImagen);
-                recursoAsociadoImagenBaja = jsonObject.getString(Auxiliar.recursoImagenBaja);
-            } catch (Exception e){
-                //Falta alguno de los dos recursos
-            }
-
-            try{
-                respuestaEsperada = jsonObject.getString(Auxiliar.respuestaEsperada);
-            } catch (Exception e){
-                //No tiene respuestaEsperada
-            }
-            //GrupoTareas tarea = new GrupoTareas(id, tipoRespuesta, EstadoTarea.NOTIFICADA);
             try {
                 jsonObject.put(Auxiliar.tipoRespuesta, tipoRespuesta);
                 jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
-                Date date = new Date();
+                jsonObject.put(Auxiliar.origen, PersistenciaDatos.ficheroTareasUsuario);
                 jsonObject.put(Auxiliar.fechaNotificiacion, Auxiliar.horaFechaActual());
                 if(!PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, jsonObject, Context.MODE_PRIVATE))
                     throw new Exception();
-                //Intent intent = new Intent(context, Tarea.class);
                 Intent intent = new Intent(context, Preview.class);
                 intent.putExtra(Auxiliar.id, id);
-                intent.putExtra(Auxiliar.tipoRespuesta, tipoRespuesta);
-                intent.putExtra(Auxiliar.recursoAsociadoTexto, recursoAsociadoTexto);
-                intent.putExtra(Auxiliar.recursoImagen, (recursoAsociadoImagen.equals("")?null:recursoAsociadoImagen));
-                //intent.putExtra(Auxiliar.recursoImagen, "https://upload.wikimedia.org/wikipedia/commons/3/36/Nuestra_Se%C3%B1ora_de_las_Angustias%2C_Valladolid.jpg");
-                intent.putExtra(Auxiliar.recursoImagenBaja, (recursoAsociadoImagenBaja.equals("")?null:recursoAsociadoImagenBaja));
-                intent.putExtra(Auxiliar.respuestaEsperada, respuestaEsperada);
-                intent.putExtra(Auxiliar.latitud, jsonObject.getDouble(Auxiliar.latitud));
-                intent.putExtra(Auxiliar.longitud, jsonObject.getDouble(Auxiliar.longitud));
-                intent.putExtra(Auxiliar.titulo, jsonObject.getString(Auxiliar.titulo));
                 NotificationCompat.Builder builder;
                 int iconoTarea;
                 if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
-                    iconoTarea = R.drawable.ic_3_tareas;
+                    iconoTarea = R.drawable.ic_11_tareas;
                 //Bitmap iconoGrande = BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.ic_brush_black_128_dp);
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -512,6 +488,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     stopLocation();
                     terminaServicio();
                 }
+                break;
+            default:
                 break;
         }
     }

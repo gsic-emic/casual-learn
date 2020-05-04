@@ -70,7 +70,7 @@
     <string name="tipoDeTarea">"Tipo de tarea: "</string>
     <string name="infoTarea">Info. tarea</string>
     <string name="terminar">Finalizar tarea</string>
-    <string name="denunciarPreguntaTitulo">Denunciar tarea</string>
+    <string name="denunciarPreguntaTitulo">Reportar tarea</string>
     <string name="denunciarPreguntaTexto">¿Prodrías decirnos por qué esta tarea es errónea?</string>
     <string name="tareasPospuestas">Tareas pospuestas</string>
     <string name="tareasRechazadas">Tareas rechazadas</string>
@@ -101,4 +101,8 @@
     <string name="dias">días</string>
     <string name="pulsaMarker">Pulsa en un marcador para ver los tipos de tarea</string>
     <string name="agrupacionTareas">Grupo de tareas</string>
+    <string name="tareaRegistrada">La tarea está completada, reportada, pospuesta o rechazada</string>
+    <string name="hola">"Hola "</string>
+    <string name="errorAutentica">Fallo de autenticación</string>
+    <string name="datosUsuario">Datos del usuario</string>
 </resources>
