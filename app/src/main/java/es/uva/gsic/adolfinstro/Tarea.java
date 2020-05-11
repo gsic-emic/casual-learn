@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.AuthCredential;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
@@ -154,31 +155,29 @@ public class Tarea extends AppCompatActivity {
                 btTerminar = findViewById(R.id.btTerminar);
 
                 tvDescripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
-                tvDescripcion.setVisibility(View.VISIBLE);
 
 
                 switch (tipo) {
                     case Auxiliar.tipoSinRespuesta:
                         btAceptar.setText(R.string.voy);
+                        etRespuestaTextual.setHint(getString(R.string.textoOpcional));
                         btAceptar.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoPreguntaCorta:
                         etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
                         etRespuestaTextual.setFilters(new InputFilter[]{new InputFilter.LengthFilter(40)});
-                        etRespuestaTextual.setVisibility(View.VISIBLE);
                         btAceptar.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoPreguntaLarga:
-                        etRespuestaTextual.setVisibility(View.VISIBLE);
                         btAceptar.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoPreguntaImagen:
-                        etRespuestaTextual.setVisibility(View.VISIBLE);
                         btCamara.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoImagen:
                     case Auxiliar.tipoVideo:
                     case Auxiliar.tipoImagenMultiple:
+                        etRespuestaTextual.setHint(getString(R.string.textoOpcional));
                         btCamara.setVisibility(View.VISIBLE);
                         break;
                     default:
@@ -288,12 +287,7 @@ public class Tarea extends AppCompatActivity {
         switch (view.getId()){
             case R.id.btVolver:
                 //Se pasa la tarea del fichero de noficaciones al de tareas globales
-                intent = new Intent();
-                intent.setAction(Auxiliar.ahora_no);
-                intent.putExtra(Auxiliar.id, idTarea);
-                sendBroadcast(intent);
-                Picasso.get().cancelTag(Auxiliar.cargaImagenTarea);
-                Auxiliar.returnMain(this);
+                onBackPressed();
                 break;
             case R.id.btAceptar:
                 if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())){
@@ -308,32 +302,37 @@ public class Tarea extends AppCompatActivity {
                                 PersistenciaDatos.ficheroCompletadas,
                                 respuesta,
                                 Context.MODE_PRIVATE);
+                        if(!etRespuestaTextual.getText().toString().isEmpty()){
+                            PersistenciaDatos.guardaTareaRespuesta(getApplication(),
+                                    PersistenciaDatos.ficheroCompletadas,
+                                    respuesta,
+                                    etRespuestaTextual.getText().toString(),
+                                    Auxiliar.texto,
+                                    Context.MODE_PRIVATE);
+                        }
                     }catch (Exception e){
                         mensajeError();
                     }
                     Auxiliar.puntuaTarea(this, idTarea);
-                } else
-                    if(guardaRespuestaPregunta())
-                        Auxiliar.puntuaTarea(this, idTarea);
+                } else {
+                    guardaRespuestaPregunta();
+                    /*if (guardaRespuestaPregunta())
+                        Auxiliar.puntuaTarea(this, idTarea);*/
+                }
                 break;
             case R.id.btCamara:
+                bloqueaBotones();
                 switch (tipo){
                     case Auxiliar.tipoPreguntaImagen:
-                        if(guardaRespuestaPregunta()) {
-                            bloqueaBotones();
                             realizaCaptura(0);
-                        }
                         break;
                     case Auxiliar.tipoImagen:
-                            bloqueaBotones();
                             realizaCaptura(1);
                         break;
                     case Auxiliar.tipoImagenMultiple:
-                            bloqueaBotones();
                             realizaCaptura(2);
                         break;
                     case Auxiliar.tipoVideo:
-                            bloqueaBotones();
                             realizaVideo();
                         break;
                 }
@@ -356,20 +355,20 @@ public class Tarea extends AppCompatActivity {
                 break;
             case R.id.btTerminar:
                 try {
-                    JSONObject json = PersistenciaDatos.obtenTarea(
-                            getApplication(),
-                            PersistenciaDatos.ficheroNotificadas,
-                            idTarea);
-                    json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
-                    json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                    if (!PersistenciaDatos.guardaJSON(
-                            getApplication(),
-                            PersistenciaDatos.ficheroCompletadas,
-                            json,
-                            Context.MODE_PRIVATE))
-                        mensajeError();
-                    Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                    Auxiliar.puntuaTarea(this, idTarea);
+                    if(tipo.equals(Auxiliar.tipoPreguntaImagen)){
+                        if(etRespuestaTextual.getText().toString().isEmpty()){
+                            etRespuestaTextual.setError(getString(R.string.respuestaVacia));
+                        }else{
+                            guardaRespuesta(etRespuestaTextual.getText().toString(), true);
+                            Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
+                        }
+                    }else {
+                        if(tipo.equals(Auxiliar.tipoImagenMultiple)) {
+                            guardaRespuesta(etRespuestaTextual.getText().toString(), false);
+                        }else{
+                            guardaRespuesta(etRespuestaTextual.getText().toString(), true);
+                        }
+                    }
                 }catch (Exception e){
                     mensajeError();
                 }
@@ -408,6 +407,38 @@ public class Tarea extends AppCompatActivity {
                 denuncia.show();
                 break;
         }
+    }
+
+    private void guardaRespuesta(String respuesta, boolean completada) throws Exception {
+        JSONObject json;
+        if(completada) {
+        json = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroCompletadas,
+                    idTarea);
+        }else{
+            json = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroNotificadas,
+                    idTarea);
+        }
+        json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+        json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+        PersistenciaDatos.guardaJSON(
+                getApplication(),
+                PersistenciaDatos.ficheroCompletadas,
+                json,
+                Context.MODE_PRIVATE);
+        if(!respuesta.isEmpty()){
+            PersistenciaDatos.guardaTareaRespuesta(
+                    getApplication(),
+                    PersistenciaDatos.ficheroCompletadas,
+                    json,
+                    respuesta,
+                    Auxiliar.texto,
+                    Context.MODE_PRIVATE);
+        }
+        Auxiliar.puntuaTarea(this, idTarea);
     }
 
     /**
@@ -571,11 +602,13 @@ public class Tarea extends AppCompatActivity {
                                     PersistenciaDatos.ficheroCompletadas,
                                     respuesta,
                                     photoURI.toString(),
+                                    Auxiliar.uri,
                                     Context.MODE_PRIVATE))
                                 mensajeError();
                             Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
-
-                            Auxiliar.puntuaTarea(this, idTarea);
+                            btTerminar.setVisibility(View.VISIBLE);
+                            btTerminar.setClickable(true);
+                            //Auxiliar.puntuaTarea(this, idTarea);
                         }catch (Exception e){
                             mensajeError();
                             if(respuesta != null)
@@ -595,7 +628,7 @@ public class Tarea extends AppCompatActivity {
                     case RESULT_OK:
                         respuesta = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
                         if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                                respuesta, photoURI.toString(),
+                                respuesta, photoURI.toString(), Auxiliar.uri,
                                 Context.MODE_PRIVATE))
                             mensajeError();
                         btTerminar.setVisibility(View.VISIBLE);
@@ -622,10 +655,13 @@ public class Tarea extends AppCompatActivity {
                                     PersistenciaDatos.ficheroCompletadas,
                                     respuesta,
                                     videoURI.toString(),
+                                    Auxiliar.uri,
                                     Context.MODE_PRIVATE))
                                 mensajeError();
                             Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
-                            Auxiliar.puntuaTarea(this, idTarea);
+                            //Auxiliar.puntuaTarea(this, idTarea);
+                            btTerminar.setVisibility(View.VISIBLE);
+                            btTerminar.setClickable(true);
                         }catch (Exception e){
                             mensajeError();
                             if(respuesta != null)
@@ -672,13 +708,25 @@ public class Tarea extends AppCompatActivity {
                             PersistenciaDatos.ficheroCompletadas,
                             tarea,
                             respuesta,
+                            Auxiliar.texto,
                             Context.MODE_PRIVATE))
                         mensajeError();
                 }catch (Exception e){
                     mensajeError();
                 }
+                if(respuestaEsperada!=null){
+                    if (respuesta.contains(respuestaEsperada)) {
+                        mensajeRespuestaEsperada(this,true);
+                    } else {
+                        mensajeRespuestaEsperada(this,false);
+                    }
+                }else {
+                    Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
+                    Auxiliar.puntuaTarea(this, idTarea);
+                }
+                salida = true;
             }
-            else {
+            /*else {
                 try {
                     tarea = PersistenciaDatos.recuperaTarea(
                             getApplication(),
@@ -697,23 +745,12 @@ public class Tarea extends AppCompatActivity {
                                 PersistenciaDatos.ficheroNotificadas,
                                 tarea, Context.MODE_PRIVATE);
                 }
-            }
-            if(respuestaEsperada!=null){
-                if (respuesta.contains(respuestaEsperada)) {
-                    Toast.makeText(this, R.string.respuestaEspeCorrecta, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, R.string.respuestaEspeIncrrecta + " " + respuestaEsperada, Toast.LENGTH_SHORT).show();
-                }
-            }else {
-                Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
-            }
-            salida = true;
+            }*/
         }
-
         return salida;
     }
 
-    /*private void mensaje(boolean acierto){
+    private void mensajeRespuestaEsperada(final Context context, boolean acierto){
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
         alertBuilder.setTitle(getString(R.string.respuestaEspeTitulo));
         if(acierto){
@@ -727,11 +764,11 @@ public class Tarea extends AppCompatActivity {
         alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                Auxiliar.puntuaTarea(context, idTarea);
             }
         });
         alertBuilder.show();
-    }*/
+    }
 
     /**
      * Método que se utiliza para almacenar el valor de algunas variables de la clase
@@ -832,7 +869,7 @@ public class Tarea extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         super.onBackPressed();
-        JSONObject tarea = null;
+        /*JSONObject tarea = null;
         try {
             tarea = PersistenciaDatos.obtenTarea(
                     getApplication(),
@@ -849,8 +886,8 @@ public class Tarea extends AppCompatActivity {
                 PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
                         tarea, Context.MODE_PRIVATE);
             }
-        }
-        Auxiliar.returnMain(this);
+        }*/
+        finish();
     }
 
     @Override

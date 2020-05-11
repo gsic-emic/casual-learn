@@ -45,7 +45,7 @@
                 android:layout_marginBottom="20dp"
                 android:layout_marginStart="20dp"
                 android:textSize="20sp"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:gravity="center_horizontal"/>
         </LinearLayout>
 
@@ -61,7 +61,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/linearLayout"
             android:layout_marginBottom="20dp"
-            android:visibility="gone"
+            android:visibility="visible"
             android:inputType="textMultiLine"
             android:autofillHints="no" />
 
@@ -73,7 +73,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
             android:layout_marginTop="20dp"
-            android:text="@string/cancel"
+            android:text="@string/ahoraNo"
             android:visibility="visible"
             android:onClick="boton"/>
 

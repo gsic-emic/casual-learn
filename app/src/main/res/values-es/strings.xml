@@ -105,4 +105,10 @@
     <string name="hola">"Hola "</string>
     <string name="errorAutentica">Fallo de autenticación</string>
     <string name="datosUsuario">Datos del usuario</string>
+    <string name="textoOpcional">Texto opcional</string>
+    <string name="editar">Editar</string>
+    <string name="publicar">Publicar</string>
+    <string name="tareaRealizar">Realiza la tarea</string>
+    <string name="tareaCompletada">Tarea completada</string>
+    <string name="navega">Llega hasta la tarea</string>
 </resources>

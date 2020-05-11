@@ -43,7 +43,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
             android:textSize="20sp"
-            android:visibility="gone"
+            android:visibility="visible"
             android:gravity="center_horizontal"/>
 
         <EditText
@@ -58,7 +58,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvDescripcion"
             android:layout_marginBottom="20dp"
-            android:visibility="gone"
+            android:visibility="visible"
             android:inputType="textMultiLine"
             android:autofillHints="no" />
 

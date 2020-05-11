@@ -9,15 +9,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -26,7 +23,6 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -37,7 +33,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -368,6 +363,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                     throw new Exception();
                 Intent intent = new Intent(context, Preview.class);
                 intent.putExtra(Auxiliar.id, id);
+                intent.putExtra(Auxiliar.previa, Auxiliar.notificacion);
                 NotificationCompat.Builder builder;
                 int iconoTarea;
                 if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
@@ -388,7 +384,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 builder.setAutoCancel(true);
                 //builder.setTimeoutAfter(tiempoNotificacion); No es necesario en este tipo de notificaciones
 
-                //Botones extra
+                //Acción de descartar la notificación
                 Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
                 intentBoton.setAction(Auxiliar.ahora_no);
                 intentBoton.putExtra(Auxiliar.id, id);

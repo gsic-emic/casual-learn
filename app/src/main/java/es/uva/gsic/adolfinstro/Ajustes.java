@@ -31,12 +31,14 @@ public class Ajustes extends AppCompatActivity{
     }
 
     @Override
+    public boolean onSupportNavigateUp(){
+        onBackPressed();
+        return false;
+    }
+
+    @Override
     public void onBackPressed(){
-        super.onBackPressed();
-        Intent intent = new Intent(this, Maps.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        this.finish();
+        finish();
 
     }
 }

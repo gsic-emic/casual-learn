@@ -109,4 +109,10 @@
     <string name="hola">"Hi "</string>
     <string name="errorAutentica">Authentication failure</string>
     <string name="datosUsuario">User data</string>
+    <string name="textoOpcional">Optional text…</string>
+    <string name="editar">Edit</string>
+    <string name="publicar">Post</string>
+    <string name="tareaRealizar">Complete the task</string>
+    <string name="tareaCompletada">Complete task</string>
+    <string name="navega">Navigate to the task</string>
 </resources>

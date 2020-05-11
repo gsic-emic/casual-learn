@@ -19,6 +19,7 @@ import androidx.core.app.ActivityCompat;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.osmdroid.util.BoundingBox;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,7 +46,7 @@ public class Auxiliar {
     public static final String recursoImagen = "recursoAsociadoImagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
-    public static final String titulo = "titulo";
+    public static final String titulo = "comment";
     public static final String instante = "instante";
     public static final String estadoTarea = "estadoTarea";
     public static final String rating = "rating";
@@ -73,6 +74,18 @@ public class Auxiliar {
     public static final String peticion = "peticion";
 
     public static final String idNotificacion = "idNotificacion";
+
+    public static final String respuestas = "respuestaTarea";
+    public static final String posicionRespuesta = "posicion";
+    public static final String respuestaRespuesta = "respuesta";
+    public static final String texto = "texto";
+    public static final String uri = "uri";
+
+    public static final String previa = "actividad_previa";
+    public static final String notificacion = "notificacion";
+    public static final String mapa = "mapa";
+    public static final String tareasRechazadas = "tareasRechazadas";
+    public static final String tareasPospuestas = "tareasPospuestas";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
 
@@ -351,34 +364,47 @@ public class Auxiliar {
     public static String valorTexto(Resources resources, int posicion){
         switch (posicion){
             case 0:
-                return String.format("1 %s", resources.getString(R.string.minuto));
+                return String.format("5 %s", resources.getString(R.string.minutos));
             case 1:
-                return String.format("3 %s", resources.getString(R.string.minutos));
-            case 2:
                 return String.format("15 %s", resources.getString(R.string.minutos));
-            case 3:
+            case 2:
                 return String.format("30 %s", resources.getString(R.string.minutos));
-            case 4:
+            case 3:
                 return String.format("1 %s", resources.getString(R.string.hora));
-            case 5:
+            case 4:
                 return String.format("3 %s", resources.getString(R.string.horas));
+            case 5:
+                return String.format("4 %s", resources.getString(R.string.horas));
             case 6:
-                return String.format("8 %s", resources.getString(R.string.horas));
+                return String.format("5 %s", resources.getString(R.string.horas));
             case 7:
-                return String.format("12 %s", resources.getString(R.string.horas));
+                return String.format("6 %s", resources.getString(R.string.horas));
             case 8:
-                return String.format("1 %s", resources.getString(R.string.dia));
+                return String.format("12 %s", resources.getString(R.string.horas));
             case 9:
-                return String.format("4 %s", resources.getString(R.string.dias));
+                return String.format("1 %s", resources.getString(R.string.dia));
             case 10:
-                return String.format("7 %s", resources.getString(R.string.dias));
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            case 15:
+                return String.format("%d %s", posicion-8, resources.getString(R.string.dias));
             default:
                 return resources.getString(R.string.valorActual);
         }
     }
 
-    private static final int[] minutosAjustes = {1, 3, 15, 30, 60, 180, 480, 720, 1440, 5790, 10080};
+    private static final int[] minutosAjustes = {5, 15, 30, 60, 180, 240, 300, 360, 720, 1440, 2280, 4320, 5790, 7200, 8640, 10080};
     public static int intervaloMinutos(int intervalo) {
         return minutosAjustes[intervalo];
+    }
+
+    public static BoundingBox colocaMapa(Double lat1, Double long1, Double lat2, Double long2) {
+        return  new BoundingBox(
+                Math.min(lat1, lat2),
+                Math.max(long1, long2),
+                Math.max(lat1, lat2),
+                Math.min(long1, long2));
     }
 }

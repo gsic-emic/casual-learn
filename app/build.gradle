@@ -85,6 +85,7 @@ dependencies {
 
 dependencies {
     implementation 'org.osmdroid:osmdroid-android:6.1.5'
+    //implementation 'com.github.MKergall:osmbonuspack:6.6.0'
 }
 
 dependencies {
@@ -161,6 +162,16 @@ dependencies {
 
 dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:+'
+    implementation 'androidx.constraintlayout:constraintlayout:+'
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:+'
+    implementation 'androidx.constraintlayout:constraintlayout:+'
 }
 
 dependencies {

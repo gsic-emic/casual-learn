@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/editarCompletada"
+        android:icon="@drawable/ic_edit_black_24dp"
+        android:title="@string/editar"
+        app:showAsAction="ifRoom" />
+    <item android:id="@+id/publicarCompletada"
+        android:icon="@drawable/ic_cloud_upload_white_24dp"
+        android:title="@string/publicar"
+        app:showAsAction="ifRoom" />
+</menu>

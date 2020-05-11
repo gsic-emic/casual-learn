@@ -12,7 +12,7 @@
         android:title="@string/intervalo">
         <SeekBarPreference
             app:key="intervalo"
-            app:defaultValue="3"
+            app:defaultValue="4"
             app:min="0"
             app:updatesContinuously="false"
             app:showSeekBarValue="false"

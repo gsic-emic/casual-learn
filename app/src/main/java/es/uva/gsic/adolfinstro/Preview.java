@@ -1,20 +1,18 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
-import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.Layout;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,17 +25,15 @@ import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
-import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-import org.osmdroid.views.overlay.simplefastpoint.LabelledGeoPoint;
 
-import java.util.Locale;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -54,10 +50,17 @@ public class Preview extends AppCompatActivity {
     /** Receptor de notificaciones */
     private RecepcionNotificaciones recepcionNotificaciones;
 
+    //private RoadManager roadManager;
+
     private double latitud, longitud;
-    private boolean grande = false;
+    private boolean grande = false, foto = false;
 
     private JSONObject tarea;
+
+    private ImageView imageView;
+    private TextView descripcion, titulo;
+    private Button btRechazar, btPosponer, btAceptar;
+    private int alturaOriginal;
 
     /**
      * Se crea la vista de la interfaz de usuario.
@@ -75,10 +78,13 @@ public class Preview extends AppCompatActivity {
 
         setContentView(R.layout.activity_preview);
 
-        ImageView imageView = findViewById(R.id.imagenPreview);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        imageView = findViewById(R.id.imagenPreview);
         String idTarea = getIntent().getExtras().getString(Auxiliar.id);
         tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
         try {
+            try{
             if (!tarea.getString(Auxiliar.recursoImagenBaja).equals("")) {
                 Picasso.get()
                         .load(tarea.getString(Auxiliar.recursoImagenBaja))
@@ -86,6 +92,7 @@ public class Preview extends AppCompatActivity {
                         .tag(Auxiliar.cargaImagenPreview)
                         .into(imageView);
                 imageView.setVisibility(View.VISIBLE);
+                foto = true;
             } else {
                 if (!tarea.getString(Auxiliar.recursoImagen).equals("")) {
                     Picasso.get()
@@ -94,11 +101,20 @@ public class Preview extends AppCompatActivity {
                             .tag(Auxiliar.cargaImagenPreview)
                             .into(imageView);
                     imageView.setVisibility(View.VISIBLE);
+                    foto = true;
                 }
+            }}
+            catch (Exception e){
+                e.printStackTrace();
             }
+
+            btAceptar = findViewById(R.id.botonAceptarPreview);
+            btPosponer = findViewById(R.id.botonAhoraNoPreview);
+            btRechazar = findViewById(R.id.botonRechazarPreview);
             map = findViewById(R.id.mapPreview);
             map.setTileSource(TileSourceFactory.MAPNIK);
             IMapController mapController = map.getController();
+            //roadManager = new OSRMRoadManager(this);
 
             latitud = tarea.getDouble(Auxiliar.latitud);
             longitud = tarea.getDouble(Auxiliar.longitud);
@@ -115,11 +131,11 @@ public class Preview extends AppCompatActivity {
             myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
                     BitmapFactory.decodeResource(getResources(), R.drawable.person));
             map.getOverlays().add(myLocationNewOverlay);
-
-            map.setMultiTouchControls(true);
-            TextView titulo = findViewById(R.id.tituloPreview);
+//
+//            map.setMultiTouchControls(true);
+            titulo = findViewById(R.id.tituloPreview);
             titulo.setText(tarea.getString(Auxiliar.titulo));
-            TextView descripcion = findViewById(R.id.textoPreview);
+            descripcion = findViewById(R.id.textoPreview);
             descripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 descripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
@@ -138,25 +154,20 @@ public class Preview extends AppCompatActivity {
             map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
                 @Override
                 public boolean singleTapConfirmedHelper(GeoPoint p) {
-                    ViewGroup.LayoutParams params = map.getLayoutParams();
-                    if (grande) {
-                        params.height -= getResources().getDisplayMetrics().heightPixels / 2;
-                        map.setMaxZoomLevel(17.5);
-                        map.setMinZoomLevel(17.5);
-                        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-                        map.setMultiTouchControls(false);
-                        map.getController().setCenter(new GeoPoint(latitud, longitud));
-                        map.invalidate();
-                        grande = false;
-                    } else {
-                        params.height += getResources().getDisplayMetrics().heightPixels / 2;
-                        map.setMaxZoomLevel(17.5);
-                        map.setMinZoomLevel(13.5);
-                        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
-                        map.invalidate();
-                        grande = true;
+                    try {
+                        if(myLocationNewOverlay.getMyLocation() != null){
+                            Intent intent = new Intent(context, mapaNavegable.class);
+                            intent.putExtra(Auxiliar.latitud + "user", myLocationNewOverlay.getMyLocation().getLatitude());
+                            intent.putExtra(Auxiliar.longitud + "user", myLocationNewOverlay.getMyLocation().getLongitude());
+                            intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
+                            intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
+                            startActivity(intent);
+                        }else{
+                            Toast.makeText(context,  context.getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                        }
+                    }catch (JSONException e){
+                        e.printStackTrace();
                     }
-                    map.setLayoutParams(params);
                     return false;
                 }
 
@@ -165,6 +176,73 @@ public class Preview extends AppCompatActivity {
                     return false;
                 }
             }));
+
+//            map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+//                @Override
+//                public boolean singleTapConfirmedHelper(GeoPoint p) {
+//                    if (!grande) {
+//                        /*if(myLocationNewOverlay.mMyLocationProvider != null && myLocationNewOverlay.mMyLocationProvider.getLastKnownLocation() != null) {
+//                            try{
+//                                Location location = myLocationNewOverlay.mMyLocationProvider.getLastKnownLocation();
+//                                ArrayList<GeoPoint> listaPuntos = new ArrayList<>();
+//                                listaPuntos.add(new GeoPoint(location.getLatitude(), location.getLongitude()));
+//                                listaPuntos.add(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
+//                                Road road = roadManager.getRoad(listaPuntos);
+//                                Polyline roadOverlay = RoadManager.buildRoadOverlay(road);
+//                                map.getOverlays().add(roadOverlay);
+//                                map.invalidate();
+//                            }catch (JSONException e){
+//                                e.printStackTrace();
+//                            }
+//                        }*/
+//                        ViewGroup.LayoutParams params = map.getLayoutParams();
+//                        //params.height += getResources().getDisplayMetrics().heightPixels / 2;
+//                        alturaOriginal = params.height;
+//                        params.height = ((getResources().getDisplayMetrics().heightPixels)/4);
+//                        params.height = params.height*3;
+//                        map.setMaxZoomLevel(17.5);
+//                        map.setMinZoomLevel(13.5);
+//                        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.ALWAYS);
+//                        map.setMultiTouchControls(true);
+//                        map.invalidate();
+//                        grande = true;
+//                        map.setLayoutParams(params);
+//                        if(foto)
+//                            imageView.setVisibility(View.GONE);
+//                        titulo.setVisibility(View.GONE);
+//                        descripcion.setVisibility(View.GONE);
+//                        btAceptar.setVisibility(View.GONE);
+//                        btPosponer.setVisibility(View.GONE);
+//                        btRechazar.setVisibility(View.GONE);
+//                    }
+//                    return false;
+//                }
+//
+//                @Override
+//                public boolean longPressHelper(GeoPoint p) {
+//                    if (grande) {
+//                        ViewGroup.LayoutParams params = map.getLayoutParams();
+//                        //params.height -= getResources().getDisplayMetrics().heightPixels / 2;
+//                        params.height = alturaOriginal;
+//                        map.setMaxZoomLevel(17.5);
+//                        map.setMinZoomLevel(17.5);
+//                        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+//                        map.setMultiTouchControls(false);
+//                        map.getController().setCenter(new GeoPoint(latitud, longitud));
+//                        map.invalidate();
+//                        grande = false;
+//                        map.setLayoutParams(params);
+//                        if(foto)
+//                            imageView.setVisibility(View.VISIBLE);
+//                        titulo.setVisibility(View.VISIBLE);
+//                        descripcion.setVisibility(View.VISIBLE);
+//                        btAceptar.setVisibility(View.VISIBLE);
+//                        btPosponer.setVisibility(View.VISIBLE);
+//                        btRechazar.setVisibility(View.VISIBLE);
+//                    }
+//                    return false;
+//                }
+//            }));
 
        /* marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
@@ -193,6 +271,12 @@ public class Preview extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return false;
+    }
+
     /**
      * Método que se ejecuta cuando el usuario presiona el botón de atras de su teléfono. Se pasa la
      * tarea a pospuesta y se muestra un toast antes de volver al mapa.
@@ -201,16 +285,42 @@ public class Preview extends AppCompatActivity {
     public void onBackPressed(){
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
         try {
-            if (tarea.getString(Auxiliar.origen).equals(PersistenciaDatos.ficheroTareasUsuario)) {
-                Intent intent = new Intent();
-                intent.setAction(Auxiliar.ahora_no);
-                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                sendBroadcast(intent);
-                Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
-            }else{//La tarea viene del mapa
-                PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea.getString(Auxiliar.id));
+            switch (getIntent().getExtras().getString(Auxiliar.previa)){
+                case Auxiliar.notificacion:
+                    Intent intent = new Intent();
+                    intent.setAction(Auxiliar.ahora_no);
+                    intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                    sendBroadcast(intent);
+                    Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
+                    Auxiliar.returnMain(this);
+                    break;
+                case Auxiliar.mapa:
+                    PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea.getString(Auxiliar.id));
+                    finish();
+                    break;
+                case Auxiliar.tareasPospuestas:
+                    PersistenciaDatos.guardaJSON(getApplication(),
+                            PersistenciaDatos.ficheroTareasPospuestas,
+                            PersistenciaDatos.obtenTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNotificadas,
+                                    tarea.getString(Auxiliar.id)),
+                            Context.MODE_PRIVATE);
+                    finish();
+                    break;
+                case Auxiliar.tareasRechazadas:
+                    PersistenciaDatos.guardaJSON(getApplication(),
+                            PersistenciaDatos.ficheroTareasRechazadas,
+                            PersistenciaDatos.obtenTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNotificadas,
+                                    tarea.getString(Auxiliar.id)),
+                            Context.MODE_PRIVATE);
+                    finish();
+                    break;
+                default:
+                    break;
             }
-            Auxiliar.returnMain(context);
         }catch (Exception e){
             Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
         }
@@ -234,9 +344,10 @@ public class Preview extends AppCompatActivity {
                                     myLocationNewOverlay.getMyLocation().getLongitude(),
                                     latitud,
                                     longitud);
-                            if (distancia < 0.15) {
+                            //TODO volver a los 150 metros!!
+                            if (distancia < 15) {
                                 intent = new Intent(context, Tarea.class);
-                                intent.putExtras(Objects.requireNonNull(getIntent().getExtras()));
+                                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
                                 startActivity(intent);
                             } else {
                                 Toast.makeText(context, getString(R.string.acercate), Toast.LENGTH_SHORT).show();
