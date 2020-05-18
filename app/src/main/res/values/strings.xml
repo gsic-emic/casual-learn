@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Casual Learn</string>
+    <string name="fileProvider" translatable="false">es.uva.gsic.adolfinstro.fileprovider</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="accept">OK</string>
@@ -115,4 +116,8 @@
     <string name="tareaRealizar">Complete the task</string>
     <string name="tareaCompletada">Complete task</string>
     <string name="navega">Navigate to the task</string>
+    <string name="distanciaRecuperar">Get closer to unlock the task. Current distance between your position and the task:</string>
+    <string name="agregarContenido">Add new file</string>
+    <string name="agregaImagenAntesBorrar">Add a new photo before remove this</string>
+    <string name="agregaVideoAntesBorrar">Add a new video before remove this</string>
 </resources>

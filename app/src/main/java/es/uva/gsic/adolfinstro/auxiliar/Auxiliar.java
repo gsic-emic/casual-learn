@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.widget.Toast;
@@ -34,6 +35,7 @@ import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
+import es.uva.gsic.adolfinstro.Tarea;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Auxiliar {
@@ -96,7 +98,7 @@ public class Auxiliar {
 
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
-     * @param type 1 foto, 2 vídeo
+     * @param type 0, 1, 2: foto; 3 video;
      * @return fichero donde se almacena la foto/vídeo
      * @throws IOException Se lanza una excepción cuando se produzca un error al crear el fichero vacío
      */
@@ -406,5 +408,11 @@ public class Auxiliar {
                 Math.max(long1, long2),
                 Math.max(lat1, lat2),
                 Math.min(long1, long2));
+    }
+
+    public static void publicaGaleria(Context contexto, Uri uri) {
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        intent.setData(uri);
+        contexto.sendBroadcast(intent);
     }
 }

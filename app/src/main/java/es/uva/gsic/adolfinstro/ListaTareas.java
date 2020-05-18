@@ -29,6 +29,9 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase que presenta al usuario los distintos tipos de listas de la aplicación.
+ *
+ * @author Pablo
+ * @version 20200514
  */
 public class ListaTareas extends AppCompatActivity implements AdaptadorLista.ItemClickListener, AdaptadorLista.ItemLongClickLister{
 

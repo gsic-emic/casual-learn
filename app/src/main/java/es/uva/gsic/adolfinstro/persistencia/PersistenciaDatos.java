@@ -262,11 +262,12 @@ public class PersistenciaDatos {
             }
         }
         if(encontrado){
-            JSONObject jo = (JSONObject) jsonArray.remove(i);
+            jsonArray.remove(i);
             guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
             return jsonObject;
+        }else{
+            return null;
         }
-        throw new Exception();
     }
 
     /**

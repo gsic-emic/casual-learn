@@ -111,4 +111,8 @@
     <string name="tareaRealizar">Realiza la tarea</string>
     <string name="tareaCompletada">Tarea completada</string>
     <string name="navega">Llega hasta la tarea</string>
+    <string name="distanciaRecuperar">Acércate para desbloquear la tarea. Distancia actual entre la tarea y tu posición:</string>
+    <string name="agregarContenido">Agregar contenido</string>
+    <string name="agregaImagenAntesBorrar">Agrega una fotografía antes de eliminar esta</string>
+    <string name="agregaVideoAntesBorrar">Agrega un nuevo vídeo antes de eliminar este</string>
 </resources>

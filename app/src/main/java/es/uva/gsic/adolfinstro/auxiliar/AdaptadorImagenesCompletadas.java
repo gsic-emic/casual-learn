@@ -17,7 +17,7 @@ import es.uva.gsic.adolfinstro.Completadas;
 import es.uva.gsic.adolfinstro.R;
 
 public class AdaptadorImagenesCompletadas extends RecyclerView.Adapter<AdaptadorImagenesCompletadas.ViewHolder> {
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         ImageView imageView, aspas;
         ViewHolder(final View item){
             super(item);
@@ -59,7 +59,7 @@ public class AdaptadorImagenesCompletadas extends RecyclerView.Adapter<Adaptador
 
     @Override
     public void onBindViewHolder(@NonNull AdaptadorImagenesCompletadas.ViewHolder holder, int position) {
-        Picasso.get().load(lista.get(position).getDireccion()).into(holder.imageView);
+        holder.imageView.setImageURI(lista.get(position).getDireccion());
         if(lista.get(position).getVisible() == View.VISIBLE){
             holder.aspas.setVisibility(View.VISIBLE);
             holder.imageView.setClickable(false);

@@ -65,13 +65,24 @@
             android:inputType="textMultiLine"
             android:autofillHints="no" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvRealizaTarea"
+            android:layout_width="0dp"
+            android:layout_height="310dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            android:layout_marginBottom="10dp"/>
+
         <Button
             android:id="@+id/btVolver"
             android:layout_width="150dp"
             android:layout_height="75dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:layout_marginTop="20dp"
             android:text="@string/ahoraNo"
             android:visibility="visible"
@@ -83,7 +94,7 @@
             android:layout_height="75dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:layout_marginTop="20dp"
             android:text="@string/accept"
             android:visibility="gone"
@@ -96,7 +107,7 @@
             app:layout_constraintStart_toEndOf="@id/btVolver"
             app:layout_constraintEnd_toStartOf="@id/btCamara"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:layout_marginTop="20dp"
             android:text="@string/terminar"
             android:visibility="gone"
@@ -108,7 +119,7 @@
             android:layout_height="75dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:drawableStart="@android:drawable/ic_menu_camera"
             android:layout_marginTop="20dp"
             android:text="@string/camara"

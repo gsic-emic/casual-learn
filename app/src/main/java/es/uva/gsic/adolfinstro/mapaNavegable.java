@@ -53,6 +53,7 @@ public class mapaNavegable extends AppCompatActivity {
         map = findViewById(R.id.mvMapaNavegable);
         map.setTileSource(TileSourceFactory.MAPNIK);
         IMapController mapController = map.getController();
+        map.setMultiTouchControls(true);
 
         GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
         myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
@@ -99,11 +100,14 @@ public class mapaNavegable extends AppCompatActivity {
                 @Override
                 public void onGlobalLayout() {
                     map.zoomToBoundingBox(boundingBox, false);
+                    map.getController().zoomToSpan(boundingBox.getLatitudeSpan(), boundingBox.getLongitudeSpanWithDateLine());
+                    map.getController().setCenter(boundingBox.getCenterWithDateLine());
+                    boundingBox.getDiagonalLengthInMeters();
                     ViewTreeObserver v = map.getViewTreeObserver();
                     v.removeOnGlobalLayoutListener(this);
-                    double zum = map.getZoomLevelDouble();
-                    if(zum - 1 >= 6)
-                        map.getController().setZoom(zum-1);
+                    /*double zum = map.getZoomLevelDouble();
+                    if(zum - 2 >= 5)
+                        map.getController().setZoom(zum-2);*/
                 }
             });
         }
