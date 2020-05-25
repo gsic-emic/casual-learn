@@ -5,6 +5,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -51,24 +52,23 @@ public class Preview extends AppCompatActivity implements LocationListener {
     private Context context;
     /** Vista donde se incluye la vista del mapa */
     private MapView map;
-    /** Objeto para adecuar la vista del mapa */
-    private MyLocationNewOverlay myLocationNewOverlay;
     /** Receptor de notificaciones */
     private RecepcionNotificaciones recepcionNotificaciones;
 
-    //private RoadManager roadManager;
-
-    private double latitud, longitud;
-    private boolean grande = false, foto = false;
-
+    /** Objeto que tiene toda la información de la tarea */
     private JSONObject tarea;
 
-    private ImageView imageView;
-    private TextView descripcion, titulo, explicacionDistancia, textoDistancia;
+    /** Objeto donde se coloca la explicación del por qué no puede realizar la tarea */
+    private TextView explicacionDistancia;
+    /** Instancia donde se coloca la distancia a la tarea */
+    private TextView textoDistancia;
+    /** Botones de la vista */
     private Button btRechazar, btPosponer, btAceptar;
-    private int alturaOriginal;
 
+    /** Objeto con el que se hace el seguimiento de la posición del usuario */
     private LocationManager locationManager;
+
+    private Location location;
 
     /**
      * Se crea la vista de la interfaz de usuario.
@@ -86,21 +86,21 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
         setContentView(R.layout.activity_preview);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        imageView = findViewById(R.id.imagenPreview);
-        String idTarea = getIntent().getExtras().getString(Auxiliar.id);
+        ImageView imageView = findViewById(R.id.imagenPreview);
+        String idTarea = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id);
         tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
         try {
             try{
-            if (!tarea.getString(Auxiliar.recursoImagenBaja).equals("")) {
+                assert tarea != null;
+                if (!tarea.getString(Auxiliar.recursoImagenBaja).equals("")) {
                 Picasso.get()
                         .load(tarea.getString(Auxiliar.recursoImagenBaja))
                         .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                         .tag(Auxiliar.cargaImagenPreview)
                         .into(imageView);
                 imageView.setVisibility(View.VISIBLE);
-                foto = true;
             } else {
                 if (!tarea.getString(Auxiliar.recursoImagen).equals("")) {
                     Picasso.get()
@@ -109,7 +109,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             .tag(Auxiliar.cargaImagenPreview)
                             .into(imageView);
                     imageView.setVisibility(View.VISIBLE);
-                    foto = true;
                 }
             }}
             catch (Exception e){
@@ -126,8 +125,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
             IMapController mapController = map.getController();
             //roadManager = new OSRMRoadManager(this);
 
-            latitud = tarea.getDouble(Auxiliar.latitud);
-            longitud = tarea.getDouble(Auxiliar.longitud);
+            double latitud = tarea.getDouble(Auxiliar.latitud);
+            double longitud = tarea.getDouble(Auxiliar.longitud);
             GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
 
             mapController.setCenter(posicionTarea);
@@ -135,17 +134,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
             map.setMaxZoomLevel(17.5);
             map.setMinZoomLevel(17.5);
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-            myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
-            map.getOverlays().add(myLocationNewOverlay);
-//
-//            map.setMultiTouchControls(true);
-            titulo = findViewById(R.id.tituloPreview);
+
+            map.setMultiTouchControls(true);
+
+            TextView titulo = findViewById(R.id.tituloPreview);
             titulo.setText(tarea.getString(Auxiliar.titulo));
-            descripcion = findViewById(R.id.textoPreview);
+            TextView descripcion = findViewById(R.id.textoPreview);
             descripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 descripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
@@ -162,13 +156,14 @@ public class Preview extends AppCompatActivity implements LocationListener {
             marker.setInfoWindow(null);
 
             map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+                @SuppressLint("MissingPermission")
                 @Override
                 public boolean singleTapConfirmedHelper(GeoPoint p) {
-                    try {
-                        if(myLocationNewOverlay.getMyLocation() != null){
+                    try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
+                        if(location != null){
                             Intent intent = new Intent(context, mapaNavegable.class);
-                            intent.putExtra(Auxiliar.latitud + "user", myLocationNewOverlay.getMyLocation().getLatitude());
-                            intent.putExtra(Auxiliar.longitud + "user", myLocationNewOverlay.getMyLocation().getLongitude());
+                            intent.putExtra(Auxiliar.latitud + "user", location.getLatitude());
+                            intent.putExtra(Auxiliar.longitud + "user", location.getLongitude());
                             intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
                             intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
                             startActivity(intent);
@@ -183,6 +178,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
                 @Override
                 public boolean longPressHelper(GeoPoint p) {
+                    singleTapConfirmedHelper(p);
                     return false;
                 }
             }));
@@ -198,6 +194,11 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
     }
 
+    /**
+     * Método que habilita o deshabilita los botones dependiendo del argumento de entrada
+     * @param visibles Si es true se muestran los botones para interactuar frente a la tarea. False
+     *                 paramostrar la información de la distancia que falta a la tarea
+     */
     private void botonesVisibles(boolean visibles){
         if(visibles) {
             btRechazar.setVisibility(View.VISIBLE);
@@ -215,6 +216,10 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
     }
 
+    /**
+     * Al pulsar el botón de la barra título se realiza la misma acción que al pulsar atrás
+     * @return false ya que no se finaliza la actividad
+     */
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
@@ -223,27 +228,33 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     /**
      * Método que se ejecuta cuando el usuario presiona el botón de atras de su teléfono. Se pasa la
-     * tarea a pospuesta y se muestra un toast antes de volver al mapa.
+     * tarea a pospuesta si procede (tarea de notificación) y se muestra un toast antes de volver al mapa.
      */
     @Override
     public void onBackPressed(){
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
         try {
-            switch (getIntent().getExtras().getString(Auxiliar.previa)){
+            switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
+                        .getExtras()).getString(Auxiliar.previa))){
                 case Auxiliar.notificacion:
                     Intent intent = new Intent();
                     intent.setAction(Auxiliar.ahora_no);
-                    intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                    intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent()
+                            .getExtras()).getString(Auxiliar.id));
                     sendBroadcast(intent);
                     Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
                     Auxiliar.returnMain(this);
                     break;
                 case Auxiliar.mapa:
-                    PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea.getString(Auxiliar.id));
+                    PersistenciaDatos.obtenTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            tarea.getString(Auxiliar.id));
                     finish();
                     break;
                 case Auxiliar.tareasPospuestas:
-                    PersistenciaDatos.guardaJSON(getApplication(),
+                    PersistenciaDatos.guardaJSON(
+                            getApplication(),
                             PersistenciaDatos.ficheroTareasPospuestas,
                             PersistenciaDatos.obtenTarea(
                                     getApplication(),
@@ -253,7 +264,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     finish();
                     break;
                 case Auxiliar.tareasRechazadas:
-                    PersistenciaDatos.guardaJSON(getApplication(),
+                    PersistenciaDatos.guardaJSON(
+                            getApplication(),
                             PersistenciaDatos.ficheroTareasRechazadas,
                             PersistenciaDatos.obtenTarea(
                                     getApplication(),
@@ -283,22 +295,27 @@ public class Preview extends AppCompatActivity implements LocationListener {
             } else {
                 switch (view.getId()) {
                     case R.id.botonAceptarPreview:
-                            intent = new Intent(context, Tarea.class);
-                            intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                            startActivity(intent);
-
+                        intent = new Intent(context, Tarea.class);
+                        intent.putExtra(
+                                Auxiliar.id,
+                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        startActivity(intent);
                         break;
                     case R.id.botonAhoraNoPreview:
                         intent = new Intent();
                         intent.setAction(Auxiliar.ahora_no);
-                        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        intent.putExtra(
+                                Auxiliar.id,
+                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
                         sendBroadcast(intent);
                         Auxiliar.returnMain(context);
                         break;
                     case R.id.botonRechazarPreview:
                         intent = new Intent();
                         intent.setAction(Auxiliar.nunca_mas);
-                        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        intent.putExtra(
+                                Auxiliar.id,
+                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
                         sendBroadcast(intent);
                         Auxiliar.returnMain(context);
                         break;
@@ -311,7 +328,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     /**
      * Se sobrescribe le método onResume para activar la recepción de notificaciones y restaurar el mapa.
-     * Se realiza la llamada al método que se sobrescribe
+     * Se activa el seguimiento del usuario para mostrar la distancia a la tarea según se desplace
      */
     @Override
     protected void onResume(){
@@ -320,13 +337,19 @@ public class Preview extends AppCompatActivity implements LocationListener {
         registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         try {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                    && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED  &&
+                    ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 botonesVisibles(false);
             } else {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
+                locationManager.requestLocationUpdates(
+                        LocationManager.GPS_PROVIDER, 5000, 10, this);
                 if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
-                    onLocationChanged(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                    onLocationChanged(
+                            locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -337,7 +360,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     /**
      * Se sobrescribe el método onPause para desactivar la recepción de notificaciones y pausar el mapa.
-     * Se realiza la llamada al método que se sobrescribe.
+     * Se detiene el seguimiento al usuario
      */
     @Override
     protected void onPause(){
@@ -351,10 +374,15 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        this.location = location;
         try {
-            double distancia = Auxiliar.calculaDistanciaDosPuntos(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud), location.getLatitude(), location.getLongitude());
+            double distancia = Auxiliar.calculaDistanciaDosPuntos(
+                    tarea.getDouble(Auxiliar.latitud),
+                    tarea.getDouble(Auxiliar.longitud),
+                    location.getLatitude(),
+                    location.getLongitude());
             //TODO VOLVER A PONER A 0.15
-            if(distancia <= 1){
+            if(distancia <= 1.0){
                 botonesVisibles(true);
             }else{
                 botonesVisibles(false);

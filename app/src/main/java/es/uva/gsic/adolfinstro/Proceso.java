@@ -1,5 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
+import android.Manifest;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,14 +10,20 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
+import android.os.SystemClock;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
@@ -81,7 +89,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private final long intervaloComprobacion = 30000;
 
     /** Distancia máxima que podría andar en el intervalo de comprobación*/
-    private final double maxAndado = (5 * ((double)intervaloComprobacion/1000) / 3600);
+    private final double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
 
     public static boolean tareasActualizadas = false;
 
@@ -103,8 +111,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     }
 
     private final IBinder iBinder = new ProcesoBinder();
+
     @Override
-    public IBinder onBind(Intent intent){
+    public IBinder onBind(Intent intent) {
         return iBinder;
     }
 
@@ -113,15 +122,15 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * la app
      */
     @Override
-    public void onCreate(){
+    public void onCreate() {
         context = this;
         ArrayList<String> permisos = new ArrayList<>();
         Auxiliar.preQueryPermisos(context, permisos);
-        if(permisos.size()>0){ // Si se le han revocado permisos a la aplicación se mata el proceso
+        if (permisos.size() > 0) { // Si se le han revocado permisos a la aplicación se mata el proceso
             terminaServicio();
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { //Se necesita un canal para API 26 y superior
             channel = new NotificationChannel(Auxiliar.channelId, getString(R.string.canalTareas), NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription(getString(R.string.canalTareas));
             channelPersis = new NotificationChannel(channelPersisId, getString(R.string.canalPersistente), NotificationManager.IMPORTANCE_LOW);
@@ -130,11 +139,10 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             assert notificationManager != null;
             notificationManager.createNotificationChannel(channel);
             notificationManager.createNotificationChannel(channelPersis);
-        }
-        else{
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 notificationManager = context.getSystemService(NotificationManager.class);
-            else{//API 22
+            else {//API 22
                 notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             }
         }
@@ -146,12 +154,52 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
 
         mantenServicio();
+        /*AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(getApplicationContext(), AlarmaProceso.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 9999, intent, 0);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 5*1000, pendingIntent);*/
     }
 
     /**
      * Inicia los objetos necesarios para llevar a cabo el seguimiento de la posición
      */
-    private void posicionamiento(){
+    LocationManager locationManager;
+    LocationListener locationListener;
+
+    private void posicionamiento() {
+        /*locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                compruebaTareas(location);
+                locationManager.removeUpdates(locationListener);
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        });*/
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest().create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)

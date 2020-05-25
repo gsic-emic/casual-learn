@@ -59,7 +59,6 @@
     <string name="tituErrorBBDD">Error en la base de datos</string>
     <string name="creditos">Créditos</string>
     <string name="libraries">Bibliotecas</string>
-    <string name="fused">"     Fused Location Provider API"</string>
     <string name="respuestaEspeTitulo">Respuesta esperada</string>
     <string name="respuestaEspeCorrecta">¡Respuesta correcta!</string>
     <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
@@ -100,7 +99,7 @@
     <string name="dia">día</string>
     <string name="dias">días</string>
     <string name="pulsaMarker">Pulsa en un marcador para ver los tipos de tarea</string>
-    <string name="agrupacionTareas">Grupo de tareas</string>
+    <string name="agrupacionTareas">Zona con varias tareas cercanas</string>
     <string name="tareaRegistrada">La tarea está completada, reportada, pospuesta o rechazada</string>
     <string name="hola">"Hola "</string>
     <string name="errorAutentica">Fallo de autenticación</string>
@@ -115,4 +114,13 @@
     <string name="agregarContenido">Agregar contenido</string>
     <string name="agregaImagenAntesBorrar">Agrega una fotografía antes de eliminar esta</string>
     <string name="agregaVideoAntesBorrar">Agrega un nuevo vídeo antes de eliminar este</string>
+    <string name="tareaIndividual">Tareas de un único lugar</string>
+    <string name="pulsaEnUnaTarea">Pulsa sobre una tarea de la lista para más información</string>
+    <string name="fondosEuropeos">Fondo Europeo de Desarrollo Regional</string>
+    <string name="juntaCastilla">Consejería de Educación de la Junta de Castilla y León</string>
+    <string name="fondosInvesticacion">Proyectos de Investigación</string>
+    <string name="Desarrolladores">Desarrolladores</string>
+    <string name="version">Versión</string>
+    <string name="acercade">Acerca de</string>
+    <string name="imagenAmpliable">Imagen ampliable</string>
 </resources>

@@ -47,7 +47,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que permite a los usuarios identificarse frente al sistema.
  *
- * @author GSIC
+ * @author Pablo
+ * @version 20200520
  */
 public class Login extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
 
@@ -76,7 +77,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
         //Aquí irá la comprobación de si el usuario ya se ha autenticado previamente
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        //onSharedPreferenceChanged(sharedPreferences, Ajustes.TOKEN_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         setContentView(R.layout.activity_login);
@@ -119,17 +119,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 break;
             default:
         }
-    }
-
-    /**
-     * Método para almacenar el token en las preferencias de la aplicación
-     * @param token Identificador único del usuario
-     */
-    private void actualizaToken(String token) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(Ajustes.TOKEN_pref, token);
-        //Tiene que ser un commit, con aply() no funciona
-        editor.commit();
     }
 
     /**
@@ -209,11 +198,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         try{
             GoogleSignInAccount account = task.getResult(ApiException.class);
             firebaseAuthWithGoogle(account);
-            //String idCuenta = account.getIdToken();
-
-            //actualizaToken(idCuenta);
-
-            //enviaUsuario(account);
         }catch (Exception e){
             e.printStackTrace();
             updateUI(null, true);
@@ -245,39 +229,11 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
-            Toast.makeText(this, String.format("%s%s",getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent (getApplicationContext(), Maps.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }
-    }
-
-    public void enviaUsuario(GoogleSignInAccount cuenta){
-        String url = "http://192.168.1.14:8080/usuarios";
-        JSONObject json = new JSONObject();
-        try {
-            json.put("id", cuenta.getIdToken());
-            json.put("nombre", cuenta.getDisplayName());
-            json.put("email", cuenta.getEmail());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        PersistenciaDatos.creaFichero(getApplication(), PersistenciaDatos.ficheroUsuario, json, Context.MODE_PRIVATE);
-        final Intent intent = new Intent(this, Maps.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        JsonObjectRequest jsonObj = new JsonObjectRequest(Request.Method.PUT, url, json, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                //TODO PROCESADO DEL JSONARRAY
-                //startActivity(intent);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.err.println("Error en el listen");
-            }
-        });
-        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObj);
     }
 
     /**
@@ -292,16 +248,6 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 if(sharedPreferences.getBoolean(key, true))
                     Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
                 break;
-            /*case Ajustes.TOKEN_pref:
-                //Si existe un token no se identifica al usuario y se salta directamente a la
-                //actividad del mapa
-                if(!sharedPreferences.getString(key, " ").equals(" ")){
-                    Intent intent = new Intent (getApplicationContext(), Maps.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    //startActivity(intent);
-                }else {
-                    checkPermissions(); //Compruebo los permisos antes de seguir
-                }*/
             default:
         }
     }

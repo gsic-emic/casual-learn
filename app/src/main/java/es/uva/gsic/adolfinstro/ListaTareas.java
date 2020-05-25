@@ -58,6 +58,8 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
     private TextView sinTareas;
     private RecyclerView contenedor;
 
+    private int posicionPulsada;
+
     /**
      * Método para crear la vista del usuario. Se obtiene la lista de tareas de la petición y se
      * representa.
@@ -88,7 +90,11 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
                 setTitle(getString(R.string.tareasCompletadas));
                 break;
         }
-        cargaTareas();
+
+        if(savedInstanceState != null)
+            posicionPulsada = savedInstanceState.getInt("PULSACION");
+        else
+            posicionPulsada = -1;
     }
 
     /**
@@ -168,11 +174,13 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
                 break;
             case PersistenciaDatos.ficheroCompletadas:
                 Intent intent = new Intent(this, Completadas.class);
+                posicionPulsada = position;
                 intent.putExtra(Auxiliar.id, idTarea);
                 startActivity(intent);
                 break;
         }
     }
+
 
     private void sacarRechazada(final String idTarea) {
         AlertDialog.Builder confirmacion = new AlertDialog.Builder(this);
@@ -239,4 +247,17 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
         finish();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        cargaTareas();
+        if(posicionPulsada != -1)
+            contenedor.scrollToPosition(posicionPulsada);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle b) {
+        super.onSaveInstanceState(b);
+        b.putInt("POSICION", posicionPulsada);
+    }
 }

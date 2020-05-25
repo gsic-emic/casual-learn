@@ -5,7 +5,7 @@
         <SwitchPreference
             app:key="noMolestar"
             app:title="@string/noMolestar"
-            app:defaultValue="false"/>
+            app:defaultValue="false" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="categoriaPreferencias"

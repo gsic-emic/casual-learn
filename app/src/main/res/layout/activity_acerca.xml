@@ -13,6 +13,23 @@
         android:layout_width="match_parent"
         android:layout_margin="10dp">
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/glHorizontal0.1About"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.03" />
+
+        <ImageView
+            android:id="@+id/ivIcono"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@mipmap/ic_launcher"
+            app:layout_constraintTop_toBottomOf="@id/glHorizontal0.1About"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:paddingBottom="10dp"/>
+
         <TextView
             android:id="@+id/tvDesarrolladoPorAcercade"
             android:layout_width="wrap_content"
@@ -20,7 +37,7 @@
             android:text="@string/desarrolladoPor"
             android:textSize="25sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toBottomOf="@id/ivIcono"/>
         <View
             android:id="@+id/linea0"
             android:layout_width="match_parent"
@@ -60,14 +77,38 @@
 
 
         <TextView
+            android:id="@+id/tvDesarrolladores"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_info_black_24dp"
+            android:drawablePadding="20dp"
+            android:layout_marginTop="10dp"
+            android:textSize="16sp"
+            android:text="@string/Desarrolladores"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imagenGsic"/>
+
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_info_black_24dp"
+            android:textSize="16sp"
+            android:drawablePadding="20dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"/>
+
+
+        <TextView
             android:id="@+id/tvCreditos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imagenGsic"
-            android:text="@string/creditos"
+            app:layout_constraintTop_toBottomOf="@id/tvVersion"
+            android:text="@string/fondosInvesticacion"
             android:textSize="25sp"/>
+
         <View
             android:id="@+id/linea1"
             android:layout_width="match_parent"
@@ -77,16 +118,28 @@
             android:background="@android:color/darker_gray"/>
 
         <TextView
-            android:id="@+id/tvOpenStreetMap"
+            android:id="@+id/tvFondosEuropeos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_punto_6dp"
+            android:drawablePadding="20dp"
+            android:onClick="boton"
+            android:text="@string/fondosEuropeos"
+            android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/linea1"
-            android:textSize="16sp"
-            android:text="@string/openstreetmap_contributors"
-            android:drawableStart="@drawable/iconoopenstreetmap"
-            android:gravity="fill"
-            android:onClick="boton"/>
+            app:layout_constraintTop_toBottomOf="@id/linea1" />
+
+        <TextView
+            android:id="@+id/tvJuntaCastillaYLeon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_punto_6dp"
+            android:drawablePadding="20dp"
+            android:onClick="boton"
+            android:text="@string/juntaCastilla"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvFondosEuropeos" />
 
         <TextView
             android:id="@+id/tvBibliotecas"
@@ -94,7 +147,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvOpenStreetMap"
+            app:layout_constraintTop_toBottomOf="@id/tvJuntaCastillaYLeon"
             android:text="@string/libraries"
             android:textSize="25sp" />
         <View
@@ -106,13 +159,26 @@
             android:background="@android:color/darker_gray"/>
 
         <TextView
-            android:id="@+id/tvOsmdroid"
+            android:id="@+id/tvOpenStreepMap"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/linea2"
             android:textSize="14sp"
+            android:text="@string/openStreetMap"
+            android:drawablePadding="20dp"
+            android:drawableStart="@drawable/ic_punto_6dp"
+            android:onClick="boton" />
+
+        <TextView
+            android:id="@+id/tvOsmdroid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOpenStreepMap"
+            android:textSize="14sp"
             android:text="@string/Osmdroid"
+            android:drawablePadding="20dp"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton" />
 
@@ -124,6 +190,7 @@
             app:layout_constraintTop_toBottomOf="@id/tvOsmdroid"
             android:textSize="14sp"
             android:text="@string/fused"
+            android:drawablePadding="20dp"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"/>
 
@@ -134,7 +201,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvFused"
             android:textSize="14sp"
+            android:drawablePadding="20dp"
             android:text="@string/PhotoView"
+            android:drawableStart="@drawable/ic_punto_6dp"
+            android:onClick="boton"/>
+
+        <TextView
+            android:id="@+id/tvPicasso"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPhotoView"
+            android:textSize="14sp"
+            android:drawablePadding="20dp"
+            android:text="@string/Picasso"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"/>
 

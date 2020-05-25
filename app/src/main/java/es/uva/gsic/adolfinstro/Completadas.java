@@ -123,20 +123,23 @@ public class Completadas extends AppCompatActivity implements
                 e.printStackTrace();
             }
 
-            JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
-            JSONObject respuesta;
-            listaURI = new ArrayList<>();
-            for(int i = 0; i < respuestas.length(); i++){
-                respuesta = respuestas.getJSONObject(i);
-                if(respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)){
-                    if(!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
-                        textoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
-                        textoUsuario.setVisibility(View.VISIBLE);
+            if(tarea.has(Auxiliar.respuestas)) {
+                JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+                JSONObject respuesta;
+                listaURI = new ArrayList<>();
+                for (int i = 0; i < respuestas.length(); i++) {
+                    respuesta = respuestas.getJSONObject(i);
+                    if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
+                        if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                            textoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
+                            textoUsuario.setVisibility(View.VISIBLE);
+                        }
+                    } else {//URI de video o fotos
+                        listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
                     }
                 }
-                else{//URI de video o fotos
-                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
-                }
+            }else{
+                listaURI = new ArrayList<>();
             }
 
             recyclerView = findViewById(R.id.rvImagenesAlumno);

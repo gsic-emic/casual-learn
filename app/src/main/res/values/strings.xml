@@ -62,9 +62,9 @@
     <string name="creditos">Credits</string>
     <string name="openStreetMap" translatable="false">OpenStreetMap</string>
     <string name="libraries">Libraries</string>
-    <string name="Osmdroid" translatable="false">"     osmdroid"</string>
-    <string name="PhotoView" translatable="false">"     PhotoView"</string>
-    <string name="fused">"     Fused Location Provider API"</string>
+    <string name="Osmdroid" translatable="false">"osmdroid"</string>
+    <string name="PhotoView" translatable="false">"PhotoView"</string>
+    <string name="fused" translatable="false">"Fused Location Provider API"</string>
     <string name="respuestaEspeTitulo">Expected response</string>
     <string name="respuestaEspeCorrecta">Correct answer!</string>
     <string name="respuestaEspeIncrrecta">Wrong answer!</string>
@@ -105,7 +105,7 @@
     <string name="dia">day</string>
     <string name="dias">days</string>
     <string name="pulsaMarker">"Click on a marker to see the types of tasks "</string>
-    <string name="agrupacionTareas">Group of tasks</string>
+    <string name="agrupacionTareas">Area with tasks nearby</string>
     <string name="tareaRegistrada">The task has been completed, reported, postponed or rejected</string>
     <string name="hola">"Hi "</string>
     <string name="errorAutentica">Authentication failure</string>
@@ -120,4 +120,15 @@
     <string name="agregarContenido">Add new file</string>
     <string name="agregaImagenAntesBorrar">Add a new photo before remove this</string>
     <string name="agregaVideoAntesBorrar">Add a new video before remove this</string>
+    <string name="tareaIndividual">Single point tasks</string>
+    <string name="pulsaEnUnaTarea">Click on a task of the list to get more info</string>
+    <string name="fondosEuropeos">European Regional Development Fund</string>
+    <string name="juntaCastilla">Regional Council of Education of Castile and Leon</string>
+    <string name="fondosInvesticacion">Research Projects</string>
+    <string name="Desarrolladores">Developers</string>
+    <string name="Picasso" translatable="false">Picasso</string>
+    <string name="Volley" translatable="false">Volley</string>
+    <string name="version">Version</string>
+    <string name="acercade">"About "</string>
+    <string name="imagenAmpliable">Expandable imagen</string>
 </resources>

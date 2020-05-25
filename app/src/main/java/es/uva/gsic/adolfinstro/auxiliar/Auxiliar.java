@@ -35,7 +35,6 @@ import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
-import es.uva.gsic.adolfinstro.Tarea;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Auxiliar {

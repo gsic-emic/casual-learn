@@ -2,11 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.SeekBar;
-import android.widget.Toast;
 
-import androidx.preference.EditTextPreference;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;

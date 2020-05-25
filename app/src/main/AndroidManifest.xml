@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-feature
         android:name="android.hardware.camera"
@@ -35,9 +36,15 @@
         <activity
             android:name=".Preview"
             android:label="@string/infoTarea" />
-        <activity android:name=".Puntuacion" />
-        <activity android:name=".ImagenCompleta" />
-        <activity android:name=".Acerca" />
+        <activity
+            android:name=".Puntuacion"
+            android:label="@string/score"/>
+        <activity
+            android:name=".ImagenCompleta"
+            android:label="@string/imagenAmpliable"/>
+        <activity
+            android:name=".Acerca"
+            android:label="@string/acercade"/>
         <activity
             android:name=".Tarea"
             android:label="@string/tareaRealizar">
@@ -80,6 +87,8 @@
             android:directBootAware="true"
             android:foregroundServiceType="location"
             android:icon="@drawable/ic_launcher_foreground" />
+
+        <receiver android:name=".AlarmaProceso"/>
 
         <receiver
             android:name=".RecepcionNotificaciones"
