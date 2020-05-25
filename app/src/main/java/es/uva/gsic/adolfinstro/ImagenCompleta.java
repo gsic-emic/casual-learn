@@ -18,6 +18,8 @@ public class ImagenCompleta extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imagen_completa);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         photoView = findViewById(R.id.photoView);
         try {
             Picasso.get()
@@ -28,5 +30,16 @@ public class ImagenCompleta extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return false;
+    }
+
+    @Override
+    public  void onBackPressed(){
+        onSupportNavigateUp();
     }
 }

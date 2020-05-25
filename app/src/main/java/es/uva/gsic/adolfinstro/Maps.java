@@ -19,11 +19,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
-import android.location.Location;
-import android.location.LocationListener;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -32,6 +31,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,9 +57,9 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -67,9 +68,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.auxiliar.Bocadillo;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
@@ -112,8 +113,12 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     private double ultimaPosicionLatitud;
     private double ultimaPosicionLogintud;*/
 
-    private final double nivelMin = 11.5;
-    private final double nivelMax = 17.5;
+    private final double nivelMin = 6.5;
+    private final double nivelMax = 19.5;
+
+    private Animation animation;
+
+    private static AdaptadorListaMapa adaptadorListaMapa;
 
 
     /**
@@ -143,6 +148,19 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             map = findViewById(R.id.map);
             sinPulsarTarea = findViewById(R.id.tvTareasMapa);
             contenedor = findViewById(R.id.rvTareasMapa);
+            RecyclerView.LayoutManager layoutManager;
+
+            if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+                animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.desplaza_horizontal);
+            }
+            else {
+                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+                animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.desplaza_vertical);
+            }
+
+            contenedor.setLayoutManager(layoutManager);
+
             map.setTileSource(TileSourceFactory.MAPNIK);
             map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zoom con dos dedos
             mapController = map.getController();
@@ -163,7 +181,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             map.setMinZoomLevel(nivelMin);
             map.setMaxZoomLevel(nivelMax);
             GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-            //gpsMyLocationProvider.setLocationUpdateMinTime(15000); //Recupera la posición cada 15 segundos
             gpsMyLocationProvider.setLocationUpdateMinDistance(5);
             gpsMyLocationProvider.setLocationUpdateMinTime(5000);
             gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
@@ -172,7 +189,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             myLocationNewOverlay.enableMyLocation();
             myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
                     BitmapFactory.decodeResource(getResources(), R.drawable.person));
-            myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
+            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
             myLocationNewOverlay.setEnableAutoStop(true);
             //map.getOverlays().add(myLocationNewOverlay); //Se centra en el usuario. Si no lo consigue porque la
             //posición aún está a null siempre se tiene el pto conocido
@@ -186,11 +203,13 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             //compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
             //compassOverlay.enableCompass();
 
+            int ancho = displayMetrics.widthPixels;
+            int alto = displayMetrics.heightPixels;
             if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-                scaleBarOverlay.setScaleBarOffset((int)(displayMetrics.widthPixels / 2), (int) (displayMetrics.heightPixels * 0.2)); //posición en el el display
+                scaleBarOverlay.setScaleBarOffset((int)(ancho / 2), (int) (alto * 0.05)); //posición en el el display
                 //compassOverlay.setCompassCenter(35, (int) (displayMetrics.heightPixels * 0.2 + 50)); //posicón de la brújula
             }else{
-                scaleBarOverlay.setScaleBarOffset((int)((displayMetrics.widthPixels*1.2) / 2), (int) (displayMetrics.heightPixels * 0.1));
+                scaleBarOverlay.setScaleBarOffset((int)(ancho*0.4), (int) (alto * 0.05));
 
                 //compassOverlay.setCompassCenter(200, (int) (displayMetrics.heightPixels * 0.1 + 25)); //posicón de la brújula
             }
@@ -216,11 +235,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             map.addMapListener(new DelayedMapListener(new MapListener() {
                 @Override
                 public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
-                    //Toast.makeText(context, "Scroll "+map.getMapCenter().getLatitude()+" "+map.getMapCenter().getLongitude(), Toast.LENGTH_SHORT).show();
-                    /*if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
-                        compruebaZona(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude(),
-                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
-                    }*/
                     if(map.getMapCenter() != null){
                         IGeoPoint centro = map.getMapCenter();
                         compruebaZona(centro.getLatitude(), centro.getLongitude());
@@ -230,10 +244,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
 
                 @Override
                 public boolean onZoom(ZoomEvent event) {//Zoom con botones
-                    /*if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null){
-                        compruebaZona(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude(),
-                                locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
-                    }*/
                     if(map.getMapCenter() != null){
                         IGeoPoint centro = map.getMapCenter();
                         compruebaZona(centro.getLatitude(), centro.getLongitude());
@@ -308,39 +318,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         newMarker(42.0114, -4.5321, "Iglesia de San Francisco, Palencia", 12);
     }*/
 
-    /**
-     * Método que se utiliza para agregar un marcador al mapa
-     * @param marcador Contiene toda la información necesaria para agregar el marcador al mapa y cuando se pulse mostrar la lista de tareas
-     */
-    public void newMarker(final Marcador marcador) {
-        Marker marker = new Marker(map);
-        marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
-        marker.setTitle(marcador.getTitulo());
-        BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()));
-        marker.setIcon(d);
-        marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker, MapView mapView) {
-                double distancia;
-                String msg;
-                try {
-                    distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
-                    msg = String.format(Locale.getDefault(), " %.3f km", distancia);
-                } catch (Exception e) {
-                    msg = getString(R.string.recuperandoPosicion);
-                }
-                marker.setSubDescription(msg);
-                marker.showInfoWindow();
-                pintaLista(marcador);
-                return false;
-            }
-        });
-        map.getOverlays().add(marker);
-        map.invalidate();
-    }
-
-
-    private AdaptadorListaMapa adaptadorListaMapa;
     public void pintaLista(Marcador marcador){
         JSONArray tareas = PersistenciaDatos.tareasPosicion(getApplication(), PersistenciaDatos.ficheroTareasZona, marcador.latitud, marcador.longitud);
         if(marcador.getLatitudes().size() > 0){//Es una agrupacion
@@ -364,16 +341,6 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             contenedor.setVisibility(View.VISIBLE);
             contenedor.setHasFixedSize(true);
 
-            RecyclerView.LayoutManager layoutManager;
-            if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-            }
-            else {
-                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-            }
-
-                contenedor.setLayoutManager(layoutManager);
-
             List<TareasMapaLista> tareasPunto = new ArrayList<>();
             JSONObject jo;
             for(int i = 0; i < tareas.length(); i++){
@@ -387,6 +354,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             adaptadorListaMapa = new AdaptadorListaMapa(this, tareasPunto);
             adaptadorListaMapa.setClickListener(this);
             contenedor.setAdapter(adaptadorListaMapa);
+            contenedor.startAnimation(animation);
+
         }else {
             sinPulsarTarea.setVisibility(View.VISIBLE);
             contenedor.setVisibility(View.GONE);
@@ -399,34 +368,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             JSONObject tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroTareasZona, adaptadorListaMapa.getId(posicion));
             tarea.put(Auxiliar.origen, PersistenciaDatos.ficheroTareasZona);
             Intent intent = new Intent(this, Preview.class);
+            intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
             intent.putExtra(Auxiliar.id, tarea.getString(Auxiliar.id));
-            /*intent.putExtra(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
-            intent.putExtra(Auxiliar.recursoAsociadoTexto, tarea.getString(Auxiliar.recursoAsociadoTexto));
-            String intermedio = null;
-            try{
-                intermedio = tarea.getString(Auxiliar.recursoImagen);
-            }catch (Exception e){
-                //
-            }
-            assert intermedio != null;
-            intent.putExtra(Auxiliar.recursoImagen, (intermedio.equals("")?null:intermedio));
-            intermedio = null;
-            try{
-                intermedio = tarea.getString(Auxiliar.recursoImagenBaja);
-            }catch (Exception e){
-                //
-            }
-            assert intermedio != null;
-            intent.putExtra(Auxiliar.recursoImagenBaja, (intermedio.equals("")?null:intermedio));
-            try{
-                intermedio = tarea.getString(Auxiliar.respuestaEsperada);
-            }catch (Exception e){
-                //
-            }
-            intent.putExtra(Auxiliar.respuestaEsperada, (intermedio.equals("")?null:intermedio));
-            intent.putExtra(Auxiliar.latitud, tarea.getDouble(Auxiliar.latitud));
-            intent.putExtra(Auxiliar.longitud, tarea.getDouble(Auxiliar.longitud));
-            intent.putExtra(Auxiliar.titulo, tarea.getString(Auxiliar.titulo));*/
             startActivity(intent);
             tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
             tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
@@ -438,47 +381,46 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     }
 
 
-
-    private Bitmap bitmap;
-    private Canvas canvas;
-    private Paint paint;
     private Bitmap generaBitmapMarkerNumero(int size) {
-        int dimen = 75;
+        int dimen = 72;
         float mitad = (float)dimen/2;
-        bitmap = Bitmap.createBitmap(dimen, dimen, Bitmap.Config.ARGB_8888);
-        canvas = new Canvas(bitmap);
-        paint = new Paint();
-        paint.setARGB(255, 0, 0, 0);
+        Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        //Bitmap bitmap = Bitmap.createBitmap(dimen, dimen, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        Paint paint = new Paint();
+        /*paint.setARGB(255, 0, 0, 0);
         canvas.drawCircle(mitad, mitad, mitad, paint);
-        float radio = mitad - 10;
+        float radio = mitad - 5;
         paint.setARGB(255, 255, 255, 255);
-        canvas.drawCircle(mitad, mitad, radio, paint);
+        canvas.drawCircle(mitad, mitad, radio, paint);*/
 
-        paint.setARGB(255, 255, 0, 0);
+        paint.setARGB(255, 0, 0, 0);
 
 
-        //paint.setStyle(Paint.Style.FILL);
+        paint.setStyle(Paint.Style.FILL);
         int textSize = (int) (mitad+1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
         String texto;
-        if(size>99) {
+        if(size>99)
             texto = "99+";
-        }
         else
             texto = String.valueOf(size);
         canvas.drawText(texto, mitad, mitad + (float)textSize/3, paint);
         return bitmap;
     }
 
-    /**
+    /*/**
      * Método para representar las tareas de dentro de un marcador mediante quesitos.
      *
      * @deprecated Sustituido por generaBitmapMarkerNumer(int numeroTareas)
      * @param listaTareas tipo de tareas que están presentes en el marcador
      * @return Bitmap a representar
      */
-    private Bitmap generaBitmapMarker(List<String> listaTareas){
+    /*private Bitmap generaBitmapMarker(List<String> listaTareas){
         Bitmap bitmap = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint();
@@ -561,7 +503,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             return i;
         }
         return 0;
-    }
+    }**/
 
     /**
      * Método para calcular la distancia entre dos puntos
@@ -602,6 +544,12 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             }
             if (map != null)
                 map.onResume();
+            if(estadoContenedor != null){
+                contenedor.setVisibility(View.VISIBLE);
+                sinPulsarTarea.setVisibility(View.GONE);
+                contenedor.getLayoutManager().onRestoreInstanceState(estadoContenedor.getParcelable("CONTENEDOR"));
+                contenedor.setAdapter(adaptadorListaMapa);
+            }
         }
         //else
             //locationManager = null;
@@ -622,13 +570,16 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                 //
             }
         }
+        double radio = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud,
+                map.getBoundingBox().getLatSouth(), map.getBoundingBox().getLonWest());
         if(latitudGet==0 || longitudGet==0){//Inicio del servicio, se tiene que recuperar la tarea del servidor
-            peticionTareasServidor(latitud, longitud, 3.0);
+            peticionTareasServidor(latitud, longitud, Math.min(2 * radio + 0.1, 1.5));
         }else{
             if(map.getZoomLevelDouble() >= (nivelMax - 4) ){
+            //if(radio<=1){
                 double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, latitudGet, longitudGet);
-                if(distanciaOrigen >= 2.5){//Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
-                    peticionTareasServidor(latitud, longitud, 3.0);
+                if(distanciaOrigen >= radio){//Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
+                    peticionTareasServidor(latitud, longitud, Math.min(2 * radio + 0.1, 1.5));
                 }else{
                     map.getOverlays().clear();
                     pintaItemsfijos();
@@ -642,30 +593,37 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         }
     }
 
-    double[] distanciaAgrupacion = {0, 0.1, 0.2, 0.4, 0.8, 1.6, 3.2};
-
+    final double[] distanciaAgrupacion = {0, 0.05, 0.1, 0.2, 0.4, 0.8, 1.6, 3.2};
     private void pintaZona(double latitude, double longitude){
-        double nivelZum = map.getZoomLevelDouble();
+        List<GeoPoint> puntos = new ArrayList<>();
+        puntos.add(new GeoPoint(latitude, longitude, map.getZoomLevelDouble()));
+        puntos.add(new GeoPoint(map.getBoundingBox().getLatSouth(), map.getBoundingBox().getLonWest()));
+
+        double nivelZum = puntos.get(0).getAltitude();
         int caso;
-        if(nivelZum > nivelMax - 0.5){
+        if(nivelZum > nivelMax - 2){
             caso = 0;
         }else{
-            if(nivelZum > nivelMax - 1){
+            if(nivelZum > nivelMax - 2.5){
                 caso = 1;
             }else {
-                if (nivelZum > nivelMax - 2) {
+                if (nivelZum > nivelMax - 3) {
                     caso = 2;
                 } else {
-                    if (nivelZum > nivelMax - 3) {
+                    if (nivelZum > nivelMax - 4) {
                         caso = 3;
                     } else {
-                        if (nivelZum > nivelMax - 4) {
+                        if (nivelZum > nivelMax - 5) {
                             caso = 4;
                         } else {
-                            if (nivelZum > nivelMax - 5) {
+                            if (nivelZum > nivelMax - 6) {
                                 caso = 5;
                             } else {
-                                caso = 6;
+                                if(nivelZum > nivelMax - 7)
+                                    caso = 6;
+                                else{
+                                    caso = 7;
+                                }
                             }
                         }
                     }
@@ -674,7 +632,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         }
 
         double distanciaMax = Auxiliar.calculaDistanciaDosPuntos(latitude, longitude,
-                map.getBoundingBox().getLatNorth(), map.getBoundingBox().getLonWest());
+                puntos.get(1).getLatitude(), puntos.get(1).getLongitude());
 
         nivelZum = distanciaAgrupacion[caso];
         JSONArray todasTareas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareasZona);
@@ -694,7 +652,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                     //Si no hay ningún punto guardado se guarda directamente
                     if (listaMarcadores.isEmpty()) {
                         marcador = new Marcador();
-                        marcador.setTitulo(tarea.getString(Auxiliar.titulo));
+                        marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
                         marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
                         marcador.incrementaTareas();
                         listaMarcadores.add(marcador);
@@ -738,7 +696,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                         }
                         if (!anterior) {//Hay que agregar un nuevo marcador
                             marcador = new Marcador();
-                            marcador.setTitulo(tarea.getString(Auxiliar.titulo));
+                            //marcador.setTitulo(tarea.getString(Auxiliar.titulo));
+                            marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
                             marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
                             marcador.incrementaTareas();
                             listaMarcadores.add(marcador);
@@ -760,11 +719,16 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     /**
      * Se pausa el mapa tal y como indica la guía
      */
+    private static Bundle estadoContenedor;
     @Override
     public void onPause(){
         super.onPause();
         if(map != null)
             map.onPause();
+        if(contenedor != null && contenedor.getVisibility() == View.VISIBLE){
+            estadoContenedor = new Bundle();
+            estadoContenedor.putParcelable("CONTENEDOR", contenedor.getLayoutManager().onSaveInstanceState());
+        }
     }
 
     @Override
@@ -807,12 +771,20 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      */
     @Override
     protected void onSaveInstanceState(@NotNull Bundle bundle){
-        if(myLocationNewOverlay!=null && myLocationNewOverlay.getMyLocation()!=null){
-            latitudeOrigen = myLocationNewOverlay.getMyLocation().getLatitude();
-            longitudeOrigen = myLocationNewOverlay.getMyLocation().getLongitude();
+        if(map != null && map.getMapCenter() != null) {
+            IGeoPoint puntoCentral = map.getMapCenter();
+            if (puntoCentral != null) {
+                latitudeOrigen = puntoCentral.getLatitude();
+                longitudeOrigen = puntoCentral.getLongitude();
+            }
         }
         if(map!=null)
-            bundle.putDouble("ZOOM", map.getZoomLevelDouble());
+            bundle.putDouble("ZUM", map.getZoomLevelDouble());
+
+        /*if(contenedor.getVisibility() == View.VISIBLE){
+            bundle.putParcelable("CONTENEDOR", contenedor.getLayoutManager().onSaveInstanceState());
+        }*/
+
         bundle.putDouble("LATITUDE", latitudeOrigen);
         bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putLong("ULTIMANOTIFICACION", ultimaNotificacion);
@@ -827,7 +799,7 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
     protected void onRestoreInstanceState(@NotNull Bundle bundle){
         super.onRestoreInstanceState(bundle);
         try {
-            mapController.setZoom(bundle.getDouble("ZOOM"));
+            mapController.setZoom(bundle.getDouble("ZUM"));
         }catch (Exception e){
             //
         }
@@ -837,6 +809,15 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         ultimaNotificacion = bundle.getLong("ULTIMANOTIFICACION");
         GeoPoint lastCenter = new GeoPoint(latitudeOrigen, longitudeOrigen);
         mapController.setCenter(lastCenter);
+        /*try{
+            adaptadorListaMapa = (AdaptadorListaMapa) bundle.getSerializable("ADAPTADOR");
+            contenedor.setAdapter(adaptadorListaMapa);
+            contenedor.getLayoutManager().onRestoreInstanceState(bundle.getParcelable("CONTENEDOR"));
+            contenedor.setVisibility(View.VISIBLE);
+            sinPulsarTarea.setVisibility(View.GONE);
+        }catch (Exception e){
+            e.printStackTrace();
+        }*/
     }
 
     /**
@@ -1056,7 +1037,8 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
                         //Error al extrar el json
                     }
                 }
-                PersistenciaDatos.guardaFichero(getApplication(), PersistenciaDatos.ficheroTareasZona, nuevasTareas, Context.MODE_APPEND);
+                if(nuevasTareas.length()>0)
+                    PersistenciaDatos.guardaArray(getApplication(), PersistenciaDatos.ficheroTareasZona, nuevasTareas );
                 try {
                     j = new JSONObject();
                     j.put(Auxiliar.id, idInstanteGETZONA);
@@ -1079,12 +1061,46 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
         ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
     }
 
+    /**
+     * Método que se utiliza para agregar un marcador al mapa
+     * @param marcador Contiene toda la información necesaria para agregar el marcador al mapa y cuando se pulse mostrar la lista de tareas
+     */
+    void newMarker(final Marcador marcador) {
+        Marker marker = new Marker(map);
+        marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
+        BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()));
+        marker.setIcon(d);
+        marker.setInfoWindow(new Bocadillo(R.layout.bocadillo, map));
+
+        marker.setTitle(marcador.getTitulo());
+        marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                InfoWindow.closeAllInfoWindowsOn(mapView);
+                double distancia;
+                String msg;
+                try {
+                    distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
+                    msg = String.format(Locale.getDefault(), " %.3f km", distancia);
+                } catch (Exception e) {
+                    msg = getString(R.string.recuperandoPosicion);
+                }
+                marker.setSubDescription(msg);
+                marker.showInfoWindow();
+                pintaLista(marcador);
+                return false;
+            }
+        });
+        map.getOverlays().add(marker);
+        map.invalidate();
+    }
+
     private String idInstanteGETZONA = "instanteGETZONA";
 
     /**
      * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
      */
-    public static class TareasMapaLista{
+    public static class TareasMapaLista {
         public String id, titulo, tipoTarea;
         TareasMapaLista(String id, String titulo, String tipoTarea){
             this.id = id;
@@ -1162,5 +1178,14 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
             return numeroTareas;
         }
     }
+
+    private class PintaMarcadores extends AsyncTask<Object, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Object... objects) {
+            return null;
+        }
+    }
+
 
 }

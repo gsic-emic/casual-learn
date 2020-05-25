@@ -78,6 +78,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                         context.startService(servicioPermanente);
                     break;
                 default:
+                    break;
             }
     }
 }

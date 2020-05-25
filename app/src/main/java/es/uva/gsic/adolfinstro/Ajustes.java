@@ -7,14 +7,17 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
+import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 
-public class Ajustes extends AppCompatActivity{
+
+public class Ajustes extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String NO_MOLESTAR_pref = "noMolestar";
     public static final String INTERVALO_pref = "intervalo";
     public static final String LISTABLANCA_pref = "listaBlanca";
     public static final String TOKEN_pref = "token";
     public static SharedPreferences sharedPreferences;
+    private boolean reiniciaMapa = false;
 
     @Override
     public void onCreate(Bundle sIS){
@@ -26,18 +29,33 @@ public class Ajustes extends AppCompatActivity{
     }
 
     @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key){
+            case Ajustes.NO_MOLESTAR_pref:
+                reiniciaMapa = true;
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
     }
 
     @Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        Intent intent = new Intent(this, Maps.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        this.finish();
+    public boolean onSupportNavigateUp(){
+        onBackPressed();
+        return false;
+    }
 
+    @Override
+    public void onBackPressed(){
+        if(!reiniciaMapa)
+            startActivity(new Intent(this, Maps.class));
+        finish();
     }
 }
 

@@ -2,11 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.SeekBar;
-import android.widget.Toast;
 
-import androidx.preference.EditTextPreference;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
@@ -21,7 +17,7 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
         seekBarPreference = findPreference(Ajustes.INTERVALO_pref);
-        seekBarPreference.setMax(10);
+        seekBarPreference.setMax(15);
 
         SharedPreferences sharedPreferences = Ajustes.sharedPreferences;
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
@@ -45,13 +41,17 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
             case Ajustes.INTERVALO_pref:
+                String valorActual = getResources().getString(R.string.valorActual);
+                String valorTexto = Auxiliar.valorTexto(getResources(), sharedPreferences.getInt(key, 5));
                 preferenceCategory.setSummary(
                         String.format("%s %s",
-                                getResources().getString(R.string.valorActual),
-                                Auxiliar.valorTexto(getResources(), sharedPreferences.getInt(key, 0))));
+                                valorActual,
+                                valorTexto));
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 seekBarPreference.setEnabled(!sharedPreferences.getBoolean(key, false));
+                break;
+            default:
                 break;
         }
     }

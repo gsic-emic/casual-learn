@@ -10,7 +10,10 @@
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/guiaMapa"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/guiaMapa"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,13 +37,14 @@
         android:id="@+id/btCentrar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="3dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="15dp"
+        app:fabCustomSize="50dp"
         android:onClick="boton"
-        app:backgroundTint="#80FFFFFF"
+        app:backgroundTint="#FFFFFFFF"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/osm_ic_center_map" />
+        app:srcCompat="@drawable/ic_my_location_black_72dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTareasMapa"
@@ -50,7 +54,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/guiaMapa"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:scrollbars="horizontal"
+        android:scrollbarSize="10dp"/>
 
     <TextView
         android:id="@+id/tvTareasMapa"

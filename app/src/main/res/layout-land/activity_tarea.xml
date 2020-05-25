@@ -15,7 +15,7 @@
             android:id="@+id/ivDenunciarPregunta"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_error_outline_red_32dp"
+            app:srcCompat="@drawable/ic_error_outline_red_32dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             android:onClick="boton" />
@@ -45,7 +45,7 @@
                 android:layout_marginBottom="20dp"
                 android:layout_marginStart="20dp"
                 android:textSize="20sp"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:gravity="center_horizontal"/>
         </LinearLayout>
 
@@ -61,55 +61,66 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/linearLayout"
             android:layout_marginBottom="20dp"
-            android:visibility="gone"
+            android:visibility="visible"
             android:inputType="textMultiLine"
             android:autofillHints="no" />
 
-        <Button
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvRealizaTarea"
+            android:layout_width="0dp"
+            android:layout_height="310dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            android:layout_marginBottom="10dp"/>
+
+        <Button style="@style/botonSecundario"
             android:id="@+id/btVolver"
-            android:layout_width="150dp"
-            android:layout_height="75dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:layout_marginTop="20dp"
-            android:text="@string/cancel"
-            android:visibility="visible"
+            android:text="@string/ahoraNo"
+            android:visibility="gone"
             android:onClick="boton"/>
 
-        <Button
+        <Button style="@style/botonPrimario"
             android:id="@+id/btAceptar"
-            android:layout_width="150dp"
-            android:layout_height="75dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:layout_marginTop="20dp"
             android:text="@string/accept"
             android:visibility="gone"
             android:onClick="boton"/>
 
-        <Button
+        <Button style="@style/botonSecundario"
             android:id="@+id/btTerminar"
             android:layout_width="wrap_content"
-            android:layout_height="75dp"
+            android:layout_height="wrap_content"
             app:layout_constraintStart_toEndOf="@id/btVolver"
             app:layout_constraintEnd_toStartOf="@id/btCamara"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:layout_marginTop="20dp"
             android:text="@string/terminar"
             android:visibility="gone"
             android:onClick="boton"/>
 
-        <Button
+        <Button style="@style/botonPrimario"
             android:id="@+id/btCamara"
-            android:layout_width="150dp"
-            android:layout_height="75dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
-            android:drawableStart="@android:drawable/ic_menu_camera"
+            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
+            android:drawableStart="@drawable/ic_photo_camera_white_24dp"
             android:layout_marginTop="20dp"
             android:text="@string/camara"
             android:visibility="gone"

@@ -27,6 +27,25 @@
 
     <style name="PreferenceScreen" parent="AppTheme">
         <item name="colorAccent">@color/texto</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
+    </style>
+
+    <style name="switchColor" parent="AppTheme">
+        <item name="colorControlActivated">@color/colorPrimary</item>
+    </style>
+
+    <style name="botonPrimario" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/boton_primario</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:drawablePadding">5dp</item>
+    </style>
+
+    <style name="botonSecundario" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/boton_secundario</item>
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:padding">5dp</item>
+        <item name="android:drawablePadding">5dp</item>
     </style>
 
 </resources>

@@ -4,6 +4,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,17 +24,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
+import es.uva.gsic.adolfinstro.auxiliar.AdaptadorImagenesCompletadas;
+import es.uva.gsic.adolfinstro.auxiliar.AdaptadorVideosCompletados;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
@@ -42,10 +46,12 @@ import static java.util.Objects.*;
  * Clase encargada de mostrar la tarea al usuario. A medida que complete la actividad se irá almacenando
  * la respuesta en una base de datos.
  *
- * @author GSIC
- * @version 20200319
+ * @author Pablo
+ * @version 20200519
  */
-public class Tarea extends AppCompatActivity {
+public class Tarea extends AppCompatActivity implements
+        AdaptadorVideosCompletados.ItemClickListenerVideo,
+        AdaptadorImagenesCompletadas.ItemClickListener{
 
     /** Instancia del campo de texto donde introduce el usuario la respuesta*/
     private EditText etRespuestaTextual;
@@ -66,6 +72,10 @@ public class Tarea extends AppCompatActivity {
     /** Texto que se espera que tenga la respuesta del alumno*/
     private String respuestaEsperada;
 
+    private RecyclerView recyclerView;
+    private AdaptadorImagenesCompletadas adaptadorImagenes;
+    private AdaptadorVideosCompletados adaptadorVideos;
+
     /** URI de la imagen que se acaba de tomar */
     private Uri photoURI;
     /** URI del vídeo que se acaba de tomar */
@@ -76,7 +86,13 @@ public class Tarea extends AppCompatActivity {
     /** Estado del botón para volver a la actividad principal*/
     private boolean estadoBtCancelar;
 
+    private boolean estadoBtTerminar;
+
     RecepcionNotificaciones recepcionNotificaciones;
+
+    private List<Completadas.ImagenesCamara> imagenesCamaraList;
+
+    private int posicion;
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -90,14 +106,18 @@ public class Tarea extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tarea);
 
-
-        requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(false);
+        requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         idTarea = getIntent().getExtras().getString(Auxiliar.id);
         if(!PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea))
             mensajeError();
         else {
             try {
+                if(savedInstanceState == null)
+                    posicion = 0;
+                else
+                    posicion = savedInstanceState.getInt("POSICION");
+
                 // Instancia donde se colocará la imagen descriptiva de la tarea
                 ImageView ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
 
@@ -111,7 +131,6 @@ public class Tarea extends AppCompatActivity {
                 }
                 if (recursoAsociadoImagen300px != null) {// Se intenta mostrar la imagen de baja resolución
                     Picasso.get().load(recursoAsociadoImagen300px).tag(Auxiliar.cargaImagenTarea).into(ivImagenDescripcion);
-                    //new DownloadImages().execute(new URL(extras.getString(Auxiliar.recursoImagenBaja)));
                     try{
                         recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
                         if(recursoAsociadoImagen.equals(""))
@@ -148,37 +167,99 @@ public class Tarea extends AppCompatActivity {
 
                 TextView tvDescripcion = findViewById(R.id.tvDescripcion);
                 etRespuestaTextual = findViewById(R.id.etRespuestaTextual);
+                if(tarea.has(Auxiliar.respuestas)){
+                    JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+                    JSONObject respuesta;
+                    for(int t = 0; t < respuestas.length(); t++){
+                        respuesta = respuestas.getJSONObject(t);
+                        if(respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)){
+                            etRespuestaTextual.setText(respuesta.getString(Auxiliar.tipoRespuesta));
+                            switch (tipo){
+                                case Auxiliar.tipoSinRespuesta:
+                                case Auxiliar.tipoPreguntaCorta:
+                                case Auxiliar.tipoPreguntaLarga:
+                                    activaBtTerminar();
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        }
+                    }
+                }
+
                 btVolver = findViewById(R.id.btVolver);
                 Button btAceptar = findViewById(R.id.btAceptar);
                 btCamara = findViewById(R.id.btCamara);
                 btTerminar = findViewById(R.id.btTerminar);
 
                 tvDescripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
-                tvDescripcion.setVisibility(View.VISIBLE);
 
+                recyclerView = findViewById(R.id.rvRealizaTarea);
+                recyclerView.setHasFixedSize(true);
+                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this,
+                        LinearLayoutManager.HORIZONTAL, false);
+                recyclerView.setLayoutManager(layoutManager);
+                imagenesCamaraList = new ArrayList<>();
+
+                if(tarea.has(Auxiliar.respuestas)){
+                    JSONArray respuetas = tarea.getJSONArray(Auxiliar.respuestas);
+                    JSONObject respuesta;
+                    for(int t = 0; t < respuetas.length(); t++){
+                        respuesta = respuetas.getJSONObject(t);
+                        if(respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.uri)){
+                            imagenesCamaraList.add(new Completadas.ImagenesCamara(respuesta.getString(Auxiliar.respuestaRespuesta), View.VISIBLE));
+                        }
+                    }
+                    switch (tipo){
+                        case Auxiliar.tipoPreguntaImagen:
+                        case Auxiliar.tipoImagen:
+                        case Auxiliar.tipoImagenMultiple:
+                            recyclerView.setVisibility(View.VISIBLE);
+                            adaptadorImagenes = new AdaptadorImagenesCompletadas(this, imagenesCamaraList);
+                            adaptadorImagenes.setClickListener(this);
+                            recyclerView.setAdapter(adaptadorImagenes);
+                            recyclerView.scrollToPosition(posicion);
+                            if(!imagenesCamaraList.isEmpty())
+                                activaBtTerminar();
+                            break;
+                        case Auxiliar.tipoVideo:
+                            recyclerView.setVisibility(View.VISIBLE);
+                            adaptadorVideos = new AdaptadorVideosCompletados(this, imagenesCamaraList);
+                            adaptadorVideos.setClickListenerVideo(this);
+                            recyclerView.setAdapter(adaptadorVideos);
+                            recyclerView.scrollToPosition(posicion);
+                            if(!imagenesCamaraList.isEmpty())
+                                activaBtTerminar();
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
                 switch (tipo) {
                     case Auxiliar.tipoSinRespuesta:
                         btAceptar.setText(R.string.voy);
+                        etRespuestaTextual.setHint(getString(R.string.textoOpcional));
                         btAceptar.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoPreguntaCorta:
                         etRespuestaTextual.setInputType(InputType.TYPE_CLASS_TEXT);
                         etRespuestaTextual.setFilters(new InputFilter[]{new InputFilter.LengthFilter(40)});
-                        etRespuestaTextual.setVisibility(View.VISIBLE);
                         btAceptar.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoPreguntaLarga:
-                        etRespuestaTextual.setVisibility(View.VISIBLE);
                         btAceptar.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoPreguntaImagen:
-                        etRespuestaTextual.setVisibility(View.VISIBLE);
                         btCamara.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoImagen:
                     case Auxiliar.tipoVideo:
                     case Auxiliar.tipoImagenMultiple:
+                        etRespuestaTextual.setHint(getString(R.string.textoOpcional));
+                        if(tipo.equals(Auxiliar.tipoVideo))
+                            btCamara.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_videocam_white_24dp, 0, 0, 0);
                         btCamara.setVisibility(View.VISIBLE);
                         break;
                     default:
@@ -287,13 +368,7 @@ public class Tarea extends AppCompatActivity {
         Intent intent;
         switch (view.getId()){
             case R.id.btVolver:
-                //Se pasa la tarea del fichero de noficaciones al de tareas globales
-                intent = new Intent();
-                intent.setAction(Auxiliar.ahora_no);
-                intent.putExtra(Auxiliar.id, idTarea);
-                sendBroadcast(intent);
-                Picasso.get().cancelTag(Auxiliar.cargaImagenTarea);
-                Auxiliar.returnMain(this);
+                onBackPressed();
                 break;
             case R.id.btAceptar:
                 if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())){
@@ -308,32 +383,37 @@ public class Tarea extends AppCompatActivity {
                                 PersistenciaDatos.ficheroCompletadas,
                                 respuesta,
                                 Context.MODE_PRIVATE);
+                        if(!etRespuestaTextual.getText().toString().isEmpty()){
+                            PersistenciaDatos.guardaTareaRespuesta(getApplication(),
+                                    PersistenciaDatos.ficheroCompletadas,
+                                    respuesta,
+                                    etRespuestaTextual.getText().toString(),
+                                    Auxiliar.texto,
+                                    Context.MODE_PRIVATE);
+                        }
                     }catch (Exception e){
                         mensajeError();
                     }
                     Auxiliar.puntuaTarea(this, idTarea);
-                } else
-                    if(guardaRespuestaPregunta())
-                        Auxiliar.puntuaTarea(this, idTarea);
+                } else {
+                    guardaRespuestaPregunta();
+                    /*if (guardaRespuestaPregunta())
+                        Auxiliar.puntuaTarea(this, idTarea);*/
+                }
                 break;
             case R.id.btCamara:
+                bloqueaBotones();
                 switch (tipo){
                     case Auxiliar.tipoPreguntaImagen:
-                        if(guardaRespuestaPregunta()) {
-                            bloqueaBotones();
                             realizaCaptura(0);
-                        }
                         break;
                     case Auxiliar.tipoImagen:
-                            bloqueaBotones();
                             realizaCaptura(1);
                         break;
                     case Auxiliar.tipoImagenMultiple:
-                            bloqueaBotones();
                             realizaCaptura(2);
                         break;
                     case Auxiliar.tipoVideo:
-                            bloqueaBotones();
                             realizaVideo();
                         break;
                 }
@@ -356,20 +436,16 @@ public class Tarea extends AppCompatActivity {
                 break;
             case R.id.btTerminar:
                 try {
-                    JSONObject json = PersistenciaDatos.obtenTarea(
-                            getApplication(),
-                            PersistenciaDatos.ficheroNotificadas,
-                            idTarea);
-                    json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
-                    json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                    if (!PersistenciaDatos.guardaJSON(
-                            getApplication(),
-                            PersistenciaDatos.ficheroCompletadas,
-                            json,
-                            Context.MODE_PRIVATE))
-                        mensajeError();
-                    Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                    Auxiliar.puntuaTarea(this, idTarea);
+                    if(tipo.equals(Auxiliar.tipoPreguntaImagen)){
+                        if(etRespuestaTextual.getText().toString().isEmpty()){
+                            etRespuestaTextual.setError(getString(R.string.respuestaVacia));
+                        }else{
+                            guardaRespuesta(etRespuestaTextual.getText().toString());
+                            Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
+                        }
+                    }else {
+                        guardaRespuesta(etRespuestaTextual.getText().toString());
+                    }
                 }catch (Exception e){
                     mensajeError();
                 }
@@ -410,6 +486,32 @@ public class Tarea extends AppCompatActivity {
         }
     }
 
+    private void guardaRespuesta(String respuestaTextual) throws Exception {
+        JSONObject json;
+        json = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroNotificadas,
+                    idTarea);
+        json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+        json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+        PersistenciaDatos.guardaJSON(
+                getApplication(),
+                PersistenciaDatos.ficheroCompletadas,
+                json,
+                Context.MODE_PRIVATE);
+        if(!respuestaTextual.isEmpty()){
+            PersistenciaDatos.guardaTareaRespuesta(
+                    getApplication(),
+                    PersistenciaDatos.ficheroCompletadas,
+                    json,
+                    respuestaTextual,
+                    Auxiliar.texto,
+                    Context.MODE_PRIVATE);
+        }
+        Auxiliar.puntuaTarea(this, idTarea);
+        finish();
+    }
+
     /**
      * Método para envíar una denuncia de la tarea. Esta denuncia se recogerá mediante un evento de
      * FIREBASE
@@ -432,7 +534,7 @@ public class Tarea extends AppCompatActivity {
             PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroDenunciadas, tarea, Context.MODE_PRIVATE);
         }catch (Exception e){
             if(tarea!=null)
-                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroTareasRechazadas, tarea, Context.MODE_PRIVATE);
+                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroDenunciadas, tarea, Context.MODE_PRIVATE);
         }
         Auxiliar.returnMain(this);
     }
@@ -469,6 +571,12 @@ public class Tarea extends AppCompatActivity {
             btTerminar.setClickable(estadoBtCamara);
     }
 
+    private void activaBtTerminar(){
+        btTerminar.setVisibility(View.VISIBLE);
+        btTerminar.setClickable(true);
+        estadoBtTerminar = true;
+    }
+
     /**
      * Agrupa las sentencias necesarias para la realización de una foto
      * @param tipo Tipo de operación desde donde se invoca al método. Se utiliza para diferenciarlas
@@ -485,7 +593,7 @@ public class Tarea extends AppCompatActivity {
                 //
             }
             if(photoFile != null){
-                photoURI = FileProvider.getUriForFile(context, "es.uva.gsic.adolfinstro.fileprovider", photoFile);
+                photoURI = FileProvider.getUriForFile(context, getString(R.string.fileProvider), photoFile);
 
                 takePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePicture, tipo);//Los requestCode solo pueden ser de 16 bits
@@ -515,7 +623,7 @@ public class Tarea extends AppCompatActivity {
             //
         }
         if(videoFile != null){
-            videoURI = FileProvider.getUriForFile(getBaseContext(), "es.uva.gsic.adolfinstro.fileprovider", videoFile);
+            videoURI = FileProvider.getUriForFile(getBaseContext(), getString(R.string.fileProvider), videoFile);
             takeVideo.putExtra(MediaStore.EXTRA_OUTPUT, videoURI);
             if(takeVideo.resolveActivity(getPackageManager()) != null){
                 //CALIDAD MMS
@@ -564,18 +672,24 @@ public class Tarea extends AppCompatActivity {
                                     idTarea);
                             respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                             respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas,
+                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
                                     respuesta, Context.MODE_PRIVATE);
                             if (!PersistenciaDatos.guardaTareaRespuesta(
                                     getApplication(),
-                                    PersistenciaDatos.ficheroCompletadas,
+                                    PersistenciaDatos.ficheroNotificadas,
                                     respuesta,
                                     photoURI.toString(),
+                                    Auxiliar.uri,
                                     Context.MODE_PRIVATE))
                                 mensajeError();
-                            Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
-
-                            Auxiliar.puntuaTarea(this, idTarea);
+                            else {
+                                imagenesCamaraList.add( new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
+                                actualizaContenedorImagenes(-1);
+                                //Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
+                            }
+                            //Auxiliar.publicaGaleria(this, photoURI);
+                            activaBtTerminar();
+                            //Auxiliar.puntuaTarea(this, idTarea);
                         }catch (Exception e){
                             mensajeError();
                             if(respuesta != null)
@@ -595,12 +709,16 @@ public class Tarea extends AppCompatActivity {
                     case RESULT_OK:
                         respuesta = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
                         if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                                respuesta, photoURI.toString(),
+                                respuesta, photoURI.toString(), Auxiliar.uri,
                                 Context.MODE_PRIVATE))
                             mensajeError();
-                        btTerminar.setVisibility(View.VISIBLE);
-                        desbloqueaBt();
-                        Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
+                        else {
+                            activaBtTerminar();
+                            desbloqueaBt();
+                            imagenesCamaraList.add(new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
+                            actualizaContenedorImagenes(-1);
+                            //Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
+                        }
                         break;
                     case RESULT_CANCELED:
                         desbloqueaBt();
@@ -617,15 +735,21 @@ public class Tarea extends AppCompatActivity {
                             respuesta = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
                             respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                             respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, respuesta, Context.MODE_PRIVATE);
+                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, respuesta, Context.MODE_PRIVATE);
                             if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
-                                    PersistenciaDatos.ficheroCompletadas,
+                                    PersistenciaDatos.ficheroNotificadas,
                                     respuesta,
                                     videoURI.toString(),
+                                    Auxiliar.uri,
                                     Context.MODE_PRIVATE))
                                 mensajeError();
-                            Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
-                            Auxiliar.puntuaTarea(this, idTarea);
+                            else {
+                                //Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
+                                //Auxiliar.puntuaTarea(this, idTarea);
+                                imagenesCamaraList.add(new Completadas.ImagenesCamara(videoURI, View.VISIBLE));
+                                actualizaContenedorVideos(-1);
+                                activaBtTerminar();
+                            }
                         }catch (Exception e){
                             mensajeError();
                             if(respuesta != null)
@@ -642,6 +766,33 @@ public class Tarea extends AppCompatActivity {
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void actualizaContenedorImagenes(int pos){
+        recyclerView.setVisibility(View.VISIBLE);
+        adaptadorImagenes = new AdaptadorImagenesCompletadas( this, imagenesCamaraList);
+        adaptadorImagenes.setClickListener(this);
+        recyclerView.invalidate();
+        recyclerView.setAdapter(adaptadorImagenes);
+        if(pos == -1) {
+            posicion = imagenesCamaraList.size() - 1;
+        }
+        else {
+            posicion = ((pos == 0) ? pos - 1 : pos);
+        }
+        recyclerView.scrollToPosition(posicion);
+    }
+
+    public void actualizaContenedorVideos(int pos){
+        recyclerView.setVisibility(View.VISIBLE);
+        adaptadorVideos = new AdaptadorVideosCompletados( this, imagenesCamaraList);
+        adaptadorVideos.setClickListenerVideo(this);
+        recyclerView.invalidate();
+        recyclerView.setAdapter(adaptadorVideos);
+        if(pos == -1)
+            recyclerView.scrollToPosition(imagenesCamaraList.size() - 1);
+        else
+            recyclerView.scrollToPosition(((pos == 0) ? pos - 1 : pos));
     }
 
     /**
@@ -672,13 +823,25 @@ public class Tarea extends AppCompatActivity {
                             PersistenciaDatos.ficheroCompletadas,
                             tarea,
                             respuesta,
+                            Auxiliar.texto,
                             Context.MODE_PRIVATE))
                         mensajeError();
                 }catch (Exception e){
                     mensajeError();
                 }
+                if(respuestaEsperada!=null){
+                    if (respuesta.contains(respuestaEsperada)) {
+                        mensajeRespuestaEsperada(this,true);
+                    } else {
+                        mensajeRespuestaEsperada(this,false);
+                    }
+                }else {
+                    Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
+                    Auxiliar.puntuaTarea(this, idTarea);
+                }
+                salida = true;
             }
-            else {
+            /*else {
                 try {
                     tarea = PersistenciaDatos.recuperaTarea(
                             getApplication(),
@@ -697,23 +860,12 @@ public class Tarea extends AppCompatActivity {
                                 PersistenciaDatos.ficheroNotificadas,
                                 tarea, Context.MODE_PRIVATE);
                 }
-            }
-            if(respuestaEsperada!=null){
-                if (respuesta.contains(respuestaEsperada)) {
-                    Toast.makeText(this, R.string.respuestaEspeCorrecta, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, R.string.respuestaEspeIncrrecta + " " + respuestaEsperada, Toast.LENGTH_SHORT).show();
-                }
-            }else {
-                Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
-            }
-            salida = true;
+            }*/
         }
-
         return salida;
     }
 
-    /*private void mensaje(boolean acierto){
+    private void mensajeRespuestaEsperada(final Context context, boolean acierto){
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
         alertBuilder.setTitle(getString(R.string.respuestaEspeTitulo));
         if(acierto){
@@ -727,11 +879,11 @@ public class Tarea extends AppCompatActivity {
         alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                Auxiliar.puntuaTarea(context, idTarea);
             }
         });
         alertBuilder.show();
-    }*/
+    }
 
     /**
      * Método que se utiliza para almacenar el valor de algunas variables de la clase
@@ -743,10 +895,12 @@ public class Tarea extends AppCompatActivity {
         //bundle.putInt("RESTANTES", restantes);
         bundle.putBoolean("ESTADOCAMARA", estadoBtCamara);
         bundle.putBoolean("ESTADOCANCELAR", estadoBtCancelar);
+        bundle.putBoolean("ESTADOTERMINAR", estadoBtTerminar);
         bundle.putString("IDTAREA", idTarea);
         bundle.putString("TIPOTAREA", tipo);
         bundle.putString("RECURSOIMAGEN300", recursoAsociadoImagen300px);
         bundle.putString("RECURSOIMAGEN", recursoAsociadoImagen);
+        bundle.putInt("POSICION", posicion);
     }
 
     /**
@@ -759,10 +913,14 @@ public class Tarea extends AppCompatActivity {
         //restantes = bundle.getInt("RESTANTES");
         estadoBtCamara = bundle.getBoolean("ESTADOCAMARA");
         estadoBtCancelar = bundle.getBoolean("ESTADOCANCELAR");
+        estadoBtTerminar = bundle.getBoolean("ESTADOTERMINAR");
         idTarea = bundle.getString("IDTAREA");
         tipo = bundle.getString("TIPOTAREA");
         recursoAsociadoImagen300px = bundle.getString("RECURSOIMAGEN300");
         recursoAsociadoImagen = bundle.getString("RECURSOIMAGEN");
+        if(estadoBtTerminar){
+            activaBtTerminar();
+        }
         setBotones();
     }
 
@@ -832,7 +990,7 @@ public class Tarea extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         super.onBackPressed();
-        JSONObject tarea = null;
+        /*JSONObject tarea = null;
         try {
             tarea = PersistenciaDatos.obtenTarea(
                     getApplication(),
@@ -849,13 +1007,87 @@ public class Tarea extends AppCompatActivity {
                 PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
                         tarea, Context.MODE_PRIVATE);
             }
-        }
-        Auxiliar.returnMain(this);
+        }*/
+        finish();
     }
 
     @Override
     protected void onPause(){
         super.onPause();
         unregisterReceiver(recepcionNotificaciones);
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        eliminaFotoVideo(position);
+    }
+
+    @Override
+    public void onItemClickVideo(View view, int position) {
+        eliminaFotoVideo(position);
+    }
+
+    private void eliminaFotoVideo(int position){
+        Uri uri = imagenesCamaraList.get(position).getDireccion();
+        try{
+            JSONObject tarea = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroNotificadas,
+                    idTarea);
+            if(tarea == null){
+                tarea = PersistenciaDatos.obtenTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroCompletadas,
+                        idTarea);
+            }
+            JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+            JSONObject respuesta;
+            for(int i = 0; i < respuestas.length(); i++){
+                respuesta = respuestas.getJSONObject(i);
+                if(respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.uri) &&
+                        respuesta.getString(Auxiliar.respuestaRespuesta).equals(uri.toString())){
+                    respuestas.remove(i);
+                    tarea.put(Auxiliar.respuestas, respuestas);
+                    this.getContentResolver().delete(uri, null, null);
+                    imagenesCamaraList.remove(position);
+                    switch (tipo){
+                        case Auxiliar.tipoVideo:
+                            desbloqueaBt();
+                            actualizaContenedorVideos(position);
+                            btTerminar.setVisibility(View.GONE);
+                            break;
+                        case Auxiliar.tipoImagenMultiple:
+                            desbloqueaBt();
+                            actualizaContenedorImagenes(position);
+                            if(imagenesCamaraList.size() == 0){
+                                btTerminar.setVisibility(View.GONE);
+                            }
+                            break;
+                        case Auxiliar.tipoImagen:
+                        case Auxiliar.tipoPreguntaImagen:
+                            desbloqueaBt();
+                            actualizaContenedorImagenes(position);
+                            btTerminar.setVisibility(View.GONE);
+                            break;
+                        default:
+                            break;
+                    }
+                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    PersistenciaDatos.guardaJSON(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            tarea,
+                            Context.MODE_PRIVATE);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return false;
     }
 }

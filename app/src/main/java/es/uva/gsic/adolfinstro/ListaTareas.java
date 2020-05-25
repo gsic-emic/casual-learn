@@ -29,6 +29,9 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase que presenta al usuario los distintos tipos de listas de la aplicación.
+ *
+ * @author Pablo
+ * @version 20200514
  */
 public class ListaTareas extends AppCompatActivity implements AdaptadorLista.ItemClickListener, AdaptadorLista.ItemLongClickLister{
 
@@ -55,6 +58,8 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
     private TextView sinTareas;
     private RecyclerView contenedor;
 
+    private int posicionPulsada;
+
     /**
      * Método para crear la vista del usuario. Se obtiene la lista de tareas de la petición y se
      * representa.
@@ -65,6 +70,9 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_tareas);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         sinTareas = findViewById(R.id.tvSinTareasLista);
         peticion = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.peticion);
         contenedor = findViewById(R.id.rvTareas);
@@ -82,7 +90,11 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
                 setTitle(getString(R.string.tareasCompletadas));
                 break;
         }
-        cargaTareas();
+
+        if(savedInstanceState != null)
+            posicionPulsada = savedInstanceState.getInt("PULSACION");
+        else
+            posicionPulsada = -1;
     }
 
     /**
@@ -148,33 +160,11 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
                         jTarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasRechazadas, idTarea);
                     Intent intent = new Intent(this, Preview.class);
                     intent.putExtra(Auxiliar.id, idTarea);
-                    intent.putExtra(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(jTarea.getString(Auxiliar.tipoRespuesta)));
-                    intent.putExtra(Auxiliar.recursoAsociadoTexto, jTarea.getString(Auxiliar.recursoAsociadoTexto));
-                    String intermedio = null;
-                    try{
-                        intermedio = jTarea.getString(Auxiliar.recursoImagen);
-                    }catch (Exception e){
-                        //
+                    if(peticion.equals(PersistenciaDatos.ficheroTareasPospuestas)){
+                        intent.putExtra(Auxiliar.previa, Auxiliar.tareasPospuestas);
+                    }else{
+                        intent.putExtra(Auxiliar.previa, Auxiliar.tareasRechazadas);
                     }
-                    assert intermedio != null;
-                    intent.putExtra(Auxiliar.recursoImagen, (intermedio.equals("")?null:intermedio));
-                    intermedio = null;
-                    try{
-                        intermedio = jTarea.getString(Auxiliar.recursoImagenBaja);
-                    }catch (Exception e){
-                        //
-                    }
-                    assert intermedio != null;
-                    intent.putExtra(Auxiliar.recursoImagenBaja, (intermedio.equals("")?null:intermedio));
-                        try{
-                        intermedio = jTarea.getString(Auxiliar.respuestaEsperada);
-                    }catch (Exception e){
-                        //
-                    }
-                    intent.putExtra(Auxiliar.respuestaEsperada, (intermedio.equals("")?null:intermedio));
-                    intent.putExtra(Auxiliar.latitud, jTarea.getDouble(Auxiliar.latitud));
-                    intent.putExtra(Auxiliar.longitud, jTarea.getDouble(Auxiliar.longitud));
-                    intent.putExtra(Auxiliar.titulo, jTarea.getString(Auxiliar.titulo));
                     startActivity(intent);
                     jTarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, jTarea, Context.MODE_PRIVATE);
@@ -183,10 +173,14 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
                 }
                 break;
             case PersistenciaDatos.ficheroCompletadas:
-                //TODO actividad de la respuesta del usuario
+                Intent intent = new Intent(this, Completadas.class);
+                posicionPulsada = position;
+                intent.putExtra(Auxiliar.id, idTarea);
+                startActivity(intent);
                 break;
         }
     }
+
 
     private void sacarRechazada(final String idTarea) {
         AlertDialog.Builder confirmacion = new AlertDialog.Builder(this);
@@ -238,13 +232,32 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return false;
+    }
+
     /**
      * Método que se ejecuta cuando el usuario presiona el botón de atras de su teléfono. Se pasa la
      * tarea a pospuesta y se muestra un toast antes de volver al mapa.
      */
     @Override
     public void onBackPressed(){
-        Auxiliar.returnMain(this);
+        finish();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        cargaTareas();
+        if(posicionPulsada != -1)
+            contenedor.scrollToPosition(posicionPulsada);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle b) {
+        super.onSaveInstanceState(b);
+        b.putInt("POSICION", posicionPulsada);
+    }
 }

@@ -17,6 +17,7 @@
         android:padding="25dp"
         />
     <Switch
+        android:theme="@style/switchColor"
         android:id="@+id/switchNoMolestar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

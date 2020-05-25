@@ -19,7 +19,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 /**
  * Clase que gestiona las llamadas a los ficheros para la persistencia de datos
  *
- * @author GSIC
+ * @author Pablo
  */
 public class PersistenciaDatos {
     /** Fichero donde se almacenan las tareas recibidas desde el servidor que el usuario puede iniciar*/
@@ -48,7 +48,7 @@ public class PersistenciaDatos {
      * @return JSONArray con el contenido del fichero o un JSONArray inicializado pero vacío si el
      *      fichero estaba vacío o se ha producido algún error.
      */
-    public static JSONArray leeFichero(Application app, String fichero){
+    public static synchronized JSONArray leeFichero(Application app, String fichero){
         JSONArray array;
         File f = new File(app.getFilesDir(), fichero);
         if (f.exists()) { //Lectura del fichero existente
@@ -92,6 +92,28 @@ public class PersistenciaDatos {
     }
 
     /**
+     * Método para guardar un array al final de un fichero
+     * @param app Aplicación
+     * @param fichero Identificador del fichero
+     * @param array Array que se va a almacenar
+     * @return True si se consigue almacenar, false en caso contrario
+     */
+    public static boolean guardaArray(Application app, String fichero, JSONArray array){
+        JSONArray antiguo = leeFichero(app, fichero);
+        JSONObject j;
+        try {
+            for (int i = 0; i < array.length(); i++) {
+                j = array.getJSONObject(i);
+                antiguo.put(j);
+            }
+            return guardaFichero(app, fichero, antiguo, Context.MODE_PRIVATE);
+        }catch (Exception e){
+            return false;
+        }
+
+    }
+
+    /**
      * Método para guardar un fichero con un JSONbject. Para reutilizar la mayor cantidad de código
      * posible, el JSONObject está contenido en un JSONArray (Context.MODE_PRIVATE)
      *
@@ -130,24 +152,26 @@ public class PersistenciaDatos {
      *                   existencia en la base de datos (tiene que existir para que el método devuelva
      *                   true
      * @param respuesta Respuesta que se va a agregar al JSON antes de almacenarlo
+     * @param tipo Tipo de respuesta
      * @param modo Modo de escritura con el que se va a guardar el fichero (Context.MODE_PRIVATE -> sobrescritura)
      * @return True si todas las operaciones se han llevado a cabo de manera correcta
      */
-    public static synchronized boolean guardaTareaRespuesta(Application app, String fichero, JSONObject jsonObject, String respuesta, int modo){
+    public static synchronized boolean guardaTareaRespuesta(Application app, String fichero, JSONObject jsonObject, String respuesta, String tipo, int modo){
         try {
             JSONObject tarea = obtenTarea(app, fichero, jsonObject.getString(Auxiliar.id));
             JSONArray vectorRespuestas = null;
             try{
-                vectorRespuestas = tarea.getJSONArray("respuestaTarea");
+                vectorRespuestas = tarea.getJSONArray(Auxiliar.respuestas);
             }catch (Exception e){
                 vectorRespuestas = new JSONArray();
             }
             JSONObject nuevaRespuesta = new JSONObject();
-            nuevaRespuesta.put("posicion", vectorRespuestas.length());
-            nuevaRespuesta.put("respuesta", respuesta);
+            nuevaRespuesta.put(Auxiliar.posicionRespuesta, vectorRespuestas.length());
+            nuevaRespuesta.put(Auxiliar.respuestaRespuesta, respuesta);
+            nuevaRespuesta.put(Auxiliar.tipoRespuesta, tipo);
             vectorRespuestas.put(nuevaRespuesta);
             nuevaRespuesta = null;
-            tarea.put("respuestaTarea", vectorRespuestas);
+            tarea.put(Auxiliar.respuestas, vectorRespuestas);
             vectorRespuestas = null;
             JSONArray array = leeFichero(app, fichero);
             array.put(tarea); tarea = null;
@@ -238,11 +262,12 @@ public class PersistenciaDatos {
             }
         }
         if(encontrado){
-            JSONObject jo = (JSONObject) jsonArray.remove(i);
+            jsonArray.remove(i);
             guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
             return jsonObject;
+        }else{
+            return null;
         }
-        throw new Exception();
     }
 
     /**
