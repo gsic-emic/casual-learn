@@ -104,17 +104,17 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     private boolean servicioIniciado = false;
 
     // Métodos necesarios para heredar de Service
-    public class ProcesoBinder extends Binder {
+    /**public class ProcesoBinder extends Binder {
         Proceso getService() {
             return Proceso.this;
         }
     }
 
-    private final IBinder iBinder = new ProcesoBinder();
+    private final IBinder iBinder = new ProcesoBinder();**/
 
     @Override
     public IBinder onBind(Intent intent) {
-        return iBinder;
+        return null;
     }
 
     /**
@@ -153,7 +153,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
 
-        mantenServicio();
+        //mantenServicio();
         /*AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(getApplicationContext(), AlarmaProceso.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 9999, intent, 0);
@@ -167,7 +167,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     LocationListener locationListener;
 
     private void posicionamiento() {
-        /*locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
@@ -183,6 +183,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             public void onLocationChanged(Location location) {
                 compruebaTareas(location);
                 locationManager.removeUpdates(locationListener);
+                //terminaServicio();
             }
 
             @Override
@@ -199,8 +200,8 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             public void onProviderDisabled(String provider) {
 
             }
-        });*/
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        });
+        /*fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         locationRequest = new LocationRequest().create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(intervaloComprobacion)
@@ -216,7 +217,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                 }
             }
         };
-        startLocation();
+        startLocation();*/
     }
 
     /**
@@ -383,7 +384,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
                                 PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasUsuario, tarea.getString(Auxiliar.id));
                                 pintaNotificacion(tarea); //Si no se ha eliminado la tarea del otro fichero no se lanza la notificación
                             }catch (Exception e){
-                                //NO se ha extraido de las tareas
+                                //
                             }
                         }
                     }
@@ -529,8 +530,9 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
                 if(noMolestar){
-                    stopLocation();
-                    terminaServicio();
+                    //stopLocation();
+                    //terminaServicio();
+                    new AlarmaProceso().cancelaAlarmaProceso(context);
                 }
                 break;
             default:

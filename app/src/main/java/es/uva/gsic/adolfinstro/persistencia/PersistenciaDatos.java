@@ -40,6 +40,8 @@ public class PersistenciaDatos {
     public static final String ficheroCompletadas = "completadas";
     /** Fichero con las tareas denunciadas por el usuario */
     public static final String ficheroDenunciadas = "denunciadas";
+    /** Fichero con la última posición del usuario */
+    public static final String ficheroPosicion = "posicion";
 
     /**
      * Método para obtener el contenido de un fichero que se sabe que está estructurado en forma de JSON

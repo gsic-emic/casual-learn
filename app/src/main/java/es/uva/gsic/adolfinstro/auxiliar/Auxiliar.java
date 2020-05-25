@@ -95,6 +95,8 @@ public class Auxiliar {
 
     private static final String[] listaFabricantes = {"huawei", "xiaomi"};
 
+    public static int incr = 0;
+
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
      * @param type 0, 1, 2: foto; 3 video;
