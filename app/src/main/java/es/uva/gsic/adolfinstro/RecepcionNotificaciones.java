@@ -71,11 +71,12 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                     }
                     break;
                 case Intent.ACTION_BOOT_COMPLETED:
-                    Intent servicioPermanente = new Intent(context, Proceso.class);
+                    /*Intent servicioPermanente = new Intent(context, Proceso.class);
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                         context.startForegroundService(servicioPermanente);
                     else
-                        context.startService(servicioPermanente);
+                        context.startService(servicioPermanente);*/
+                    new AlarmaProceso().activaAlarmaProceso(context);
                     break;
                 default:
                     break;

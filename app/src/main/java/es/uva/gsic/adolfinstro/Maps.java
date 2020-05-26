@@ -847,11 +847,12 @@ public class Maps extends AppCompatActivity implements SharedPreferences.OnShare
      * Se tiene en cuenta la versión de Android utilizada
      */
     private void lanzaServicioPosicionamiento(){
-        Intent intent = new Intent(this, Proceso.class);
+        new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
+        /*Intent intent = new Intent(this, Proceso.class);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             startForegroundService(intent);
         else
-            startService(intent);
+            startService(intent);*/
     }
 
     /**
