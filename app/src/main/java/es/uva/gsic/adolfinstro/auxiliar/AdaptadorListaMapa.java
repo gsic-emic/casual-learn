@@ -11,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONObject;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -62,6 +64,8 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     public int getItemCount(){ return lista.size();}
 
     public String getId(int posicion) { return lista.get(posicion).id; }
+
+    public JSONObject getTarea(int position) { return  lista.get(position).tarea; }
 
     public void setClickListener(ItemClickListener itemClickListener){
         itemClickListenerMapa = itemClickListener;

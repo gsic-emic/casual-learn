@@ -95,12 +95,12 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
         firebaseAuth = FirebaseAuth.getInstance();
 
-        checkPermissions();
     }
 
     @Override
     public void onStart(){
         super.onStart();
+        checkPermissions();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         updateUI(firebaseUser, false);
     }

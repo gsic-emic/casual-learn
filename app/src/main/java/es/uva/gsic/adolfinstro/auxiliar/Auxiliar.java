@@ -87,6 +87,16 @@ public class Auxiliar {
     public static final String mapa = "mapa";
     public static final String tareasRechazadas = "tareasRechazadas";
     public static final String tareasPospuestas = "tareasPospuestas";
+    public static final String zum = "zum";
+
+    public static final String lat0 = "lat0";
+    public static final String lon0 = "lon0";
+    public static final String latN = "latN";
+    public static final String latS = "latS";
+    public static final String lonO = "latO";
+    public static final String lonE = "lonE";
+    public static final String tareas = "tareas";
+    public static final String ficheroOrigen = "ficheroOrigen";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
 
@@ -220,8 +230,8 @@ public class Auxiliar {
      * @return Distancia (en km) entre los dos puntos
      */
     public static double calculaDistanciaDosPuntos(double lat1, double lon1, double lat2, double lon2){
-        //Aproximación del radio de la Tierra
-        double radioTierra = 6371;
+        //Aproximación del radio de la Tierra en el ecuador
+        double radioTierra = 6378.137;
         return 2 * radioTierra *
                 Math.asin(Math.sqrt(
                         (1-Math.cos(Math.toRadians(lat2-lat1)))/2 +

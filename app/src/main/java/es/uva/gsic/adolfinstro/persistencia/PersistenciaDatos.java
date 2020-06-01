@@ -43,6 +43,10 @@ public class PersistenciaDatos {
     /** Fichero con la última posición del usuario */
     public static final String ficheroPosicion = "posicion";
 
+    public static final String ficheroPrimeraCuadricula = "primeraCuadricula";
+    public static final String ficheroPosicionesCuadriculas = "posicionesCuadriculas";
+
+
     /**
      * Método para obtener el contenido de un fichero que se sabe que está estructurado en forma de JSON
      * @param app Aplicación
