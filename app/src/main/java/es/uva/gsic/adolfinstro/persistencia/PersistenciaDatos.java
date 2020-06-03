@@ -43,6 +43,10 @@ public class PersistenciaDatos {
     /** Fichero con la última posición del usuario */
     public static final String ficheroPosicion = "posicion";
 
+    public static final String ficheroPrimeraCuadricula = "primeraCuadricula";
+    public static final String ficheroPosicionesCuadriculas = "posicionesCuadriculas";
+
+
     /**
      * Método para obtener el contenido de un fichero que se sabe que está estructurado en forma de JSON
      * @param app Aplicación
@@ -197,13 +201,13 @@ public class PersistenciaDatos {
         try {
             int modo = Context.MODE_PRIVATE;
             JSONArray array = leeFichero(app, fichero);
-            String id = jsonObject.getString("id");
+            String id = jsonObject.getString(Auxiliar.id);
             JSONObject base;
             boolean encontrado = false;
             int i;
             for (i = 0; i < array.length(); i++) {
                 base = array.getJSONObject(i);
-                if(base.getString("id").equals(id)){
+                if(base.getString(Auxiliar.id).equals(id)){
                     encontrado = true;
                     break;
                 }

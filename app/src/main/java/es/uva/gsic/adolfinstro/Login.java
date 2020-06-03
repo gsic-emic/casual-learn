@@ -1,7 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,10 +14,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -35,14 +30,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
-import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
-import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase que permite a los usuarios identificarse frente al sistema.
@@ -95,12 +86,12 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
         firebaseAuth = FirebaseAuth.getInstance();
 
-        checkPermissions();
     }
 
     @Override
     public void onStart(){
         super.onStart();
+        checkPermissions();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         updateUI(firebaseUser, false);
     }

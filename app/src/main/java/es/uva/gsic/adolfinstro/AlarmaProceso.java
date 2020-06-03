@@ -156,7 +156,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
             case Ajustes.INTERVALO_pref:
-                intervalo = sharedPreferences.getInt(key, 0);
+                intervalo = sharedPreferences.getInt(key, 5);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);

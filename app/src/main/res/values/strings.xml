@@ -129,6 +129,8 @@
     <string name="Picasso" translatable="false">Picasso</string>
     <string name="Volley" translatable="false">Volley</string>
     <string name="version">Version</string>
-    <string name="acercade">"About "</string>
+    <string name="acercade">"About Casual Learn"</string>
     <string name="imagenAmpliable">Expandable imagen</string>
+    <string name="hashtag" translatable="false">#casuallearn</string>
+    <string name="instalaTwitter">You should install the official Twitter client to share your answer</string>
 </resources>

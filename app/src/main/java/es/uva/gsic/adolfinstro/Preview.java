@@ -94,7 +94,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         try {
             try{
                 assert tarea != null;
-                if (!tarea.getString(Auxiliar.recursoImagenBaja).equals("")) {
+                if (tarea.has(Auxiliar.recursoImagenBaja) && !tarea.getString(Auxiliar.recursoImagenBaja).equals("")) {
                 Picasso.get()
                         .load(tarea.getString(Auxiliar.recursoImagenBaja))
                         .placeholder(R.drawable.ic_cloud_download_blue_80dp)
@@ -102,7 +102,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                         .into(imageView);
                 imageView.setVisibility(View.VISIBLE);
             } else {
-                if (!tarea.getString(Auxiliar.recursoImagen).equals("")) {
+                if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
                     Picasso.get()
                             .load(tarea.getString(Auxiliar.recursoImagen))
                             .placeholder(R.drawable.ic_cloud_download_blue_80dp)
@@ -144,10 +144,11 @@ public class Preview extends AppCompatActivity implements LocationListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 descripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
             }
-            ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
+            //ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
             String tipo = tarea.getString(Auxiliar.tipoRespuesta);
-            tipoTarea.setContentDescription(String.format("%s%s", getString(R.string.tipoDeTarea), tipo));
-            tipoTarea.setImageResource(Auxiliar.iconoTipoTarea(tipo));
+            titulo.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, Auxiliar.iconoTipoTarea(tipo), 0);
+            //tipoTarea.setContentDescription(String.format("%s%s", getString(R.string.tipoDeTarea), tipo));
+            //tipoTarea.setImageResource(Auxiliar.iconoTipoTarea(tipo));
 
             Marker marker = new Marker(map);
             marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));

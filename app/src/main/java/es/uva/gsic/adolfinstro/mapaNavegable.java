@@ -198,9 +198,9 @@ public class mapaNavegable extends AppCompatActivity {
                 }*/
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 //intent.setPackage("com.google.android.apps.maps");
-                startActivity(Intent.createChooser(intent, "Select an applicaciont"));
+                startActivity(Intent.createChooser(intent, ""));
             }catch (Exception e){
-
+                e.printStackTrace();
             }
         }
     }

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/fondo_principal3"
+    android:background="@color/colorPrimary"
     tools:context=".Login">
 
     <TextView
@@ -13,12 +13,8 @@
         android:layout_height="wrap_content"
         android:text="@string/app_name"
         android:textSize="60sp"
-        android:textColor="@color/texto"
-        android:shadowColor="#EFEFEF"
-        android:shadowDx="1"
-        android:shadowDy="1"
-        android:shadowRadius="2"
-        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:shadowColor="@color/colorPrimaryDark"
         android:textAlignment="center"
         app:layout_constraintBottom_toTopOf="@id/glLogin"
         app:layout_constraintEnd_toEndOf="parent"

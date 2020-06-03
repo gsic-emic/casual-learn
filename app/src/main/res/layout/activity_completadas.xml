@@ -8,8 +8,7 @@
     tools:context=".Tarea">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/tvDescripcionCompletada"
@@ -21,7 +20,7 @@
             android:layout_marginBottom="20dp"
             android:textSize="20sp"
             android:visibility="visible"
-            android:gravity="center_horizontal"/>
+            android:layout_marginHorizontal="3dp"/>
 
         <EditText
             android:id="@+id/etRespuestaTextualCompletada"
@@ -38,7 +37,8 @@
             android:visibility="gone"
             android:inputType="textMultiLine"
             android:enabled="false"
-            android:autofillHints="no" />
+            android:autofillHints="no"
+            android:layout_marginHorizontal="3dp"/>
 
         <Button style="@style/botonPrimario"
             android:id="@+id/btAgregarCompletada"
