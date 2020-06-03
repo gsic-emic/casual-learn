@@ -10,8 +10,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_margin="10dp">
+        android:layout_width="match_parent">
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/glHorizontal0.1About"
@@ -31,20 +30,26 @@
             android:paddingBottom="10dp"/>
 
         <TextView
-            android:id="@+id/tvDesarrolladoPorAcercade"
+            android:id="@+id/tvVersion"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="12sp"
+            app:layout_constraintStart_toEndOf="@id/ivIcono"
+            android:layout_margin="10dp"
+            app:layout_constraintBottom_toBottomOf="@id/ivIcono"/>
+
+        <TextView
+            android:id="@+id/tvDesarrolladoPorAcercade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/desarrolladoPor"
+            android:background="@color/colorPrimary"
+            android:textColor="#FFFFFF"
             android:textSize="25sp"
+            android:padding="10dp"
+            android:layout_marginVertical="20dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ivIcono"/>
-        <View
-            android:id="@+id/linea0"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladoPorAcercade"
-            android:background="@android:color/darker_gray" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guiaVerticalAcerca"
@@ -59,20 +64,22 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="@id/guiaVerticalAcerca"
-            app:layout_constraintTop_toBottomOf="@id/linea0"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladoPorAcercade"
             android:src="@drawable/gsicemic"
             android:onClick="boton"
-            android:contentDescription="@string/gsic" />
+            android:contentDescription="@string/gsic"
+            android:layout_marginStart="8dp"/>
 
         <ImageView
             android:id="@+id/imagenUva"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
             app:layout_constraintStart_toStartOf="@id/guiaVerticalAcerca"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/linea0"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladoPorAcercade"
             app:layout_constraintBottom_toBottomOf="@id/imagenGsic"
-            android:src="@drawable/uva"
+            app:srcCompat="@drawable/uva_rojo"
             android:onClick="boton" />
 
 
@@ -81,23 +88,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:drawableStart="@drawable/ic_info_black_24dp"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:layout_marginTop="10dp"
             android:textSize="16sp"
             android:text="@string/Desarrolladores"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/imagenGsic"/>
-
-        <TextView
-            android:id="@+id/tvVersion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:drawableStart="@drawable/ic_info_black_24dp"
-            android:textSize="16sp"
-            android:drawablePadding="20dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"/>
-
+            app:layout_constraintTop_toBottomOf="@id/imagenGsic"
+            android:layout_marginHorizontal="8dp"/>
 
         <TextView
             android:id="@+id/tvCreditos"
@@ -105,41 +102,39 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvVersion"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
             android:text="@string/fondosInvesticacion"
-            android:textSize="25sp"/>
-
-        <View
-            android:id="@+id/linea1"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvCreditos"
-            android:background="@android:color/darker_gray"/>
+            android:background="@color/colorPrimary"
+            android:textColor="#FFFFFF"
+            android:textSize="25sp"
+            android:padding="10dp"
+            android:layout_marginVertical="20dp"/>
 
         <TextView
             android:id="@+id/tvFondosEuropeos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableStart="@drawable/ic_punto_6dp"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:onClick="boton"
             android:text="@string/fondosEuropeos"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/linea1" />
+            app:layout_constraintTop_toBottomOf="@id/tvCreditos"
+            android:layout_marginHorizontal="8dp"/>
 
         <TextView
             android:id="@+id/tvJuntaCastillaYLeon"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableStart="@drawable/ic_punto_6dp"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:onClick="boton"
             android:text="@string/juntaCastilla"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvFondosEuropeos" />
+            app:layout_constraintTop_toBottomOf="@id/tvFondosEuropeos"
+            android:layout_marginHorizontal="8dp"/>
 
         <TextView
             android:id="@+id/tvBibliotecas"
@@ -148,27 +143,26 @@
             android:layout_marginTop="20dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvJuntaCastillaYLeon"
+            app:layout_constraintBottom_toTopOf="@id/tvOpenStreepMap"
             android:text="@string/libraries"
-            android:textSize="25sp" />
-        <View
-            android:id="@+id/linea2"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvBibliotecas"
-            android:background="@android:color/darker_gray"/>
+            android:background="@color/colorPrimary"
+            android:textColor="#FFFFFF"
+            android:textSize="25sp"
+            android:padding="10dp"
+            android:layout_marginVertical="20dp"/>
 
         <TextView
             android:id="@+id/tvOpenStreepMap"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/linea2"
+            app:layout_constraintTop_toBottomOf="@id/tvBibliotecas"
             android:textSize="14sp"
             android:text="@string/openStreetMap"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:drawableStart="@drawable/ic_punto_6dp"
-            android:onClick="boton" />
+            android:onClick="boton"
+            android:layout_marginHorizontal="8dp"/>
 
         <TextView
             android:id="@+id/tvOsmdroid"
@@ -178,9 +172,10 @@
             app:layout_constraintTop_toBottomOf="@id/tvOpenStreepMap"
             android:textSize="14sp"
             android:text="@string/Osmdroid"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:drawableStart="@drawable/ic_punto_6dp"
-            android:onClick="boton" />
+            android:onClick="boton"
+            android:layout_marginHorizontal="8dp"/>
 
         <TextView
             android:id="@+id/tvFused"
@@ -190,9 +185,10 @@
             app:layout_constraintTop_toBottomOf="@id/tvOsmdroid"
             android:textSize="14sp"
             android:text="@string/fused"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:drawableStart="@drawable/ic_punto_6dp"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            android:layout_marginHorizontal="8dp"/>
 
         <TextView
             android:id="@+id/tvPhotoView"
@@ -201,10 +197,11 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvFused"
             android:textSize="14sp"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:text="@string/PhotoView"
             android:drawableStart="@drawable/ic_punto_6dp"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            android:layout_marginHorizontal="8dp"/>
 
         <TextView
             android:id="@+id/tvPicasso"
@@ -213,10 +210,11 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvPhotoView"
             android:textSize="14sp"
-            android:drawablePadding="20dp"
+            android:drawablePadding="4dp"
             android:text="@string/Picasso"
             android:drawableStart="@drawable/ic_punto_6dp"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            android:layout_marginHorizontal="8dp"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

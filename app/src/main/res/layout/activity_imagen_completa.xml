@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ImagenCompleta"
-    android:layout_margin="10dp"
     android:fillViewport="true">
 
     <com.github.chrisbanes.photoview.PhotoView

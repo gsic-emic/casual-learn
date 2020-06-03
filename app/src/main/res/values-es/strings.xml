@@ -121,6 +121,7 @@
     <string name="fondosInvesticacion">Proyectos de Investigación</string>
     <string name="Desarrolladores">Desarrolladores</string>
     <string name="version">Versión</string>
-    <string name="acercade">Acerca de</string>
+    <string name="acercade">Acerca de Casual Learn</string>
     <string name="imagenAmpliable">Imagen ampliable</string>
+    <string name="instalaTwitter">Tienes que instalar el cliente oficial de Twitter para compartir la respuesta</string>
 </resources>

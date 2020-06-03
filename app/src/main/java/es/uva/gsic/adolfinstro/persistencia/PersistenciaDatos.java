@@ -201,13 +201,13 @@ public class PersistenciaDatos {
         try {
             int modo = Context.MODE_PRIVATE;
             JSONArray array = leeFichero(app, fichero);
-            String id = jsonObject.getString("id");
+            String id = jsonObject.getString(Auxiliar.id);
             JSONObject base;
             boolean encontrado = false;
             int i;
             for (i = 0; i < array.length(); i++) {
                 base = array.getJSONObject(i);
-                if(base.getString("id").equals(id)){
+                if(base.getString(Auxiliar.id).equals(id)){
                     encontrado = true;
                     break;
                 }

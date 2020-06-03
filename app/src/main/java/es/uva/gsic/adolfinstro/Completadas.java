@@ -6,8 +6,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,6 +21,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -78,7 +84,6 @@ public class Completadas extends AppCompatActivity implements
     /** Posicion al que se desplaza el scroll */
     int posicion = 0;
 
-
     /**
      * Método de creación de la actividad. Pinta la interfaz gráfica y establece las referencias
      * para la lógica de la aplicación.
@@ -116,6 +121,9 @@ public class Completadas extends AppCompatActivity implements
 
         try {
             enunciado.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                enunciado.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+            }
 
             try {
                 ratingBar.setRating((float) tarea.getDouble(Auxiliar.rating));
@@ -287,11 +295,95 @@ public class Completadas extends AppCompatActivity implements
                 }
                 return true;
             case R.id.publicarCompletada:
-                //Publicación de la tarea para su posterior subida al portfolio del usuario
+                Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
+                mandaTweet();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void mandaTweet(){
+        try {
+            //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
+            getPackageManager().getPackageInfo("com.twitter.android", PackageManager.GET_ACTIVITIES);
+            Intent intent;
+            switch (tarea.getString(Auxiliar.tipoRespuesta)){
+                case Auxiliar.tipoPreguntaCorta:
+                case Auxiliar.tipoPreguntaLarga:
+                case Auxiliar.tipoSinRespuesta:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet());
+                    intent.setType("text/plain");
+                    break;
+                case Auxiliar.tipoPreguntaImagen:
+                case Auxiliar.tipoImagen:
+                case Auxiliar.tipoImagenMultiple:
+                    if(listaURI != null && listaURI.size() > 0)
+                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                    else
+                        intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet());
+                    intent.setType("text/plain");
+                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
+                        if(listaURI != null && !listaURI.isEmpty()){
+                            ArrayList<Uri> uris = new ArrayList<>();
+                            for(String s : listaURI){
+                                uris.add(Uri.parse(s));
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("video/*");
+                        }
+                    }else{
+                        if(listaURI != null && !listaURI.isEmpty()){
+                            ArrayList<Uri> uris = new ArrayList<>();
+                            for(String s : listaURI){
+                                uris.add(Uri.parse(s));
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("image/*");
+                        }
+                    }
+                    break;
+                case Auxiliar.tipoVideo:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet());
+                    intent.setType("text/plain");
+                    if(listaURI != null && !listaURI.isEmpty()){
+                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
+                        intent.setType("video/*");
+                    }
+                    break;
+                default:
+                    intent = null;
+                    break;
+            }
+
+            if(intent != null) {
+                intent.setPackage("com.twitter.android");
+                startActivity(intent);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(this, getString(R.string.instalaTwitter), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private String contenidoTextoTweet(){
+        String texto = null;
+
+        try {
+            texto = tarea.getString(Auxiliar.titulo);
+            if(!textoUsuario.getText().toString().equals("")){
+                texto = texto.concat(String.format("\n%s", textoUsuario.getText().toString()));
+                texto = (texto.length() > 262)?texto.substring(0, 259)+"...":texto;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        texto=(texto==null)?String.format("%s", getString(R.string.hashtag)):texto.concat(String.format("\n%s", getString(R.string.hashtag)));
+        return texto;
     }
 
     /**
@@ -392,6 +484,14 @@ public class Completadas extends AppCompatActivity implements
                     PersistenciaDatos.ficheroCompletadas,
                     tarea);
         }catch (JSONException e){
+            e.printStackTrace();
+        }
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString("user", Login.firebaseAuth.getUid());
+            bundle.putString("idTarea", tarea.getString(Auxiliar.id));
+            Login.firebaseAnalytics.logEvent("tareaModificada", bundle);
+        }catch (Exception e){
             e.printStackTrace();
         }
     }

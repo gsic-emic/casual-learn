@@ -12,10 +12,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.Layout;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -194,6 +196,9 @@ public class Tarea extends AppCompatActivity implements
                 btTerminar = findViewById(R.id.btTerminar);
 
                 tvDescripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    tvDescripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+                }
 
                 recyclerView = findViewById(R.id.rvRealizaTarea);
                 recyclerView.setHasFixedSize(true);

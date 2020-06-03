@@ -8,8 +8,7 @@
     tools:context=".Tarea">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/ivDenunciarPregunta"
@@ -43,10 +42,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
-                android:layout_marginStart="20dp"
+                android:layout_marginHorizontal="3dp"
                 android:textSize="20sp"
-                android:visibility="visible"
-                android:gravity="center_horizontal"/>
+                android:visibility="visible"/>
         </LinearLayout>
 
         <EditText
@@ -60,6 +58,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/linearLayout"
+            android:layout_marginHorizontal="3dp"
             android:layout_marginBottom="20dp"
             android:visibility="visible"
             android:inputType="textMultiLine"
