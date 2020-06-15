@@ -9,7 +9,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -18,7 +17,6 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.Layout;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,14 +30,11 @@ import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.Objects;
 
@@ -162,7 +157,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 public boolean singleTapConfirmedHelper(GeoPoint p) {
                     try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
                         if(location != null){
-                            Intent intent = new Intent(context, mapaNavegable.class);
+                            Intent intent = new Intent(context, MapaNavegable.class);
                             intent.putExtra(Auxiliar.latitud + "user", location.getLatitude());
                             intent.putExtra(Auxiliar.longitud + "user", location.getLongitude());
                             intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
@@ -382,8 +377,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     tarea.getDouble(Auxiliar.longitud),
                     location.getLatitude(),
                     location.getLongitude());
-            //TODO VOLVER A PONER A 0.15
-            if(distancia <= 1.0){
+            if(distancia <= 0.15){
                 botonesVisibles(true);
             }else{
                 botonesVisibles(false);

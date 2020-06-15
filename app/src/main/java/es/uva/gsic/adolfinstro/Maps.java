@@ -26,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
@@ -49,6 +50,7 @@ import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
@@ -60,7 +62,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -68,7 +69,11 @@ import es.uva.gsic.adolfinstro.auxiliar.Bocadillo;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
-//https://github.com/osmdroid/osmdroid/wiki/How-to-use-the-osmdroid-library
+/**
+ * Clase que gestiona la actividad principal de la aplicación.
+ * @author Pablo
+ * @version 20200615
+ */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
@@ -76,7 +81,9 @@ public class Maps extends AppCompatActivity implements
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
 
+    /** Instancia del texto informativo en el que el usuario todavía no ha pulsado ningún marcador */
     private TextView sinPulsarTarea;
+    /** Objeto donde se expone toda la lista de tareas del marcador */
     private RecyclerView contenedor;
 
     /** Objeto que almacenará, entre otras cosas, la última posición conocida del usuario*/
@@ -85,35 +92,24 @@ public class Maps extends AppCompatActivity implements
     private IMapController mapController;
     /** Posición inicial del punto conocido */
     private double latitudeOrigen , longitudeOrigen;
-    /** Punto del mapa en el que se centrará si no consigue recuperar la posición actual*/
-    private final GeoPoint telecoPoint = new GeoPoint(41.662357, -4.706005);
     /** Referencia a si la opción "no Molestar" está activada o no*/
     private boolean noMolestar;
     /** Preferencias de la aplicación */
     private SharedPreferences sharedPreferences;
     /** Regla sbore el mapa*/
     private ScaleBarOverlay scaleBarOverlay;
-    ///** Brújula del dispositivo*/
-    //private CompassOverlay compassOverlay;
     /** Código de identificación para la solicitud de los permisos de la app */
     private final int requestCodePermissions = 1001;
 
-    //** Canal utilizado para las notificaciones de las tareas */
-    //private NotificationChannel channel;
-    ///** Instancia del NotificationManager*/
-    //private NotificationManager notificationManager;
-
+    /** Contexto */
     private Context context;
 
-    private long ultimaNotificacion;
-
-    /*private long ultimaPosicionInstante;
-    private double ultimaPosicionLatitud;
-    private double ultimaPosicionLogintud;*/
-
+    /** Nivel de zum mínimo permitido */
     private final double nivelMin = 6.5;
+    /** Nivel de zum máximo permitido */
     private final double nivelMax = 19.5;
 
+    /** Clave para obtener la última posición y el zum del mapa */
     private final String idPosicionZoom = "posicionZum";
 
     private Animation animation;
@@ -136,6 +132,7 @@ public class Maps extends AppCompatActivity implements
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        //sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
@@ -168,18 +165,19 @@ public class Maps extends AppCompatActivity implements
 
             map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zoom con dos dedos
             mapController = map.getController();
+            map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
             if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
                 JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
                 try {
                     mapController.setCenter(new GeoPoint(posicion.getDouble(Auxiliar.latitud), posicion.getDouble(Auxiliar.longitud)));
                     mapController.setZoom(posicion.getDouble(Auxiliar.zum));
                 } catch (JSONException e) {
-                    mapController.setCenter(telecoPoint);
-                    mapController.setZoom(8.0);
+                    centraPrimeraVez();
                 }
             }else {
-                mapController.setCenter(telecoPoint); //Centramos la posición en algún lugar conocido
-                mapController.setZoom(8.0);
+                centraPrimeraVez();
+                //mapController.setCenter(telecoPoint); //Centramos la posición en algún lugar conocido
+                //mapController.setZoom(8.0);
             }
             //RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(map);
             //rotationGestureOverlay.setEnabled(true);
@@ -199,13 +197,9 @@ public class Maps extends AppCompatActivity implements
             //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
             myLocationNewOverlay.setEnableAutoStop(true);
 
-            //map.getOverlays().add(myLocationNewOverlay); //Se centra en el usuario. Si no lo consigue porque la
-            //posición aún está a null siempre se tiene el pto conocido
-
             final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
             scaleBarOverlay = new ScaleBarOverlay(map);
             scaleBarOverlay.setCentred(true); //La barra de escala se queda en el centro
-            //map.getOverlays().add(scaleBarOverlay);
 
             //Se agrega la brújula
             //compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
@@ -215,36 +209,16 @@ public class Maps extends AppCompatActivity implements
             int alto = displayMetrics.heightPixels;
             if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
                 scaleBarOverlay.setScaleBarOffset((int)(ancho / 2), (int) (alto * 0.05)); //posición en el el display
-                //compassOverlay.setCompassCenter(35, (int) (displayMetrics.heightPixels * 0.2 + 50)); //posicón de la brújula
             }else{
                 scaleBarOverlay.setScaleBarOffset((int)(ancho*0.4), (int) (alto * 0.05));
-
-                //compassOverlay.setCompassCenter(200, (int) (displayMetrics.heightPixels * 0.1 + 25)); //posicón de la brújula
             }
 
             pintaItemsfijos();
-            //putItems();//Puntos de prueba
 
-            /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){ //Se necesita un canal para API 26 y superior
-                channel = new NotificationChannel(Auxiliar.channelId, getString(R.string.canalTareas), NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription(getString(R.string.canalTareas));
-                notificationManager = context.getSystemService(NotificationManager.class);
-                assert notificationManager != null;
-                notificationManager.createNotificationChannel(channel);
-            }
-            else{
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                    notificationManager = context.getSystemService(NotificationManager.class);
-                else{//API 22
-                    notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                }
-            }*/
             map.addMapListener(new DelayedMapListener(new MapListener() {
                 @Override
                 public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
                     if(map.getMapCenter() != null){
-                        /*IGeoPoint centro = map.getMapCenter();
-                        compruebaZona(centro.getLatitude(), centro.getLongitude());*/
                         compruebaZona();
                     }
                     return false;
@@ -253,14 +227,38 @@ public class Maps extends AppCompatActivity implements
                 @Override
                 public boolean onZoom(ZoomEvent event) {//Zoom con botones
                     if(map.getMapCenter() != null){
-                        /*IGeoPoint centro = map.getMapCenter();
-                        compruebaZona(centro.getLatitude(), centro.getLongitude());*/
                         compruebaZona();
                     }
                     return false;
                 }
             }, 200));
         }
+    }
+
+    /**
+     * Método para centrar el mapa en Castilla y León
+     */
+    private void centraPrimeraVez() {
+        final BoundingBox bb = new BoundingBox(
+                43.238770,
+                -1.783297,
+                40.096489,
+                -7.021449);
+        ViewTreeObserver viewTreeObserver = map.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                map.zoomToBoundingBox(bb, false);
+                map.getController().zoomToSpan(
+                        bb.getLatitudeSpan(),
+                        bb.getLongitudeSpanWithDateLine());
+                map.getController().setCenter(bb.getCenterWithDateLine());
+                bb.getDiagonalLengthInMeters();
+                ViewTreeObserver v = map.getViewTreeObserver();
+                v.removeOnGlobalLayoutListener(this);
+                map.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     /**
@@ -312,6 +310,9 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para pintar los Overlays que siempre se desea que estén en el mapa
+     */
     public void pintaItemsfijos() {
         map.getOverlays().clear();
         map.getOverlays().add(myLocationNewOverlay);
@@ -328,25 +329,12 @@ public class Maps extends AppCompatActivity implements
         newMarker(42.0114, -4.5321, "Iglesia de San Francisco, Palencia", 12);
     }*/
 
+    /**
+     * Método para representar un marcador en el mapa
+     * @param marcador Marcador a representar
+     */
     public void pintaLista(Marcador marcador){
-        //JSONArray tareas = PersistenciaDatos.tareasPosicion(getApplication(), PersistenciaDatos.ficheroTareasZona, marcador.latitud, marcador.longitud);
         JSONArray tareas = marcador.getTareasMarcador();
-        /*if(marcador.getLatitudes().size() > 0){//Es una agrupacion
-            try {
-                Map<Integer, Double> latitudes, longitudes;
-                JSONArray masTareas;
-                latitudes = marcador.getLatitudes();
-                longitudes = marcador.getLongitudes();
-                for(int j = 0; j< latitudes.size(); j++){
-                    masTareas = PersistenciaDatos.tareasPosicion(getApplication(), PersistenciaDatos.ficheroTareasZona, latitudes.get(j), longitudes.get(j));
-                    for(int t = 0; t < masTareas.length(); t++){
-                            tareas.put(masTareas.get(t));
-                    }
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }*/
         if(tareas.length() > 0){
             sinPulsarTarea.setVisibility(View.GONE);
             contenedor.setVisibility(View.VISIBLE);
@@ -355,9 +343,13 @@ public class Maps extends AppCompatActivity implements
             List<TareasMapaLista> tareasPunto = new ArrayList<>();
             JSONObject jo;
             for(int i = 0; i < tareas.length(); i++){
-                try {
+                try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
                     jo = tareas.getJSONObject(i);
-                    tareasPunto.add( new TareasMapaLista(jo.getString(Auxiliar.id), jo.getString(Auxiliar.titulo), Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)), jo));
+                    tareasPunto.add(new TareasMapaLista(
+                            jo.getString(Auxiliar.id),
+                            jo.getString(Auxiliar.titulo),
+                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                            jo));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -373,6 +365,12 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para atender las pulsaciones que se realicen sobre uno de los elementos de la lista de
+     * tareas. Se salta a la pantalla de información previa.
+     * @param view Vista
+     * @param posicion Posicón
+     */
     @Override
     public void onItemClick(View view, int posicion){
         try {
@@ -391,36 +389,39 @@ public class Maps extends AppCompatActivity implements
 
     }
 
-
+    /**
+     * Método para generar la parte gráfica del marcador. Dentro de un elemento fijo se dibujará el
+     * número de tareas.
+     * @param size Número de tareas que representa el marcador en un interior
+     * @return Representación gráfica del marcador
+     */
     private Bitmap generaBitmapMarkerNumero(int size) {
         Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
-        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(
+                drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(),
+                Bitmap.Config.ARGB_8888);
         int dimen = drawable.getIntrinsicWidth();
         float mitad = (float)dimen/2;
-        //Bitmap bitmap = Bitmap.createBitmap(dimen, dimen, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         Paint paint = new Paint();
-        /*paint.setARGB(255, 0, 0, 0);
-        canvas.drawCircle(mitad, mitad, mitad, paint);
-        float radio = mitad - 5;
-        paint.setARGB(255, 255, 255, 255);
-        canvas.drawCircle(mitad, mitad, radio, paint);*/
-
+        String texto;
+        if(size>99) {
+            texto = "99+";
+            size = 99;
+        } else
+            texto = String.valueOf(size);
         paint.setARGB(255, 0, 0, 0);
-
-
         paint.setStyle(Paint.Style.FILL);
         int textSize = (int) (mitad+1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
-        String texto;
-        if(size>99)
-            texto = "99+";
-        else
-            texto = String.valueOf(size);
         canvas.drawText(texto, mitad, mitad + (float)textSize/3, paint);
+        paint.setARGB(200 - 198 + 2*size, 136, 73, 248);
+        canvas.drawCircle(mitad, canvas.getHeight() - mitad/3, mitad/8, paint);
+        //canvas.drawCircle(mitad, mitad, mitad/2, paint);
         return bitmap;
     }
 
@@ -493,6 +494,8 @@ public class Maps extends AppCompatActivity implements
                     case Auxiliar.tipoVideo:
                         paint.setARGB(255, 51, 51, 255);
                         break;
+                    default:
+                        break;
                 }
             }else{
                 paint.setARGB(255, 255, 255, 255);
@@ -521,9 +524,8 @@ public class Maps extends AppCompatActivity implements
      * @param punto1 Localización actual del usuario
      * @param punto2 Localización a la que quiere ir
      * @return Distancia (en km) entre las dos localizaciones
-     * @throws Exception Se lanzará una excepción cuando alguno de los argumentos de entrada sea null
      */
-    private double calculaDistanciaDosPuntos(GeoPoint punto1, IGeoPoint punto2) throws Exception {
+    private double calculaDistanciaDosPuntos(GeoPoint punto1, IGeoPoint punto2) {
         return Auxiliar.calculaDistanciaDosPuntos(punto1.getLatitude(), punto1.getLongitude(),
                 punto2.getLatitude(), punto2.getLongitude());
     }
@@ -531,7 +533,8 @@ public class Maps extends AppCompatActivity implements
     //private LocationManager locationManager;
 
     /**
-     * Se restaura el mapa tal y como se indica en la guía.
+     * Se restaura el mapa tal y como se indica en la guía. Se restaura la lista de tareas si es que
+     * el usuario había picado en un marcador con anterioridad
      */
     @Override
     public void onResume() {
@@ -549,83 +552,67 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para comprobar si en la parte del mapa que se muestra al usuario hay tareas que representar.
+     * Si no se ha descargado del servidor las tareas se solicita la descarga. Si las tareas están desfasdas se
+     * solicita al servidor nuevamente la zona.
+     */
     private void compruebaZona() {
-        //Latitiud desde donde se han recuperado las tareas del servidor
-        double latitudGet = 0;
-        //Longitud desde donde se han recuperado las tareas del servidor
-        double longitudGet = 0;
-        //Se comprueba si existe el fichero y el objeto
-        /*if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idInstanteGETZONA)){
-            try {
-                JSONObject instante = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroInstantes, idInstanteGETZONA);
-                latitudGet = instante.getDouble(Auxiliar.latitud);
-                longitudGet = instante.getDouble(Auxiliar.longitud);
-            }catch (Exception e){
-                //
-            }
-        }
-
-        double radio = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud,
-                map.getBoundingBox().getLatSouth(), map.getBoundingBox().getLonWest());
-        if(latitudGet==0 || longitudGet==0){//Inicio del servicio, se tiene que recuperar la tarea del servidor
-            peticionTareasServidor(latitud, longitud, Math.min(2 * radio + 0.1, 1.5));
-        }else{
-            if(map.getZoomLevelDouble() >= (nivelMax - 4) ){
-            //if(radio<=1){
-                double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(latitud, longitud, latitudGet, longitudGet);
-                if(distanciaOrigen >= radio){//Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
-                    peticionTareasServidor(latitud, longitud, Math.min(2 * radio + 0.1, 1.5));
-                }else{
-                    map.getOverlays().clear();
-                    pintaItemsfijos();
-                    pintaZona(latitud, longitud);
-                }
-            }else {//El fichero sigue siendo válido
-                map.getOverlays().clear();
-                pintaItemsfijos();
-                pintaZona(latitud, longitud);
-            }
-        }*/
         boolean petServer = solicitarAlServidor(map.getBoundingBox());
 
         try {
             GeoPoint puntoPartida, puntoVariable;
-            puntoPartida = posicionPrimeraComprobacionPantalla(map.getBoundingBox().getLatNorth(), map.getBoundingBox().getLonWest());
-            if (puntoPartida == null) {
+            //Se recupera la primera cuadrícula a comprobar
+            puntoPartida = posicionPrimeraComprobacionPantalla(
+                    map.getBoundingBox().getLatNorth(),
+                    map.getBoundingBox().getLonWest());
+            if (puntoPartida == null) {//La primera cuadrícula vendrá dada por el punto más al norte y al oeste
                 puntoPartida = establecePimeraCuadricula(map.getBoundingBox());
             }
+            //Número de cuadrículas verticales y horizontales en la vista actual
             int cuadriculasVerticales = numeroCuadriculas(puntoPartida.getLatitude(), map.getBoundingBox().getLatSouth());
-            //int cuadriculasVerticales = numeroCuadriculas(map.getBoundingBox().getLatNorth(), map.getBoundingBox().getLatSouth());
             int cuadriculasHorizontales = numeroCuadriculas(map.getBoundingBox().getLonEast(), puntoPartida.getLongitude());
-            //int cuadriculasHorizontales = numeroCuadriculas(map.getBoundingBox().getLonEast(), map.getBoundingBox().getLonWest());
             puntoVariable = new GeoPoint(puntoPartida);
             BoundingBox bb;
             boolean nuevoCuadrado;
             JSONObject jsonObject;
             List<String> ficherosPintar = new ArrayList<>();
             JSONArray posicionesCuadriculas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroPosicionesCuadriculas);
+            //Se recorren las cuadrículas
             if(map.getBoundingBox().getDiagonalLengthInMeters()/2000 < 2) {
                 for (int i = 0; i < cuadriculasHorizontales; i++) {
                     puntoVariable.setLongitude(puntoPartida.getLongitude() + i * incremento);
                     for (int j = 0; j < cuadriculasVerticales; j++) {
                         puntoVariable.setLatitude(puntoPartida.getLatitude() - j * incremento);
                         nuevoCuadrado = true;
+                        //Se comprueba si existe la cuadrícula
                         for (int k = 0; k < posicionesCuadriculas.length(); k++) {
                             jsonObject = posicionesCuadriculas.getJSONObject(k);
                             String id = jsonObject.getString(Auxiliar.id);
-                            if(!ficherosPintar.contains(id))
-                                ficherosPintar.add(id);
                             if (petServer) {
-                                bb = new BoundingBox(jsonObject.getDouble(Auxiliar.latN), jsonObject.getDouble(Auxiliar.lonE), jsonObject.getDouble(Auxiliar.latS), jsonObject.getDouble(Auxiliar.lonO));
-                                if (bb.contains(puntoVariable.getLatitude() - 0.00001, puntoVariable.getLongitude() + 0.00001)) {
-                                    if (System.currentTimeMillis() - jsonObject.getLong(Auxiliar.fechaUltimaModificacion) > 86400000) {//Un día
+                                bb = new BoundingBox(
+                                        jsonObject.getDouble(Auxiliar.latN),
+                                        jsonObject.getDouble(Auxiliar.lonE),
+                                        jsonObject.getDouble(Auxiliar.latS),
+                                        jsonObject.getDouble(Auxiliar.lonO));
+                                if (bb.contains(
+                                        puntoVariable.getLatitude() - 0.00001,
+                                        puntoVariable.getLongitude() + 0.00001)) {
+                                    if(!ficherosPintar.contains(id))
+                                        ficherosPintar.add(id);
+                                    if (System.currentTimeMillis() -
+                                            jsonObject.getLong(Auxiliar.fechaUltimaModificacion)
+                                            > 86400000) {//Un día
                                         File file = new File(getFilesDir(), jsonObject.getString(Auxiliar.id));
                                         if (file.exists()) {
-                                            file.delete();
+                                            //file.delete();
                                             long instante = System.currentTimeMillis();
                                             jsonObject.put(Auxiliar.fechaUltimaModificacion, instante);
                                             posicionesCuadriculas.put(k, jsonObject);
-                                            PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroPosicionesCuadriculas, jsonObject);
+                                            PersistenciaDatos.reemplazaJSON(
+                                                    getApplication(),
+                                                    PersistenciaDatos.ficheroPosicionesCuadriculas,
+                                                    jsonObject);
                                             peticionTareasServidor(bb, jsonObject.getString(Auxiliar.id));
                                             break;
                                         }
@@ -636,7 +623,10 @@ public class Maps extends AppCompatActivity implements
                             }
                         }
                         if (petServer && nuevoCuadrado) {
-                            bb = new BoundingBox(puntoVariable.getLatitude(), puntoVariable.getLongitude() + incremento, puntoVariable.getLatitude() - incremento, puntoVariable.getLongitude());
+                            bb = new BoundingBox(puntoVariable.getLatitude(),
+                                    puntoVariable.getLongitude() + incremento,
+                                    puntoVariable.getLatitude() - incremento,
+                                    puntoVariable.getLongitude());
                             JSONObject cuadricula = new JSONObject();
                             long instante = System.currentTimeMillis();
                             cuadricula.put(Auxiliar.latN, bb.getLatNorth());
@@ -645,9 +635,12 @@ public class Maps extends AppCompatActivity implements
                             cuadricula.put(Auxiliar.lonO, bb.getLonWest());
                             cuadricula.put(Auxiliar.id, Long.toString(instante));
                             cuadricula.put(Auxiliar.fechaUltimaModificacion, instante);
-                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroPosicionesCuadriculas, cuadricula, Context.MODE_PRIVATE);
+                            PersistenciaDatos.guardaJSON(getApplication(),
+                                    PersistenciaDatos.ficheroPosicionesCuadriculas,
+                                    cuadricula,
+                                    Context.MODE_PRIVATE);
                             posicionesCuadriculas.put(cuadricula);
-
+                            //Solicitud al servidor
                             peticionTareasServidor(bb, Long.toString(instante));
                         }
                     }
@@ -661,50 +654,16 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
-    final double[] distanciaAgrupacion = {0, 0.05, 0.1, 0.2, 0.4, 0.8, 1.6, 3.2};
+    /**
+     * Se representan los marcadores existentes en las cuadrículas que se le muestran al usuario
+     * @param ficherosPintar Nombre de los ficheros donde se encuentran las tareas a representar
+     */
     private void pintaZona(List<String> ficherosPintar){
-        List<GeoPoint> puntos = new ArrayList<>();
-        //puntos.add(new GeoPoint(latitude, longitude, map.getZoomLevelDouble()));
-        puntos.add(new GeoPoint(map.getBoundingBox().getLatSouth(), map.getBoundingBox().getLonWest()));
+        //Distancia a la que se van a agrupar las tareas
+        double nivelZum = 0.075*(nivelMax) - 0.075*map.getZoomLevelDouble();
+        //Evito los marcadores duplicados
+        nivelZum = Math.max(nivelZum, 0.02);//20m;
 
-        double nivelZum = map.getZoomLevelDouble();
-        int caso;
-        if(nivelZum > nivelMax - 2){
-            caso = 0;
-        }else{
-            if(nivelZum > nivelMax - 2.5){
-                caso = 1;
-            }else {
-                if (nivelZum > nivelMax - 3) {
-                    caso = 2;
-                } else {
-                    if (nivelZum > nivelMax - 4) {
-                        caso = 3;
-                    } else {
-                        if (nivelZum > nivelMax - 5) {
-                            caso = 4;
-                        } else {
-                            if (nivelZum > nivelMax - 6) {
-                                caso = 5;
-                            } else {
-                                if(nivelZum > nivelMax - 7)
-                                    caso = 6;
-                                else{
-                                    caso = 7;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /*double distanciaMax = Auxiliar.calculaDistanciaDosPuntos(latitude, longitude,
-                puntos.get(1).getLatitude(), puntos.get(1).getLongitude());*/
-        double distanciaMax = map.getBoundingBox().getDiagonalLengthInMeters() / 2000;
-
-        nivelZum = distanciaAgrupacion[caso];
-        //JSONArray todasTareas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareasZona);
         JSONArray todasTareas = new JSONArray();
         JSONObject cuadricula;
         JSONArray tareas;
@@ -727,74 +686,55 @@ public class Maps extends AppCompatActivity implements
         List<Marcador> listaMarcadores = new ArrayList<>();
         Marcador marcador;
         double latitud, longitud;
-        Map<Integer, Double> latitudes, longitudes;
-        boolean anterior = false, anterior2 = false;
+        //Map<Integer, Double> latitudes, longitudes;
+        boolean anterior = false/*, anterior2 = false*/;
         try {
             while (todasTareas.length() > 0) {//Barro todas las tareas disponibles en el fichero
                 tarea = (JSONObject)todasTareas.remove(0);
                 latitud = tarea.getDouble(Auxiliar.latitud);
                 longitud = tarea.getDouble(Auxiliar.longitud);
-                //Comprobación de la zona
-                //if(Auxiliar.calculaDistanciaDosPuntos(latitude, longitude, latitud, longitud) <= distanciaMax) {
-                    //Si no hay ningún punto guardado se guarda directamente
-                    if (listaMarcadores.isEmpty()) {
-                        marcador = new Marcador();
-                        marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
-                        marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
-                        marcador.agregaTareaAlMarcador(tarea);
-                        marcador.incrementaTareas();
-                        listaMarcadores.add(marcador);
-                    } else {
-                        for (int i = 0; i < listaMarcadores.size(); i++) {
-                            anterior = false;
-                            marcador = listaMarcadores.get(i);
-                            if (latitud == marcador.getLatitud() &&
-                                    longitud == marcador.getLongitud()) { //La tarea es de la misma posición
-                                marcador.incrementaTareas();
+
+                if (listaMarcadores.isEmpty()) {
+                    marcador = new Marcador();
+                    marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
+                    marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
+                    marcador.agregaTareaAlMarcador(tarea);
+                    //marcador.incrementaTareas();
+                    listaMarcadores.add(marcador);
+                } else {
+                    for (int i = 0; i < listaMarcadores.size(); i++) {
+                        anterior = false;
+                        marcador = listaMarcadores.get(i);
+                        if (latitud == marcador.getLatitud() &&
+                                longitud == marcador.getLongitud()) { //La tarea es de la misma posición
+                            //marcador.incrementaTareas();
+                            marcador.agregaTareaAlMarcador(tarea);
+                            listaMarcadores.set(i, marcador);
+                            anterior = true;
+                            break;
+                        } else {//Se comprueba la distancia a la tarea del marcador
+                            if (Auxiliar.calculaDistanciaDosPuntos(marcador.latitud, marcador.longitud,
+                                    latitud, longitud)
+                                    <= nivelZum) { //Se agrega al marcador ya que se debe agrupar
+                                marcador.setTitulo(getString(R.string.agrupacionTareas));
+                                //marcador.incrementaTareas();
                                 marcador.agregaTareaAlMarcador(tarea);
+
                                 listaMarcadores.set(i, marcador);
                                 anterior = true;
                                 break;
-                            } else {//Se comprueba la distancia a la tarea del marcador
-                                if (Auxiliar.calculaDistanciaDosPuntos(marcador.latitud, marcador.longitud,
-                                        latitud, longitud)
-                                        <= nivelZum) { //Se agrega al marcador ya que se debe agrupar
-                                    marcador.setTitulo(getString(R.string.agrupacionTareas));
-                                    marcador.incrementaTareas();
-                                    marcador.agregaTareaAlMarcador(tarea);
-                                    /*if (marcador.getTareasMarcador()) {
-                                        marcador.agregaPosicion(latitud, longitud);
-                                    } else {
-                                        latitudes = marcador.getLatitudes();
-                                        longitudes = marcador.getLongitudes();
-                                        for (int j = 0; j < latitudes.size(); j++) {
-                                            anterior2 = false;
-                                            if (latitudes.get(j) == latitud && longitudes.get(j) == longitud) {
-                                                anterior2 = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!anterior2) {//No existía la posición en la tarea
-                                            marcador.agregaPosicion(latitud, longitud);
-                                        }
-                                    }*/
-                                    listaMarcadores.set(i, marcador);
-                                    anterior = true;
-                                    break;
-                                }
                             }
                         }
-                        if (!anterior) {//Hay que agregar un nuevo marcador
-                            marcador = new Marcador();
-                            //marcador.setTitulo(tarea.getString(Auxiliar.titulo));
-                            marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
-                            marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
-                            marcador.incrementaTareas();
-                            marcador.agregaTareaAlMarcador(tarea);
-                            listaMarcadores.add(marcador);
-                        }
                     }
-                //}
+                    if (!anterior) {//Hay que agregar un nuevo marcador
+                        marcador = new Marcador();
+                        marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
+                        marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
+                        //marcador.incrementaTareas();
+                        marcador.agregaTareaAlMarcador(tarea);
+                        listaMarcadores.add(marcador);
+                    }
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -808,7 +748,8 @@ public class Maps extends AppCompatActivity implements
     }
 
     /**
-     * Se pausa el mapa tal y como indica la guía
+     * Se pausa el mapa tal y como indica la guía. Se almacena el punto en el que se encuentra la
+     * lista de tareas.
      */
     private static Bundle estadoContenedor;
     @Override
@@ -863,6 +804,7 @@ public class Maps extends AppCompatActivity implements
                 editor.commit();
                 Intent intent = new Intent (getApplicationContext(), Maps.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                finishAffinity();
                 startActivity(intent);
                 break;
         }
@@ -884,13 +826,9 @@ public class Maps extends AppCompatActivity implements
         if(map!=null)
             bundle.putDouble("ZUM", map.getZoomLevelDouble());
 
-        /*if(contenedor.getVisibility() == View.VISIBLE){
-            bundle.putParcelable("CONTENEDOR", contenedor.getLayoutManager().onSaveInstanceState());
-        }*/
-
         bundle.putDouble("LATITUDE", latitudeOrigen);
         bundle.putDouble("LONGITUDE", longitudeOrigen);
-        bundle.putLong("ULTIMANOTIFICACION", ultimaNotificacion);
+        //bundle.putLong("ULTIMANOTIFICACION", ultimaNotificacion);
         super.onSaveInstanceState(bundle);
     }
 
@@ -904,23 +842,14 @@ public class Maps extends AppCompatActivity implements
         try {
             mapController.setZoom(bundle.getDouble("ZUM"));
         }catch (Exception e){
-            //
+            e.printStackTrace();
         }
 
         latitudeOrigen = bundle.getDouble("LATITUDE");
         longitudeOrigen = bundle.getDouble("LONGITUDE");
-        ultimaNotificacion = bundle.getLong("ULTIMANOTIFICACION");
+        //ultimaNotificacion = bundle.getLong("ULTIMANOTIFICACION");
         GeoPoint lastCenter = new GeoPoint(latitudeOrigen, longitudeOrigen);
         mapController.setCenter(lastCenter);
-        /*try{
-            adaptadorListaMapa = (AdaptadorListaMapa) bundle.getSerializable("ADAPTADOR");
-            contenedor.setAdapter(adaptadorListaMapa);
-            contenedor.getLayoutManager().onRestoreInstanceState(bundle.getParcelable("CONTENEDOR"));
-            contenedor.setVisibility(View.VISIBLE);
-            sinPulsarTarea.setVisibility(View.GONE);
-        }catch (Exception e){
-            e.printStackTrace();
-        }*/
     }
 
     /**
@@ -946,16 +875,11 @@ public class Maps extends AppCompatActivity implements
     }
 
     /**
-     * Método para lanzar el servicio que se quedará constantemente buscando la posición.
-     * Se tiene en cuenta la versión de Android utilizada
+     * Método para lanzar el servicio en segundo plano para hacer las llamadas a una alarma de
+     * manera periódica.
      */
     private void lanzaServicioPosicionamiento(){
         new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
-        /*Intent intent = new Intent(this, Proceso.class);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            startForegroundService(intent);
-        else
-            startService(intent);*/
     }
 
     /**
@@ -1020,7 +944,8 @@ public class Maps extends AppCompatActivity implements
         alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                finishAffinity();//Se cierra la app. //El proceso puede seguir activo
+                //finishAffinity();//Se cierra la app. //El proceso puede seguir activo
+                finish();
             }
         });
         alertBuilder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -1032,7 +957,15 @@ public class Maps extends AppCompatActivity implements
         alertBuilder.show();
     }
 
+    /** Identificador de la primera cuadrícula */
     final String idPrimeraCuadricula = "1C";
+
+    /**
+     * Método para establecer la primera cuadrícula. Se coge el punto extremo superior más al oeste y
+     * se construye dicha cuadrícula.
+     * @param boundingBox Caja del mapa mostrado
+     * @return Punto más al norte y más al oeste
+     */
     public GeoPoint establecePimeraCuadricula(BoundingBox boundingBox){
         double latN = boundingBox.getLatNorth();
         double lonO = boundingBox.getLonWest();
@@ -1042,7 +975,11 @@ public class Maps extends AppCompatActivity implements
             jsonObject.put(Auxiliar.lat0, latN);
             jsonObject.put(Auxiliar.lon0, lonO);
             jsonObject.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroPrimeraCuadricula, jsonObject, Context.MODE_PRIVATE);
+            PersistenciaDatos.guardaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraCuadricula,
+                    jsonObject,
+                    Context.MODE_PRIVATE);
             return new GeoPoint(latN, lonO);
         }catch (JSONException e){
             e.printStackTrace();
@@ -1050,8 +987,19 @@ public class Maps extends AppCompatActivity implements
         return null;
     }
 
+    /**
+     * Método para comprobar cual va a ser la primera cuadrícula a comprobar. Se tiene en cuenta la
+     * primera cuadrícula almacenada por la aplicación para que el mapa se vaya autocompletando sin
+     * dejar huecos ni solapar cuadrículas
+     * @param latP Latitud más al norte de la parte del mapa que se está mostrando
+     * @param lonP Longitud más al oeste de la parte del mapa que se está mostrando
+     * @return Punto del que se tiene que partir para crear la cuadrícula
+     */
     public GeoPoint posicionPrimeraComprobacionPantalla(double latP, double lonP){
-        JSONObject primeraCuadricula = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPrimeraCuadricula, idPrimeraCuadricula);
+        JSONObject primeraCuadricula = PersistenciaDatos.recuperaTarea(
+                getApplication(),
+                PersistenciaDatos.ficheroPrimeraCuadricula,
+                idPrimeraCuadricula);
         if(primeraCuadricula != null){
             try {
                 double lat0 = primeraCuadricula.getDouble(Auxiliar.lat0);
@@ -1071,21 +1019,39 @@ public class Maps extends AppCompatActivity implements
             return null;
     }
 
+    /**
+     * Número de cuadrículas que se necesitan para cubrir la totalidad del área mostrada. Se puede
+     * utilizar tanto para cuadrículas verticales como horizontales.
+     * @param latNolonE Latitud más al norte (verticales) o longitud al este (horizontales)
+     * @param latSoLonO Latitud más al sur (verticales) o longitud más al oeste (horizontales)
+     * @return Número de cuadrículas que se tiene que componen el mapa mostrado
+     */
     public int numeroCuadriculas(double latNolonE, double latSoLonO){
         double intermedio2 = (latNolonE-latSoLonO)/incremento;
         double intermedio = Math.ceil(intermedio2);
         return (int)intermedio;
     }
 
+    /**
+     * Método para saber si es neceario solicitar al servidor las tareas. Se utiliza para que cuando
+     * el zum sea bajo no se pidan muchas zonas al servidor.
+     * @param boundingBox Caja que representa al mapa actual
+     * @return Verdadero si se puede solictar o falso si no se debe
+     */
     public boolean solicitarAlServidor(BoundingBox boundingBox){
         return !(boundingBox.getDiagonalLengthInMeters() / 2000 > 1.5);
     }
 
+    /** Número de grados con los que se forma el lado de la cuadrícula */
     private final double incremento = 0.002;
 
-
+    /**
+     * Método para solicitar al servidor la solicitud de las tareas de una cuadrícula
+     * @param caja Cuadrícula solicitada
+     * @param nombre Nombre del fichero donde se tiene que almacenar las tareas
+     */
     private void peticionTareasServidor(final BoundingBox caja, final String nombre){
-        String url = "http://192.168.1.14:8080/tareas?latitude="+caja.getCenterLatitude()
+        String url = Auxiliar.direccionIP + "tareas?latitude="+caja.getCenterLatitude()
                 +"&longitude="+caja.getCenterLongitude()
                 +"&radio="+(caja.getDiagonalLengthInMeters()/2000);
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
@@ -1095,9 +1061,6 @@ public class Maps extends AppCompatActivity implements
                 try {
                     long instante = System.currentTimeMillis();
                     JSONObject cuadricula = new JSONObject();
-                    /*if(nombre == null)
-                        cuadricula.put(Auxiliar.id, Long.toString(instante));
-                    else*/
                     cuadricula.put(Auxiliar.id, nombre);
                     JSONArray tareasValidas = new JSONArray();
                     JSONObject tarea;
@@ -1115,7 +1078,7 @@ public class Maps extends AppCompatActivity implements
                     if (tareasValidas.length() > 0) {
                         cuadricula.put(Auxiliar.tareas, tareasValidas);
                         cuadricula.put(Auxiliar.fechaUltimaModificacion, instante);
-                        PersistenciaDatos.guardaJSON(getApplication(), nombre, cuadricula, Context.MODE_PRIVATE);
+                        PersistenciaDatos.creaFichero(getApplication(), nombre, cuadricula, Context.MODE_PRIVATE);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1165,7 +1128,7 @@ public class Maps extends AppCompatActivity implements
         map.invalidate();
     }
 
-    private String idInstanteGETZONA = "instanteGETZONA";
+    //private String idInstanteGETZONA = "instanteGETZONA";
 
     /**
      * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
@@ -1181,86 +1144,115 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Subclase con la que se representa al marcador del mapa
+     */
     private static class Marcador{
+        /** Título del marcador*/
         private String titulo;
+        /** Latitud y longitud donde se coloca al marcador */
         private double latitud, longitud;
+        /** Tareas que contendrá el marcador*/
         private JSONArray tareasMarcador;
-        //private Map<Integer, Double> latitudes, longitudes;
+        /** Número de tareas que están en el interior del marcador */
         private int numeroTareas;
-        //private int posiciones;
+
+        /**
+         * Constructor de la subclase. Establece los valores iniciales e inicia la lista.
+         */
         Marcador(){
             titulo = null;
             latitud = 0;
             longitud = 0;
             tareasMarcador = new JSONArray();
-            //resto();
         }
 
-        /*Marcador(String titulo, double latitud, double longitud){
-            this.titulo = titulo;
-            this.latitud = latitud;
-            this.longitud = longitud;
-            resto();
-        }*/
-
-        /*private void resto(){
-            latitudes = new HashMap<>();
-            longitudes = new HashMap<>();
-            posiciones = 0;
-        }*/
-
+        /**
+         * Método para establecer un título al marcador
+         * @param titulo Título del marcador
+         */
         void setTitulo(String titulo) {
             this.titulo = titulo;
         }
 
+        /**
+         * Método para recuperar un título del marcador
+         * @return Título del marcador. Si no se ha establecido es null
+         */
         String getTitulo(){
             return titulo;
         }
 
+        /**
+         * Método para establecer la posición del marcador en el mapa
+         * @param latitud Latitud
+         * @param longitud Longitud
+         */
         void setPosicionMarcador(double latitud, double longitud) {
             this.latitud = latitud;
             this.longitud = longitud;
         }
 
+        /**
+         * Método para recuperar la latitud del marcador
+         * @return Latitud
+         */
         double getLatitud() {
             return latitud;
         }
 
+        /**
+         * Método para recuperar la longitud del marcador
+         * @return Longitud
+         */
         double getLongitud() {
             return longitud;
         }
 
-        /*void agregaPosicion(double latitud, double longitud){
-            latitudes.put(posiciones, latitud);
-            longitudes.put(posiciones, longitud);
-            ++posiciones;
-        }
-
-        Map<Integer, Double> getLatitudes(){
-            return latitudes;
-        }
-
-        Map<Integer, Double> getLongitudes() {
-            return longitudes;
-        }
+        /**
+         * Método para agregar una nueva tarea al marcador
+         * @param tarea Tarea que se desea agregar
          */
-
         void agregaTareaAlMarcador(JSONObject tarea){
             tareasMarcador.put(tarea);
+            incrementaTareas();
         }
 
+        /**
+         * Método para establecer la lista de tareas del marcador
+         * @param tareas Tareas del marcador
+         */
         void setTareasMarcador(JSONArray tareas){
             tareasMarcador = tareas;
         }
 
+        /**
+         * Método para recuperar la lista de tareas del marcador
+         * @return Lista de tareas del marcador
+         */
         JSONArray getTareasMarcador(){
             return tareasMarcador;
         }
 
+        /**
+         * Método para incrementar el número de tareas del marcador
+         */
         void incrementaTareas(){
             ++numeroTareas;
         }
 
+        /**
+         * Método para establecer el número de tareas que tiene el marcador
+         * @param numeroTareas Número de tareas del marcador
+         */
+        void setNumeroTareas(int numeroTareas){
+            this.numeroTareas = numeroTareas;
+        }
+
+        /**
+         * Método para obtener el número de tareas del marcador
+         * @return Número de tareas
+         */
         int getNumeroTareas() {
             return numeroTareas;
         }

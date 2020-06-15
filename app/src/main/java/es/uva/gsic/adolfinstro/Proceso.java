@@ -261,7 +261,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
      * @param radio Radio de la consulta
      */
     private void peticionTareasServidor(final Location location, double radio){
-        String url = "http://192.168.1.14:8080/tareas?latitude="+location.getLatitude()
+        String url = "http://192.168.1.14:10001/tareas?latitude="+location.getLatitude()
                 +"&longitude="+location.getLongitude()
                 +"&radio="+radio;
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {

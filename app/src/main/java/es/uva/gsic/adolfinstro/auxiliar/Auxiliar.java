@@ -39,6 +39,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Auxiliar {
 
+    public static final String direccionIP = "http://192.168.1.121:10001/";
+
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
     public static final String latitud = "latitud";

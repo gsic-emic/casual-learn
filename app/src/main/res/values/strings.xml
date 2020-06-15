@@ -122,8 +122,7 @@
     <string name="agregaVideoAntesBorrar">Add a new video before remove this</string>
     <string name="tareaIndividual">Single point tasks</string>
     <string name="pulsaEnUnaTarea">Click on a task of the list to get more info</string>
-    <string name="fondosEuropeos">European Regional Development Fund</string>
-    <string name="juntaCastilla">Regional Council of Education of Castile and Leon</string>
+    <string name="proyectosSistema" translatable="false">Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación VA257P18 y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto TIN2017-85179-C3-2-R.</string>
     <string name="fondosInvesticacion">Research Projects</string>
     <string name="Desarrolladores">Developers</string>
     <string name="Picasso" translatable="false">Picasso</string>
@@ -131,6 +130,20 @@
     <string name="version">Version</string>
     <string name="acercade">"About Casual Learn"</string>
     <string name="imagenAmpliable">Expandable imagen</string>
-    <string name="hashtag" translatable="false">#casuallearn</string>
+    <string name="hashtag" translatable="false">casualLearn</string>
     <string name="instalaTwitter">You should install the official Twitter client to share your answer</string>
+    <string name="palabraClave">Hashtag</string>
+    <string name="descripcionPalabraClave">Customize the hashtag with which the tasks will be published on Twitter</string>
+    <string name="fuentesInformacion" translatable="false">Fuentes de información</string>
+    <string name="pablo" translatable="false">Pablo García Zarza - pablogz@gsic.uva.es</string>
+    <string name="adolfo" translatable="false">Adolfo Ruíz Calleja - adolfo@gsic.uva.es</string>
+    <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
+    <string name="urluva" translatable="false">https://www.uva.es</string>
+    <string name="urlJunta" translatable="false">https://www.jcyl.es/</string>
+    <string name="urlDbpedia" translatable="false">https://wiki.dbpedia.org/</string>
+    <string name="urlWikidata" translatable="false">https://www.wikidata.org/wiki/Wikidata:Main_Page</string>
+    <string name="urlopenStreetMap" translatable="false">https://www.openstreetmap.org/copyright</string>
+    <string name="urlOsmdroid" translatable="false">https://github.com/osmdroid/osmdroid</string>
+    <string name="urlPhotoView" translatable="false">https://github.com/chrisbanes/PhotoView</string>
+    <string name="urlPicasso" translatable="false">https://square.github.io/picasso/</string>
 </resources>

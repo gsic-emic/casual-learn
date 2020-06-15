@@ -9,18 +9,26 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * Clase diseñada para mostrar la información de la aplicación
  *
  * @author Pablo
- * @version 20200520
+ * @version 20200615
  */
 public class Acerca extends AppCompatActivity {
 
     /** Instancia del cuadro del textview donde se coloca la versión*/
     TextView version;
+    List<TextView> desarrolladores;
+    Boolean ensena = false;
+
 
     /**
      * Método para completar la interfaz gráfica del usuario. Se pinta la versión de la app.
@@ -37,6 +45,10 @@ public class Acerca extends AppCompatActivity {
 
         version = findViewById(R.id.tvVersion);
 
+        desarrolladores = new ArrayList<>();
+        desarrolladores.add((TextView) findViewById(R.id.tvPablo));
+        desarrolladores.add((TextView) findViewById(R.id.tvAdolfo));
+
         if(savedInstanceState == null){
             try {
                 version.setText(String.format("%s: %s", getString(R.string.version),
@@ -47,6 +59,11 @@ public class Acerca extends AppCompatActivity {
             }
         }else{
             version.setText(savedInstanceState.getString("TEXTOVERSION"));
+        }
+
+        if(savedInstanceState != null){
+            ensena = savedInstanceState.getBoolean("ENSENA");
+            desarrolladores();
         }
     }
 
@@ -59,30 +76,50 @@ public class Acerca extends AppCompatActivity {
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
         switch (view.getId()){
             case R.id.imagenGsic:
-                intent.setData(Uri.parse("https://www.gsic.uva.es"));
+                intent.setData(Uri.parse(getString(R.string.urlgsic)));
                 break;
             case R.id.imagenUva:
-                intent.setData(Uri.parse("https://www.uva.es"));
+                intent.setData(Uri.parse(getString(R.string.urluva)));
+                break;
+            case R.id.tvDesarrolladores:
+                ensena = !ensena;
+                desarrolladores();
+                break;
+            case R.id.ivJunta:
+                intent.setData(Uri.parse(getString(R.string.urlJunta)));
+                break;
+            case R.id.ivDbPiedia:
+                intent.setData(Uri.parse(getString(R.string.urlDbpedia)));
+                break;
+            case R.id.ivWikidata:
+                intent.setData(Uri.parse(getString(R.string.urlWikidata)));
                 break;
             case R.id.tvOpenStreepMap:
-                intent.setData(Uri.parse("https://www.openstreetmap.org/copyright"));
+                intent.setData(Uri.parse(getString(R.string.urlopenStreetMap)));
                 break;
             case R.id.tvOsmdroid:
-                intent.setData(Uri.parse("https://github.com/osmdroid/osmdroid"));
+                intent.setData(Uri.parse(getString(R.string.urlOsmdroid)));
                 break;
             case R.id.tvPhotoView:
-                intent.setData(Uri.parse("https://github.com/chrisbanes/PhotoView"));
-                break;
-            case R.id.tvFused:
-                intent.setData(Uri.parse("https://developers.google.com/location-context/fused-location-provider"));
+                intent.setData(Uri.parse(getString(R.string.urlPhotoView)));
                 break;
             case R.id.tvPicasso:
-                intent.setData(Uri.parse("https://square.github.io/picasso/"));
+                intent.setData(Uri.parse(getString(R.string.urlPicasso)));
                 break;
             default:
                 return;
         }
-        startActivity(intent);
+        if(view.getId() != R.id.tvDesarrolladores)
+            startActivity(intent);
+    }
+
+    private void desarrolladores() {
+        if(ensena)
+            for(TextView tv : desarrolladores)
+                tv.setVisibility(View.VISIBLE);
+        else
+            for(TextView tv : desarrolladores)
+                tv.setVisibility(View.GONE);
     }
 
     /**
@@ -109,8 +146,9 @@ public class Acerca extends AppCompatActivity {
      * @param b bundle donde se almacena el estado
      */
     @Override
-    public void onSaveInstanceState(Bundle b) {
+    public void onSaveInstanceState(@NotNull Bundle b) {
         super.onSaveInstanceState(b);
         b.putString("TEXTOVERSION", version.getText().toString());
+        b.putBoolean("ENSENA", ensena);
     }
 }

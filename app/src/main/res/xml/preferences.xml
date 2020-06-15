@@ -27,6 +27,13 @@
             app:summary="@string/descripcionListaBlancaPref"
             app:defaultValue="true" />
     </PreferenceCategory>
+    <PreferenceCategory>
+        <EditTextPreference
+            app:key="hashtag"
+            app:title="@string/palabraClave"
+            app:summary="@string/descripcionPalabraClave"
+            app:defaultValue="@string/hashtag" />
+    </PreferenceCategory>
     <PreferenceCategory
         android:key="datosUsuario"
         android:title="@string/datosUsuario">
@@ -37,10 +44,10 @@
             android:key="correo"
             android:enabled="false"/>-->
     </PreferenceCategory>
-    <EditTextPreference
+    <!--<EditTextPreference
         app:key="token"
         app:enableCopying="false"
         app:defaultValue=" "
-        app:enabled="false" />
+        app:enabled="false" />-->
 
 </PreferenceScreen>

@@ -2,10 +2,12 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -53,36 +55,39 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
         View.OnClickListener,
-        AdaptadorVideosCompletados.ItemClickListenerVideo{
+        AdaptadorVideosCompletados.ItemClickListenerVideo,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     /** TextView donde se coloca la pregunta de la tarea */
-    TextView enunciado;
+    private TextView enunciado;
     /** EditText donde se incluye la respuesta textual del usuario */
-    EditText textoUsuario;
+    private EditText textoUsuario;
     /** Puntuación que el usuario tiene asignado a la tarea*/
-    RatingBar ratingBar;
+    private RatingBar ratingBar;
     /** Contenedor donde se colocará las imágenes o vídeos de la tarea realiacidos por el usuario */
-    RecyclerView recyclerView;
+    private RecyclerView recyclerView;
     /** Botón con el que el usuario podrá agregar contenido multimedia*/
-    Button btAgregar;
+    private Button btAgregar;
     /** Estado en el que se encuentra la edición */
-    boolean editando=false;
+    private boolean editando=false;
     /** Tarea que ha completado el usuario */
-    JSONObject tarea;
+    private JSONObject tarea;
     /** Lista de identificadores únicos del contendido multimedia */
-    List<String> listaURI;
+    private List<String> listaURI;
     /** Lista de recursos a eliminar cuando el usuario guarde */
-    List<Uri> uriEliminar;
+    private List<Uri> uriEliminar;
     /** Lista de uris guardadadas por el si el usuario sale de la actividad sin guardar*/
-    List<Uri> uriGuardadas;
+    private List<Uri> uriGuardadas;
     /** Lista de recursos multimedia representados en el contenedor */
-    List<ImagenesCamara> imagenesCamaras;
+    private List<ImagenesCamara> imagenesCamaras;
     /** Adaptador del contenedor para las imágenes */
-    AdaptadorImagenesCompletadas adaptadorImagenesCompletadas;
+    private AdaptadorImagenesCompletadas adaptadorImagenesCompletadas;
     /** Adaptador del contenedor para los vídeos */
-    AdaptadorVideosCompletados adaptadorVideosCompletados;
+    private AdaptadorVideosCompletados adaptadorVideosCompletados;
     /** Posicion al que se desplaza el scroll */
-    int posicion = 0;
+    private int posicion = 0;
+
+    private String hashtag;
 
     /**
      * Método de creación de la actividad. Pinta la interfaz gráfica y establece las referencias
@@ -199,6 +204,10 @@ public class Completadas extends AppCompatActivity implements
             editando = savedInstanceState.getBoolean("EDITANDO");
             onOptionsItemSelected((MenuItem) findViewById(R.id.editarCompletada));
         }
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.HASHTAG_pref);
     }
 
     /**
@@ -295,7 +304,7 @@ public class Completadas extends AppCompatActivity implements
                 }
                 return true;
             case R.id.publicarCompletada:
-                Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
                 mandaTweet();
                 return true;
             default:
@@ -377,12 +386,14 @@ public class Completadas extends AppCompatActivity implements
             texto = tarea.getString(Auxiliar.titulo);
             if(!textoUsuario.getText().toString().equals("")){
                 texto = texto.concat(String.format("\n%s", textoUsuario.getText().toString()));
-                texto = (texto.length() > 262)?texto.substring(0, 259)+"...":texto;
+                if(texto.length() + hashtag.length() + 2 > 279){
+                    texto = texto.substring(0, 279-(hashtag.length()+5)) + "...";
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        texto=(texto==null)?String.format("%s", getString(R.string.hashtag)):texto.concat(String.format("\n%s", getString(R.string.hashtag)));
+        texto=(texto==null)?String.format("%s", getString(R.string.hashtag)):texto.concat(String.format("\n#%s", hashtag));
         return texto;
     }
 
@@ -793,6 +804,18 @@ public class Completadas extends AppCompatActivity implements
         }
         original.close();
         copia.close();
+    }
+
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key){
+            case Ajustes.HASHTAG_pref:
+                hashtag = sharedPreferences.getString(key, getString(R.string.hashtag));
+                break;
+            default:
+                break;
+        }
     }
 
     /**

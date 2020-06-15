@@ -223,6 +223,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
             Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent (getApplicationContext(), Maps.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            finishAffinity();
             startActivity(intent);
         }
     }

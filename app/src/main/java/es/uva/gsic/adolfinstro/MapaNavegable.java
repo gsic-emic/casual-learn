@@ -17,6 +17,7 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
@@ -34,7 +35,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * @author Pablo
  * @version 20200519
  */
-public class mapaNavegable extends AppCompatActivity {
+public class MapaNavegable extends AppCompatActivity {
 
     /** Contexto */
     Context context;
@@ -78,6 +79,7 @@ public class mapaNavegable extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         IMapController mapController = map.getController();
         map.setMultiTouchControls(true);
+        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
         GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
         myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);

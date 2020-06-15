@@ -67,7 +67,7 @@
     <string name="gracias">¡¡Gracias!!</string>
     <string name="realizar">Realizar</string>
     <string name="tipoDeTarea">"Tipo de tarea: "</string>
-    <string name="infoTarea">Info. tarea</string>
+    <string name="infoTarea">Infomación de la tarea</string>
     <string name="terminar">Finalizar tarea</string>
     <string name="denunciarPreguntaTitulo">Reportar tarea</string>
     <string name="denunciarPreguntaTexto">¿Prodrías decirnos por qué esta tarea es errónea?</string>
@@ -116,12 +116,12 @@
     <string name="agregaVideoAntesBorrar">Agrega un nuevo vídeo antes de eliminar este</string>
     <string name="tareaIndividual">Tareas de un único lugar</string>
     <string name="pulsaEnUnaTarea">Pulsa sobre una tarea de la lista para más información</string>
-    <string name="fondosEuropeos">Fondo Europeo de Desarrollo Regional</string>
-    <string name="juntaCastilla">Consejería de Educación de la Junta de Castilla y León</string>
     <string name="fondosInvesticacion">Proyectos de Investigación</string>
     <string name="Desarrolladores">Desarrolladores</string>
     <string name="version">Versión</string>
     <string name="acercade">Acerca de Casual Learn</string>
     <string name="imagenAmpliable">Imagen ampliable</string>
     <string name="instalaTwitter">Tienes que instalar el cliente oficial de Twitter para compartir la respuesta</string>
+    <string name="palabraClave">Palabra clave</string>
+    <string name="descripcionPalabraClave">Personaliza el hashtag con el que se publicarán las tareas en la red social Twitter</string>
 </resources>

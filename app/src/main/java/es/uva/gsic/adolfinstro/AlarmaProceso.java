@@ -243,7 +243,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         //Inicio del servicio, se tiene que recuperar la tarea del servidor
         //Validez de un día para las tareas
         if(latitudGet==0 || longitudGet==0 || ((new Date().getTime() - momento) > 86400000)){
-            peticionTareasServidor(location, 1.25);
+            peticionTareasServidor(location, 0.75);
         }else{
             double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
                     latitud, longitud,
@@ -264,7 +264,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
      */
     private void peticionTareasServidor(final Location location, double radio){
         //TODO IP de depuración
-        String url = "http://192.168.1.14:8080/tareas?latitude="+location.getLatitude()
+        String url = Auxiliar.direccionIP + "tareas?latitude="+location.getLatitude()
                 +"&longitude="+location.getLongitude()
                 +"&radio="+radio;
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url,

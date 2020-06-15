@@ -20,7 +20,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase para gestionar la puntuación de las tareas
  *
- * @author GSIC
+ * @author Pablo
  */
 public class Puntuacion extends AppCompatActivity {
 
@@ -92,6 +92,10 @@ public class Puntuacion extends AppCompatActivity {
         Auxiliar.returnMain(this);
     }
 
+    /**
+     * Método para controlar las pulsaciones sobre los distintos botones de la pantalla.
+     * @param view Vista pulsada
+     */
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btEnviarPuntuacion:
@@ -99,13 +103,22 @@ public class Puntuacion extends AppCompatActivity {
                     //SE GUARDA LA PUNTUACIÓN
                     JSONObject json = null;
                     try {
-                        json = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroCompletadas, idTarea);
+                        json = PersistenciaDatos.obtenTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroCompletadas,
+                                idTarea);
                         json.put(Auxiliar.rating, puntuacion);
                         json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                        PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, json, Context.MODE_PRIVATE);
+                        PersistenciaDatos.guardaJSON(getApplication(),
+                                PersistenciaDatos.ficheroCompletadas,
+                                json,
+                                Context.MODE_PRIVATE);
                     }catch (Exception e){
                         if(json != null)
-                            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, json, Context.MODE_PRIVATE);
+                            PersistenciaDatos.guardaJSON(getApplication(),
+                                    PersistenciaDatos.ficheroCompletadas,
+                                    json,
+                                    Context.MODE_PRIVATE);
                         Auxiliar.returnMain(getApplication().getApplicationContext());
                     }
                     Toast.makeText(this, getString(R.string.gracias), Toast.LENGTH_SHORT).show();

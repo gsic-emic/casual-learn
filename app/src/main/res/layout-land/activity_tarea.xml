@@ -8,7 +8,9 @@
     tools:context=".Tarea">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="5dp"
+        android:layout_marginBottom="5dp">
 
         <ImageView
             android:id="@+id/ivDenunciarPregunta"
@@ -42,7 +44,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="20dp"
-                android:layout_marginHorizontal="3dp"
                 android:textSize="20sp"
                 android:visibility="visible"/>
         </LinearLayout>
@@ -58,7 +59,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/linearLayout"
-            android:layout_marginHorizontal="3dp"
             android:layout_marginBottom="20dp"
             android:visibility="visible"
             android:inputType="textMultiLine"
@@ -103,11 +103,11 @@
             android:id="@+id/btTerminar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toEndOf="@id/btVolver"
             app:layout_constraintEnd_toStartOf="@id/btCamara"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
             android:layout_marginTop="20dp"
+            android:layout_marginHorizontal="10dp"
             android:text="@string/terminar"
             android:visibility="gone"
             android:onClick="boton"/>

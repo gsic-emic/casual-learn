@@ -27,7 +27,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".mapaNavegable"
+        <activity android:name=".MapaNavegable"
             android:label="@string/navega"/>
         <activity
             android:name=".Completadas"

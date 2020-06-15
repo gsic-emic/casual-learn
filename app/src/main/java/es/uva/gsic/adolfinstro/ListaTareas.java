@@ -13,8 +13,6 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,7 +69,7 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista_tareas);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         sinTareas = findViewById(R.id.tvSinTareasLista);
         peticion = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.peticion);
@@ -182,6 +180,7 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
     }
 
 
+    /**
     private void sacarRechazada(final String idTarea) {
         AlertDialog.Builder confirmacion = new AlertDialog.Builder(this);
         confirmacion.setTitle(getString(R.string.restaurarTarea));
@@ -200,7 +199,7 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
         });
         confirmacion.setNegativeButton(getString(R.string.cancel), null);
         confirmacion.show();
-    }
+    }*/
 
     @Override
     public void onItemLongClick(View v, int position){

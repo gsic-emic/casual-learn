@@ -2,7 +2,12 @@ package es.uva.gsic.adolfinstro;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
+import android.widget.EditText;
 
+import androidx.annotation.NonNull;
+import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
@@ -30,6 +35,15 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
         et.setSummary(Login.firebaseAuth.getCurrentUser().getDisplayName());
         et = findPreference("correo");
         et.setSummary(Login.firebaseAuth.getCurrentUser().getEmail());*/
+        final EditTextPreference hashtag = findPreference(Ajustes.HASHTAG_pref);
+        if(hashtag!=null)
+            hashtag.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
+                @Override
+                public void onBindEditText(@NonNull EditText editText) {
+                    editText.setFilters(new InputFilter[]{
+                            new InputFilter.LengthFilter(15)});
+                }
+            });
     }
 
     /**
