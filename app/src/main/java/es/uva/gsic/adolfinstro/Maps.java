@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 
 import org.jetbrains.annotations.NotNull;
@@ -116,6 +117,9 @@ public class Maps extends AppCompatActivity implements
 
     private static AdaptadorListaMapa adaptadorListaMapa;
 
+    /** Identificador de la primera cuadrícula */
+    final String idPrimeraCuadricula = "1C";
+
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -137,7 +141,6 @@ public class Maps extends AppCompatActivity implements
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
-        checkPermissions();
         //Se decide si se muestra el mapa
         if (noMolestar) {
             setContentView(R.layout.no_molestar);
@@ -185,7 +188,7 @@ public class Maps extends AppCompatActivity implements
             map.setMinZoomLevel(nivelMin);
             map.setMaxZoomLevel(nivelMax);
 
-            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+            /*GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
             gpsMyLocationProvider.setLocationUpdateMinDistance(5);
             gpsMyLocationProvider.setLocationUpdateMinTime(5000);
             gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
@@ -195,7 +198,7 @@ public class Maps extends AppCompatActivity implements
             myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
                     BitmapFactory.decodeResource(getResources(), R.drawable.person));
             //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-            myLocationNewOverlay.setEnableAutoStop(true);
+            myLocationNewOverlay.setEnableAutoStop(true);*/
 
             final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
             scaleBarOverlay = new ScaleBarOverlay(map);
@@ -215,6 +218,7 @@ public class Maps extends AppCompatActivity implements
 
             pintaItemsfijos();
 
+            //checkPermissions();
             map.addMapListener(new DelayedMapListener(new MapListener() {
                 @Override
                 public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
@@ -268,10 +272,22 @@ public class Maps extends AppCompatActivity implements
     public void checkPermissions() {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
             System.exit(-1);
-        ArrayList<String> permisos = new ArrayList<>();
-        Auxiliar.preQueryPermisos(this, permisos);
+        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
         if (permisos.size() > 0) //Evitamos hacer una petición con un array nulo
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
+        else{
+            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+            gpsMyLocationProvider.setLocationUpdateMinDistance(5);
+            gpsMyLocationProvider.setLocationUpdateMinTime(5000);
+            gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
+            gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
+            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+            myLocationNewOverlay.enableMyLocation();
+            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
+            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
+            myLocationNewOverlay.setEnableAutoStop(true);
+        }
     }
 
     /**
@@ -283,8 +299,10 @@ public class Maps extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
         //Se comprueba uno a uno si alguno de los permisos no se había aceptado
+        boolean falta = false;
         for (int i : grantResults) {
             if (i == -1) {
+                falta = true;
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                 alertBuilder.setTitle(getString(R.string.permi));
                 alertBuilder.setMessage(getString(R.string.permiM));
@@ -308,6 +326,21 @@ public class Maps extends AppCompatActivity implements
                 break;
             }
         }
+        if(!falta){
+            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+            gpsMyLocationProvider.setLocationUpdateMinDistance(5);
+            gpsMyLocationProvider.setLocationUpdateMinTime(5000);
+            gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
+            gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
+            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+            myLocationNewOverlay.enableMyLocation();
+            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
+            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
+            myLocationNewOverlay.setEnableAutoStop(true);
+
+            pintaItemsfijos();
+        }
     }
 
     /**
@@ -315,7 +348,8 @@ public class Maps extends AppCompatActivity implements
      */
     public void pintaItemsfijos() {
         map.getOverlays().clear();
-        map.getOverlays().add(myLocationNewOverlay);
+        if(myLocationNewOverlay != null)
+            map.getOverlays().add(myLocationNewOverlay);
         map.getOverlays().add(scaleBarOverlay);
         //map.getOverlays().add(compassOverlay);
     }
@@ -957,9 +991,6 @@ public class Maps extends AppCompatActivity implements
         alertBuilder.show();
     }
 
-    /** Identificador de la primera cuadrícula */
-    final String idPrimeraCuadricula = "1C";
-
     /**
      * Método para establecer la primera cuadrícula. Se coge el punto extremo superior más al oeste y
      * se construye dicha cuadrícula.
@@ -1051,9 +1082,11 @@ public class Maps extends AppCompatActivity implements
      * @param nombre Nombre del fichero donde se tiene que almacenar las tareas
      */
     private void peticionTareasServidor(final BoundingBox caja, final String nombre){
-        String url = Auxiliar.direccionIP + "tareas?latitude="+caja.getCenterLatitude()
-                +"&longitude="+caja.getCenterLongitude()
-                +"&radio="+(caja.getDiagonalLengthInMeters()/2000);
+        String url = Auxiliar.direccionIP +
+                "tareas?norte=" + caja.getLatNorth() +
+                "&este=" + caja.getLonEast() +
+                "&sur=" + caja.getLatSouth() +
+                "&oeste=" + caja.getLonWest();
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -1062,7 +1095,7 @@ public class Maps extends AppCompatActivity implements
                     long instante = System.currentTimeMillis();
                     JSONObject cuadricula = new JSONObject();
                     cuadricula.put(Auxiliar.id, nombre);
-                    JSONArray tareasValidas = new JSONArray();
+                    /*JSONArray tareasValidas = new JSONArray();
                     JSONObject tarea;
                     double norte = caja.getLatNorth();
                     double sur = caja.getLatSouth();
@@ -1074,9 +1107,9 @@ public class Maps extends AppCompatActivity implements
                                 tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud),
                                 norte, sur, este, oeste))
                             tareasValidas.put(tarea);
-                    }
-                    if (tareasValidas.length() > 0) {
-                        cuadricula.put(Auxiliar.tareas, tareasValidas);
+                    }*/
+                    if (response.length() > 0) {
+                        cuadricula.put(Auxiliar.tareas, response);
                         cuadricula.put(Auxiliar.fechaUltimaModificacion, instante);
                         PersistenciaDatos.creaFichero(getApplication(), nombre, cuadricula, Context.MODE_PRIVATE);
                     }
@@ -1084,14 +1117,20 @@ public class Maps extends AppCompatActivity implements
                     e.printStackTrace();
                 }
 
-            }}, null);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(context, "error", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
     }
 
-    private boolean puntoContenido(double latP, double lonP, double norte, double sur, double este, double oeste){
+    /*private boolean puntoContenido(double latP, double lonP, double norte, double sur, double este, double oeste){
         return latP < norte && latP > sur && lonP > oeste && lonP < este;
-    }
+    }*/
 
 
     /**

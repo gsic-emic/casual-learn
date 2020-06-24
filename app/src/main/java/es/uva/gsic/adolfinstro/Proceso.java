@@ -124,8 +124,7 @@ public class Proceso extends Service implements SharedPreferences.OnSharedPrefer
     @Override
     public void onCreate() {
         context = this;
-        ArrayList<String> permisos = new ArrayList<>();
-        Auxiliar.preQueryPermisos(context, permisos);
+        ArrayList<String> permisos = Auxiliar.preQueryPermisos(context);
         if (permisos.size() > 0) { // Si se le han revocado permisos a la aplicación se mata el proceso
             terminaServicio();
         }
