@@ -157,9 +157,10 @@ public class Auxiliar {
     /**
      * Método para preparar la petición de los permisos necesarios al usuario
      * @param context Contexto
-     * @param permisos Vector donde agregar los permisos a los que el usuario aún no haya dado permiso
+     * @return Permisos que faltan por condeder
      */
-    public static void preQueryPermisos(Context context, ArrayList<String> permisos){
+    public static ArrayList<String> preQueryPermisos(Context context){
+        ArrayList<String> permisos = new ArrayList<>();
         if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
@@ -173,6 +174,7 @@ public class Auxiliar {
             permisos.add(Manifest.permission.RECORD_AUDIO);
         if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return permisos;
     }
 
     /**
@@ -252,7 +254,7 @@ public class Auxiliar {
      */
     public static String ultimaParte(String tipoRespuesta) {
         String[] string = tipoRespuesta.split("/");
-        return string[string.length - 1];
+        return (string[string.length - 1].equals("multiplesFotografiasYTexto")?Auxiliar.tipoImagenMultiple:string[string.length - 1]);
     }
 
     /**

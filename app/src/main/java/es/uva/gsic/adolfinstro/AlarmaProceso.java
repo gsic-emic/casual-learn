@@ -63,9 +63,6 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
     private final int intervaloComprobacion = 120000;
 
-    /** Distancia máxima que podría andar en el intervalo de comprobación*/
-    private final double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
-
     public static boolean tareasActualizadas = false;
 
     LocationManager locationManager;
@@ -83,8 +80,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         this.context = context;
         application = (Application) context.getApplicationContext();
 
-        ArrayList<String> permisos = new ArrayList<>();
-        Auxiliar.preQueryPermisos(context, permisos);
+        ArrayList<String> permisos = Auxiliar.preQueryPermisos(context);
         if (permisos.size() > 0) { // Si se le han revocado permisos a la aplicación se mata el proceso
             cancelaAlarmaProceso(context);
         }
@@ -243,14 +239,14 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         //Inicio del servicio, se tiene que recuperar la tarea del servidor
         //Validez de un día para las tareas
         if(latitudGet==0 || longitudGet==0 || ((new Date().getTime() - momento) > 86400000)){
-            peticionTareasServidor(location, 0.75);
+            peticionTareasServidor(location);
         }else{
             double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
                     latitud, longitud,
                     latitudGet, longitudGet);
-            if(distanciaOrigen >= 0.5){
+            if(distanciaOrigen >= 0.15){
                 //Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
-                peticionTareasServidor(location, 0.75);
+                peticionTareasServidor(location);
             }else {//El fichero sigue siendo válido
                 compruebaLocalizacion(location);
             }
@@ -260,13 +256,17 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     /**
      * Método para realizar la petición de tareas al servidor
      * @param location Punto del que se extraerá la latitud y la longitud
-     * @param radio Radio con le que se realiza la petición
      */
-    private void peticionTareasServidor(final Location location, double radio){
+    private void peticionTareasServidor(final Location location){
         //TODO IP de depuración
-        String url = Auxiliar.direccionIP + "tareas?latitude="+location.getLatitude()
+        /*String url = Auxiliar.direccionIP + "tareas?latitude="+location.getLatitude()
                 +"&longitude="+location.getLongitude()
-                +"&radio="+radio;
+                +"&radio="+radio;*/
+        String url = Auxiliar.direccionIP +
+                "tareas?norte=" + (location.getLatitude() + 0.001) +
+                "&este=" + (location.getLongitude() + 0.001) +
+                "&sur=" + (location.getLatitude() - 0.001) +
+                "&oeste=" + (location.getLongitude() - 0.001);
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url,
                 null, new Response.Listener<JSONArray>() {
             @Override
@@ -401,6 +401,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         20000);
         if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
             if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
+                /** Distancia máxima que podría andar en el intervalo de comprobación*/
+                double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
                 if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
                     //Comprobación de la ubucación actual a las tareas almacenadas
                     JSONObject tarea = Auxiliar.tareaMasCercana(application, latitud, longitud);

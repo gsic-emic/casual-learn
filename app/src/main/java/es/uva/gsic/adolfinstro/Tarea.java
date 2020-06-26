@@ -323,8 +323,7 @@ public class Tarea extends AppCompatActivity implements
     public void checkPermissions() {
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
             System.exit(-1);
-        ArrayList<String> permisos = new ArrayList<>();
-        Auxiliar.preQueryPermisos(this, permisos);
+        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
         if (permisos.size() > 0) //Evitamos hacer una petición con un array nulo
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
     }
@@ -354,8 +353,8 @@ public class Tarea extends AppCompatActivity implements
                 alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
-                        //cierra
+                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se cierra
+
                         System.exit(0);
                     }
                 });

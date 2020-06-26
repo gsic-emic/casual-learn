@@ -313,6 +313,21 @@ public class Completadas extends AppCompatActivity implements
         }
     }
 
+    //https://developers.facebook.com/docs/instagram/sharing-to-feed/
+    public void mandaInstagram(){
+        try{
+            getPackageManager().getPackageArchiveInfo("com.instagram.android", PackageManager.GET_ACTIVITIES);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.putExtra(Intent.EXTRA_STREAM, Uri.parse("android.resource://es.uva.gsic.adolfinstro/" + R.drawable.nueva_tarea_completada));
+            intent.setPackage("com.instagram.android");
+            intent.setType("image/*");
+            intent.putExtra(Intent.EXTRA_TEXT, "casuallearn");
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     public void mandaTweet(Context context, JSONObject tarea){
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
