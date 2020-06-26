@@ -13,12 +13,14 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.util.BoundingBox;
 
@@ -39,7 +41,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Auxiliar {
 
-    public static final String direccionIP = "http://192.168.1.121:10001/";
+    //public static final String direccionIP = "http://192.168.1.121:10001/";
+    public static final String direccionIP = "http://192.168.1.14:10001/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
@@ -427,5 +430,104 @@ public class Auxiliar {
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         intent.setData(uri);
         contexto.sendBroadcast(intent);
+    }
+
+    public static void mandaTweet(Context context, JSONObject tarea, String hashtag){
+        try {
+            //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
+            context.getPackageManager().getPackageInfo("com.twitter.android", PackageManager.GET_ACTIVITIES);
+            Intent intent;
+            List<String> listaURI = new ArrayList<>();
+            String textoUsuario = null;
+            JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+            JSONObject respuesta;
+            for(int i = 0; i < respuestas.length(); i++){
+                respuesta = respuestas.getJSONObject(i);
+                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
+                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
+                    }
+                } else {//URI de video o fotos
+                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
+                }
+            }
+            switch (tarea.getString(Auxiliar.tipoRespuesta)){
+                case Auxiliar.tipoPreguntaCorta:
+                case Auxiliar.tipoPreguntaLarga:
+                case Auxiliar.tipoSinRespuesta:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(tarea, textoUsuario, hashtag));
+                    intent.setType("text/plain");
+                    break;
+                case Auxiliar.tipoPreguntaImagen:
+                case Auxiliar.tipoImagen:
+                case Auxiliar.tipoImagenMultiple:
+                    if(listaURI.size() > 0)
+                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                    else
+                        intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(tarea, textoUsuario, hashtag));
+                    intent.setType("text/plain");
+                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
+                        if(!listaURI.isEmpty()){
+                            ArrayList<Uri> uris = new ArrayList<>();
+                            for(String s : listaURI){
+                                uris.add(Uri.parse(s));
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("video/*");
+                        }
+                    }else{
+                        if(!listaURI.isEmpty()){
+                            ArrayList<Uri> uris = new ArrayList<>();
+                            for(String s : listaURI){
+                                uris.add(Uri.parse(s));
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("image/*");
+                        }
+                    }
+                    break;
+                case Auxiliar.tipoVideo:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(tarea, textoUsuario, hashtag));
+                    intent.setType("text/plain");
+                    if(!listaURI.isEmpty()){
+                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
+                        intent.setType("video/*");
+                    }
+                    break;
+                default:
+                    intent = null;
+                    break;
+            }
+
+            if(intent != null) {
+                intent.setPackage("com.twitter.android");
+                context.startActivity(intent);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(context, context.getString(R.string.instalaTwitter), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private static String contenidoTextoTweet(JSONObject tarea, String textoUsuario, String hashtag){
+        String texto = null;
+
+        try {
+            texto = tarea.getString(Auxiliar.titulo);
+            if(textoUsuario != null){
+                texto = texto.concat(String.format("\n%s", textoUsuario));
+                if(texto.length() + hashtag.length() + 2 > 279){
+                    texto = texto.substring(0, 279-(hashtag.length()+5)) + "...";
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        texto=(texto==null)?String.format("%s", hashtag):texto.concat(String.format("\n#%s", hashtag));
+        return texto;
     }
 }

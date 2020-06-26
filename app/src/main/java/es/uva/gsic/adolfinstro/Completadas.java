@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -305,14 +306,14 @@ public class Completadas extends AppCompatActivity implements
                 return true;
             case R.id.publicarCompletada:
                 //Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
-                mandaTweet();
+                Auxiliar.mandaTweet(this, tarea, hashtag);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    public void mandaTweet(){
+    public void mandaTweet(Context context, JSONObject tarea){
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
             getPackageManager().getPackageInfo("com.twitter.android", PackageManager.GET_ACTIVITIES);
@@ -375,7 +376,7 @@ public class Completadas extends AppCompatActivity implements
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(this, getString(R.string.instalaTwitter), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, getString(R.string.instalaTwitter), Toast.LENGTH_SHORT).show();
         }
     }
 
