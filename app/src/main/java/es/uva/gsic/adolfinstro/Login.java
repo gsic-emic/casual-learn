@@ -219,8 +219,9 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
-            Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent (getApplicationContext(), Maps.class);
+            intent.putExtra(Auxiliar.textoParaElMapa, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             finishAffinity();
             startActivity(intent);

@@ -32,18 +32,19 @@
             app:key="hashtag"
             app:title="@string/palabraClave"
             app:summary="@string/descripcionPalabraClave"
-            app:defaultValue="@string/hashtag" />
+            app:defaultValue="@string/hashtag"
+            app:dialogMessage="@string/descripcionFuncionamientoPalabraClave"/>
     </PreferenceCategory>
-    <PreferenceCategory
+    <!--<PreferenceCategory
         android:key="datosUsuario"
         android:title="@string/datosUsuario">
-        <!--<EditTextPreference
+        <EditTextPreference
             android:key="nombre"
             android:enabled="false"/>
         <EditTextPreference
             android:key="correo"
-            android:enabled="false"/>-->
-    </PreferenceCategory>
+            android:enabled="false"/>
+    </PreferenceCategory>-->
     <!--<EditTextPreference
         app:key="token"
         app:enableCopying="false"

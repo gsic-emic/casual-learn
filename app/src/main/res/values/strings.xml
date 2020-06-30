@@ -146,4 +146,10 @@
     <string name="urlOsmdroid" translatable="false">https://github.com/osmdroid/osmdroid</string>
     <string name="urlPhotoView" translatable="false">https://github.com/chrisbanes/PhotoView</string>
     <string name="urlPicasso" translatable="false">https://square.github.io/picasso/</string>
+    <string name="compartir">share</string>
+    <string name="puntuaCompletada">You can edit the score of the task</string>
+    <string name="tareaGuardada">Task successfully modified</string>
+    <string name="preguntaImagenes">Ask and multiple photos</string>
+    <string name="descripcionFuncionamientoPalabraClave">If you want multiples hashtags, split them with commas. We will take care of add # necessary</string>
+    <string name="twitSinTexto">I just did a task with @CasualLearn in </string>
 </resources>

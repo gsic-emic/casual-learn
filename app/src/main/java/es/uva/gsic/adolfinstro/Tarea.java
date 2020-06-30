@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
@@ -197,7 +199,7 @@ public class Tarea extends AppCompatActivity implements
 
                 tvDescripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    tvDescripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+                    tvDescripcion.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
                 }
 
                 recyclerView = findViewById(R.id.rvRealizaTarea);
@@ -218,6 +220,7 @@ public class Tarea extends AppCompatActivity implements
                     }
                     switch (tipo){
                         case Auxiliar.tipoPreguntaImagen:
+                        case Auxiliar.tipoPreguntaImagenes:
                         case Auxiliar.tipoImagen:
                         case Auxiliar.tipoImagenMultiple:
                             recyclerView.setVisibility(View.VISIBLE);
@@ -257,6 +260,7 @@ public class Tarea extends AppCompatActivity implements
                         btAceptar.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoPreguntaImagen:
+                    case Auxiliar.tipoPreguntaImagenes:
                         btCamara.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoImagen:
@@ -375,13 +379,14 @@ public class Tarea extends AppCompatActivity implements
                 onBackPressed();
                 break;
             case R.id.btAceptar:
-                if(tipo.equals(TiposTareas.SIN_RESPUESTA.getValue())){
+                if(tipo.equals(Auxiliar.tipoSinRespuesta)){
                     try {
                         JSONObject respuesta = PersistenciaDatos.obtenTarea(
                                 getApplication(),
                                 PersistenciaDatos.ficheroNotificadas,
                                 idTarea);
                         respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                        respuesta.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
                         respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                         PersistenciaDatos.guardaJSON(getApplication(),
                                 PersistenciaDatos.ficheroCompletadas,
@@ -415,6 +420,7 @@ public class Tarea extends AppCompatActivity implements
                             realizaCaptura(1);
                         break;
                     case Auxiliar.tipoImagenMultiple:
+                    case Auxiliar.tipoPreguntaImagenes:
                             realizaCaptura(2);
                         break;
                     case Auxiliar.tipoVideo:
@@ -434,18 +440,20 @@ public class Tarea extends AppCompatActivity implements
                         startActivity(intent);
                     }
                     else{//No hay ninguna imagen. Este mensaje no debería aparecer nunca
-                        Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
+                        //Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
+                        muestraSnackBar(getString(R.string.recursoMaximaResolucion));
                     }
                 }
                 break;
             case R.id.btTerminar:
                 try {
-                    if(tipo.equals(Auxiliar.tipoPreguntaImagen)){
+                    if(tipo.equals(Auxiliar.tipoPreguntaImagen) || tipo.equals(Auxiliar.tipoPreguntaImagenes)){
                         if(etRespuestaTextual.getText().toString().isEmpty()){
                             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
                         }else{
                             guardaRespuesta(etRespuestaTextual.getText().toString());
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
+                            //muestraSnackBar(getString(R.string.imagenesG));
                         }
                     }else {
                         guardaRespuesta(etRespuestaTextual.getText().toString());
@@ -474,7 +482,8 @@ public class Tarea extends AppCompatActivity implements
                         String textoDenuncia = respuestaDenuncia.getText().toString();
                         textoDenuncia = textoDenuncia.trim();
                         if(textoDenuncia.equals("")){
-                            Toast.makeText(Tarea.this, getString(R.string.respuestaVacia), Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(Tarea.this, getString(R.string.respuestaVacia), Toast.LENGTH_SHORT).show();
+                            muestraSnackBar(getString(R.string.respuestaVacia));
                         }else {
                             enviaDenuncia(textoDenuncia);
                         }
@@ -498,6 +507,7 @@ public class Tarea extends AppCompatActivity implements
                     idTarea);
         json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
         json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+        json.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
         PersistenciaDatos.guardaJSON(
                 getApplication(),
                 PersistenciaDatos.ficheroCompletadas,
@@ -603,11 +613,13 @@ public class Tarea extends AppCompatActivity implements
                 startActivityForResult(takePicture, tipo);//Los requestCode solo pueden ser de 16 bits
             }
             else{
-                Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                muestraSnackBar(getString(R.string.errorOpera));
                 desbloqueaBt();
             }
         } else{
-            Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            muestraSnackBar(getString(R.string.errorOpera));
             desbloqueaBt();
         }
     }
@@ -635,12 +647,14 @@ public class Tarea extends AppCompatActivity implements
                 takeVideo.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
                 startActivityForResult(takeVideo, 3);
             }else{
-                Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                muestraSnackBar(getString(R.string.errorOpera));
                 desbloqueaBt();
             }
         }
         else{
-            Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            muestraSnackBar(getString(R.string.errorOpera));
             desbloqueaBt();
         }
     }
@@ -690,6 +704,7 @@ public class Tarea extends AppCompatActivity implements
                                 imagenesCamaraList.add( new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
                                 actualizaContenedorImagenes(-1);
                                 //Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
+                                muestraSnackBar(getString(R.string.imagenG));
                             }
                             //Auxiliar.publicaGaleria(this, photoURI);
                             activaBtTerminar();
@@ -705,10 +720,11 @@ public class Tarea extends AppCompatActivity implements
                         break;
                     default:
                         mensajeError();
-                        Auxiliar.errorToast(this);
+                        //Auxiliar.errorToast(this);
+                        muestraSnackBar(getString(R.string.errorOpera));
                 }
                 break;
-            case 2://imagen multiple
+            case 2://imagen multiple || preguntaImágenes
                 switch (resultCode){
                     case RESULT_OK:
                         respuesta = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
@@ -722,6 +738,7 @@ public class Tarea extends AppCompatActivity implements
                             imagenesCamaraList.add(new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
                             actualizaContenedorImagenes(-1);
                             //Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
+                            muestraSnackBar(getString(R.string.imagenGN));
                         }
                         break;
                     case RESULT_CANCELED:
@@ -749,6 +766,7 @@ public class Tarea extends AppCompatActivity implements
                                 mensajeError();
                             else {
                                 //Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
+                                muestraSnackBar(getString(R.string.videoG));
                                 //Auxiliar.puntuaTarea(this, idTarea);
                                 imagenesCamaraList.add(new Completadas.ImagenesCamara(videoURI, View.VISIBLE));
                                 actualizaContenedorVideos(-1);
@@ -765,7 +783,8 @@ public class Tarea extends AppCompatActivity implements
                         break;
                     default:
                         mensajeError();
-                        Auxiliar.errorToast(this);
+                        //Auxiliar.errorToast(this);
+                        muestraSnackBar(getString(R.string.errorOpera));
                 }
                 break;
         }
@@ -813,7 +832,7 @@ public class Tarea extends AppCompatActivity implements
         }
         else{
             JSONObject tarea = null;
-            if(tipo.equals(TiposTareas.PREGUNTA_CORTA.getValue()) || tipo.equals(TiposTareas.PREGUNTA_LARGA.getValue())) {
+            if(tipo.equals(Auxiliar.tipoPreguntaCorta) || tipo.equals(Auxiliar.tipoPreguntaLarga)) {
                 try {
                     tarea = PersistenciaDatos.recuperaTarea(
                             getApplication(),
@@ -1061,6 +1080,7 @@ public class Tarea extends AppCompatActivity implements
                             btTerminar.setVisibility(View.GONE);
                             break;
                         case Auxiliar.tipoImagenMultiple:
+                        case Auxiliar.tipoPreguntaImagenes:
                             desbloqueaBt();
                             actualizaContenedorImagenes(position);
                             if(imagenesCamaraList.size() == 0){
@@ -1093,5 +1113,13 @@ public class Tarea extends AppCompatActivity implements
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return false;
+    }
+
+    private void muestraSnackBar(String texto){
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.clTarea), R.string.app_name, Snackbar.LENGTH_SHORT);
+        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setText(texto);
+        snackbar.show();
     }
 }

@@ -34,13 +34,25 @@
         android:id="@+id/btEnviarPuntuacion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btCompartirTwitter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginStart="45dp"
-        android:layout_marginEnd="45dp"
+
         android:layout_marginBottom="20dp"
         android:text="@string/cancel"
+        android:onClick="boton" />
+
+    <Button style="@style/botonSecundario"
+        android:id="@+id/btCompartirTwitter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btEnviarPuntuacion"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:drawableStart="@drawable/ic_twitter_logo_color"
+        android:drawablePadding="2dp"
+        android:layout_marginBottom="20dp"
+        android:text="@string/compartir"
         android:onClick="boton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

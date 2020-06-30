@@ -10,4 +10,5 @@
     <color name="colorStarOff">#757472</color>
     <color name="errorLogin">#FFE10808</color>
     <color name="texto">#131313</color>
+    <color name="white">#FFF</color>
 </resources>

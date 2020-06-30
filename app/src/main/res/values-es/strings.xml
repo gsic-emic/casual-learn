@@ -64,7 +64,7 @@
     <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
     <string name="nuevaTarea">¡¡Nueva tarea!!</string>
     <string name="enviar">Enviar</string>
-    <string name="gracias">¡¡Gracias!!</string>
+    <string name="gracias">¡¡Gracias!! Con las puntuaciones mejoramos las tareas que te recomendamos</string>
     <string name="realizar">Realizar</string>
     <string name="tipoDeTarea">"Tipo de tarea: "</string>
     <string name="infoTarea">Infomación de la tarea</string>
@@ -122,6 +122,12 @@
     <string name="acercade">Acerca de Casual Learn</string>
     <string name="imagenAmpliable">Imagen ampliable</string>
     <string name="instalaTwitter">Tienes que instalar el cliente oficial de Twitter para compartir la respuesta</string>
-    <string name="palabraClave">Palabra clave</string>
-    <string name="descripcionPalabraClave">Personaliza el hashtag con el que se publicarán las tareas en la red social Twitter</string>
+    <string name="palabraClave">Etiqueta (<i>Hashtag</i>)</string>
+    <string name="descripcionPalabraClave">Personaliza la etiqueta con la que se publicarán las tareas en Twitter</string>
+    <string name="compartir">compartir</string>
+    <string name="puntuaCompletada">Puedes puntuar la tarea realizada desde el menú de tareas completadas</string>
+    <string name="tareaGuardada">Tarea modificada correctamente</string>
+    <string name="preguntaImagenes">Pregunta y múltiples fotografías</string>
+    <string name="descripcionFuncionamientoPalabraClave">Si quieres utilizar múltiples <i>hashtags</i>, sepáralos con comas. Nosotros nos encargarmos de poner los # necesarios</string>
+    <string name="twitSinTexto">He realizado una tarea con @CasualLearn en </string>
 </resources>

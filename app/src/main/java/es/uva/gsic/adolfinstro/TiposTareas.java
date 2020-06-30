@@ -7,6 +7,7 @@ public enum TiposTareas {
     PREGUNTA_CORTA(Auxiliar.tipoPreguntaCorta),
     PREGUNTA_LARGA(Auxiliar.tipoPreguntaLarga),
     PREGUNTA_IMAGEN(Auxiliar.tipoPreguntaImagen),
+    PREGUNTA_IMAGENES(Auxiliar.tipoPreguntaImagenes),
     IMAGEN(Auxiliar.tipoImagen),
     IMAGEN_MULTIPLE(Auxiliar.tipoImagenMultiple),
     VIDEO(Auxiliar.tipoVideo);

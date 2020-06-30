@@ -94,6 +94,15 @@
         android:layout_marginHorizontal="3dp"
         android:visibility="gone"/>
 
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="5dp"
+        android:layout_marginHorizontal="5dp"
+        android:id="@+id/clPreview"
+        app:layout_constraintTop_toBottomOf="@id/tvDistancia"
+        app:layout_constraintBottom_toTopOf="@id/botonRechazarPreview" />
+
     <Button
         android:id="@+id/botonRechazarPreview"
         android:layout_width="wrap_content"
@@ -102,10 +111,10 @@
         android:onClick="boton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/botonAhoraNoPreview"
-        app:layout_constraintTop_toBottomOf="@id/textoPreview"
+        app:layout_constraintTop_toBottomOf="@id/clPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:background="@drawable/boton_rojo"
-        android:layout_marginTop="5dp"
+        android:layout_marginVertical="5dp"
         android:visibility="gone"/>
 
     <Button
@@ -116,10 +125,10 @@
         android:onClick="boton"
         app:layout_constraintStart_toEndOf="@id/botonRechazarPreview"
         app:layout_constraintEnd_toStartOf="@id/botonAceptarPreview"
-        app:layout_constraintTop_toBottomOf="@id/textoPreview"
+        app:layout_constraintTop_toBottomOf="@id/clPreview"
         app:layout_constraintBottom_toBottomOf="parent"
         android:background="@drawable/boton_amarillo"
-        android:layout_marginTop="5dp"
+        android:layout_marginVertical="5dp"
         android:visibility="gone"/>
 
     <Button
@@ -130,9 +139,9 @@
         android:onClick="boton"
         app:layout_constraintStart_toEndOf="@id/botonAhoraNoPreview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textoPreview"
+        app:layout_constraintTop_toBottomOf="@id/clPreview"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginTop="5dp"
+        android:layout_marginVertical="5dp"
         android:background="@drawable/boton_verde"
         android:textColor="#FFFFFF"
         android:visibility="gone"/>

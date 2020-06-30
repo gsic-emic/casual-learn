@@ -227,6 +227,11 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
             case Auxiliar.tipoVideo:
                 mensaje = getString(R.string.video);
                 break;
+            case Auxiliar.tipoPreguntaImagenes:
+                mensaje = getString(R.string.preguntaImagenes);
+                break;
+            default:
+                break;
         }
         Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }

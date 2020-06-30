@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -29,8 +30,8 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
         preferenceCategory = findPreference("categoriaPreferencias");
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
-        PreferenceCategory datosUsuario=findPreference("datosUsuario");
-        datosUsuario.setSummary(Login.firebaseAuth.getUid());
+        //PreferenceCategory datosUsuario=findPreference("datosUsuario");
+        //datosUsuario.setSummary(Login.firebaseAuth.getUid());
         /*EditTextPreference et = findPreference("nombre");
         et.setSummary(Login.firebaseAuth.getCurrentUser().getDisplayName());
         et = findPreference("correo");
@@ -41,7 +42,7 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
                 @Override
                 public void onBindEditText(@NonNull EditText editText) {
                     editText.setFilters(new InputFilter[]{
-                            new InputFilter.LengthFilter(15)});
+                            new InputFilter.LengthFilter(50)});
                 }
             });
     }

@@ -6,14 +6,13 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,11 +21,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.VideoView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -128,7 +125,7 @@ public class Completadas extends AppCompatActivity implements
         try {
             enunciado.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                enunciado.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+                enunciado.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
             }
 
             try {
@@ -169,6 +166,7 @@ public class Completadas extends AppCompatActivity implements
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoVideo:
+                case Auxiliar.tipoPreguntaImagenes:
                     recyclerView.setVisibility(View.VISIBLE);
                     for (String s : listaURI) {
                         imagenesCamaras.add(new ImagenesCamara(s, View.GONE));
@@ -177,6 +175,7 @@ public class Completadas extends AppCompatActivity implements
                         case Auxiliar.tipoImagen:
                         case Auxiliar.tipoImagenMultiple:
                         case Auxiliar.tipoPreguntaImagen:
+                        case Auxiliar.tipoPreguntaImagenes:
                             adaptadorImagenesCompletadas = new AdaptadorImagenesCompletadas(this,
                                     imagenesCamaras);
                             adaptadorImagenesCompletadas.setClickListener(this);
@@ -219,7 +218,7 @@ public class Completadas extends AppCompatActivity implements
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();
-        return super.onSupportNavigateUp();
+        return false;
     }
 
     /**
@@ -275,6 +274,7 @@ public class Completadas extends AppCompatActivity implements
                                 (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
                                 ) && textoUsuario.getText().toString().isEmpty()) {
                             textoUsuario.setError(getString(R.string.respuestaVacia));
                         } else {
@@ -283,9 +283,10 @@ public class Completadas extends AppCompatActivity implements
                                     || tipoRespuesta.equals(Auxiliar.tipoImagen)
                                     || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
                                     || tipoRespuesta.equals(Auxiliar.tipoVideo))
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
                                     && (listaURI.size() == 0)){
-                                Toast.makeText(this, getString(R.string.agregarContenido),
-                                        Toast.LENGTH_SHORT).show();
+                                muestraSnack(getString(R.string.agregarContenido));
+                                //Toast.makeText(this, getString(R.string.agregarContenido), Toast.LENGTH_SHORT).show();
                             }else {
                                 editando = false;
                                 if(item!=null)
@@ -324,93 +325,8 @@ public class Completadas extends AppCompatActivity implements
             intent.putExtra(Intent.EXTRA_TEXT, "casuallearn");
             startActivity(intent);
         }catch (Exception e){
-            Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    public void mandaTweet(Context context, JSONObject tarea){
-        try {
-            //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
-            getPackageManager().getPackageInfo("com.twitter.android", PackageManager.GET_ACTIVITIES);
-            Intent intent;
-            switch (tarea.getString(Auxiliar.tipoRespuesta)){
-                case Auxiliar.tipoPreguntaCorta:
-                case Auxiliar.tipoPreguntaLarga:
-                case Auxiliar.tipoSinRespuesta:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet());
-                    intent.setType("text/plain");
-                    break;
-                case Auxiliar.tipoPreguntaImagen:
-                case Auxiliar.tipoImagen:
-                case Auxiliar.tipoImagenMultiple:
-                    if(listaURI != null && listaURI.size() > 0)
-                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    else
-                        intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet());
-                    intent.setType("text/plain");
-                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
-                        if(listaURI != null && !listaURI.isEmpty()){
-                            ArrayList<Uri> uris = new ArrayList<>();
-                            for(String s : listaURI){
-                                uris.add(Uri.parse(s));
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("video/*");
-                        }
-                    }else{
-                        if(listaURI != null && !listaURI.isEmpty()){
-                            ArrayList<Uri> uris = new ArrayList<>();
-                            for(String s : listaURI){
-                                uris.add(Uri.parse(s));
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("image/*");
-                        }
-                    }
-                    break;
-                case Auxiliar.tipoVideo:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet());
-                    intent.setType("text/plain");
-                    if(listaURI != null && !listaURI.isEmpty()){
-                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
-                        intent.setType("video/*");
-                    }
-                    break;
-                default:
-                    intent = null;
-                    break;
-            }
-
-            if(intent != null) {
-                intent.setPackage("com.twitter.android");
-                startActivity(intent);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(context, getString(R.string.instalaTwitter), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private String contenidoTextoTweet(){
-        String texto = null;
-
-        try {
-            texto = tarea.getString(Auxiliar.titulo);
-            if(!textoUsuario.getText().toString().equals("")){
-                texto = texto.concat(String.format("\n%s", textoUsuario.getText().toString()));
-                if(texto.length() + hashtag.length() + 2 > 279){
-                    texto = texto.substring(0, 279-(hashtag.length()+5)) + "...";
-                }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        texto=(texto==null)?String.format("%s", getString(R.string.hashtag)):texto.concat(String.format("\n#%s", hashtag));
-        return texto;
     }
 
     /**
@@ -476,6 +392,7 @@ public class Completadas extends AppCompatActivity implements
                     case Auxiliar.tipoImagen:
                     case Auxiliar.tipoImagenMultiple:
                     case Auxiliar.tipoPreguntaImagen:
+                    case Auxiliar.tipoPreguntaImagenes:
                         for(int i = 0; i< imagenesCamaras.size(); i++){
                             ic = imagenesCamaras.get(i);
                             ic.setVisible(View.GONE);
@@ -514,6 +431,7 @@ public class Completadas extends AppCompatActivity implements
             e.printStackTrace();
         }
         try {
+            Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), tarea.getString(Auxiliar.id));
             Bundle bundle = new Bundle();
             bundle.putString("user", Login.firebaseAuth.getUid());
             bundle.putString("idTarea", tarea.getString(Auxiliar.id));
@@ -521,6 +439,16 @@ public class Completadas extends AppCompatActivity implements
         }catch (Exception e){
             e.printStackTrace();
         }
+
+        muestraSnack(getResources().getString(R.string.tareaGuardada));
+    }
+
+    private void muestraSnack(String texto){
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.clCompletada), R.string.tareaGuardada, Snackbar.LENGTH_SHORT);
+        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setText(texto);
+        snackbar.show();
     }
 
     /**
@@ -543,6 +471,7 @@ public class Completadas extends AppCompatActivity implements
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoVideo:
+                case Auxiliar.tipoPreguntaImagenes:
                     btAgregar.setVisibility(View.VISIBLE);
                     break;
                 default:
@@ -561,6 +490,7 @@ public class Completadas extends AppCompatActivity implements
                         case Auxiliar.tipoImagen:
                         case Auxiliar.tipoImagenMultiple:
                         case Auxiliar.tipoPreguntaImagen:
+                        case Auxiliar.tipoPreguntaImagenes:
                             updateRV(lista);
                             break;
                         case Auxiliar.tipoVideo:
@@ -616,8 +546,8 @@ public class Completadas extends AppCompatActivity implements
     public void onItemClick(View view, final int position) {
         if(editando) {
             if(listaURI.size() <= 1){ //El usuario no puede eliminar todos los recursos gráficos
-                Toast.makeText(this,
-                        getString(R.string.agregaImagenAntesBorrar), Toast.LENGTH_SHORT).show();
+                muestraSnack(getResources().getString(R.string.agregaImagenAntesBorrar));
+                //Toast.makeText(this, getString(R.string.agregaImagenAntesBorrar), Toast.LENGTH_SHORT).show();
             }else{
                 Uri uri = imagenesCamaras.get(position).getDireccion();
                 uriGuardadas.remove(uri);
@@ -665,8 +595,8 @@ public class Completadas extends AppCompatActivity implements
     public void onItemClickVideo(View view, final int position){
         if(editando) {
             if(listaURI.size() <= 1){
-                Toast.makeText(this, getString(R.string.agregaVideoAntesBorrar),
-                        Toast.LENGTH_SHORT).show();
+                muestraSnack(getString(R.string.agregaVideoAntesBorrar));
+                //Toast.makeText(this, getString(R.string.agregaVideoAntesBorrar), Toast.LENGTH_SHORT).show();
             }else{
                 Uri uri = imagenesCamaras.get(position).getDireccion();
                 uriGuardadas.remove(uri);
@@ -720,6 +650,7 @@ public class Completadas extends AppCompatActivity implements
                         case Auxiliar.tipoImagenMultiple:
                         case Auxiliar.tipoPreguntaImagen:
                         case Auxiliar.tipoVideo:
+                        case Auxiliar.tipoPreguntaImagenes:
                             Intent intent = new Intent();
                             intent.setAction(Intent.ACTION_GET_CONTENT);
                             if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){

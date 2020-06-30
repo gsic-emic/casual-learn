@@ -9,8 +9,6 @@ import androidx.preference.PreferenceManager;
 
 import org.jetbrains.annotations.NotNull;
 
-import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
-
 
 public class Ajustes extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 

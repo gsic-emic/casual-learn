@@ -30,12 +30,11 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -237,7 +236,23 @@ public class Maps extends AppCompatActivity implements
                 }
             }, 200));
         }
+
+        try{
+            String contenido = getIntent().getExtras().getString(Auxiliar.textoParaElMapa);
+            pintaSnackBar(contenido);
+        }catch (Exception e){
+            //No hay nada que mostrar
+        }
     }
+
+    private void pintaSnackBar(String texto){
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
+        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setText(texto);
+        snackbar.show();
+    }
+
 
     /**
      * Método para centrar el mapa en Castilla y León
@@ -276,17 +291,19 @@ public class Maps extends AppCompatActivity implements
         if (permisos.size() > 0) //Evitamos hacer una petición con un array nulo
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
         else{
-            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-            gpsMyLocationProvider.setLocationUpdateMinDistance(5);
-            gpsMyLocationProvider.setLocationUpdateMinTime(5000);
-            gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
-            gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
-            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-            myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
-            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-            myLocationNewOverlay.setEnableAutoStop(true);
+            if(myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
+                GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+                gpsMyLocationProvider.setLocationUpdateMinDistance(5);
+                gpsMyLocationProvider.setLocationUpdateMinTime(5000);
+                gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
+                gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
+                myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+                myLocationNewOverlay.enableMyLocation();
+                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
+                myLocationNewOverlay.setEnableAutoStop(true);
+            }
         }
     }
 
@@ -408,15 +425,23 @@ public class Maps extends AppCompatActivity implements
     @Override
     public void onItemClick(View view, int posicion){
         try {
-            JSONObject tarea = adaptadorListaMapa.getTarea(posicion);
-            tarea.put(Auxiliar.origen, tarea.getString(Auxiliar.ficheroOrigen));
-            Intent intent = new Intent(this, Preview.class);
-            intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
-            intent.putExtra(Auxiliar.id, tarea.getString(Auxiliar.id));
-            startActivity(intent);
-            tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-            tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
-            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea, Context.MODE_PRIVATE);
+            GeoPoint miPosicion;
+            if(myLocationNewOverlay != null && (miPosicion = myLocationNewOverlay.getMyLocation()) != null) {
+                JSONObject tarea = adaptadorListaMapa.getTarea(posicion);
+                tarea.put(Auxiliar.origen, tarea.getString(Auxiliar.ficheroOrigen));
+                Intent intent = new Intent(this, Preview.class);
+                intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
+                intent.putExtra(Auxiliar.id, tarea.getString(Auxiliar.id));
+                intent.putExtra(Auxiliar.posUsuarioLat, miPosicion.getLatitude());
+                intent.putExtra(Auxiliar.posUsuarioLon, miPosicion.getLongitude());
+                startActivity(intent);
+                tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
+                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea, Context.MODE_PRIVATE);
+            }else{
+                //Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                pintaSnackBar(getString(R.string.recuperandoPosicion));
+            }
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -829,7 +854,8 @@ public class Maps extends AppCompatActivity implements
                     mapController.setCenter(myLocationNewOverlay.getMyLocation());
                     //onLocationChanged(myLocationNewOverlay.getMyLocationProvider().getLastKnownLocation());
                 }else{ //Si aún no se conoce se muestra un mensaje
-                    Toast.makeText(this, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(this, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                    pintaSnackBar(getString(R.string.recuperandoPosicion));
                 }
                 break;
             case R.id.switchNoMolestar: //Switch para activar el mapa deshabilitando el modo no molestar
@@ -992,14 +1018,18 @@ public class Maps extends AppCompatActivity implements
     }
 
     /**
-     * Método para establecer la primera cuadrícula. Se coge el punto extremo superior más al oeste y
-     * se construye dicha cuadrícula.
+     * Método para establecer la primera cuadrícula. <del>Se coge el punto extremo superior más al oeste y
+     * se construye dicha cuadrícula.</del> Se establece el punto en Teleco para que tenga sentido hacer una
+     * caché en la pasarela
+     *
      * @param boundingBox Caja del mapa mostrado
      * @return Punto más al norte y más al oeste
      */
     public GeoPoint establecePimeraCuadricula(BoundingBox boundingBox){
-        double latN = boundingBox.getLatNorth();
-        double lonO = boundingBox.getLonWest();
+        //double latN = boundingBox.getLatNorth();
+        //double lonO = boundingBox.getLonWest();
+        double latN = 41.66247;
+        double lonO = -4.70605;
         try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put(Auxiliar.id, idPrimeraCuadricula);
@@ -1118,12 +1148,7 @@ public class Maps extends AppCompatActivity implements
                 }
 
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context, "error", Toast.LENGTH_SHORT).show();
-            }
-        });
+        }, null);
 
         ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
     }

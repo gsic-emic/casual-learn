@@ -19,6 +19,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 
 import es.uva.gsic.adolfinstro.Ajustes;
+import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
@@ -43,6 +49,7 @@ public class Auxiliar {
 
     //public static final String direccionIP = "http://192.168.1.121:10001/";
     public static final String direccionIP = "http://192.168.1.14:10001/";
+    //public static final String direccionIP = "http://10.0.104.237:10001/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
@@ -57,8 +64,13 @@ public class Auxiliar {
     public static final String estadoTarea = "estadoTarea";
     public static final String rating = "rating";
     public static final String fechaNotificiacion = "fechaNotificacion";
+    public static final String fechaInicio = "fechaInicio";
     public static final String fechaUltimaModificacion = "fechaUltimaModificacion";
+    public static final String fechaFinalizacion = "fechaFinalizacion";
     public static final String origen = "origen";
+
+    public static final String posUsuarioLat = "posUsuarioLat";
+    public static final String posUsuarioLon = "posUsuarioLon";
 
     public static final String radio = "radio";
     public static final String nunca_mas = "NUNCA_MAS";
@@ -77,6 +89,8 @@ public class Auxiliar {
     public static final String tipoPreguntaCorta = "texto";
     public static final String tipoPreguntaLarga = "preguntaLarga";
     public static final String tipoPreguntaImagen = "fotografiaYTexto";
+    public static final String tipoPreguntaImagenes = "multiplesFotografiasYTexto";
+
     public static final String peticion = "peticion";
 
     public static final String idNotificacion = "idNotificacion";
@@ -102,8 +116,9 @@ public class Auxiliar {
     public static final String lonE = "lonE";
     public static final String tareas = "tareas";
     public static final String ficheroOrigen = "ficheroOrigen";
+    public static final String textoParaElMapa = "textoParaElMapa";
 
-    private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm - dd/MM/yyyy");
+    private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
     //private static Random random = new Random();
 
@@ -254,7 +269,7 @@ public class Auxiliar {
      */
     public static String ultimaParte(String tipoRespuesta) {
         String[] string = tipoRespuesta.split("/");
-        return (string[string.length - 1].equals("multiplesFotografiasYTexto")?Auxiliar.tipoImagenMultiple:string[string.length - 1]);
+        return string[string.length - 1];
     }
 
     /**
@@ -374,6 +389,9 @@ public class Auxiliar {
             case Auxiliar.tipoVideo:
                 iconoTarea = R.drawable.ic_video;
                 break;
+            case Auxiliar.tipoPreguntaImagenes:
+                iconoTarea = R.drawable.ic_preguntaimagenesmultiples;
+                break;
             default:
                 iconoTarea = 0;
                 break;
@@ -434,6 +452,12 @@ public class Auxiliar {
         contexto.sendBroadcast(intent);
     }
 
+    /**
+     * Envía el contenido a la app de Twitter para que el usuario pueda compartirlo
+     * @param context Contexto
+     * @param tarea JSON de la tarea
+     * @param hashtag Etiqueta con la que se envía el tweet
+     */
     public static void mandaTweet(Context context, JSONObject tarea, String hashtag){
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
@@ -441,7 +465,12 @@ public class Auxiliar {
             Intent intent;
             List<String> listaURI = new ArrayList<>();
             String textoUsuario = null;
-            JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+            JSONArray respuestas;
+            try {
+                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+            }catch (Exception e){
+                respuestas = new JSONArray();
+            }
             JSONObject respuesta;
             for(int i = 0; i < respuestas.length(); i++){
                 respuesta = respuestas.getJSONObject(i);
@@ -458,17 +487,18 @@ public class Auxiliar {
                 case Auxiliar.tipoPreguntaLarga:
                 case Auxiliar.tipoSinRespuesta:
                     intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(tarea, textoUsuario, hashtag));
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(context, tarea, textoUsuario, hashtag));
                     intent.setType("text/plain");
                     break;
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoImagen:
                 case Auxiliar.tipoImagenMultiple:
+                case Auxiliar.tipoPreguntaImagenes:
                     if(listaURI.size() > 0)
                         intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
                     else
                         intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(tarea, textoUsuario, hashtag));
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(context, tarea, textoUsuario, hashtag));
                     intent.setType("text/plain");
                     if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
                         if(!listaURI.isEmpty()){
@@ -492,7 +522,7 @@ public class Auxiliar {
                     break;
                 case Auxiliar.tipoVideo:
                     intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(tarea, textoUsuario, hashtag));
+                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(context, tarea, textoUsuario, hashtag));
                     intent.setType("text/plain");
                     if(!listaURI.isEmpty()){
                         intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
@@ -515,21 +545,89 @@ public class Auxiliar {
         }
     }
 
-    private static String contenidoTextoTweet(JSONObject tarea, String textoUsuario, String hashtag){
+    /**
+     * Método para formar el contenido textual del Tweet
+     * @param context Contexto
+     * @param tarea Tarea completa
+     * @param textoUsuario Texto del usuario
+     * @param hashtag Hashtag o lista de hashtags
+     * @return Frase que se publicará en el tweet
+     */
+    private static String contenidoTextoTweet(Context context, JSONObject tarea, String textoUsuario, String hashtag){
         String texto = null;
+
+        String[] hashtags = hashtag.split(",");
+        int tama = 0;
+        for(int i = 0; i < hashtags.length; i++){
+            hashtags[i] = String.format("#%s", hashtags[i].replace(" ", ""));
+            tama += hashtags[i].length();
+        }
 
         try {
             texto = tarea.getString(Auxiliar.titulo);
             if(textoUsuario != null){
-                texto = texto.concat(String.format("\n%s", textoUsuario));
-                if(texto.length() + hashtag.length() + 2 > 279){
-                    texto = texto.substring(0, 279-(hashtag.length()+5)) + "...";
+                texto = String.format("%s\n%s", texto, textoUsuario);
+                if(texto.length() + hashtags.length + tama > 279){ //espacios + texto
+                    texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
                 }
+            }else{
+                texto = String.format("%s %s", context.getString(R.string.twitSinTexto), texto);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        texto=(texto==null)?String.format("%s", hashtag):texto.concat(String.format("\n#%s", hashtag));
+        //texto=(texto==null)?String.format("%s", hashtag):texto.concat(String.format("\n#%s", hashtag));
+        for (String string : hashtags) {
+            texto = String.format("%s %s", texto, string);
+        }
         return texto;
+    }
+
+    /**
+     * Método para almacenar los metadatos de la respuesta en el servidor
+     * @param app Aplicación
+     * @param appContext Contexto
+     * @param idTarea Identificador único de la tarea
+     */
+    public static void guardaRespuesta(Application app, Context appContext, String idTarea){
+        JSONObject jsonObject = new JSONObject();
+        JSONObject tarea = PersistenciaDatos.recuperaTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea);
+        try{
+            jsonObject.put("idTarea", idTarea);
+            jsonObject.put("idUsuario", Login.firebaseAuth.getUid());
+            jsonObject.put("instanteInicio", tarea.getString(Auxiliar.fechaInicio));
+            jsonObject.put("instanteFin", tarea.getString(Auxiliar.fechaFinalizacion));
+            jsonObject.put("instanteModificacion", tarea.getString(Auxiliar.fechaUltimaModificacion));
+
+            int numeroMedia = 0;
+            if(tarea.has(Auxiliar.respuestas)) {
+                JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+                JSONObject respuesta;
+                for (int i = 0; i < respuestas.length(); i++) {
+                    respuesta = respuestas.getJSONObject(i);
+                    if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
+                        jsonObject.put("respuestaTextual", respuesta.getString(Auxiliar.respuestaRespuesta));
+                    } else {
+                        ++numeroMedia;
+                    }
+                }
+                if(numeroMedia > 0)
+                    jsonObject.put("numeroMedia", numeroMedia);
+            }
+            if(tarea.has(Auxiliar.rating))
+                jsonObject.put("puntuacion", tarea.getDouble(Auxiliar.rating));
+        }catch (Exception e){
+            jsonObject = null;
+        }
+
+        if(jsonObject != null) {
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
+                    Auxiliar.direccionIP + "tareasCompletadas",
+                    jsonObject,
+                    null,
+                    null
+            );
+            ColaConexiones.getInstance(appContext).getRequestQueue().add(jsonObjectRequest);
+        }
     }
 }

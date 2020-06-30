@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.text.LineBreaker;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -49,12 +51,17 @@ public class Acerca extends AppCompatActivity {
         desarrolladores.add((TextView) findViewById(R.id.tvPablo));
         desarrolladores.add((TextView) findViewById(R.id.tvAdolfo));
 
+        TextView proyectos = findViewById(R.id.tvFondosEuropeos);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            proyectos.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
+        }
+
         if(savedInstanceState == null){
             try {
-                version.setText(String.format("%s: %s", getString(R.string.version),
+                version.setText(String.format("%s %s", getString(R.string.version),
                         this.getPackageManager().getPackageInfo(getPackageName(), 0).versionName));
             } catch (PackageManager.NameNotFoundException e) {
-                version.setText(String.format("%s: %d", getString(R.string.version), 0));
+                version.setText(String.format("%s %d", getString(R.string.version), 0));
 
             }
         }else{
@@ -113,6 +120,9 @@ public class Acerca extends AppCompatActivity {
             startActivity(intent);
     }
 
+    /**
+     * Método para ocultar o mostrar a las personas implicadas en el proyecto.
+     */
     private void desarrolladores() {
         if(ensena)
             for(TextView tv : desarrolladores)
