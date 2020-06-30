@@ -11,16 +11,24 @@ import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 
+/**
+ * Clase diseñada para mostrar una imagen y que el usuario pueda ampliarla.
+ * @author Pablo
+ * @version 20200612
+ */
 public class ImagenCompleta extends AppCompatActivity {
-
-    PhotoView photoView;
+    /**
+     * Método de carga inicial de los objetos. Se inicia la descarga de la fotografía o la carga de
+     * la memoria interna
+     * @param savedInstanceState Bundle
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imagen_completa);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
-        photoView = findViewById(R.id.photoView);
+        PhotoView photoView = findViewById(R.id.photoView);
         try {
             Picasso.get()
                     .load(Objects.requireNonNull(getIntent().getExtras()).getString("IMAGENCOMPLETA"))
@@ -32,14 +40,22 @@ public class ImagenCompleta extends AppCompatActivity {
         }
     }
 
+    /**
+     * Método llamado cuando se pulsa en el botón atrás de la barra de título
+     * @return Falso porque no finaliza la tarea
+     */
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        onBackPressed();
         return false;
     }
 
+    /**
+     * Se pulsa al botón atrás físico. Cancela la carga de la imagen y finaliza la actividad.
+     */
     @Override
     public  void onBackPressed(){
-        onSupportNavigateUp();
+        Picasso.get().cancelTag(Auxiliar.cargaImagenDetalles);
+        finish();
     }
 }

@@ -1,27 +1,34 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
+import org.jetbrains.annotations.NotNull;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -34,7 +41,8 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * @author Pablo
  * @version 20200519
  */
-public class mapaNavegable extends AppCompatActivity {
+public class MapaNavegable extends AppCompatActivity
+        implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     /** Contexto */
     Context context;
@@ -78,13 +86,14 @@ public class mapaNavegable extends AppCompatActivity {
         map.setTileSource(TileSourceFactory.MAPNIK);
         IMapController mapController = map.getController();
         map.setMultiTouchControls(true);
+        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
-        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+        /*GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
         myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
                 BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        map.getOverlays().add(myLocationNewOverlay);
+        map.getOverlays().add(myLocationNewOverlay);*/
 
         map.setMaxZoomLevel(19.5);
         map.setMinZoomLevel(3.0);
@@ -109,7 +118,72 @@ public class mapaNavegable extends AppCompatActivity {
         super.onResume();
         if(map != null) {
             map.onResume();
-            if(myLocationNewOverlay.getMyLocation() != null){
+            checkPermissions();
+        }
+    }
+
+    public void checkPermissions(){
+        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
+        if(permisos.isEmpty()) {
+            if(myLocationNewOverlay == null) {
+                GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+                myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+                myLocationNewOverlay.enableMyLocation();
+                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                map.getOverlays().add(myLocationNewOverlay);
+            }
+            if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {
+                latitudUser = myLocationNewOverlay.getMyLocation().getLatitude();
+                longitudUser = myLocationNewOverlay.getMyLocation().getLongitude();
+            }
+            zumRecuadro(Auxiliar.colocaMapa(latitudMarker, longitudMarker, latitudUser, longitudUser));
+        }
+        else {
+            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), 1000);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
+        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
+        boolean falta = false;
+        for (int i : grantResults) {
+            if (i == -1) {
+                falta = true;
+                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+                alertBuilder.setTitle(getString(R.string.permi));
+                alertBuilder.setMessage(getString(R.string.permiM));
+                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                        // motivo se puede salir del for directamente
+                        checkPermissions();
+                    }
+                });
+                alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
+                        //cierra
+                        System.exit(0);
+                    }
+                });
+                alertBuilder.show();
+                break;
+            }
+        }
+        if(!falta){
+            if(myLocationNewOverlay == null) {
+                GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+                myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+                myLocationNewOverlay.enableMyLocation();
+                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                map.getOverlays().add(myLocationNewOverlay);
+            }
+            if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {
                 latitudUser = myLocationNewOverlay.getMyLocation().getLatitude();
                 longitudUser = myLocationNewOverlay.getMyLocation().getLongitude();
             }

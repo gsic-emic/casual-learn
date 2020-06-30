@@ -119,8 +119,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     public void checkPermissions(){
         if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
             System.exit(-1);
-        ArrayList<String> permisos = new ArrayList<>();
-        Auxiliar.preQueryPermisos(this, permisos);
+        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
         if (permisos.size()>0) //Evitamos hacer una petición con un array nulo
             ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
     }
@@ -220,9 +219,11 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
-            Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent (getApplicationContext(), Maps.class);
+            intent.putExtra(Auxiliar.textoParaElMapa, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            finishAffinity();
             startActivity(intent);
         }
     }

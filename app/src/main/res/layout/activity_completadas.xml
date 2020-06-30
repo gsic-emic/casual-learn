@@ -20,7 +20,7 @@
             android:layout_marginBottom="20dp"
             android:textSize="20sp"
             android:visibility="visible"
-            android:layout_marginHorizontal="3dp"/>
+            android:layout_marginHorizontal="5dp"/>
 
         <EditText
             android:id="@+id/etRespuestaTextualCompletada"
@@ -38,7 +38,7 @@
             android:inputType="textMultiLine"
             android:enabled="false"
             android:autofillHints="no"
-            android:layout_marginHorizontal="3dp"/>
+            android:layout_marginHorizontal="5dp"/>
 
         <Button style="@style/botonPrimario"
             android:id="@+id/btAgregarCompletada"
@@ -62,7 +62,7 @@
             android:layout_marginTop="10dp"
             android:layout_marginBottom="10dp"/>
 
-        <RatingBar
+        <RatingBar android:theme="@style/barraPuntua"
             android:id="@+id/rbPuntuacionCompletada"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -74,8 +74,13 @@
             app:layout_constraintTop_toBottomOf="@id/rvImagenesAlumno"
             android:visibility="visible" />
 
-
-
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginHorizontal="5dp"
+            android:id="@+id/clCompletada"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

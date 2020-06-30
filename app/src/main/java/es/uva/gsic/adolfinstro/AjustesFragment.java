@@ -1,8 +1,14 @@
 package es.uva.gsic.adolfinstro;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
+import android.widget.EditText;
 
+import androidx.annotation.NonNull;
+import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SeekBarPreference;
@@ -24,12 +30,21 @@ public class AjustesFragment extends PreferenceFragmentCompat implements SharedP
         preferenceCategory = findPreference("categoriaPreferencias");
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
-        PreferenceCategory datosUsuario=findPreference("datosUsuario");
-        datosUsuario.setSummary(Login.firebaseAuth.getUid());
+        //PreferenceCategory datosUsuario=findPreference("datosUsuario");
+        //datosUsuario.setSummary(Login.firebaseAuth.getUid());
         /*EditTextPreference et = findPreference("nombre");
         et.setSummary(Login.firebaseAuth.getCurrentUser().getDisplayName());
         et = findPreference("correo");
         et.setSummary(Login.firebaseAuth.getCurrentUser().getEmail());*/
+        final EditTextPreference hashtag = findPreference(Ajustes.HASHTAG_pref);
+        if(hashtag!=null)
+            hashtag.setOnBindEditTextListener(new EditTextPreference.OnBindEditTextListener() {
+                @Override
+                public void onBindEditText(@NonNull EditText editText) {
+                    editText.setFilters(new InputFilter[]{
+                            new InputFilter.LengthFilter(50)});
+                }
+            });
     }
 
     /**

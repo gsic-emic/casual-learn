@@ -1,7 +1,6 @@
 package es.uva.gsic.adolfinstro.auxiliar;
 
 import android.content.Context;
-import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,17 +12,29 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.util.List;
 
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 
+/**
+ * Clase para establecer la lista de tareas que se muestra cuando un usuario pulsa en un marcador
+ * @author pablo
+ * @version 20200626
+ */
 public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.ViewHolderMapa>  {
 
+    /**
+     * Subclase con el que establezco los items que van a componer cada objeto
+     */
     public static class ViewHolderMapa extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView tvTitulo;
         ImageView ivTipoTarea;
+
+        /**
+         * Constructor de la subclase
+         * @param itemView Vista
+         */
         ViewHolderMapa(@NonNull View itemView){
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvItemListaMapa);
@@ -31,6 +42,10 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
             itemView.setOnClickListener(this);
         }
 
+        /**
+         * Método para responder a la pulsación de un usuario
+         * @param v vista
+         */
         @Override
         public void onClick(View v){
             if(itemClickListenerMapa != null)
@@ -42,11 +57,22 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     private LayoutInflater layoutInflater;
     private static ItemClickListener itemClickListenerMapa;
 
+    /**
+     * Constructor de la clase
+     * @param context Contexto
+     * @param lista Lista con la información necesaria de cada objeto
+     */
     public AdaptadorListaMapa(Context context, List<Maps.TareasMapaLista> lista){
         this.lista = lista;
         layoutInflater = LayoutInflater.from(context);
     }
 
+    /**
+     * Método para inflar el layout
+     * @param parent Parent
+     * @param viewType ViewType
+     * @return Objeto de la subclase
+     */
     @NonNull
     @Override
     public AdaptadorListaMapa.ViewHolderMapa onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -54,23 +80,49 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
         return new ViewHolderMapa(view);
     }
 
+    /**
+     * Método para introducir la información en el layout
+     * @param holder Holder
+     * @param position Posición
+     */
     @Override
     public void onBindViewHolder(@NonNull AdaptadorListaMapa.ViewHolderMapa holder, int position){
         holder.tvTitulo.setText(lista.get(position).titulo);
         holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
     }
 
+    /**
+     * Método para recuperar el tamaño de la lista
+     * @return Tamaño de la lista
+     */
     @Override
     public int getItemCount(){ return lista.size();}
 
+    /**
+     * Método para obtener el identificador del objeto que se pulse
+     * @param posicion Posición pulsada
+     * @return Identificador del objeto pulsado
+     */
     public String getId(int posicion) { return lista.get(posicion).id; }
 
+    /**
+     * Método para obtener toda la información del marcador que se pulse
+     * @param position Posición pulsada
+     * @return JSONObject con toda la información de la tarea
+     */
     public JSONObject getTarea(int position) { return  lista.get(position).tarea; }
 
+    /**
+     * Método para establecer la pulsación simple
+     * @param itemClickListener ItemClickListener
+     */
     public void setClickListener(ItemClickListener itemClickListener){
         itemClickListenerMapa = itemClickListener;
     }
 
+    /**
+     * Interfaz para establecer la pulsación
+     */
     public interface ItemClickListener{
         void onItemClick(View view, int position);
     }

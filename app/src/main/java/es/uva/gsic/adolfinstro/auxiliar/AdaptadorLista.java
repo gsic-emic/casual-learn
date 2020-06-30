@@ -16,13 +16,27 @@ import java.util.List;
 import es.uva.gsic.adolfinstro.ListaTareas;
 import es.uva.gsic.adolfinstro.R;
 
+/**
+ * Clase para ver la lista de tareas completadas, pendientes o realizadas dentro de un contenedor.
+ *
+ * @author pablo
+ * @version 20200626
+ */
 public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHolder> {
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
-        TextView tvTitulo;
+    /**
+     * Subclase para establecer el formato de cada uno de los objetos.
+     */
+    public static class ViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener, View.OnLongClickListener{
+        TextView tvTitulo, tvFecha;
         ImageView ivTipoTarea;
-        TextView tvFecha;
         RatingBar ratingBar;
+
+        /**
+         * Constructor de la subclase. Fija cada uno de las referencias dle layout.
+         * @param itemView ItemView
+         */
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvListaTitulo);
@@ -35,9 +49,8 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
         }
 
         /**
-         * Called when a view has been clicked.
-         *
-         * @param v The view that was clicked.
+         * Método que establece lo que sucede cuando se pulsa sobre el objeto
+         * @param v Vista
          */
         @Override
         public void onClick(View v) {
@@ -45,6 +58,12 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
                 itemClickListener.onItemClick(v, getAdapterPosition());
         }
 
+        /**
+         * Método que establece lo que sucede cuando se pulsa sobre el objeto con una pulsación
+         * larga
+         * @param v vista
+         * @return Verdadero
+         */
         @Override
         public boolean onLongClick(View v){
             if(itemLongClickLister != null)
@@ -58,11 +77,22 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
     private static ItemClickListener itemClickListener;
     private static ItemLongClickLister itemLongClickLister;
 
+    /**
+     * Constructor de la clase
+     * @param c Contexto
+     * @param l Lista de objetos con la información necesaria de la cada una de las tareas
+     */
     public AdaptadorLista(Context c, List<ListaTareas.TareasLista> l){
         lista = l;
         layoutInflater = LayoutInflater.from(c);
     }
 
+    /**
+     * Inflador
+     * @param parent Parent
+     * @param viewType ViewType
+     * @return Objeto que forma la lista
+     */
     @NonNull
     @Override
     public AdaptadorLista.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -70,6 +100,11 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
         return new ViewHolder(view);
     }
 
+    /**
+     * Método para establecer dentro del contenedor el contendido de cada objeto
+     * @param holder Holder
+     * @param position Posición
+     */
     @Override
     public void onBindViewHolder(@NonNull AdaptadorLista.ViewHolder holder, int position) {
         holder.tvTitulo.setText(lista.get(position).titulo);
@@ -83,36 +118,58 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
     }
 
     /**
-     * Returns the total number of items in the data set held by the adapter.
-     *
-     * @return The total number of items in this adapter.
+     * Método para obtener el número items que forman la lista
+     * @return Número de items que forman la lista
      */
     @Override
     public int getItemCount() {
         return lista.size();
     }
 
+    /**
+     * Método para obtener el identificador del marcador
+     * @param posicion Posición que ocupa el objeto
+     * @return Identificador del marcador
+     */
     public String getId(int posicion){
         return lista.get(posicion).id;
     }
 
+    /**
+     * Método para obtener el tipo del marcador
+     * @param posicion Posición que ocupa el objeto
+     * @return Tipo de respuesta esperada del marcador
+     */
     public String getTipo(int posicion){
         return lista.get(posicion).tipoTarea;
     }
 
-    //https://stackoverflow.com/questions/40584424/simple-android-recyclerview-example
+    /**
+     * Mëtodo que establece el click simple
+     * @param itemClickListener ItemClickListener
+     */
     public void setClickListener(ItemClickListener itemClickListener){
         AdaptadorLista.itemClickListener = itemClickListener;
     }
 
+    /**
+     * Método que esteablece la pulsación larga
+     * @param itemLongClickLister ItemLongClickLister
+     */
     public void setLongClickLister(ItemLongClickLister itemLongClickLister){
         AdaptadorLista.itemLongClickLister = itemLongClickLister;
     }
 
+    /**
+     * Interfaz para establecer el click simple
+     */
     public interface ItemClickListener {
         void onItemClick(View view, int position);
     }
 
+    /**
+     * Interfaz para establecer el click largo
+     */
     public interface ItemLongClickLister {
         void onItemLongClick(View v, int position);
     }

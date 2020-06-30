@@ -24,8 +24,8 @@
         android:background="#dce1e8"
         android:textColor="@android:color/black"
         app:layout_constraintBottom_toBottomOf="@id/map"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="2dp"
+        app:layout_constraintStart_toStartOf="@id/map"
+        android:layout_marginStart="3dp"
         android:textSize="12sp"/>
 
     <androidx.constraintlayout.widget.Guideline
@@ -39,13 +39,13 @@
         android:id="@+id/btCentrar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
         android:layout_marginEnd="15dp"
         app:fabCustomSize="50dp"
         android:onClick="boton"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:backgroundTint="@color/colorSecondary"
+        app:layout_constraintEnd_toEndOf="@id/map"
+        app:layout_constraintBottom_toBottomOf="@id/map"
         app:srcCompat="@drawable/ic_my_location_black_72dp" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -69,7 +69,18 @@
         app:layout_constraintTop_toBottomOf="@id/guiaMapa"
         app:layout_constraintBottom_toBottomOf="parent"
         android:visibility="visible"
-        android:padding="10dp"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:padding="5dp"
         android:textSize="20sp"
         android:text="@string/pulsaMarker"/>
+
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginHorizontal="5dp"
+        android:id="@+id/clMapa"
+        app:layout_constraintBottom_toTopOf="@id/btCentrar"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,21 +9,19 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
+import android.graphics.text.LineBreaker;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.text.Layout;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -32,20 +30,24 @@ import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
+/**
+ * Método para mostrar toda la información relacionada con la tarea que el usuario podría llegar a
+ * realizar.
+ *
+ * @author Pablo
+ * @version 20200626
+ */
 public class Preview extends AppCompatActivity implements LocationListener {
 
     /** Contexto */
@@ -68,6 +70,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
     /** Objeto con el que se hace el seguimiento de la posición del usuario */
     private LocationManager locationManager;
 
+    /** Instancia de la posición */
     private Location location;
 
     /**
@@ -90,7 +93,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
         ImageView imageView = findViewById(R.id.imagenPreview);
         String idTarea = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id);
-        tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+        try {
+            tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+            tarea.put(Auxiliar.fechaInicio, Auxiliar.horaFechaActual());
+            PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea);
+        }catch (Exception e){
+            tarea = null;
+        }
         try {
             try{
                 assert tarea != null;
@@ -142,7 +151,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
             TextView descripcion = findViewById(R.id.textoPreview);
             descripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                descripcion.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+                descripcion.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
             }
             //ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
             String tipo = tarea.getString(Auxiliar.tipoRespuesta);
@@ -162,14 +171,24 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 public boolean singleTapConfirmedHelper(GeoPoint p) {
                     try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
                         if(location != null){
-                            Intent intent = new Intent(context, mapaNavegable.class);
+                            Intent intent = new Intent(context, MapaNavegable.class);
                             intent.putExtra(Auxiliar.latitud + "user", location.getLatitude());
                             intent.putExtra(Auxiliar.longitud + "user", location.getLongitude());
                             intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
                             intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
                             startActivity(intent);
                         }else{
-                            Toast.makeText(context,  context.getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                            try{
+                                Intent intent = new Intent(context, MapaNavegable.class);
+                                intent.putExtra(Auxiliar.latitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLat));
+                                intent.putExtra(Auxiliar.longitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLon));
+                                intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
+                                intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
+                                startActivity(intent);
+                            }catch (Exception e){
+                                //Toast.makeText(context,  context.getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                                pintaSnackBar(context.getString(R.string.recuperandoPosicion));
+                            }
                         }
                     }catch (JSONException e){
                         e.printStackTrace();
@@ -213,7 +232,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
             btAceptar.setVisibility(View.GONE);
             explicacionDistancia.setVisibility(View.VISIBLE);
             textoDistancia.setVisibility(View.VISIBLE);
-
         }
     }
 
@@ -243,8 +261,14 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent()
                             .getExtras()).getString(Auxiliar.id));
                     sendBroadcast(intent);
-                    Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
-                    Auxiliar.returnMain(this);
+                    //Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
+                    Intent intent2 = new Intent(context, Maps.class);
+                    intent2.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent2.putExtra(Auxiliar.textoParaElMapa, getString(R.string.tareaPospuesta));
+                    context.startActivity(intent2);
+                    finish();
+                    //Auxiliar.returnMain(this);
                     break;
                 case Auxiliar.mapa:
                     PersistenciaDatos.obtenTarea(
@@ -279,7 +303,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     break;
             }
         }catch (Exception e){
-            Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            pintaSnackBar(getString(R.string.errorOpera));
         }
     }
 
@@ -292,7 +317,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
         try {
             Intent intent;
             if (Auxiliar.tareaRegistrada(getApplication(), tarea.getString(Auxiliar.id))) {
-                Toast.makeText(context, getString(R.string.tareaRegistrada), Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, getString(R.string.tareaRegistrada), Toast.LENGTH_LONG).show();
+                pintaSnackBar(getString(R.string.tareaRegistrada));
             } else {
                 switch (view.getId()) {
                     case R.id.botonAceptarPreview:
@@ -347,10 +373,20 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 botonesVisibles(false);
             } else {
                 locationManager.requestLocationUpdates(
-                        LocationManager.GPS_PROVIDER, 5000, 10, this);
+                        LocationManager.GPS_PROVIDER, 1000, 2, this);
                 if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
                     onLocationChanged(
                             locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                else{
+                    try {
+                        textoInformativoDistancia(tarea.getDouble(Auxiliar.latitud),
+                                tarea.getDouble(Auxiliar.longitud),
+                                getIntent().getExtras().getDouble(Auxiliar.posUsuarioLat),
+                                getIntent().getExtras().getDouble(Auxiliar.posUsuarioLon));
+                    }catch (Exception e){
+                        explicacionDistancia.setText(getResources().getString(R.string.recuperandoPosicion));
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -373,25 +409,39 @@ public class Preview extends AppCompatActivity implements LocationListener {
             locationManager.removeUpdates(this);
     }
 
+    /**
+     * Método para modificar la distancia que existe, en línea recta, entre la tarea y el usuario
+     * @param tareaLat Latitud de la tarea
+     * @param tareaLon Longitud de la tarea
+     * @param usuarioLat Latitud del usuario
+     * @param usuarioLon Longitud del usuario
+     */
+    private void textoInformativoDistancia(double tareaLat, double tareaLon, double usuarioLat, double usuarioLon){
+        double distancia = Auxiliar.calculaDistanciaDosPuntos(
+                tareaLat,
+                tareaLon,
+                usuarioLat,
+                usuarioLon);
+        //TODO reducir la distancia a 0.15
+        if(distancia <= 1.15){
+            botonesVisibles(true);
+        }else{
+            botonesVisibles(false);
+            if(distancia>=1)
+                textoDistancia.setText(String.format("%.2f km", distancia));
+            else
+                textoDistancia.setText(String.format("%.2f m", distancia*1000));
+        }
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         this.location = location;
         try {
-            double distancia = Auxiliar.calculaDistanciaDosPuntos(
-                    tarea.getDouble(Auxiliar.latitud),
+            textoInformativoDistancia(tarea.getDouble(Auxiliar.latitud),
                     tarea.getDouble(Auxiliar.longitud),
                     location.getLatitude(),
                     location.getLongitude());
-            //TODO VOLVER A PONER A 0.15
-            if(distancia <= 1.0){
-                botonesVisibles(true);
-            }else{
-                botonesVisibles(false);
-                if(distancia>=1)
-                    textoDistancia.setText(String.format("%.2f km", distancia));
-                else
-                    textoDistancia.setText(String.format("%.2f m", distancia*1000));
-            }
         }catch (Exception e){
             explicacionDistancia.setText(getResources().getString(R.string.recuperandoPosicion));
         }
@@ -411,5 +461,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
 
+    }
+
+    private void pintaSnackBar(String texto){
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.clPreview), R.string.app_name, Snackbar.LENGTH_SHORT);
+        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setText(texto);
+        snackbar.show();
     }
 }

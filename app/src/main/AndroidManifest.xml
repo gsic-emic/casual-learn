@@ -27,7 +27,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".mapaNavegable"
+        <activity android:name=".MapaNavegable"
             android:label="@string/navega"/>
         <activity
             android:name=".Completadas"
@@ -64,29 +64,9 @@
         <activity android:name=".Login">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MainActivity"
-            android:label="@string/debug"
-            android:theme="@style/AppTheme">
-
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            -->
-        </activity>
-
-        <service
-            android:name=".Proceso"
-            android:directBootAware="true"
-            android:foregroundServiceType="location"
-            android:icon="@drawable/ic_launcher_foreground" />
 
         <receiver android:name=".AlarmaProceso"/>
 
