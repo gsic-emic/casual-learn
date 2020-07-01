@@ -135,8 +135,13 @@
     <string name="palabraClave">Hashtag</string>
     <string name="descripcionPalabraClave">Customize the hashtag with which the tasks will be published on Twitter</string>
     <string name="fuentesInformacion" translatable="false">Fuentes de información</string>
-    <string name="pablo" translatable="false">Pablo García Zarza - pablogz@gsic.uva.es</string>
-    <string name="adolfo" translatable="false">Adolfo Ruíz Calleja - adolfo@gsic.uva.es</string>
+    <string name="pablo" translatable="false"><b>Pablo García Zarza</b>\npablogz@gsic.uva.es\n</string>
+    <string name="adolfo" translatable="false"><b>Adolfo Ruíz Calleja</b>\nadolfo@gsic.uva.es\n</string>
+    <string name="miguel" translatable="false"><b>Miguel Luis Bote Lorenzo</b>\nmigbot@tel.uva.es\n</string>
+    <string name="sergio" translatable="false"><b>Sergio Serrano Iglesias</b>\nsergio@gsic.uva.es\n</string>
+    <string name="edu" translatable="false"><b>Eduardo Gómez Sánchez</b>\nedugom@tel.uva.es\n</string>
+    <string name="asen" translatable="false"><b>Juan Ignacio Asensio Pérez</b>\njuaase@tel.uva.es\n</string>
+    <string name="guille" translatable="false"><b>Guillermo Vega Gorgojo</b>\nguiveg@tel.uva.es\n</string>
     <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
     <string name="urluva" translatable="false">https://www.uva.es</string>
     <string name="urlJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>

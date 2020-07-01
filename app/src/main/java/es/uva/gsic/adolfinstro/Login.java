@@ -30,10 +30,13 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase que permite a los usuarios identificarse frente al sistema.
@@ -219,6 +222,13 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+            try {
+                JSONObject usuario = new JSONObject();
+                usuario.put(Auxiliar.id, firebaseUser.getUid());
+                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
             //Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent (getApplicationContext(), Maps.class);
             intent.putExtra(Auxiliar.textoParaElMapa, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));

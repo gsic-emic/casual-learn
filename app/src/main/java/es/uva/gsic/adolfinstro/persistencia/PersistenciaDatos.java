@@ -24,8 +24,6 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 public class PersistenciaDatos {
     /** Fichero donde se almacenan las tareas recibidas desde el servidor que el usuario puede iniciar*/
     public static final String ficheroTareasUsuario = "tareasUsuario";
-    /** Fichero donde se almacenan las tareas recibidas del servidor para poner los marcadores en el mapa*/
-    public static final String ficheroTareasZona = "tareasZona";
     /** Fichero donde se encuentras las tareas notificadas al alumno */
     public static final String ficheroNotificadas = "notificadas";
     /** Fichero con las tareas rechazadas */
