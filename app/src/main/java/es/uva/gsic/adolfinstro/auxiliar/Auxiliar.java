@@ -598,6 +598,7 @@ public class Auxiliar {
             jsonObject.put("instanteInicio", tarea.getString(Auxiliar.fechaInicio));
             jsonObject.put("instanteFin", tarea.getString(Auxiliar.fechaFinalizacion));
             jsonObject.put("instanteModificacion", tarea.getString(Auxiliar.fechaUltimaModificacion));
+            jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
 
             int numeroMedia = 0;
             if(tarea.has(Auxiliar.respuestas)) {

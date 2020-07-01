@@ -107,7 +107,7 @@
             android:layout_marginHorizontal="8dp"
             android:onClick="boton"/>
 
-        <TextView
+        <!--<TextView
             android:id="@+id/tvPablo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -127,7 +127,7 @@
             app:layout_constraintTop_toBottomOf="@id/tvPablo"
             android:textSize="18sp"
             android:text="@string/adolfo"
-            android:visibility="gone"/>
+            android:visibility="gone"/> -->
 
 
         <TextView
@@ -136,7 +136,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvAdolfo"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
             android:text="@string/fuentesInformacion"
             android:textSize="25sp"
             android:paddingHorizontal="10dp"/>

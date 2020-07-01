@@ -19,6 +19,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -238,13 +240,13 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
         //Inicio del servicio, se tiene que recuperar la tarea del servidor
         //Validez de un día para las tareas
-        if(latitudGet==0 || longitudGet==0 || ((new Date().getTime() - momento) > 86400000)){
+        if(latitudGet==0 || longitudGet==0 || ((new Date().getTime() - momento) > 7200000)){
             peticionTareasServidor(location);
         }else{
             double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
                     latitud, longitud,
                     latitudGet, longitudGet);
-            if(distanciaOrigen >= 0.15){
+            if(distanciaOrigen >= 0.5){
                 //Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
                 peticionTareasServidor(location);
             }else {//El fichero sigue siendo válido
@@ -262,11 +264,19 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         /*String url = Auxiliar.direccionIP + "tareas?latitude="+location.getLatitude()
                 +"&longitude="+location.getLongitude()
                 +"&radio="+radio;*/
+        String idUsuario = null;
+        try{
+            JSONObject usuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            idUsuario = usuario.getString(Auxiliar.id);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         String url = Auxiliar.direccionIP +
-                "tareas?norte=" + (location.getLatitude() + 0.001) +
-                "&este=" + (location.getLongitude() + 0.001) +
-                "&sur=" + (location.getLatitude() - 0.001) +
-                "&oeste=" + (location.getLongitude() - 0.001);
+                "tareas?norte=" + (location.getLatitude() + 0.00325) +
+                "&este=" + (location.getLongitude() + 0.00325) +
+                "&sur=" + (location.getLatitude() - 0.00325) +
+                "&oeste=" + (location.getLongitude() - 0.00325)
+                +((idUsuario == null)?"":"&id=" + idUsuario);
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url,
                 null, new Response.Listener<JSONArray>() {
             @Override

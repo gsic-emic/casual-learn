@@ -2,13 +2,18 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
@@ -17,19 +22,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * Clase diseñada para mostrar la información de la aplicación
  *
  * @author Pablo
- * @version 20200615
+ * @version 20200701
  */
 public class Acerca extends AppCompatActivity {
 
     /** Instancia del cuadro del textview donde se coloca la versión*/
     TextView version;
-    List<TextView> desarrolladores;
-    Boolean ensena = false;
+    //List<TextView> desarrolladores;
+    //Boolean ensena = false;
 
 
     /**
@@ -47,9 +53,9 @@ public class Acerca extends AppCompatActivity {
 
         version = findViewById(R.id.tvVersion);
 
-        desarrolladores = new ArrayList<>();
+        /*desarrolladores = new ArrayList<>();
         desarrolladores.add((TextView) findViewById(R.id.tvPablo));
-        desarrolladores.add((TextView) findViewById(R.id.tvAdolfo));
+        desarrolladores.add((TextView) findViewById(R.id.tvAdolfo));*/
 
         TextView proyectos = findViewById(R.id.tvFondosEuropeos);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -68,10 +74,10 @@ public class Acerca extends AppCompatActivity {
             version.setText(savedInstanceState.getString("TEXTOVERSION"));
         }
 
-        if(savedInstanceState != null){
+        /*if(savedInstanceState != null){
             ensena = savedInstanceState.getBoolean("ENSENA");
             desarrolladores();
-        }
+        }*/
     }
 
     /**
@@ -89,8 +95,12 @@ public class Acerca extends AppCompatActivity {
                 intent.setData(Uri.parse(getString(R.string.urluva)));
                 break;
             case R.id.tvDesarrolladores:
-                ensena = !ensena;
-                desarrolladores();
+                Dialog dialogo = new Dialog(this);
+                dialogo.setContentView(R.layout.dialogo_desarrolladores);
+                dialogo.setCancelable(true);
+                TextView textView = dialogo.findViewById(R.id.tvEspacioDesarrolladores);
+                textView.setText(desarrolladores());
+                dialogo.show();
                 break;
             case R.id.ivJunta:
                 intent.setData(Uri.parse(getString(R.string.urlJunta)));
@@ -121,15 +131,25 @@ public class Acerca extends AppCompatActivity {
     }
 
     /**
-     * Método para ocultar o mostrar a las personas implicadas en el proyecto.
+     * Método para recuperar a las personas implicadas en el proyecto.
      */
-    private void desarrolladores() {
-        if(ensena)
-            for(TextView tv : desarrolladores)
-                tv.setVisibility(View.VISIBLE);
-        else
-            for(TextView tv : desarrolladores)
-                tv.setVisibility(View.GONE);
+    private String desarrolladores() {
+        List<String> nombres = new ArrayList<>();
+        String salida = "";
+        nombres.add(getString(R.string.pablo)+"\n");
+        nombres.add(getString(R.string.adolfo)+"\n");
+        nombres.add(getString(R.string.miguel)+"\n");
+        nombres.add(getString(R.string.sergio)+"\n");
+        nombres.add(getString(R.string.asen)+"\n");
+        nombres.add(getString(R.string.guille)+"\n");
+        nombres.add(getString(R.string.edu)+"\n");
+        int pos;
+        Random random = new Random();
+        while(nombres.size() > 0) {
+            pos = random.nextInt(nombres.size());
+            salida = salida.concat(nombres.remove(pos));
+        }
+        return salida;
     }
 
     /**
@@ -159,6 +179,6 @@ public class Acerca extends AppCompatActivity {
     public void onSaveInstanceState(@NotNull Bundle b) {
         super.onSaveInstanceState(b);
         b.putString("TEXTOVERSION", version.getText().toString());
-        b.putBoolean("ENSENA", ensena);
+        //b.putBoolean("ENSENA", ensena);
     }
 }
