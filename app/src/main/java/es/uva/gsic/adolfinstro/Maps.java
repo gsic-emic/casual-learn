@@ -74,7 +74,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * @author Pablo
  * @version 20200615
  */
-public class Maps extends AppCompatActivity implements
+public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
@@ -455,7 +455,29 @@ public class Maps extends AppCompatActivity implements
      * @return Representación gráfica del marcador
      */
     private Bitmap generaBitmapMarkerNumero(int size) {
-        Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
+        Paint paint = new Paint();
+        Drawable drawable;
+        if(size > 60)
+            paint.setARGB(255, 255, 255, 255);
+        else
+            paint.setARGB(255, 0, 0, 0);
+        if(size <= 20)
+            drawable = context.getResources().getDrawable(R.drawable.ic_marker100);
+        else
+            if(size <= 40)
+                drawable = context.getResources().getDrawable(R.drawable.ic_marker300);
+            else
+                if(size <= 60)
+                    drawable = context.getResources().getDrawable(R.drawable.ic_marker500);
+                else
+                    if(size <= 80)
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marker700);
+                    else
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marker900);
+
+
+
+        //Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
         Bitmap bitmap = Bitmap.createBitmap(
                 drawable.getIntrinsicWidth(),
                 drawable.getIntrinsicHeight(),
@@ -465,21 +487,19 @@ public class Maps extends AppCompatActivity implements
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
-        Paint paint = new Paint();
         String texto;
         if(size>99) {
             texto = "99+";
             size = 99;
         } else
             texto = String.valueOf(size);
-        paint.setARGB(255, 0, 0, 0);
         paint.setStyle(Paint.Style.FILL);
         int textSize = (int) (mitad+1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(texto, mitad, mitad + (float)textSize/3, paint);
-        paint.setARGB(200 - 198 + 2*size, 136, 73, 248);
-        canvas.drawCircle(mitad, canvas.getHeight() - mitad/3, mitad/8, paint);
+        //paint.setARGB(200 - 198 + 2*size, 136, 73, 248);
+        //canvas.drawCircle(mitad, canvas.getHeight() - mitad/3, mitad/8, paint);
         //canvas.drawCircle(mitad, mitad, mitad/2, paint);
         return bitmap;
     }

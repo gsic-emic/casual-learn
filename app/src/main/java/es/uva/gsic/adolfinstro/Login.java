@@ -217,14 +217,15 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         if(firebaseUser != null){
             firebaseAnalytics.setUserId(firebaseUser.getUid());
             Bundle bundle = new Bundle();
-            bundle.putString("uid", firebaseUser.getUid());
+            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
             if(registro)
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
                 JSONObject usuario = new JSONObject();
-                usuario.put(Auxiliar.id, firebaseUser.getUid());
+                usuario.put(Auxiliar.id, Auxiliar.id);
+                usuario.put(Auxiliar.uid, firebaseUser.getUid());
                 PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
             }catch (JSONException e){
                 e.printStackTrace();

@@ -84,7 +84,7 @@
     <string name="sinTareas">The list has not got any task.</string>
     <string name="restaurarTarea">Undo rejection</string>
     <string name="restaurarTareaTexto">Do you want this task to be able to come out again?</string>
-    <string name="desarrolladoPor">Developed by</string>
+    <string name="desarrolladoPor">An app developed by</string>
     <string name="intervaloDias">Days</string>
     <string name="intervaloHoras">Hours</string>
     <string name="intervaloMinutos">Minutes</string>
@@ -122,7 +122,7 @@
     <string name="agregaVideoAntesBorrar">Add a new video before remove this</string>
     <string name="tareaIndividual">Single point tasks</string>
     <string name="pulsaEnUnaTarea">Click on a task of the list to get more info</string>
-    <string name="proyectosSistema" translatable="false">Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación VA257P18 y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto TIN2017-85179-C3-2-R.</string>
+    <string name="proyectosSistema" translatable="false">Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación <a href='https://ec.europa.eu/regional_policy/es/funding/erdf/'>VA257P18</a> y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto <a href='https://jcyl.es'>TIN2017-85179-C3-2-R</a>.</string>
     <string name="fondosInvesticacion">Research Projects</string>
     <string name="Desarrolladores">Developers</string>
     <string name="Picasso" translatable="false">Picasso</string>
@@ -157,4 +157,13 @@
     <string name="preguntaImagenes">Ask and multiple photos</string>
     <string name="descripcionFuncionamientoPalabraClave">If you want multiples hashtags, split them with commas. We will take care of add # necessary</string>
     <string name="twitSinTexto">I just did a task with @CasualLearn in </string>
+    <string name="iconoTareaPreview">Icon</string>
+    <string name="previewVisita">Visit a place</string>
+    <string name="previewRespuestaCorta">Short text task</string>
+    <string name="previewRespuestaLarga">Long text task</string>
+    <string name="previewRespuestaImagen"><![CDATA[Photo & text]]></string>
+    <string name="previewRespuestaImagenes"><![CDATA[Photos & text]]></string>
+    <string name="previewFoto">Make a photo</string>
+    <string name="previewMultiplesFotos">Make photos</string>
+    <string name="previewVideo">Make a video</string>
 </resources>

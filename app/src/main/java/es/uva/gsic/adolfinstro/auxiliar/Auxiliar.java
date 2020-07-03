@@ -117,6 +117,7 @@ public class Auxiliar {
     public static final String tareas = "tareas";
     public static final String ficheroOrigen = "ficheroOrigen";
     public static final String textoParaElMapa = "textoParaElMapa";
+    public static final String uid = "uid";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
@@ -388,6 +389,40 @@ public class Auxiliar {
                 break;
             case Auxiliar.tipoVideo:
                 iconoTarea = R.drawable.ic_video;
+                break;
+            case Auxiliar.tipoPreguntaImagenes:
+                iconoTarea = R.drawable.ic_preguntaimagenesmultiples;
+                break;
+            default:
+                iconoTarea = 0;
+                break;
+        }
+        return iconoTarea;
+    }
+
+    public static int iconoTipoTareaPreview(String tR) {
+        int iconoTarea;
+        switch (tR){
+            case Auxiliar.tipoSinRespuesta:
+                iconoTarea = R.drawable.ic_sinrespuesta_barra;
+                break;
+            case Auxiliar.tipoPreguntaCorta:
+                iconoTarea = R.drawable.ic_preguntacorta_barra;
+                break;
+            case Auxiliar.tipoPreguntaLarga:
+                iconoTarea = R.drawable.ic_preguntalarga_barra;
+                break;
+            case Auxiliar.tipoPreguntaImagen:
+                iconoTarea = R.drawable.ic_preguntaimagen_barra;
+                break;
+            case Auxiliar.tipoImagen:
+                iconoTarea = R.drawable.ic_imagen_barra;
+                break;
+            case Auxiliar.tipoImagenMultiple:
+                iconoTarea = R.drawable.ic_imagenmultiple_barra;
+                break;
+            case Auxiliar.tipoVideo:
+                iconoTarea = R.drawable.ic_video_barra;
                 break;
             case Auxiliar.tipoPreguntaImagenes:
                 iconoTarea = R.drawable.ic_preguntaimagenesmultiples;

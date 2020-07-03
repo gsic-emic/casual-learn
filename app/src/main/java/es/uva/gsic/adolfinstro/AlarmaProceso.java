@@ -267,7 +267,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         String idUsuario = null;
         try{
             JSONObject usuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-            idUsuario = usuario.getString(Auxiliar.id);
+            idUsuario = usuario.getString(Auxiliar.uid);
         }catch (Exception e){
             e.printStackTrace();
         }

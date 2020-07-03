@@ -11,6 +11,7 @@ import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
@@ -58,6 +59,8 @@ public class Acerca extends AppCompatActivity {
         desarrolladores.add((TextView) findViewById(R.id.tvAdolfo));*/
 
         TextView proyectos = findViewById(R.id.tvFondosEuropeos);
+        proyectos.setMovementMethod(LinkMovementMethod.getInstance());
+        proyectos.setPadding(18, 0, 8, 0);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             proyectos.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
         }
@@ -73,6 +76,7 @@ public class Acerca extends AppCompatActivity {
         }else{
             version.setText(savedInstanceState.getString("TEXTOVERSION"));
         }
+
 
         /*if(savedInstanceState != null){
             ensena = savedInstanceState.getBoolean("ENSENA");
@@ -138,11 +142,6 @@ public class Acerca extends AppCompatActivity {
         String salida = "";
         nombres.add(getString(R.string.pablo)+"\n");
         nombres.add(getString(R.string.adolfo)+"\n");
-        nombres.add(getString(R.string.miguel)+"\n");
-        nombres.add(getString(R.string.sergio)+"\n");
-        nombres.add(getString(R.string.asen)+"\n");
-        nombres.add(getString(R.string.guille)+"\n");
-        nombres.add(getString(R.string.edu)+"\n");
         int pos;
         Random random = new Random();
         while(nombres.size() > 0) {

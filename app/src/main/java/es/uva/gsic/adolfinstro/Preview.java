@@ -16,6 +16,9 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -46,7 +49,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20200626
+ * @version 20200703
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -100,6 +103,41 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }catch (Exception e){
             tarea = null;
         }
+
+        try{
+            switch (tarea.getString(Auxiliar.tipoRespuesta)){
+                case Auxiliar.tipoSinRespuesta:
+                    setTitle(R.string.previewVisita);
+                    break;
+                case Auxiliar.tipoPreguntaCorta:
+                    setTitle(R.string.previewRespuestaCorta);
+                    break;
+                case Auxiliar.tipoPreguntaLarga:
+                    setTitle(R.string.previewRespuestaLarga);
+                    break;
+                case Auxiliar.tipoPreguntaImagen:
+                    setTitle(R.string.previewRespuestaImagen);
+                    break;
+                case Auxiliar.tipoPreguntaImagenes:
+                    setTitle(R.string.previewRespuestaImagenes);
+                    break;
+                case Auxiliar.tipoImagen:
+                    setTitle(R.string.previewFoto);
+                    break;
+                case Auxiliar.tipoImagenMultiple:
+                    setTitle(R.string.previewMultiplesFotos);
+                    break;
+                case Auxiliar.tipoVideo:
+                    setTitle(R.string.previewVideo);
+                    break;
+                default:
+                    break;
+
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
         try {
             try{
                 assert tarea != null;
@@ -154,10 +192,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 descripcion.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
             }
             //ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
-            String tipo = tarea.getString(Auxiliar.tipoRespuesta);
-            titulo.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, Auxiliar.iconoTipoTarea(tipo), 0);
-            //tipoTarea.setContentDescription(String.format("%s%s", getString(R.string.tipoDeTarea), tipo));
-            //tipoTarea.setImageResource(Auxiliar.iconoTipoTarea(tipo));
+            //String tipo = tarea.getString(Auxiliar.tipoRespuesta);
+            //titulo.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, Auxiliar.iconoTipoTarea(tipo), 0);
 
             Marker marker = new Marker(map);
             marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
@@ -351,6 +387,19 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_preview, menu);
+        MenuItem menuItem = menu.findItem(R.id.iPreview);
+        try {
+            menuItem.setIcon(Auxiliar.iconoTipoTareaPreview(tarea.getString(Auxiliar.tipoRespuesta)));
+        }catch (Exception e){
+            menuItem.setIcon(R.drawable.ic_11_tareas);
+        }
+        return super.onCreateOptionsMenu(menu);
     }
 
     /**

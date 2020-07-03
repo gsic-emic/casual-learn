@@ -78,7 +78,7 @@
     <string name="tareaPospuesta">Tarea pospuesta</string>
     <string name="restaurarTarea">Restaurar tarea</string>
     <string name="restaurarTareaTexto">¿Quieres que la tarea pueda aparecer de nuevo?</string>
-    <string name="desarrolladoPor">Desarrollado por</string>
+    <string name="desarrolladoPor">Una aplicación de</string>
     <string name="intervaloDias">Días</string>
     <string name="intervaloHoras">Horas</string>
     <string name="intervaloMinutos">Minutos</string>
@@ -130,4 +130,13 @@
     <string name="preguntaImagenes">Pregunta y múltiples fotografías</string>
     <string name="descripcionFuncionamientoPalabraClave">Si quieres utilizar múltiples <i>hashtags</i>, sepáralos con comas. Nosotros nos encargarmos de poner los # necesarios</string>
     <string name="twitSinTexto">He realizado una tarea con @CasualLearn en </string>
+    <string name="iconoTareaPreview">Icono</string>
+    <string name="previewVisita">Visita un lugar</string>
+    <string name="previewRespuestaCorta">Tarea de respuesta corta</string>
+    <string name="previewRespuestaLarga">Tarea de respuesta larga</string>
+    <string name="previewRespuestaImagen">Texto y foto</string>
+    <string name="previewRespuestaImagenes">Fotos y texto</string>
+    <string name="previewFoto">Haz una foto</string>
+    <string name="previewMultiplesFotos">Toma varias fotos</string>
+    <string name="previewVideo">Haz un vídeo</string>
 </resources>
