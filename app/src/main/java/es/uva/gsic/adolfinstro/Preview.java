@@ -132,7 +132,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     break;
                 default:
                     break;
-
             }
         }catch (JSONException e){
             e.printStackTrace();

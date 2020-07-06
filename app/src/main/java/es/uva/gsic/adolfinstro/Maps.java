@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -30,11 +31,23 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -239,7 +252,27 @@ public class  Maps extends AppCompatActivity implements
 
         try{
             String contenido = getIntent().getExtras().getString(Auxiliar.textoParaElMapa);
-            pintaSnackBar(contenido);
+            if(!contenido.equals(""))
+                pintaSnackBar(contenido);
+            else {
+                //TODO Texto permanente
+                Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
+                snackbar.setTextColor(getResources().getColor(R.color.white));
+                snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                .requestIdToken(getString(R.string.default_web_client_id))
+                                .requestEmail().build();
+                        Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
+                        Intent intent = Login.googleSignInClient.getSignInIntent();
+                        startActivityForResult(intent, Login.requestAuth);
+                    }
+                });
+                snackbar.setActionTextColor(getResources().getColor(R.color.white));
+                snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+                snackbar.show();
+            }
         }catch (Exception e){
             //No hay nada que mostrar
         }
@@ -251,6 +284,61 @@ public class  Maps extends AppCompatActivity implements
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int result, Intent data) {
+        super.onActivityResult(requestCode, result, data);
+        switch (requestCode) {
+            case Login.requestAuth:
+                //No es necesario comprobar el resultado de la petición según la ayuda oficial
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                GoogleSignInAccount account = null;
+                try {
+                    account = task.getResult(ApiException.class);
+                    firebaseAuthWithGoogle(account);
+                } catch (ApiException e) {
+                    e.printStackTrace();
+                }
+                break;
+            default:
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
+        Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>(){
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    FirebaseUser firebaseUser = Login.firebaseAuth.getCurrentUser();
+                    updateUI(firebaseUser, true);
+                }else{
+                    updateUI(null, true);
+                }
+            }
+        });
+    }
+
+    public void updateUI(FirebaseUser firebaseUser, boolean registro){
+        if(firebaseUser != null){
+            Login.firebaseAnalytics.setUserId(firebaseUser.getUid());
+            Bundle bundle = new Bundle();
+            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
+            if(registro)
+                Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
+            else
+                Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+            try {
+                JSONObject usuario = new JSONObject();
+                usuario.put(Auxiliar.id, Auxiliar.id);
+                usuario.put(Auxiliar.uid, firebaseUser.getUid());
+                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
+            pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
+        }
     }
 
 

@@ -166,4 +166,12 @@
     <string name="previewFoto">Make a photo</string>
     <string name="previewMultiplesFotos">Make photos</string>
     <string name="previewVideo">Make a video</string>
+    <string name="pruebaApp">Access without login</string>
+    <string name="textoAccesoSinIdentificación">Without authenticating you will not be able to perform any task</string>
+    <string name="autenticarseMasTarde">Login later</string>
+    <string name="autenticarseAhora">Login now</string>
+    <string name="textoInicio">By identifying you will be able to complete tasks and the tasks proposed by the application will be personalized</string>
+    <string name="textoExplicativo">Casual Learn is an application with which you can show your knowledge of the historical elements of your environment and share them with your friends.</string>
+    <string name="textoInicioBreve">Sign in to do tasks</string>
+    <string name="autenticarse">Sign in</string>
 </resources>

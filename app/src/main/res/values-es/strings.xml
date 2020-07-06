@@ -139,4 +139,12 @@
     <string name="previewFoto">Haz una foto</string>
     <string name="previewMultiplesFotos">Toma varias fotos</string>
     <string name="previewVideo">Haz un vídeo</string>
+    <string name="pruebaApp">Acceso sin iniciar sesión</string>
+    <string name="textoAccesoSinIdentificación">Sin identificarte no podrás realizar ninguna tarea</string>
+    <string name="autenticarseMasTarde">Iniciar sesión más tarde</string>
+    <string name="autenticarseAhora">Iniciar sesión ahora</string>
+    <string name="textoInicio">Identificándote podrás realizar tareas y además, las tareas que te propongamos estarán personalizadas</string>
+    <string name="textoExplicativo">Casual Learn es una aplicación con la que podrás demostrar tus conocimientos sobre los monumentos históricos de tu entorno y compartirlos con tus amigos.</string>
+    <string name="textoInicioBreve">Inicia sesión para hacer tareas</string>
+    <string name="autenticarse">Identificación</string>
 </resources>
