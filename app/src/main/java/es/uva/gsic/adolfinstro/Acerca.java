@@ -127,6 +127,9 @@ public class Acerca extends AppCompatActivity {
             case R.id.tvPicasso:
                 intent.setData(Uri.parse(getString(R.string.urlPicasso)));
                 break;
+            case R.id.tvLicencia:
+                intent.setData(Uri.parse(getString(R.string.urlLicencia)));
+                break;
             default:
                 return;
         }

@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
@@ -24,7 +25,18 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
@@ -181,7 +193,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
             map.setMinZoomLevel(17.5);
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
-            map.setMultiTouchControls(true);
+            map.setMultiTouchControls(false);
+
+            map.setTilesScaledToDpi(true);
+
+            map.setClickable(false);
+            map.setEnabled(false);
+
 
             TextView titulo = findViewById(R.id.tituloPreview);
             titulo.setText(tarea.getString(Auxiliar.titulo));
@@ -244,8 +262,88 @@ public class Preview extends AppCompatActivity implements LocationListener {
             }else{
                 botonesVisibles(true);
             }
+
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if(Login.firebaseAuth == null || idUsuario == null) {
+                snackBarLogin(R.id.clIdentificatePreview);
+            }
+
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    private void snackBarLogin(int snack){
+        Snackbar snackbar = Snackbar.make(findViewById(snack), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
+        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestEmail().build();
+                Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
+                Intent intent = Login.googleSignInClient.getSignInIntent();
+                startActivityForResult(intent, Login.requestAuth);
+            }
+        });
+        snackbar.setActionTextColor(getResources().getColor(R.color.texto));
+        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int result, Intent data) {
+        super.onActivityResult(requestCode, result, data);
+        switch (requestCode) {
+            case Login.requestAuth:
+                //No es necesario comprobar el resultado de la petición según la ayuda oficial
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                GoogleSignInAccount account = null;
+                try {
+                    account = task.getResult(ApiException.class);
+                    firebaseAuthWithGoogle(account);
+                } catch (ApiException e) {
+                    e.printStackTrace();
+                }
+                break;
+            default:
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
+        Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>(){
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    FirebaseUser firebaseUser = Login.firebaseAuth.getCurrentUser();
+                    updateUI(firebaseUser, true);
+                }else{
+                    updateUI(null, true);
+                }
+            }
+        });
+    }
+
+    public void updateUI(FirebaseUser firebaseUser, boolean registro){
+        if(firebaseUser != null){
+            Login.firebaseAnalytics.setUserId(firebaseUser.getUid());
+            Bundle bundle = new Bundle();
+            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
+            if(registro)
+                Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
+            else
+                Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+            try {
+                JSONObject usuario = new JSONObject();
+                usuario.put(Auxiliar.id, Auxiliar.id);
+                usuario.put(Auxiliar.uid, firebaseUser.getUid());
+                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
+            pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
         }
     }
 
@@ -291,11 +389,14 @@ public class Preview extends AppCompatActivity implements LocationListener {
             switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
                         .getExtras()).getString(Auxiliar.previa))){
                 case Auxiliar.notificacion:
-                    Intent intent = new Intent();
-                    intent.setAction(Auxiliar.ahora_no);
-                    intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent()
-                            .getExtras()).getString(Auxiliar.id));
-                    sendBroadcast(intent);
+                    JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                    if(idUsuario != null) {
+                        Intent intent = new Intent();
+                        intent.setAction(Auxiliar.ahora_no);
+                        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent()
+                                .getExtras()).getString(Auxiliar.id));
+                        sendBroadcast(intent);
+                    }
                     //Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
                     Intent intent2 = new Intent(context, Maps.class);
                     intent2.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -355,32 +456,39 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 //Toast.makeText(context, getString(R.string.tareaRegistrada), Toast.LENGTH_LONG).show();
                 pintaSnackBar(getString(R.string.tareaRegistrada));
             } else {
-                switch (view.getId()) {
-                    case R.id.botonAceptarPreview:
-                        intent = new Intent(context, Tarea.class);
-                        intent.putExtra(
-                                Auxiliar.id,
-                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                        startActivity(intent);
-                        break;
-                    case R.id.botonAhoraNoPreview:
-                        intent = new Intent();
-                        intent.setAction(Auxiliar.ahora_no);
-                        intent.putExtra(
-                                Auxiliar.id,
-                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                        sendBroadcast(intent);
-                        Auxiliar.returnMain(context);
-                        break;
-                    case R.id.botonRechazarPreview:
-                        intent = new Intent();
-                        intent.setAction(Auxiliar.nunca_mas);
-                        intent.putExtra(
-                                Auxiliar.id,
-                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                        sendBroadcast(intent);
-                        Auxiliar.returnMain(context);
-                        break;
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(Login.firebaseAuth == null || idUsuario == null) {
+                    snackBarLogin(R.id.clPreview);
+                }else{
+                    switch (view.getId()) {
+                        case R.id.botonAceptarPreview:
+                            intent = new Intent(context, Tarea.class);
+                            intent.putExtra(
+                                    Auxiliar.id,
+                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                            startActivity(intent);
+                            break;
+                        case R.id.botonAhoraNoPreview:
+                            intent = new Intent();
+                            intent.setAction(Auxiliar.ahora_no);
+                            intent.putExtra(
+                                    Auxiliar.id,
+                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                            sendBroadcast(intent);
+                            finish();
+                            break;
+                        case R.id.botonRechazarPreview:
+                            intent = new Intent();
+                            intent.setAction(Auxiliar.nunca_mas);
+                            intent.putExtra(
+                                    Auxiliar.id,
+                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                            sendBroadcast(intent);
+                            finish();
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
         }catch (Exception e){
@@ -471,7 +579,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 usuarioLat,
                 usuarioLon);
         //TODO reducir la distancia a 0.15
-        if(distancia <= 1.15){
+        if(distancia <= 5.5){
             botonesVisibles(true);
         }else{
             botonesVisibles(false);

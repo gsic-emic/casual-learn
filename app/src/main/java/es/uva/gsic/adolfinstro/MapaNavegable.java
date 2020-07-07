@@ -39,7 +39,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * las indicaciones.
  *
  * @author Pablo
- * @version 20200519
+ * @version 20200607
  */
 public class MapaNavegable extends AppCompatActivity
         implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -108,6 +108,9 @@ public class MapaNavegable extends AppCompatActivity
         marker.setInfoWindow(null);
 
         map.getOverlays().add(marker);
+
+        map.setTilesScaledToDpi(true);
+
     }
 
     /**

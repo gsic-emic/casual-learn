@@ -2,10 +2,13 @@
 <resources>
     <color name="colorPrimary">#3949ab</color>
     <color name="colorPrimaryDark">#00227b</color>
+    <color name="colorPrimary50">#9fa8da</color>
     <color name="colorPrimaryLight">#6f74dd</color>
     <color name="colorSecondary">#d81b60</color>
     <color name="colorSecondaryDark">#a00037</color>
+    <color name="colorSecondaryDarkTranspa">#B3A00037</color>
     <color name="colorSecondaryLight">#ff5c8d</color>
+    <color name="colorSecondaryLightTranspa">#82FF5C8D</color>
     <color name="colorSecondary100">#f8bbd0</color>
     <color name="colorSecondary300">#f06292</color>
     <color name="colorSecondary500">#e91e64</color>

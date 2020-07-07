@@ -240,17 +240,20 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
         //Inicio del servicio, se tiene que recuperar la tarea del servidor
         //Validez de un día para las tareas
-        if(latitudGet==0 || longitudGet==0 || ((new Date().getTime() - momento) > 7200000)){
-            peticionTareasServidor(location);
-        }else{
-            double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
-                    latitud, longitud,
-                    latitudGet, longitudGet);
-            if(distanciaOrigen >= 0.5){
-                //Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if(idUsuario != null) {
+            if (latitudGet == 0 || longitudGet == 0 || ((new Date().getTime() - momento) > 7200000)) {
                 peticionTareasServidor(location);
-            }else {//El fichero sigue siendo válido
-                compruebaLocalizacion(location);
+            } else {
+                double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
+                        latitud, longitud,
+                        latitudGet, longitudGet);
+                if (distanciaOrigen >= 0.5) {
+                    //Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
+                    peticionTareasServidor(location);
+                } else {//El fichero sigue siendo válido
+                    compruebaLocalizacion(location);
+                }
             }
         }
     }
@@ -409,33 +412,36 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 (Auxiliar.intervaloMinutos(intervalo) > 0)?
                         Auxiliar.intervaloMinutos(intervalo)*60*1000:
                         20000);
-        if(comprueba){//Se comprueba cuando se ha lanzado la última notificación
-            if(datosValidos){//Se comprueba si los datos son válidos (inicio proceso)
-                /** Distancia máxima que podría andar en el intervalo de comprobación*/
-                double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
-                if(distanciaAndada <= maxAndado){//Se comprueba si el usuario está caminando
-                    //Comprobación de la ubucación actual a las tareas almacenadas
-                    JSONObject tarea = Auxiliar.tareaMasCercana(application, latitud, longitud);
-                    //Se obtiene la distancia más baja a la tarea
-                    if(tarea != null) {
-                        double distancia;
-                        try {
-                            distancia = Auxiliar.calculaDistanciaDosPuntos(
-                                    latitud, longitud,
-                                    tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
-                        } catch (JSONException je) {
-                            distancia = 10;
-                        }
-                        if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if(idUsuario != null) {
+            if (comprueba) {//Se comprueba cuando se ha lanzado la última notificación
+                if (datosValidos) {//Se comprueba si los datos son válidos (inicio proceso)
+                    /** Distancia máxima que podría andar en el intervalo de comprobación*/
+                    double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
+                    if (distanciaAndada <= maxAndado) {//Se comprueba si el usuario está caminando
+                        //Comprobación de la ubucación actual a las tareas almacenadas
+                        JSONObject tarea = Auxiliar.tareaMasCercana(application, latitud, longitud);
+                        //Se obtiene la distancia más baja a la tarea
+                        if (tarea != null) {
+                            double distancia;
                             try {
-                                //Se extrae la tarea para que no se le vuelva a ofrecer
-                                PersistenciaDatos.obtenTarea(
-                                        application,
-                                        PersistenciaDatos.ficheroTareasUsuario,
-                                        tarea.getString(Auxiliar.id));
-                                pintaNotificacion(tarea);
-                            }catch (Exception e){
-                                e.printStackTrace();
+                                distancia = Auxiliar.calculaDistanciaDosPuntos(
+                                        latitud, longitud,
+                                        tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
+                            } catch (JSONException je) {
+                                distancia = 10;
+                            }
+                            if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
+                                try {
+                                    //Se extrae la tarea para que no se le vuelva a ofrecer
+                                    PersistenciaDatos.obtenTarea(
+                                            application,
+                                            PersistenciaDatos.ficheroTareasUsuario,
+                                            tarea.getString(Auxiliar.id));
+                                    pintaNotificacion(tarea);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                     }

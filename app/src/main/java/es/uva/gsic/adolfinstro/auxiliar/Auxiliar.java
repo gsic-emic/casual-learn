@@ -48,8 +48,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //public static final String direccionIP = "http://192.168.1.121:10001/";
-    public static final String direccionIP = "http://192.168.1.14:10001/";
-    //public static final String direccionIP = "http://10.0.104.237:10001/";
+    //public static final String direccionIP = "http://192.168.1.14:10001/";
+    public static final String direccionIP = "http://10.0.104.17:10001/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
@@ -665,5 +665,17 @@ public class Auxiliar {
             );
             ColaConexiones.getInstance(appContext).getRequestQueue().add(jsonObjectRequest);
         }
+    }
+
+    /**
+     * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
+     * @return Últimas dos partes del path
+     */
+    public static String idReducida(String idTarea){
+        String[] vectorId = idTarea.split("/");
+        StringBuilder salida = new StringBuilder();
+        for(int i = vectorId.length; i > (vectorId.length - 2); i--)
+            salida.append(vectorId[i - 1]).append("/");
+        return salida.toString();
     }
 }

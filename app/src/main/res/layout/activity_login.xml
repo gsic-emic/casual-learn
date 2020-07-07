@@ -24,14 +24,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.30" />
+        app:layout_constraintGuide_percent="0.25" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.49" />
+        app:layout_constraintGuide_percent="0.35" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin2"
@@ -52,14 +52,14 @@
         android:padding="10dp"
         android:textSize="18sp"/>
 
-    <Button style="@style/botonSecundario"
+    <Button
         android:id="@+id/btInicioSinIdentificacion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/tvTextoInicio"
-        app:layout_constraintBottom_toTopOf="@id/btGoogle"
+        app:layout_constraintBottom_toTopOf="@id/glLogin2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btGoogle"
         android:layout_marginTop="20dp"
         android:text="@string/pruebaApp"
         android:onClick="boton"/>
@@ -68,9 +68,9 @@
         android:id="@+id/btGoogle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/btInicioSinIdentificacion"
-        app:layout_constraintBottom_toTopOf="@id/glLogin2"
+        app:layout_constraintTop_toTopOf="@id/btInicioSinIdentificacion"
+        app:layout_constraintBottom_toBottomOf="@id/btInicioSinIdentificacion"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/btInicioSinIdentificacion" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

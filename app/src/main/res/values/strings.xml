@@ -91,7 +91,7 @@
     <string name="tareasFindes">Tasks on weekends</string>
     <string name="sinRespuesta">Without answer</string>
     <string name="preguntaCorta">Short answer</string>
-    <string name="preguntaLarga">Long answare</string>
+    <string name="preguntaLarga">Long answer</string>
     <string name="preguntaImagen">Ask and photo</string>
     <string name="imagen">Photo</string>
     <string name="imagenMultiple">Multiple photo</string>
@@ -122,7 +122,7 @@
     <string name="agregaVideoAntesBorrar">Add a new video before remove this</string>
     <string name="tareaIndividual">Single point tasks</string>
     <string name="pulsaEnUnaTarea">Click on a task of the list to get more info</string>
-    <string name="proyectosSistema" translatable="false">Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación <a href='https://ec.europa.eu/regional_policy/es/funding/erdf/'>VA257P18</a> y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto <a href='https://jcyl.es'>TIN2017-85179-C3-2-R</a>.</string>
+    <string name="proyectosSistema" translatable="false">Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación <a href='https://casuallearn.gsic.uva.es/'>VA257P18</a> y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto <a href='https://smartlet.gsic.uva.es/'>TIN2017-85179-C3-2-R</a>.</string>
     <string name="fondosInvesticacion">Research Projects</string>
     <string name="Desarrolladores">Developers</string>
     <string name="Picasso" translatable="false">Picasso</string>
@@ -171,7 +171,20 @@
     <string name="autenticarseMasTarde">Login later</string>
     <string name="autenticarseAhora">Login now</string>
     <string name="textoInicio">By identifying you will be able to complete tasks and the tasks proposed by the application will be personalized</string>
-    <string name="textoExplicativo">Casual Learn is an application with which you can show your knowledge of the historical elements of your environment and share them with your friends.</string>
+    <string name="textoExplicativo">Casual Learn is an application to learn art from Castilla y León through the completion of small challenges. You can share your knowledge with people who are interested in historical monuments like you!</string>
     <string name="textoInicioBreve">Sign in to do tasks</string>
     <string name="autenticarse">Sign in</string>
+    <string name="textoPuntua">The score given to the task will serve to offer you the types of task that you like.</string>
+    <string name="reportarPregunta">Report error</string>
+    <string name="noEntiendo">I don\'t understand the task</string>
+    <string name="tareaConFallos">Misspelling task</string>
+    <string name="noSePuedeRealizar">The task cannot be do</string>
+    <string name="licencia">Apache License Version 2.0</string>
+    <string name="mapas">Maps</string>
+    <string name="urlLicencia" translatable="false">https://www.apache.org/licenses/LICENSE-2.0</string>
+    <string name="errorTextoDenuncia">Select an option or describe the problem in the text box</string>
+    <string name="emailCasualLearn">casuallearnapp@gsic.uva.es</string>
+    <string name="errorTarea">Mistake in a task</string>
+    <string name="enviarCorreo">Send email</string>
+    <string name="noEmail">You don\'t have any email client</string>
 </resources>

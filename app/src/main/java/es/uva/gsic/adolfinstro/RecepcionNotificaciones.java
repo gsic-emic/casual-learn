@@ -6,7 +6,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Bundle;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -41,45 +43,68 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
         }
         assert accion != null;
         switch (accion) {
-                case Auxiliar.nunca_mas:
-                    //Sacamos la tarea del fichero de tareas pendientes para pasarla a la lista negra
-                    try{
-                        JSONObject tarea = PersistenciaDatos.obtenTarea((Application) context.getApplicationContext(),
-                                PersistenciaDatos.ficheroNotificadas, idTarea);
-                        tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                        PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
-                                PersistenciaDatos.ficheroTareasRechazadas,
-                                tarea,
-                                Context.MODE_PRIVATE);
-                    }catch (Exception e){
-                        //
-                    }
-                    break;
-                case Auxiliar.ahora_no:
-                    try{
-                        JSONObject tarea = PersistenciaDatos.obtenTarea(
-                                (Application) context.getApplicationContext(),
-                                PersistenciaDatos.ficheroNotificadas,
-                                idTarea);
-                        tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                        PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
-                                PersistenciaDatos.ficheroTareasPospuestas,
-                                tarea,
-                                Context.MODE_PRIVATE);
-                    } catch (Exception e){
-                        //
-                    }
-                    break;
-                case Intent.ACTION_BOOT_COMPLETED:
-                    /*Intent servicioPermanente = new Intent(context, Proceso.class);
-                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                        context.startForegroundService(servicioPermanente);
-                    else
-                        context.startService(servicioPermanente);*/
-                    new AlarmaProceso().activaAlarmaProceso(context);
-                    break;
-                default:
-                    break;
+            case Auxiliar.nunca_mas:
+                //Sacamos la tarea del fichero de tareas pendientes para pasarla a la lista negra
+                try{
+                    JSONObject tarea = PersistenciaDatos.obtenTarea((Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroNotificadas, idTarea);
+                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroTareasRechazadas,
+                            tarea,
+                            Context.MODE_PRIVATE);
+                    tareaFirebase((Application) context.getApplicationContext(), "tareaRechazada", idTarea);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
+            case Auxiliar.ahora_no:
+                try{
+                    JSONObject tarea = PersistenciaDatos.obtenTarea(
+                            (Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            idTarea);
+                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroTareasPospuestas,
+                            tarea,
+                            Context.MODE_PRIVATE);
+                    tareaFirebase((Application) context.getApplicationContext(), "tareaPospuesta", idTarea);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
+            case Intent.ACTION_BOOT_COMPLETED:
+                /*Intent servicioPermanente = new Intent(context, Proceso.class);
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    context.startForegroundService(servicioPermanente);
+                else
+                    context.startService(servicioPermanente);*/
+                new AlarmaProceso().activaAlarmaProceso(context);
+                break;
+            default:
+                break;
             }
+
+    }
+
+    private void tareaFirebase(Application app, String evento, String idTarea){
+        Bundle bundle;
+        try {
+            bundle = new Bundle();
+            bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+            bundle.putString("idUsuario", Login.firebaseAuth.getUid());
+            Login.firebaseAnalytics.logEvent(evento, bundle);
+        } catch (Exception e) {
+            try{
+                bundle = new Bundle();
+                bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+                JSONObject usuario = PersistenciaDatos.recuperaTarea(app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                bundle.putString("idUsuario", usuario.getString(Auxiliar.uid));
+                Login.firebaseAnalytics.logEvent(evento, bundle);
+            }catch (Exception e1){
+                e.printStackTrace();
+            }
+        }
     }
 }

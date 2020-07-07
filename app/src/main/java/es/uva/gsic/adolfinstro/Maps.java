@@ -216,6 +216,8 @@ public class  Maps extends AppCompatActivity implements
             scaleBarOverlay = new ScaleBarOverlay(map);
             scaleBarOverlay.setCentred(true); //La barra de escala se queda en el centro
 
+            map.setTilesScaledToDpi(true);
+
             //Se agrega la brújula
             //compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
             //compassOverlay.enableCompass();
@@ -255,23 +257,25 @@ public class  Maps extends AppCompatActivity implements
             if(!contenido.equals(""))
                 pintaSnackBar(contenido);
             else {
-                //TODO Texto permanente
-                Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
-                snackbar.setTextColor(getResources().getColor(R.color.white));
-                snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                .requestIdToken(getString(R.string.default_web_client_id))
-                                .requestEmail().build();
-                        Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
-                        Intent intent = Login.googleSignInClient.getSignInIntent();
-                        startActivityForResult(intent, Login.requestAuth);
-                    }
-                });
-                snackbar.setActionTextColor(getResources().getColor(R.color.white));
-                snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
-                snackbar.show();
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(Login.firebaseAuth == null || idUsuario == null) {
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setTextColor(getResources().getColor(R.color.white));
+                    snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                    .requestIdToken(getString(R.string.default_web_client_id))
+                                    .requestEmail().build();
+                            Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
+                            Intent intent = Login.googleSignInClient.getSignInIntent();
+                            startActivityForResult(intent, Login.requestAuth);
+                        }
+                    });
+                    snackbar.setActionTextColor(getResources().getColor(R.color.texto));
+                    snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+                    snackbar.show();
+                }
             }
         }catch (Exception e){
             //No hay nada que mostrar
@@ -481,13 +485,20 @@ public class  Maps extends AppCompatActivity implements
 
             List<TareasMapaLista> tareasPunto = new ArrayList<>();
             JSONObject jo;
+            String uriFondo;
             for(int i = 0; i < tareas.length(); i++){
                 try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
                     jo = tareas.getJSONObject(i);
+                    try{
+                        uriFondo = jo.getString(Auxiliar.recursoImagen);
+                    }catch (Exception e){
+                        uriFondo = null;
+                    }
                     tareasPunto.add(new TareasMapaLista(
                             jo.getString(Auxiliar.id),
                             jo.getString(Auxiliar.titulo),
                             Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                            uriFondo,
                             jo));
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1306,13 +1317,14 @@ public class  Maps extends AppCompatActivity implements
      * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
      */
     public static class TareasMapaLista {
-        public String id, titulo, tipoTarea;
+        public String id, titulo, tipoTarea, uriFondo;
         public JSONObject tarea;
-        TareasMapaLista(String id, String titulo, String tipoTarea, JSONObject tarea){
+        TareasMapaLista(String id, String titulo, String tipoTarea, String uriFondo, JSONObject tarea){
             this.id = id;
             this.titulo = titulo;
             this.tipoTarea = tipoTarea;
             this.tarea = tarea;
+            this.uriFondo = uriFondo;
         }
     }
 

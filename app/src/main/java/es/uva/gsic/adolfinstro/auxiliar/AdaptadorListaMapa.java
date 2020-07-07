@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import org.json.JSONObject;
 
 import java.util.List;
@@ -20,7 +22,7 @@ import es.uva.gsic.adolfinstro.R;
 /**
  * Clase para establecer la lista de tareas que se muestra cuando un usuario pulsa en un marcador
  * @author pablo
- * @version 20200626
+ * @version 20200707
  */
 public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.ViewHolderMapa>  {
 
@@ -29,7 +31,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
      */
     public static class ViewHolderMapa extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView tvTitulo;
-        ImageView ivTipoTarea;
+        ImageView ivTipoTarea, ivFondo;
 
         /**
          * Constructor de la subclase
@@ -39,6 +41,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvItemListaMapa);
             ivTipoTarea = itemView.findViewById(R.id.ivItemListaMapa);
+            ivFondo = itemView.findViewById(R.id.ivFondoListaMapa);
             itemView.setOnClickListener(this);
         }
 
@@ -88,7 +91,19 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     @Override
     public void onBindViewHolder(@NonNull AdaptadorListaMapa.ViewHolderMapa holder, int position){
         holder.tvTitulo.setText(lista.get(position).titulo);
-        holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
+        String uriFondo = lista.get(position).uriFondo;
+        if(uriFondo != null && !uriFondo.equals("")) {
+            Picasso.get()
+                    .load(uriFondo)
+                    .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                    .tag(Auxiliar.cargaImagenPreview)
+                    .into(holder.ivFondo);
+            holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
+        }
+        else {
+            holder.ivFondo.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
+            holder.ivTipoTarea.setImageResource(android.R.color.transparent);
+        }
     }
 
     /**
