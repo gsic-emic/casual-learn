@@ -13,9 +13,16 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
@@ -38,6 +45,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import es.uva.gsic.adolfinstro.Acerca;
 import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
@@ -425,7 +433,41 @@ public class Auxiliar {
                 iconoTarea = R.drawable.ic_video_barra;
                 break;
             case Auxiliar.tipoPreguntaImagenes:
-                iconoTarea = R.drawable.ic_preguntaimagenesmultiples;
+                iconoTarea = R.drawable.ic_preguntaimagenesmultiples_barra;
+                break;
+            default:
+                iconoTarea = 0;
+                break;
+        }
+        return iconoTarea;
+    }
+
+    public static int iconoTipoTareaLista(String tR) {
+        int iconoTarea;
+        switch (tR){
+            case Auxiliar.tipoSinRespuesta:
+                iconoTarea = R.drawable.ic_sinrespuesta_lista;
+                break;
+            case Auxiliar.tipoPreguntaCorta:
+                iconoTarea = R.drawable.ic_preguntacorta_lista;
+                break;
+            case Auxiliar.tipoPreguntaLarga:
+                iconoTarea = R.drawable.ic_preguntalarga_lista;
+                break;
+            case Auxiliar.tipoPreguntaImagen:
+                iconoTarea = R.drawable.ic_preguntaimagen_lista;
+                break;
+            case Auxiliar.tipoImagen:
+                iconoTarea = R.drawable.ic_imagen_lista;
+                break;
+            case Auxiliar.tipoImagenMultiple:
+                iconoTarea = R.drawable.ic_imagenmultiple_lista;
+                break;
+            case Auxiliar.tipoVideo:
+                iconoTarea = R.drawable.ic_video_lista;
+                break;
+            case Auxiliar.tipoPreguntaImagenes:
+                iconoTarea = R.drawable.ic_preguntaimagenesmultiples_lista;
                 break;
             default:
                 iconoTarea = 0;
@@ -677,5 +719,57 @@ public class Auxiliar {
         for(int i = vectorId.length; i > (vectorId.length - 2); i--)
             salida.append(vectorId[i - 1]).append("/");
         return salida.toString();
+    }
+
+    /**
+     * Método que abre el navegador interno en un popup
+     * @param contexto Contexto
+     * @param url Url que se carga en el navegador
+     */
+    public static void navegadorInterno(final Context contexto, final String url){
+        Dialog dialogo = new Dialog(contexto);
+        dialogo.setContentView(R.layout.popweb);
+        dialogo.setCancelable(true);
+        WebView wv = dialogo.findViewById(R.id.wbNavegador);
+        WebSettings webSettings = wv.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setUserAgentString("Android");
+        wv.setWebViewClient(new ClienteWeb() {
+            @Override
+            public void navegadorExterno() {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                contexto.startActivity(intent);
+            }
+        });
+        wv.loadUrl(url);
+        dialogo.show();
+    }
+
+    /**
+     * Método para buscar enlaces (formato HTML) en un string. Al pulsar uno de los enlaces se abre
+     * el navegador interno.
+     * @param contexto Contexto
+     * @param texto Texto con el contenido a mostrar (se elimina el código html)
+     * @return Objeto que se puede pasar a un TextView con los enlaces subrayados. NECESITA QUE EL
+     * TEXTVIEW SE LE INIDIQUE TEXTVIEW.setMovementMethod(LinkMovementMethod.getInstance());
+     */
+    public static SpannableStringBuilder creaEnlaces(final Context contexto, String texto){
+        CharSequence charSequence = Html.fromHtml(texto);
+        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(charSequence);
+        URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
+        for(final URLSpan urlSpan : urlSpans){
+            int start = spannableStringBuilder.getSpanStart(urlSpan);
+            int end = spannableStringBuilder.getSpanEnd(urlSpan);
+            int flags = spannableStringBuilder.getSpanFlags(urlSpan);
+            ClickableSpan clickableSpan = new ClickableSpan() {
+                @Override
+                public void onClick(@NonNull View widget) {
+                    Auxiliar.navegadorInterno(contexto, urlSpan.getURL());
+                }
+            };
+            spannableStringBuilder.removeSpan(urlSpan);
+            spannableStringBuilder.setSpan(clickableSpan, start, end, flags);
+        }
+        return spannableStringBuilder;
     }
 }

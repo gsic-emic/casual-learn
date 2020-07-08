@@ -222,7 +222,6 @@
             android:id="@+id/tvFondosEuropeos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="boton"
             android:text="@string/proyectosSistema"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"

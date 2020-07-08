@@ -122,7 +122,7 @@
     <string name="agregaVideoAntesBorrar">Add a new video before remove this</string>
     <string name="tareaIndividual">Single point tasks</string>
     <string name="pulsaEnUnaTarea">Click on a task of the list to get more info</string>
-    <string name="proyectosSistema" translatable="false">Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación <a href='https://casuallearn.gsic.uva.es/'>VA257P18</a> y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto <a href='https://smartlet.gsic.uva.es/'>TIN2017-85179-C3-2-R</a>.</string>
+    <string name="proyectosSistema" translatable="false"><![CDATA[Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación <a href=\'https://casuallearn.gsic.uva.es/\'>VA257P18</a> y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto <a href=\'https://smartlet.gsic.uva.es/\'>TIN2017-85179-C3-2-R</a>.]]></string>
     <string name="fondosInvesticacion">Research Projects</string>
     <string name="Desarrolladores">Developers</string>
     <string name="Picasso" translatable="false">Picasso</string>
@@ -143,7 +143,7 @@
     <string name="asen" translatable="false"><b>Juan Ignacio Asensio Pérez</b>\njuaase@tel.uva.es\n</string>
     <string name="guille" translatable="false"><b>Guillermo Vega Gorgojo</b>\nguiveg@tel.uva.es\n</string>
     <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
-    <string name="urluva" translatable="false">https://www.uva.es</string>
+    <string name="urluva" translatable="false">https://www.uva.es/export/sites/uva/</string>
     <string name="urlJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>
     <string name="urlDbpedia" translatable="false">https://wiki.dbpedia.org/</string>
     <string name="urlWikidata" translatable="false">https://www.wikidata.org/wiki/Wikidata:Main_Page</string>

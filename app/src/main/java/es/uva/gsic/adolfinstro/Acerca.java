@@ -1,29 +1,40 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
-import android.view.LayoutInflater;
+import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
+import android.text.style.UnderlineSpan;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ListView;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewDatabase;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+
+import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.auxiliar.ClienteWeb;
 
 /**
  * Clase diseñada para mostrar la información de la aplicación
@@ -35,9 +46,6 @@ public class Acerca extends AppCompatActivity {
 
     /** Instancia del cuadro del textview donde se coloca la versión*/
     TextView version;
-    //List<TextView> desarrolladores;
-    //Boolean ensena = false;
-
 
     /**
      * Método para completar la interfaz gráfica del usuario. Se pinta la versión de la app.
@@ -54,16 +62,10 @@ public class Acerca extends AppCompatActivity {
 
         version = findViewById(R.id.tvVersion);
 
-        /*desarrolladores = new ArrayList<>();
-        desarrolladores.add((TextView) findViewById(R.id.tvPablo));
-        desarrolladores.add((TextView) findViewById(R.id.tvAdolfo));*/
-
         TextView proyectos = findViewById(R.id.tvFondosEuropeos);
+        String texto = getString(R.string.proyectosSistema);
+        proyectos.setText(Auxiliar.creaEnlaces(this, texto));
         proyectos.setMovementMethod(LinkMovementMethod.getInstance());
-        proyectos.setPadding(18, 0, 8, 0);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            proyectos.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
-        }
 
         if(savedInstanceState == null){
             try {
@@ -76,12 +78,6 @@ public class Acerca extends AppCompatActivity {
         }else{
             version.setText(savedInstanceState.getString("TEXTOVERSION"));
         }
-
-
-        /*if(savedInstanceState != null){
-            ensena = savedInstanceState.getBoolean("ENSENA");
-            desarrolladores();
-        }*/
     }
 
     /**
@@ -89,14 +85,14 @@ public class Acerca extends AppCompatActivity {
      * @param view Vista
      */
     public void boton(View view) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        //Intent intent = new Intent(Intent.ACTION_VIEW);
+        //intent.addCategory(Intent.CATEGORY_BROWSABLE);
         switch (view.getId()){
             case R.id.imagenGsic:
-                intent.setData(Uri.parse(getString(R.string.urlgsic)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlgsic));
                 break;
             case R.id.imagenUva:
-                intent.setData(Uri.parse(getString(R.string.urluva)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urluva));
                 break;
             case R.id.tvDesarrolladores:
                 Dialog dialogo = new Dialog(this);
@@ -107,34 +103,34 @@ public class Acerca extends AppCompatActivity {
                 dialogo.show();
                 break;
             case R.id.ivJunta:
-                intent.setData(Uri.parse(getString(R.string.urlJunta)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlJunta));
                 break;
             case R.id.ivDbPiedia:
-                intent.setData(Uri.parse(getString(R.string.urlDbpedia)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlDbpedia));
                 break;
             case R.id.ivWikidata:
-                intent.setData(Uri.parse(getString(R.string.urlWikidata)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlWikidata));
                 break;
             case R.id.tvOpenStreepMap:
-                intent.setData(Uri.parse(getString(R.string.urlopenStreetMap)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlopenStreetMap));
                 break;
             case R.id.tvOsmdroid:
-                intent.setData(Uri.parse(getString(R.string.urlOsmdroid)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlOsmdroid));
                 break;
             case R.id.tvPhotoView:
-                intent.setData(Uri.parse(getString(R.string.urlPhotoView)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlPhotoView));
                 break;
             case R.id.tvPicasso:
-                intent.setData(Uri.parse(getString(R.string.urlPicasso)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlPicasso));
                 break;
             case R.id.tvLicencia:
-                intent.setData(Uri.parse(getString(R.string.urlLicencia)));
+                Auxiliar.navegadorInterno(this, getString(R.string.urlLicencia));
                 break;
             default:
-                return;
+                break;
         }
-        if(view.getId() != R.id.tvDesarrolladores)
-            startActivity(intent);
+        //if(view.getId() != R.id.tvDesarrolladores)
+        //    startActivity(intent);
     }
 
     /**

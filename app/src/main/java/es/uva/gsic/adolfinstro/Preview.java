@@ -502,7 +502,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         menuInflater.inflate(R.menu.menu_preview, menu);
         MenuItem menuItem = menu.findItem(R.id.iPreview);
         try {
-            menuItem.setIcon(Auxiliar.iconoTipoTareaPreview(tarea.getString(Auxiliar.tipoRespuesta)));
+            menuItem.setIcon(Auxiliar.iconoTipoTareaLista(tarea.getString(Auxiliar.tipoRespuesta)));
         }catch (Exception e){
             menuItem.setIcon(R.drawable.ic_11_tareas);
         }

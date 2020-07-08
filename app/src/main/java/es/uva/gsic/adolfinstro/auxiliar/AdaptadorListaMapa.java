@@ -98,7 +98,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                     .tag(Auxiliar.cargaImagenPreview)
                     .into(holder.ivFondo);
-            holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
+            holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTareaLista(lista.get(position).tipoTarea));
         }
         else {
             holder.ivFondo.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
