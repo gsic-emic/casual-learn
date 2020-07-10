@@ -17,6 +17,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -203,14 +204,10 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
             TextView titulo = findViewById(R.id.tituloPreview);
             titulo.setText(tarea.getString(Auxiliar.titulo));
+
             TextView descripcion = findViewById(R.id.textoPreview);
-            descripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                descripcion.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
-            }
-            //ImageView tipoTarea = findViewById(R.id.ivTipoTareaPreview);
-            //String tipo = tarea.getString(Auxiliar.tipoRespuesta);
-            //titulo.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, Auxiliar.iconoTipoTarea(tipo), 0);
+            descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+            descripcion.setMovementMethod(LinkMovementMethod.getInstance());
 
             Marker marker = new Marker(map);
             marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
@@ -275,7 +272,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     private void snackBarLogin(int snack){
         Snackbar snackbar = Snackbar.make(findViewById(snack), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -621,7 +618,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     private void pintaSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clPreview), R.string.app_name, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();

@@ -52,7 +52,7 @@
         android:maxHeight="75dp"
         android:textSize="12sp"
         android:textAlignment="center"
-        android:background="#BF000000"
+        android:background="@color/blackTransparente"
         android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

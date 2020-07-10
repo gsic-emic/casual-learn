@@ -131,8 +131,6 @@
             app:layout_constraintTop_toTopOf="@id/rvRealizaTarea"
             android:drawablePadding="5dp"
             android:drawableStart="@drawable/ic_photo_camera_white_24dp"
-            android:background="@drawable/boton_primario"
-            android:textColor="#FFFFFF"
             android:layout_marginVertical="10dp"
             android:text="@string/camara"
             android:visibility="gone"

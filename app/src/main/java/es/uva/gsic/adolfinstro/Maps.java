@@ -260,7 +260,7 @@ public class  Maps extends AppCompatActivity implements
                 JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
                 if(Login.firebaseAuth == null || idUsuario == null) {
                     Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
-                    snackbar.setTextColor(getResources().getColor(R.color.white));
+                    snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
                     snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -284,7 +284,7 @@ public class  Maps extends AppCompatActivity implements
 
     private void pintaSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();
@@ -490,7 +490,7 @@ public class  Maps extends AppCompatActivity implements
                 try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
                     jo = tareas.getJSONObject(i);
                     try{
-                        uriFondo = jo.getString(Auxiliar.recursoImagen);
+                        uriFondo = jo.getString(Auxiliar.recursoImagenBaja);
                     }catch (Exception e){
                         uriFondo = null;
                     }
@@ -561,18 +561,18 @@ public class  Maps extends AppCompatActivity implements
         else
             paint.setARGB(255, 0, 0, 0);
         if(size <= 20)
-            drawable = context.getResources().getDrawable(R.drawable.ic_marker100);
+            drawable = context.getResources().getDrawable(R.drawable.ic_marcador100);
         else
             if(size <= 40)
-                drawable = context.getResources().getDrawable(R.drawable.ic_marker300);
+                drawable = context.getResources().getDrawable(R.drawable.ic_marcador300);
             else
                 if(size <= 60)
-                    drawable = context.getResources().getDrawable(R.drawable.ic_marker500);
+                    drawable = context.getResources().getDrawable(R.drawable.ic_marcador500);
                 else
                     if(size <= 80)
-                        drawable = context.getResources().getDrawable(R.drawable.ic_marker700);
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador700);
                     else
-                        drawable = context.getResources().getDrawable(R.drawable.ic_marker900);
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador900);
 
 
 
@@ -589,14 +589,13 @@ public class  Maps extends AppCompatActivity implements
         String texto;
         if(size>99) {
             texto = "99+";
-            size = 99;
         } else
             texto = String.valueOf(size);
         paint.setStyle(Paint.Style.FILL);
         int textSize = (int) (mitad+1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(texto, mitad, mitad + (float)textSize/3, paint);
+        canvas.drawText(texto, mitad, mitad + (float)(textSize/2), paint);
         //paint.setARGB(200 - 198 + 2*size, 136, 73, 248);
         //canvas.drawCircle(mitad, canvas.getHeight() - mitad/3, mitad/8, paint);
         //canvas.drawCircle(mitad, mitad, mitad/2, paint);

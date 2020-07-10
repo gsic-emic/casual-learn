@@ -9,7 +9,7 @@
       android:strokeLineJoin="miter"
       android:strokeWidth="0.5"
       android:fillColor="@color/colorSecondary900"
-      android:strokeColor="#000000"
+      android:strokeColor="#fff"
       android:fillAlpha="1"
       android:strokeLineCap="butt"/>
 </vector>

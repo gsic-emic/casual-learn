@@ -446,7 +446,7 @@ public class Completadas extends AppCompatActivity implements
 
     private void muestraSnack(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clCompletada), R.string.tareaGuardada, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();

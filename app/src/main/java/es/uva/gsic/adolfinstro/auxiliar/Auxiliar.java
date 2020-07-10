@@ -56,14 +56,14 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //public static final String direccionIP = "http://192.168.1.121:10001/";
-    //public static final String direccionIP = "http://192.168.1.14:10001/";
-    public static final String direccionIP = "http://10.0.104.17:10001/";
+    public static final String direccionIP = "http://192.168.1.14:10001/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
     public static final String latitud = "latitud";
     public static final String longitud = "longitud";
-    public static final String recursoImagenBaja = "recursoAsociadoImagen300px";
+    public static final String recursoImagenBaja = "thumbnail";
     public static final String recursoImagen = "recursoAsociadoImagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";

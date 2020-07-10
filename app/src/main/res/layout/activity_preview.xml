@@ -31,16 +31,28 @@
         android:layout_marginHorizontal="5dp"
         android:drawablePadding="2dp"/>-->
 
+    <ImageView
+        android:id="@+id/imagenPreview"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:maxHeight="200dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginHorizontal="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/clIdentificatePreview"
+        android:visibility="gone"
+        android:adjustViewBounds="true"/>
+
     <TextView
         android:id="@+id/tituloPreview"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
         android:textStyle="bold"
         android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/imagenPreview"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/clIdentificatePreview"
         android:layout_marginTop="5dp"
         android:layout_marginHorizontal="5dp"/>
 
@@ -63,24 +75,11 @@
         android:layout_marginStart="3dp"
         android:textSize="12sp"/>
 
-    <ImageView
-        android:id="@+id/imagenPreview"
-        android:layout_width="0dp"
-        android:layout_height="250dp"
-        android:maxHeight="250dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginHorizontal="5dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/mapPreview"
-        android:visibility="gone"
-        android:adjustViewBounds="true"/>
-
     <TextView
         android:id="@+id/textoPreview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/imagenPreview"
+        app:layout_constraintTop_toBottomOf="@id/mapPreview"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:textSize="18sp"

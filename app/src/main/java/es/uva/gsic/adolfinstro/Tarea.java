@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.method.LinkMovementMethod;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -142,9 +143,9 @@ public class Tarea extends AppCompatActivity implements
                     try{
                         recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
                         if(recursoAsociadoImagen.equals(""))
-                            recursoAsociadoImagen = null;
+                            recursoAsociadoImagen = recursoAsociadoImagen300px;
                     }catch (Exception e){
-                        recursoAsociadoImagen = null;
+                        recursoAsociadoImagen = recursoAsociadoImagen300px;
                     }
                     ivImagenDescripcion.setVisibility(View.VISIBLE);
                 } else {
@@ -201,10 +202,8 @@ public class Tarea extends AppCompatActivity implements
                 btCamara = findViewById(R.id.btCamara);
                 btTerminar = findViewById(R.id.btTerminar);
 
-                tvDescripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    tvDescripcion.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
-                }
+                tvDescripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+                tvDescripcion.setMovementMethod(LinkMovementMethod.getInstance());
 
                 recyclerView = findViewById(R.id.rvRealizaTarea);
                 recyclerView.setHasFixedSize(true);
@@ -436,7 +435,8 @@ public class Tarea extends AppCompatActivity implements
             case R.id.ivImagenDescripcion:
                 if(recursoAsociadoImagen != null) {//Si la imagen en alta resolución existe se salta simpre a ella para la vista en detalle
                     intent = new Intent(this, ImagenCompleta.class);
-                    intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
+                    if(recursoAsociadoImagen != null)
+                        intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
                     startActivity(intent);
                 }else{//Ya está visible la imagen de resolución baja y no hay una alta asociada
                     if(recursoAsociadoImagen300px != null){
@@ -1132,7 +1132,7 @@ public class Tarea extends AppCompatActivity implements
 
     private void muestraSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clTarea), R.string.app_name, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();
