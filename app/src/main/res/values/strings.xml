@@ -84,14 +84,14 @@
     <string name="sinTareas">The list has not got any task.</string>
     <string name="restaurarTarea">Undo rejection</string>
     <string name="restaurarTareaTexto">Do you want this task to be able to come out again?</string>
-    <string name="desarrolladoPor">Developed by</string>
+    <string name="desarrolladoPor">An app developed by</string>
     <string name="intervaloDias">Days</string>
     <string name="intervaloHoras">Hours</string>
     <string name="intervaloMinutos">Minutes</string>
     <string name="tareasFindes">Tasks on weekends</string>
     <string name="sinRespuesta">Without answer</string>
     <string name="preguntaCorta">Short answer</string>
-    <string name="preguntaLarga">Long answare</string>
+    <string name="preguntaLarga">Long answer</string>
     <string name="preguntaImagen">Ask and photo</string>
     <string name="imagen">Photo</string>
     <string name="imagenMultiple">Multiple photo</string>
@@ -122,7 +122,7 @@
     <string name="agregaVideoAntesBorrar">Add a new video before remove this</string>
     <string name="tareaIndividual">Single point tasks</string>
     <string name="pulsaEnUnaTarea">Click on a task of the list to get more info</string>
-    <string name="proyectosSistema" translatable="false">Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación VA257P18 y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto TIN2017-85179-C3-2-R.</string>
+    <string name="proyectosSistema" translatable="false"><![CDATA[Desarrollo financiado por la Junta de Castilla y León y el Fondo Europeo de Desarrollo Regional a través del proyecto de investigación <a href=\'https://casuallearn.gsic.uva.es/\'>VA257P18</a> y por la Agencia Estatal de Investigación y el Fondo Europeo de Desarrollo Regional a través del proyecto <a href=\'https://smartlet.gsic.uva.es/\'>TIN2017-85179-C3-2-R</a>.]]></string>
     <string name="fondosInvesticacion">Research Projects</string>
     <string name="Desarrolladores">Developers</string>
     <string name="Picasso" translatable="false">Picasso</string>
@@ -143,7 +143,7 @@
     <string name="asen" translatable="false"><b>Juan Ignacio Asensio Pérez</b>\njuaase@tel.uva.es\n</string>
     <string name="guille" translatable="false"><b>Guillermo Vega Gorgojo</b>\nguiveg@tel.uva.es\n</string>
     <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
-    <string name="urluva" translatable="false">https://www.uva.es</string>
+    <string name="urluva" translatable="false">https://www.uva.es/export/sites/uva/</string>
     <string name="urlJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>
     <string name="urlDbpedia" translatable="false">https://wiki.dbpedia.org/</string>
     <string name="urlWikidata" translatable="false">https://www.wikidata.org/wiki/Wikidata:Main_Page</string>
@@ -157,4 +157,37 @@
     <string name="preguntaImagenes">Ask and multiple photos</string>
     <string name="descripcionFuncionamientoPalabraClave">If you want multiples hashtags, split them with commas. We will take care of add # necessary</string>
     <string name="twitSinTexto">I just did a task with @CasualLearn in </string>
+    <string name="iconoTareaPreview">Icon</string>
+    <string name="previewVisita">Visit a place</string>
+    <string name="previewRespuestaCorta">Short text task</string>
+    <string name="previewRespuestaLarga">Long text task</string>
+    <string name="previewRespuestaImagen"><![CDATA[Photo & text]]></string>
+    <string name="previewRespuestaImagenes"><![CDATA[Photos & text]]></string>
+    <string name="previewFoto">Make a photo</string>
+    <string name="previewMultiplesFotos">Make photos</string>
+    <string name="previewVideo">Make a video</string>
+    <string name="pruebaApp">Access without login</string>
+    <string name="textoAccesoSinIdentificación">Without authenticating you will not be able to perform any task</string>
+    <string name="autenticarseMasTarde">Login later</string>
+    <string name="autenticarseAhora">Login now</string>
+    <string name="textoInicio">By identifying you will be able to complete tasks and the tasks proposed by the application will be personalized</string>
+    <string name="textoExplicativo">Casual Learn is an application to learn art from Castilla y León through the completion of small challenges. You can share your knowledge with people who are interested in historical monuments like you!</string>
+    <string name="textoInicioBreve">Sign in to do tasks</string>
+    <string name="autenticarse">Sign in</string>
+    <string name="textoPuntua">The score given to the task will serve to offer you the types of task that you like.</string>
+    <string name="reportarPregunta">Report error</string>
+    <string name="noEntiendo">I don\'t understand the task</string>
+    <string name="tareaConFallos">Misspelling task</string>
+    <string name="noSePuedeRealizar">The task cannot be do</string>
+    <string name="licencia">Apache License Version 2.0</string>
+    <string name="mapas">Maps</string>
+    <string name="urlLicencia" translatable="false">https://www.apache.org/licenses/LICENSE-2.0</string>
+    <string name="errorTextoDenuncia">Select an option or describe the problem in the text box</string>
+    <string name="emailCasualLearn">casuallearnapp@gsic.uva.es</string>
+    <string name="errorTarea">Mistake in a task</string>
+    <string name="enviarCorreo">Send email</string>
+    <string name="noEmail">You don\'t have any email client</string>
+    <string name="fuentes_de_info">Information sources</string>
+    <string name="salir">Exit</string>
+    <string name="continuar">Next</string>
 </resources>

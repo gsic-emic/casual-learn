@@ -282,9 +282,10 @@ public class Completadas extends AppCompatActivity implements
                             if((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
                                     || tipoRespuesta.equals(Auxiliar.tipoImagen)
                                     || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
-                                    || tipoRespuesta.equals(Auxiliar.tipoVideo))
+                                    || tipoRespuesta.equals(Auxiliar.tipoVideo)
                                     || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                                    && (listaURI.size() == 0)){
+                                ) && (listaURI.size() == 0))
+                            {
                                 muestraSnack(getString(R.string.agregarContenido));
                                 //Toast.makeText(this, getString(R.string.agregarContenido), Toast.LENGTH_SHORT).show();
                             }else {
@@ -445,7 +446,7 @@ public class Completadas extends AppCompatActivity implements
 
     private void muestraSnack(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clCompletada), R.string.tareaGuardada, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();

@@ -21,7 +21,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:paddingTop="10dp"
-            android:paddingBottom="10dp"/>
+            android:paddingBottom="5dp"/>
 
         <TextView
             android:id="@+id/tvVersion"
@@ -30,8 +30,45 @@
             android:textSize="12sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivIcono"
-            app:layout_constraintBottom_toBottomOf="@id/ivIcono"/>
+            app:layout_constraintTop_toBottomOf="@id/ivIcono" />
+
+        <TextView
+            android:id="@+id/tvLicencia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:text="@string/licencia"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvVersion"
+            android:drawableStart="@drawable/ic_license"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:onClick="boton" />
+
+
+        <!-- <TextView
+            android:id="@+id/tvPablo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
+            android:textSize="18sp"
+            android:text="@string/pablo"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tvAdolfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPablo"
+            android:textSize="18sp"
+            android:text="@string/adolfo"
+            android:visibility="gone"/> -->
+
 
         <TextView
             android:id="@+id/tvDesarrolladoPorAcercade"
@@ -41,16 +78,17 @@
             android:textColor="#000000"
             android:textSize="25sp"
             android:paddingHorizontal="10dp"
-            android:layout_marginVertical="10dp"
+            android:layout_marginVertical="20dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvVersion"/>
+            app:layout_constraintTop_toBottomOf="@id/tvFondosEuropeos"/>
+
         <View
             android:id="@+id/vista1"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             app:layout_constraintTop_toBottomOf="@id/tvDesarrolladoPorAcercade"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/colorSecondaryDark"
             android:layout_marginHorizontal="5dp"/>
 
         <androidx.constraintlayout.widget.Guideline
@@ -107,36 +145,13 @@
             android:layout_marginHorizontal="8dp"
             android:onClick="boton"/>
 
-        <!--<TextView
-            android:id="@+id/tvPablo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
-            android:textSize="18sp"
-            android:text="@string/pablo"
-            android:visibility="gone"/>
-
-        <TextView
-            android:id="@+id/tvAdolfo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvPablo"
-            android:textSize="18sp"
-            android:text="@string/adolfo"
-            android:visibility="gone"/> -->
-
-
         <TextView
             android:id="@+id/tvFuentesInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
+            app:layout_constraintTop_toBottomOf="@id/tvLicencia"
             android:text="@string/fuentesInformacion"
             android:textSize="25sp"
             android:paddingHorizontal="10dp"/>
@@ -147,7 +162,7 @@
             android:layout_height="1dp"
             app:layout_constraintTop_toBottomOf="@id/tvFuentesInfo"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/colorSecondaryDark"
             android:layout_marginHorizontal="5dp"/>
 
         <ImageView
@@ -200,28 +215,26 @@
             android:layout_height="1dp"
             app:layout_constraintTop_toBottomOf="@id/tvCreditos"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/colorSecondaryDark"
             android:layout_marginHorizontal="5dp"/>
 
         <TextView
             android:id="@+id/tvFondosEuropeos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="boton"
             android:text="@string/proyectosSistema"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/vista3"
-            android:layout_marginHorizontal="8dp" />
+            android:paddingHorizontal="8dp"/>
 
         <TextView
-            android:id="@+id/tvBibliotecas"
+            android:id="@+id/tvMapasAcercaDe"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvFondosEuropeos"
-            app:layout_constraintBottom_toTopOf="@id/tvOpenStreepMap"
-            android:text="@string/libraries"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
+            android:text="@string/mapas"
             android:textSize="25sp"
             android:layout_marginTop="20dp"
             android:paddingHorizontal="10dp"/>
@@ -230,9 +243,9 @@
             android:id="@+id/vista4"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            app:layout_constraintTop_toBottomOf="@id/tvBibliotecas"
+            app:layout_constraintTop_toBottomOf="@id/tvMapasAcercaDe"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/colorPrimaryDark"
+            android:background="@color/colorSecondaryDark"
             android:layout_marginHorizontal="5dp"/>
 
         <TextView
@@ -240,7 +253,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvBibliotecas"
+            app:layout_constraintTop_toBottomOf="@id/vista4"
             android:textSize="18sp"
             android:text="@string/openStreetMap"
             android:drawablePadding="4dp"
@@ -248,12 +261,34 @@
             android:onClick="boton"
             android:layout_marginHorizontal="8dp"/>
 
+
+        <TextView
+            android:id="@+id/tvBibliotecas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOpenStreepMap"
+            android:text="@string/libraries"
+            android:textSize="25sp"
+            android:layout_marginTop="20dp"
+            android:paddingHorizontal="10dp"/>
+
+
+        <View
+            android:id="@+id/vista5"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintTop_toBottomOf="@id/tvBibliotecas"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="@color/colorSecondaryDark"
+            android:layout_marginHorizontal="5dp"/>
+
         <TextView
             android:id="@+id/tvOsmdroid"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvOpenStreepMap"
+            app:layout_constraintTop_toBottomOf="@id/vista5"
             android:textSize="18sp"
             android:text="@string/Osmdroid"
             android:drawablePadding="4dp"
@@ -285,9 +320,6 @@
             android:text="@string/Picasso"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
-            android:layout_marginHorizontal="8dp"/>-->
-
-
+            android:layout_marginHorizontal="8dp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </ScrollView>

@@ -1,14 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#002984</color>
-    <color name="colorPrimaryLight">#757DE8</color>
-    <color name="colorSecondary">#8849F8</color>
-    <color name="colorSecondaryDark">#4F16C4</color>
-    <color name="colorSecondaryLight">#BF79FF</color>
+    <color name="colorPrimary">#666b6e</color>
+    <color name="colorPrimaryDark">#3c4043</color>
+    <color name="colorPrimary50">#80666B6E</color>
+    <color name="colorPrimaryLight">#94999c</color>
+    <color name="colorPrimaryLight68">#AD94999C</color>
+    <color name="colorSecondary">#b53f51</color>
+    <color name="colorSecondaryDark">#800229</color>
+    <color name="colorSecondaryDarkTranspa">#B3800229</color>
+    <color name="colorSecondaryLight">#eb6f7d</color>
+    <color name="colorSecondaryLightTranspa">#82eb6f7d</color>
+    <color name="colorSecondaryAmarillo">#ca7582</color>
+    <color name="colorSecondaryRojo">#dfacb4</color>
+    <!--<color name="colorSecondary100">#dfd8c8</color>
+    <color name="colorSecondary300">#dfd1b2</color>
+    <color name="colorSecondary500">#dfc386</color>
+    <color name="colorSecondaryText">#000</color>
+    <color name="colorSecondary700">#dfb559</color>
+    <color name="colorSecondary900">#dfa72c</color>-->
+    <color name="blackTransparente">#BF000000</color>
+    <color name="colorSecondary100">#f1dcae</color>
+    <color name="colorSecondary300">#e8c578</color>
+    <color name="colorSecondary500">#dfae43</color>
+    <color name="colorSecondary700">#9f7c2f</color>
+    <color name="colorSecondary900">#5f4a1c</color>
+    <color name="colorSecondaryText">#FFF</color>
     <color name="colorStarOn">#FF9800</color>
     <color name="colorStarOff">#757472</color>
     <color name="errorLogin">#FFE10808</color>
     <color name="texto">#131313</color>
     <color name="white">#FFF</color>
+    <color name="black">#000</color>
 </resources>

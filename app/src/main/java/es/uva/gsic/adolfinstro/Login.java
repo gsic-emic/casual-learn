@@ -50,10 +50,10 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     private static final int requestCodePermissions = 1000;
 
     /** Código con el que se lanza la actividad de identificación del usuario con cuenta Google */
-    private static final int requestAuth = 101010;
+    public static final int requestAuth = 1010;
 
     /** Instancia para auntenticación con la cuenta Google */
-    private GoogleSignInClient googleSignInClient;
+    public static GoogleSignInClient googleSignInClient;
 
     private SharedPreferences sharedPreferences;
 
@@ -62,6 +62,9 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
     /** Firebase autenticación */
     public static FirebaseAuth firebaseAuth;
+
+    /** Google signIn */
+    public static GoogleSignInOptions gso;
 
     @Override
     public void onCreate(Bundle sI){
@@ -76,7 +79,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         setContentView(R.layout.activity_login);
 
         //https://developers.google.com/identity/sign-in/android/sign-in
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail().build();
 
@@ -108,11 +111,15 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         switch (v.getId()){
             case R.id.btGoogle:
                 //Se lanza la actividad de identificación de Google y se espera al resultado
-                Intent intent = googleSignInClient.getSignInIntent();
-                startActivityForResult(intent, requestAuth);
+                lanzaGoogle();
                 break;
             default:
         }
+    }
+
+    private void lanzaGoogle(){
+        Intent intent = googleSignInClient.getSignInIntent();
+        startActivityForResult(intent, requestAuth);
     }
 
     /**
@@ -213,29 +220,37 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         });
     }
 
-    private void updateUI(FirebaseUser firebaseUser, boolean registro){
+    public void updateUI(FirebaseUser firebaseUser, boolean registro){
         if(firebaseUser != null){
             firebaseAnalytics.setUserId(firebaseUser.getUid());
             Bundle bundle = new Bundle();
-            bundle.putString("uid", firebaseUser.getUid());
+            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
             if(registro)
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
                 JSONObject usuario = new JSONObject();
-                usuario.put(Auxiliar.id, firebaseUser.getUid());
+                usuario.put(Auxiliar.id, Auxiliar.id);
+                usuario.put(Auxiliar.uid, firebaseUser.getUid());
                 PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
             }catch (JSONException e){
                 e.printStackTrace();
             }
             //Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent (getApplicationContext(), Maps.class);
-            intent.putExtra(Auxiliar.textoParaElMapa, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            finishAffinity();
-            startActivity(intent);
+            saltaMapa(firebaseUser.getDisplayName());
         }
+    }
+
+    private void saltaMapa(String firebaseUserName){
+        Intent intent = new Intent (getApplicationContext(), Maps.class);
+        if(firebaseUserName != null)
+            intent.putExtra(Auxiliar.textoParaElMapa, String.format("%s%s", getString(R.string.hola), firebaseUserName));
+        else
+            intent.putExtra(Auxiliar.textoParaElMapa, "");
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        finishAffinity();
+        startActivity(intent);
     }
 
     /**
@@ -251,6 +266,26 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                     Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
                 break;
             default:
+        }
+    }
+
+    public void boton(View view) {
+        if(view.getId() == R.id.btInicioSinIdentificacion){
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            alertDialog.setMessage(R.string.textoInicio);
+            alertDialog.setPositiveButton(R.string.autenticarseMasTarde, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    saltaMapa(null);
+                }
+            });
+            alertDialog.setNegativeButton(R.string.autenticarseAhora, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    lanzaGoogle();
+                }
+            });
+            alertDialog.show();
         }
     }
 }

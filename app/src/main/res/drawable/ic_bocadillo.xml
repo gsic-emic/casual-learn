@@ -10,6 +10,6 @@
       android:strokeWidth="0.26458333"
       android:fillColor="#FFFFFF"
       android:fillAlpha="1"
-      android:strokeColor="#000000"
+      android:strokeColor="#000"
       android:strokeLineCap="butt"/>
 </vector>

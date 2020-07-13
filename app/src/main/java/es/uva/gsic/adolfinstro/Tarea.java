@@ -7,6 +7,7 @@ import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,16 +19,20 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.text.Layout;
+import android.text.method.LinkMovementMethod;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +56,7 @@ import static java.util.Objects.*;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20200519
+ * @version 20200607
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -138,9 +143,9 @@ public class Tarea extends AppCompatActivity implements
                     try{
                         recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
                         if(recursoAsociadoImagen.equals(""))
-                            recursoAsociadoImagen = null;
+                            recursoAsociadoImagen = recursoAsociadoImagen300px;
                     }catch (Exception e){
-                        recursoAsociadoImagen = null;
+                        recursoAsociadoImagen = recursoAsociadoImagen300px;
                     }
                     ivImagenDescripcion.setVisibility(View.VISIBLE);
                 } else {
@@ -197,10 +202,8 @@ public class Tarea extends AppCompatActivity implements
                 btCamara = findViewById(R.id.btCamara);
                 btTerminar = findViewById(R.id.btTerminar);
 
-                tvDescripcion.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    tvDescripcion.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
-                }
+                tvDescripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+                tvDescripcion.setMovementMethod(LinkMovementMethod.getInstance());
 
                 recyclerView = findViewById(R.id.rvRealizaTarea);
                 recyclerView.setHasFixedSize(true);
@@ -373,7 +376,7 @@ public class Tarea extends AppCompatActivity implements
      * @param view Referencia al lanzador del evento
      */
     public void boton(View view) {
-        Intent intent;
+        final Intent intent;
         switch (view.getId()){
             case R.id.btVolver:
                 onBackPressed();
@@ -403,6 +406,7 @@ public class Tarea extends AppCompatActivity implements
                     }catch (Exception e){
                         mensajeError();
                     }
+                    tareaCompletadaFirebase();
                     Auxiliar.puntuaTarea(this, idTarea);
                 } else {
                     guardaRespuestaPregunta();
@@ -431,7 +435,8 @@ public class Tarea extends AppCompatActivity implements
             case R.id.ivImagenDescripcion:
                 if(recursoAsociadoImagen != null) {//Si la imagen en alta resolución existe se salta simpre a ella para la vista en detalle
                     intent = new Intent(this, ImagenCompleta.class);
-                    intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
+                    if(recursoAsociadoImagen != null)
+                        intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
                     startActivity(intent);
                 }else{//Ya está visible la imagen de resolución baja y no hay una alta asociada
                     if(recursoAsociadoImagen300px != null){
@@ -463,38 +468,62 @@ public class Tarea extends AppCompatActivity implements
                 }
                 break;
             case R.id.ivDenunciarPregunta:
-                final AlertDialog.Builder denuncia = new AlertDialog.Builder(this);
-                denuncia.setTitle(getString(R.string.denunciarPreguntaTitulo));
-                denuncia.setMessage(getString(R.string.denunciarPreguntaTexto));
-                final EditText respuestaDenuncia = new EditText(this);
-                respuestaDenuncia.setSingleLine();
-                InputFilter[] vector = new InputFilter[1];
-                vector[0] = new InputFilter.LengthFilter(80);
-                respuestaDenuncia.setFilters(vector);
-                respuestaDenuncia.setLayoutParams(
-                        new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.MATCH_PARENT));
-                denuncia.setView(respuestaDenuncia);
-                denuncia.setPositiveButton(getString(R.string.enviar), new DialogInterface.OnClickListener() {
+                final Dialog dialogo = new Dialog(this);
+                dialogo.setContentView(R.layout.dialogo_denuncia);
+                dialogo.setCancelable(true);
+                //https://stackoverflow.com/questions/10211338/view-inside-scrollview-doesnt-take-all-place
+                //Que el dialogo esté centrado y se vea como un popup normal
+                Window window = dialogo.getWindow();
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                window.setGravity(Gravity.CENTER);
+                Button botonEnviar = dialogo.findViewById(R.id.btAceptarReportar);
+                final CheckBox cb1 = dialogo.findViewById(R.id.cbNoEntiendoTarea);
+                final CheckBox cb2 = dialogo.findViewById(R.id.cbTareaFallos);
+                final CheckBox cb3 = dialogo.findViewById(R.id.cbNoPuedoRealizar);
+                final EditText editText = dialogo.findViewById(R.id.etDenuncia);
+                botonEnviar.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String textoDenuncia = respuestaDenuncia.getText().toString();
-                        textoDenuncia = textoDenuncia.trim();
-                        if(textoDenuncia.equals("")){
-                            //Toast.makeText(Tarea.this, getString(R.string.respuestaVacia), Toast.LENGTH_SHORT).show();
-                            muestraSnackBar(getString(R.string.respuestaVacia));
-                        }else {
-                            enviaDenuncia(textoDenuncia);
+                    public void onClick(View v) {
+                        boolean envia = false;
+                        String contenido = String.format("%s\n%s\n%s\n%s\n", idTarea, Login.firebaseAuth.getUid(), Build.MANUFACTURER, Build.MODEL);
+                        String textoEdit = editText.getText().toString();
+                        if(cb1.isChecked() || cb2.isChecked() || cb3.isChecked()){//Alguno de los checkbox está activado, no tiene porque tener texto
+                            envia = true;
+                            if(cb1.isChecked())
+                                contenido = contenido.concat(String.format("%s\n", getString(R.string.noEntiendo)));
+                            if(cb2.isChecked())
+                                contenido = contenido.concat(String.format("%s\n", getString(R.string.tareaConFallos)));
+                            if(cb3.isChecked())
+                                contenido = contenido.concat(String.format("%s\n", getString(R.string.noSePuedeRealizar)));
+                            if(!textoEdit.isEmpty() || !textoEdit.equals(""))
+                                contenido = contenido.concat(String.format("%s\n", textoEdit));
+                        }else {//Necesita texto
+                            if(!textoEdit.isEmpty() || !textoEdit.equals("")) {
+                                envia = true;
+                                contenido = contenido.concat(String.format("%s\n", textoEdit));
+                            }
+                            else
+                                editText.setError(getString(R.string.errorTextoDenuncia));
+                        }
+                        if(envia) {
+                            Intent mail = new Intent(Intent.ACTION_SEND);
+                            mail.setType("*/*");
+                            String[] direcciones = {getString(R.string.emailCasualLearn)};
+                            mail.putExtra(Intent.EXTRA_EMAIL, direcciones);
+                            mail.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.errorTarea));
+                            mail.putExtra(Intent.EXTRA_TEXT, contenido);
+                            if (mail.resolveActivity(getPackageManager()) != null) {
+                                startActivity(mail);
+                                dialogo.cancel();
+                            }else{
+                                dialogo.cancel();
+                                muestraSnackBar(getString(R.string.noEmail));
+                            }
+                            enviaDenunciaFirebase();
                         }
                     }
                 });
-                denuncia.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                });
-                denuncia.show();
+                dialogo.show();
                 break;
         }
     }
@@ -522,6 +551,7 @@ public class Tarea extends AppCompatActivity implements
                     Auxiliar.texto,
                     Context.MODE_PRIVATE);
         }
+        tareaCompletadaFirebase();
         Auxiliar.puntuaTarea(this, idTarea);
         finish();
     }
@@ -529,19 +559,18 @@ public class Tarea extends AppCompatActivity implements
     /**
      * Método para envíar una denuncia de la tarea. Esta denuncia se recogerá mediante un evento de
      * FIREBASE
-     * @param textoUsuario Texto del usuario a enviar.
      */
-    public void enviaDenuncia(String textoUsuario){
+    public void enviaDenunciaFirebase(){
         Intent intent = new Intent();
         intent.setAction(Auxiliar.nunca_mas);
         intent.putExtra(Auxiliar.id, idTarea);
         sendBroadcast(intent);
 
         Bundle bundle = new Bundle();
-        bundle.putString("idTarea", idReducida());
-        bundle.putString("MensajeUsuario", textoUsuario);
-        Login.firebaseAnalytics.logEvent("denuncia_tarea", bundle);
-        JSONObject tarea = null;
+        bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+        bundle.putString("idUsuario", Login.firebaseAuth.getUid());
+        Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
+        /*JSONObject tarea = null;
         try{
             tarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
             tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
@@ -550,19 +579,7 @@ public class Tarea extends AppCompatActivity implements
             if(tarea!=null)
                 PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroDenunciadas, tarea, Context.MODE_PRIVATE);
         }
-        Auxiliar.returnMain(this);
-    }
-
-    /**
-     * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
-     * @return Últimas dos partes del path
-     */
-    public String idReducida(){
-        String[] vectorId = idTarea.split("/");
-        String salida = "";
-        for(int i = vectorId.length; i > (vectorId.length - 2); i--)
-            salida += vectorId[i-1] + "/";
-        return salida;
+        Auxiliar.returnMain(this);*/
     }
 
     /**
@@ -820,18 +837,15 @@ public class Tarea extends AppCompatActivity implements
 
     /**
      * Método para almacenar la respuesta del usuario
-     * @return Devolverá true cuando la respuestas esté correctamente almacenada y
-     * false en cualquier otro caso
      */
-    private boolean guardaRespuestaPregunta(){
+    private void guardaRespuestaPregunta(){
         String respuesta = etRespuestaTextual.getText().toString();
         respuesta = respuesta.trim();
-        boolean salida = false;
         if(respuesta.isEmpty()){
             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
         }
         else{
-            JSONObject tarea = null;
+            JSONObject tarea;
             if(tipo.equals(Auxiliar.tipoPreguntaCorta) || tipo.equals(Auxiliar.tipoPreguntaLarga)) {
                 try {
                     tarea = PersistenciaDatos.recuperaTarea(
@@ -860,9 +874,9 @@ public class Tarea extends AppCompatActivity implements
                     }
                 }else {
                     Toast.makeText(this, getString(R.string.respuestaG), Toast.LENGTH_SHORT).show();
+                    tareaCompletadaFirebase();
                     Auxiliar.puntuaTarea(this, idTarea);
                 }
-                salida = true;
             }
             /*else {
                 try {
@@ -885,7 +899,6 @@ public class Tarea extends AppCompatActivity implements
                 }
             }*/
         }
-        return salida;
     }
 
     private void mensajeRespuestaEsperada(final Context context, boolean acierto){
@@ -899,9 +912,10 @@ public class Tarea extends AppCompatActivity implements
             alertBuilder.setMessage(getString(R.string.respuestaEspeIncrrecta)+"\r\n"+respuestaEsperada);
         }
 
-        alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+        alertBuilder.setPositiveButton(getString(R.string.continuar), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                tareaCompletadaFirebase();
                 Auxiliar.puntuaTarea(context, idTarea);
             }
         });
@@ -1063,6 +1077,7 @@ public class Tarea extends AppCompatActivity implements
                         PersistenciaDatos.ficheroCompletadas,
                         idTarea);
             }
+            assert tarea != null;
             JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
             JSONObject respuesta;
             for(int i = 0; i < respuestas.length(); i++){
@@ -1117,9 +1132,16 @@ public class Tarea extends AppCompatActivity implements
 
     private void muestraSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clTarea), R.string.app_name, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();
+    }
+
+    private void tareaCompletadaFirebase(){
+        Bundle bundle = new Bundle();
+        bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+        bundle.putString("idUsuario", Login.firebaseAuth.getUid());
+        Login.firebaseAnalytics.logEvent("tareaCompletada", bundle);
     }
 }

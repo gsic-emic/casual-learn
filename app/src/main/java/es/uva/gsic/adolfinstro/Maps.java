@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -30,11 +31,23 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -74,7 +87,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * @author Pablo
  * @version 20200615
  */
-public class Maps extends AppCompatActivity implements
+public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
         ActivityCompat.OnRequestPermissionsResultCallback {
@@ -203,6 +216,8 @@ public class Maps extends AppCompatActivity implements
             scaleBarOverlay = new ScaleBarOverlay(map);
             scaleBarOverlay.setCentred(true); //La barra de escala se queda en el centro
 
+            map.setTilesScaledToDpi(true);
+
             //Se agrega la brújula
             //compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
             //compassOverlay.enableCompass();
@@ -239,7 +254,29 @@ public class Maps extends AppCompatActivity implements
 
         try{
             String contenido = getIntent().getExtras().getString(Auxiliar.textoParaElMapa);
-            pintaSnackBar(contenido);
+            if(!contenido.equals(""))
+                pintaSnackBar(contenido);
+            else {
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(Login.firebaseAuth == null || idUsuario == null) {
+                    Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
+                    snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
+                    snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                    .requestIdToken(getString(R.string.default_web_client_id))
+                                    .requestEmail().build();
+                            Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
+                            Intent intent = Login.googleSignInClient.getSignInIntent();
+                            startActivityForResult(intent, Login.requestAuth);
+                        }
+                    });
+                    snackbar.setActionTextColor(getResources().getColor(R.color.texto));
+                    snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+                    snackbar.show();
+                }
+            }
         }catch (Exception e){
             //No hay nada que mostrar
         }
@@ -247,10 +284,65 @@ public class Maps extends AppCompatActivity implements
 
     private void pintaSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.white));
+        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int result, Intent data) {
+        super.onActivityResult(requestCode, result, data);
+        switch (requestCode) {
+            case Login.requestAuth:
+                //No es necesario comprobar el resultado de la petición según la ayuda oficial
+                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                GoogleSignInAccount account = null;
+                try {
+                    account = task.getResult(ApiException.class);
+                    firebaseAuthWithGoogle(account);
+                } catch (ApiException e) {
+                    e.printStackTrace();
+                }
+                break;
+            default:
+        }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
+        Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>(){
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if(task.isSuccessful()){
+                    FirebaseUser firebaseUser = Login.firebaseAuth.getCurrentUser();
+                    updateUI(firebaseUser, true);
+                }else{
+                    updateUI(null, true);
+                }
+            }
+        });
+    }
+
+    public void updateUI(FirebaseUser firebaseUser, boolean registro){
+        if(firebaseUser != null){
+            Login.firebaseAnalytics.setUserId(firebaseUser.getUid());
+            Bundle bundle = new Bundle();
+            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
+            if(registro)
+                Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
+            else
+                Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
+            try {
+                JSONObject usuario = new JSONObject();
+                usuario.put(Auxiliar.id, Auxiliar.id);
+                usuario.put(Auxiliar.uid, firebaseUser.getUid());
+                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
+            pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
+        }
     }
 
 
@@ -393,13 +485,20 @@ public class Maps extends AppCompatActivity implements
 
             List<TareasMapaLista> tareasPunto = new ArrayList<>();
             JSONObject jo;
+            String uriFondo;
             for(int i = 0; i < tareas.length(); i++){
                 try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
                     jo = tareas.getJSONObject(i);
+                    try{
+                        uriFondo = jo.getString(Auxiliar.recursoImagenBaja);
+                    }catch (Exception e){
+                        uriFondo = null;
+                    }
                     tareasPunto.add(new TareasMapaLista(
                             jo.getString(Auxiliar.id),
                             jo.getString(Auxiliar.titulo),
                             Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                            uriFondo,
                             jo));
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -455,7 +554,29 @@ public class Maps extends AppCompatActivity implements
      * @return Representación gráfica del marcador
      */
     private Bitmap generaBitmapMarkerNumero(int size) {
-        Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
+        Paint paint = new Paint();
+        Drawable drawable;
+        if(size > 60)
+            paint.setARGB(255, 255, 255, 255);
+        else
+            paint.setARGB(255, 0, 0, 0);
+        if(size <= 20)
+            drawable = context.getResources().getDrawable(R.drawable.ic_marcador100);
+        else
+            if(size <= 40)
+                drawable = context.getResources().getDrawable(R.drawable.ic_marcador300);
+            else
+                if(size <= 60)
+                    drawable = context.getResources().getDrawable(R.drawable.ic_marcador500);
+                else
+                    if(size <= 80)
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador700);
+                    else
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador900);
+
+
+
+        //Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
         Bitmap bitmap = Bitmap.createBitmap(
                 drawable.getIntrinsicWidth(),
                 drawable.getIntrinsicHeight(),
@@ -465,21 +586,18 @@ public class Maps extends AppCompatActivity implements
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
-        Paint paint = new Paint();
         String texto;
         if(size>99) {
             texto = "99+";
-            size = 99;
         } else
             texto = String.valueOf(size);
-        paint.setARGB(255, 0, 0, 0);
         paint.setStyle(Paint.Style.FILL);
         int textSize = (int) (mitad+1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(texto, mitad, mitad + (float)textSize/3, paint);
-        paint.setARGB(200 - 198 + 2*size, 136, 73, 248);
-        canvas.drawCircle(mitad, canvas.getHeight() - mitad/3, mitad/8, paint);
+        canvas.drawText(texto, mitad, mitad + (float)(textSize/2), paint);
+        //paint.setARGB(200 - 198 + 2*size, 136, 73, 248);
+        //canvas.drawCircle(mitad, canvas.getHeight() - mitad/3, mitad/8, paint);
         //canvas.drawCircle(mitad, mitad, mitad/2, paint);
         return bitmap;
     }
@@ -1001,7 +1119,7 @@ public class Maps extends AppCompatActivity implements
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
         alertBuilder.setTitle(getString(R.string.exitT));
         alertBuilder.setMessage(getString(R.string.exit));
-        alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+        alertBuilder.setPositiveButton(getString(R.string.salir), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 //finishAffinity();//Se cierra la app. //El proceso puede seguir activo
@@ -1198,13 +1316,14 @@ public class Maps extends AppCompatActivity implements
      * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
      */
     public static class TareasMapaLista {
-        public String id, titulo, tipoTarea;
+        public String id, titulo, tipoTarea, uriFondo;
         public JSONObject tarea;
-        TareasMapaLista(String id, String titulo, String tipoTarea, JSONObject tarea){
+        TareasMapaLista(String id, String titulo, String tipoTarea, String uriFondo, JSONObject tarea){
             this.id = id;
             this.titulo = titulo;
             this.tipoTarea = tipoTarea;
             this.tarea = tarea;
+            this.uriFondo = uriFondo;
         }
     }
 

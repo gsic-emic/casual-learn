@@ -13,9 +13,16 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.view.View;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
@@ -38,6 +45,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import es.uva.gsic.adolfinstro.Acerca;
 import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
@@ -49,16 +57,17 @@ public class Auxiliar {
 
     //public static final String direccionIP = "http://192.168.1.121:10001/";
     public static final String direccionIP = "http://192.168.1.14:10001/";
-    //public static final String direccionIP = "http://10.0.104.237:10001/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
     public static final String latitud = "latitud";
     public static final String longitud = "longitud";
-    public static final String recursoImagenBaja = "recursoAsociadoImagen300px";
+    public static final String recursoImagenBaja = "thumbnail";
     public static final String recursoImagen = "recursoAsociadoImagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
+    public static final String fuentes = "fuentes";
     public static final String titulo = "comment";
     public static final String instante = "instante";
     public static final String estadoTarea = "estadoTarea";
@@ -117,6 +126,7 @@ public class Auxiliar {
     public static final String tareas = "tareas";
     public static final String ficheroOrigen = "ficheroOrigen";
     public static final String textoParaElMapa = "textoParaElMapa";
+    public static final String uid = "uid";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
@@ -399,6 +409,74 @@ public class Auxiliar {
         return iconoTarea;
     }
 
+    public static int iconoTipoTareaPreview(String tR) {
+        int iconoTarea;
+        switch (tR){
+            case Auxiliar.tipoSinRespuesta:
+                iconoTarea = R.drawable.ic_sinrespuesta_barra;
+                break;
+            case Auxiliar.tipoPreguntaCorta:
+                iconoTarea = R.drawable.ic_preguntacorta_barra;
+                break;
+            case Auxiliar.tipoPreguntaLarga:
+                iconoTarea = R.drawable.ic_preguntalarga_barra;
+                break;
+            case Auxiliar.tipoPreguntaImagen:
+                iconoTarea = R.drawable.ic_preguntaimagen_barra;
+                break;
+            case Auxiliar.tipoImagen:
+                iconoTarea = R.drawable.ic_imagen_barra;
+                break;
+            case Auxiliar.tipoImagenMultiple:
+                iconoTarea = R.drawable.ic_imagenmultiple_barra;
+                break;
+            case Auxiliar.tipoVideo:
+                iconoTarea = R.drawable.ic_video_barra;
+                break;
+            case Auxiliar.tipoPreguntaImagenes:
+                iconoTarea = R.drawable.ic_preguntaimagenesmultiples_barra;
+                break;
+            default:
+                iconoTarea = 0;
+                break;
+        }
+        return iconoTarea;
+    }
+
+    public static int iconoTipoTareaLista(String tR) {
+        int iconoTarea;
+        switch (tR){
+            case Auxiliar.tipoSinRespuesta:
+                iconoTarea = R.drawable.ic_sinrespuesta_lista;
+                break;
+            case Auxiliar.tipoPreguntaCorta:
+                iconoTarea = R.drawable.ic_preguntacorta_lista;
+                break;
+            case Auxiliar.tipoPreguntaLarga:
+                iconoTarea = R.drawable.ic_preguntalarga_lista;
+                break;
+            case Auxiliar.tipoPreguntaImagen:
+                iconoTarea = R.drawable.ic_preguntaimagen_lista;
+                break;
+            case Auxiliar.tipoImagen:
+                iconoTarea = R.drawable.ic_imagen_lista;
+                break;
+            case Auxiliar.tipoImagenMultiple:
+                iconoTarea = R.drawable.ic_imagenmultiple_lista;
+                break;
+            case Auxiliar.tipoVideo:
+                iconoTarea = R.drawable.ic_video_lista;
+                break;
+            case Auxiliar.tipoPreguntaImagenes:
+                iconoTarea = R.drawable.ic_preguntaimagenesmultiples_lista;
+                break;
+            default:
+                iconoTarea = 0;
+                break;
+        }
+        return iconoTarea;
+    }
+
     public static String valorTexto(Resources resources, int posicion){
         switch (posicion){
             case 0:
@@ -630,5 +708,69 @@ public class Auxiliar {
             );
             ColaConexiones.getInstance(appContext).getRequestQueue().add(jsonObjectRequest);
         }
+    }
+
+    /**
+     * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
+     * @return Últimas dos partes del path
+     */
+    public static String idReducida(String idTarea){
+        String[] vectorId = idTarea.split("/");
+        StringBuilder salida = new StringBuilder();
+        for(int i = vectorId.length; i > (vectorId.length - 2); i--)
+            salida.append(vectorId[i - 1]).append("/");
+        return salida.toString();
+    }
+
+    /**
+     * Método que abre el navegador interno en un popup
+     * @param contexto Contexto
+     * @param url Url que se carga en el navegador
+     */
+    public static void navegadorInterno(final Context contexto, final String url){
+        Dialog dialogo = new Dialog(contexto);
+        dialogo.setContentView(R.layout.popweb);
+        dialogo.setCancelable(true);
+        WebView wv = dialogo.findViewById(R.id.wbNavegador);
+        WebSettings webSettings = wv.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setUserAgentString("Android");
+        wv.setWebViewClient(new ClienteWeb() {
+            @Override
+            public void navegadorExterno() {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                contexto.startActivity(intent);
+            }
+        });
+        wv.loadUrl(url);
+        dialogo.show();
+    }
+
+    /**
+     * Método para buscar enlaces (formato HTML) en un string. Al pulsar uno de los enlaces se abre
+     * el navegador interno.
+     * @param contexto Contexto
+     * @param texto Texto con el contenido a mostrar (se elimina el código html)
+     * @return Objeto que se puede pasar a un TextView con los enlaces subrayados. NECESITA QUE EL
+     * TEXTVIEW SE LE INIDIQUE TEXTVIEW.setMovementMethod(LinkMovementMethod.getInstance());
+     */
+    public static SpannableStringBuilder creaEnlaces(final Context contexto, String texto){
+        CharSequence charSequence = Html.fromHtml(texto);
+        SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(charSequence);
+        URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
+        for(final URLSpan urlSpan : urlSpans){
+            int start = spannableStringBuilder.getSpanStart(urlSpan);
+            int end = spannableStringBuilder.getSpanEnd(urlSpan);
+            int flags = spannableStringBuilder.getSpanFlags(urlSpan);
+            ClickableSpan clickableSpan = new ClickableSpan() {
+                @Override
+                public void onClick(@NonNull View widget) {
+                    Auxiliar.navegadorInterno(contexto, urlSpan.getURL());
+                }
+            };
+            spannableStringBuilder.removeSpan(urlSpan);
+            spannableStringBuilder.setSpan(clickableSpan, start, end, flags);
+        }
+        return spannableStringBuilder;
     }
 }
