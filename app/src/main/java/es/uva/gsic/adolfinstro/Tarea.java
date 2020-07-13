@@ -138,33 +138,30 @@ public class Tarea extends AppCompatActivity implements
                 }catch (Exception e){
                     recursoAsociadoImagen300px = null;
                 }
-                if (recursoAsociadoImagen300px != null) {// Se intenta mostrar la imagen de baja resolución
-                    Picasso.get().load(recursoAsociadoImagen300px).tag(Auxiliar.cargaImagenTarea).into(ivImagenDescripcion);
-                    try{
-                        recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
-                        if(recursoAsociadoImagen.equals(""))
-                            recursoAsociadoImagen = recursoAsociadoImagen300px;
-                    }catch (Exception e){
-                        recursoAsociadoImagen = recursoAsociadoImagen300px;
-                    }
-                    ivImagenDescripcion.setVisibility(View.VISIBLE);
-                } else {
-                    try{
-                        recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
-                        if(recursoAsociadoImagen.equals(""))
-                            recursoAsociadoImagen = null;
-                    }catch (Exception e){
+                try{
+                    recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
+                    if(recursoAsociadoImagen.equals(""))
                         recursoAsociadoImagen = null;
-                    }
-                    if (recursoAsociadoImagen != null) {
+                }catch (Exception e){
+                    recursoAsociadoImagen = null;
+                }
+                if(recursoAsociadoImagen != null){
+                    if(recursoAsociadoImagen300px != null){ //Se muestra la imagen en baja resolución
+                        Picasso.get()
+                                .load(recursoAsociadoImagen300px)
+                                .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                .tag(Auxiliar.cargaImagenTarea)
+                                .into(ivImagenDescripcion);
+                    }else{ //Solo tiene imagen en alta resolución
                         Picasso.get()
                                 .load(recursoAsociadoImagen)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                                 .tag(Auxiliar.cargaImagenTarea)
                                 .into(ivImagenDescripcion);
-                        ivImagenDescripcion.setVisibility(View.VISIBLE);
                     }
+                    ivImagenDescripcion.setVisibility(View.VISIBLE);
                 }
+
                 tipo = tarea.getString(Auxiliar.tipoRespuesta);
                 try{
                     respuestaEsperada = tarea.getString(Auxiliar.respuestaEsperada);

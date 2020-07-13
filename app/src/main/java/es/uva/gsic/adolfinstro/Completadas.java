@@ -13,6 +13,7 @@ import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -123,10 +124,8 @@ public class Completadas extends AppCompatActivity implements
         }
 
         try {
-            enunciado.setText(tarea.getString(Auxiliar.recursoAsociadoTexto));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                enunciado.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
-            }
+            enunciado.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+            enunciado.setMovementMethod(LinkMovementMethod.getInstance());
 
             try {
                 ratingBar.setRating((float) tarea.getDouble(Auxiliar.rating));
