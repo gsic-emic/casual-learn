@@ -7,6 +7,7 @@ import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -40,6 +41,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
@@ -449,42 +451,59 @@ public class Preview extends AppCompatActivity implements LocationListener {
     public void boton(View view) {
         try {
             Intent intent;
-            if (Auxiliar.tareaRegistrada(getApplication(), tarea.getString(Auxiliar.id))) {
-                //Toast.makeText(context, getString(R.string.tareaRegistrada), Toast.LENGTH_LONG).show();
-                pintaSnackBar(getString(R.string.tareaRegistrada));
-            } else {
-                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                if(Login.firebaseAuth == null || idUsuario == null) {
-                    snackBarLogin(R.id.clPreview);
-                }else{
-                    switch (view.getId()) {
-                        case R.id.botonAceptarPreview:
-                            intent = new Intent(context, Tarea.class);
-                            intent.putExtra(
-                                    Auxiliar.id,
-                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                            startActivity(intent);
-                            break;
-                        case R.id.botonAhoraNoPreview:
-                            intent = new Intent();
-                            intent.setAction(Auxiliar.ahora_no);
-                            intent.putExtra(
-                                    Auxiliar.id,
-                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                            sendBroadcast(intent);
-                            finish();
-                            break;
-                        case R.id.botonRechazarPreview:
-                            intent = new Intent();
-                            intent.setAction(Auxiliar.nunca_mas);
-                            intent.putExtra(
-                                    Auxiliar.id,
-                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                            sendBroadcast(intent);
-                            finish();
-                            break;
-                        default:
-                            break;
+            if(view.getId() == R.id.tituloPreview){
+                JSONArray fuentes = tarea.getJSONArray(Auxiliar.fuentes);
+                String textoFuentes = "";
+                for(int i = 0; i < fuentes.length(); i++){
+                    textoFuentes = textoFuentes.concat(fuentes.getString(i) + "\n\n");
+                }
+                Dialog dialogo = new Dialog(this);
+                dialogo.setContentView(R.layout.dialogo_desarrolladores);
+                dialogo.setCancelable(true);
+                TextView textView = dialogo.findViewById(R.id.tvTituloDesarrolladores);
+                textView.setText(getString(R.string.fuentes_de_info));
+                textView = dialogo.findViewById(R.id.tvEspacioDesarrolladores);
+                textView.setText(textoFuentes);
+                textView.setTextSize(12);
+                dialogo.show();
+            }else{
+                if (Auxiliar.tareaRegistrada(getApplication(), tarea.getString(Auxiliar.id))) {
+                    //Toast.makeText(context, getString(R.string.tareaRegistrada), Toast.LENGTH_LONG).show();
+                    pintaSnackBar(getString(R.string.tareaRegistrada));
+                } else {
+                    JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                    if (Login.firebaseAuth == null || idUsuario == null) {
+                        snackBarLogin(R.id.clPreview);
+                    } else {
+                        switch (view.getId()) {
+                            case R.id.botonAceptarPreview:
+                                intent = new Intent(context, Tarea.class);
+                                intent.putExtra(
+                                        Auxiliar.id,
+                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                                startActivity(intent);
+                                break;
+                            case R.id.botonAhoraNoPreview:
+                                intent = new Intent();
+                                intent.setAction(Auxiliar.ahora_no);
+                                intent.putExtra(
+                                        Auxiliar.id,
+                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                                sendBroadcast(intent);
+                                finish();
+                                break;
+                            case R.id.botonRechazarPreview:
+                                intent = new Intent();
+                                intent.setAction(Auxiliar.nunca_mas);
+                                intent.putExtra(
+                                        Auxiliar.id,
+                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                                sendBroadcast(intent);
+                                finish();
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }

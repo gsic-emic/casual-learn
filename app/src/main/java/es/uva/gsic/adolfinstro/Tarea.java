@@ -912,7 +912,7 @@ public class Tarea extends AppCompatActivity implements
             alertBuilder.setMessage(getString(R.string.respuestaEspeIncrrecta)+"\r\n"+respuestaEsperada);
         }
 
-        alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+        alertBuilder.setPositiveButton(getString(R.string.continuar), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 tareaCompletadaFirebase();

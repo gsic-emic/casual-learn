@@ -28,11 +28,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/openstreetmap_contributors"
-        android:background="#dce1e8"
+        android:background="@color/colorPrimaryLight68"
         android:textColor="@android:color/black"
         app:layout_constraintBottom_toBottomOf="@id/map"
         app:layout_constraintStart_toStartOf="@id/map"
-        android:layout_marginStart="3dp"
         android:textSize="12sp"/>
 
     <androidx.constraintlayout.widget.Guideline

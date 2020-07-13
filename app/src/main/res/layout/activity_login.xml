@@ -1,30 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".Login"
+    android:fillViewport="true"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/ic_fondo_login"
-    tools:context=".Login">
+    android:layout_height="match_parent">
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/ic_fondo_login">
 
     <TextView
         android:id="@+id/tvAcceso"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/app_name"
-        android:textSize="60sp"
-        android:textColor="#FFFFFF"
+        android:textSize="50sp"
+        android:textColor="#FFF"
         android:textAlignment="center"
         app:layout_constraintBottom_toTopOf="@id/glLogin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/ivImangePrincipal"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:src="@drawable/imagen_principal"
+        app:layout_constraintTop_toBottomOf="@id/tvAcceso"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.25" />
+        app:layout_constraintGuide_percent="0.1" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin1"
@@ -45,22 +60,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/textoExplicativo"
-        app:layout_constraintTop_toBottomOf="@id/glLogin1"
+        app:layout_constraintTop_toBottomOf="@id/ivImangePrincipal"
         app:layout_constraintBottom_toTopOf="@id/btInicioSinIdentificacion"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/white"
         android:padding="10dp"
-        android:textSize="18sp"/>
+        android:textSize="16sp"/>
 
     <Button
         android:id="@+id/btInicioSinIdentificacion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/tvTextoInicio"
-        app:layout_constraintBottom_toTopOf="@id/glLogin2"
+        app:layout_constraintBottom_toTopOf="@id/btGoogle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btGoogle"
-        android:layout_marginTop="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
         android:text="@string/pruebaApp"
         android:onClick="boton"/>
 
@@ -68,9 +83,11 @@
         android:id="@+id/btGoogle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="@id/btInicioSinIdentificacion"
-        app:layout_constraintBottom_toBottomOf="@id/btInicioSinIdentificacion"
+        app:layout_constraintTop_toBottomOf="@id/btInicioSinIdentificacion"
+        app:layout_constraintBottom_toBottomOf="@id/glLogin2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/btInicioSinIdentificacion" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

@@ -54,9 +54,12 @@
         app:layout_constraintTop_toBottomOf="@id/imagenPreview"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="5dp"
-        android:layout_marginHorizontal="5dp"/>
+        android:layout_marginHorizontal="5dp"
+        android:drawableTop="@drawable/ic_info_black_24dp"
+        android:onClick="boton"/>
 
-    <org.osmdroid.views.MapView android:id="@+id/mapPreview"
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapPreview"
         android:layout_width="0dp"
         android:layout_height="90dp"
         android:layout_marginTop="5dp"
@@ -68,11 +71,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/openstreetmap_contributors"
-        android:background="#dce1e8"
+        android:background="@color/colorPrimaryLight68"
         android:textColor="@android:color/black"
         app:layout_constraintBottom_toBottomOf="@id/mapPreview"
         app:layout_constraintStart_toStartOf="@id/mapPreview"
-        android:layout_marginStart="3dp"
         android:textSize="12sp"/>
 
     <TextView

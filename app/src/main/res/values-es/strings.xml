@@ -144,7 +144,7 @@
     <string name="autenticarseMasTarde">Iniciar sesión más tarde</string>
     <string name="autenticarseAhora">Iniciar sesión ahora</string>
     <string name="textoInicio">Identificándote podrás realizar tareas y además, las tareas que te propongamos estarán personalizadas</string>
-    <string name="textoExplicativo">Casual Learn es una aplicación para aprender arte de Castilla y León a través de la realización de pequeños desafíos. ¡Podrás compartir tus conocimientos con personas que, como tú, están interesadas en los monumentos históricos!</string>
+    <string name="textoExplicativo">Casual Learn es una aplicación para aprender historia del arte de Castilla y León. ¡Podrás compartir tus conocimientos con personas que, como tú, están interesadas en la historia que les rodea!</string>
     <string name="textoInicioBreve">Inicia sesión para realizar tareas</string>
     <string name="autenticarse">Identificación</string>
     <string name="textoPuntua">La puntuación que proporciones servirá para personalizar las tareas que te ofrece la aplicación.</string>
@@ -159,4 +159,7 @@
     <string name="errorTarea">Error en una tarea</string>
     <string name="enviarCorreo">Enviar correo</string>
     <string name="noEmail">No tienes ningún cliente de correo</string>
+    <string name="fuentes_de_info">Fuentes de información</string>
+    <string name="salir">Salir</string>
+    <string name="continuar">Continuar</string>
 </resources>

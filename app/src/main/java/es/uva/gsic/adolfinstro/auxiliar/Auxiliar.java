@@ -67,6 +67,7 @@ public class Auxiliar {
     public static final String recursoImagen = "recursoAsociadoImagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
+    public static final String fuentes = "fuentes";
     public static final String titulo = "comment";
     public static final String instante = "instante";
     public static final String estadoTarea = "estadoTarea";

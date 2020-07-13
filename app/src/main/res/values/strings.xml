@@ -187,4 +187,7 @@
     <string name="errorTarea">Mistake in a task</string>
     <string name="enviarCorreo">Send email</string>
     <string name="noEmail">You don\'t have any email client</string>
+    <string name="fuentes_de_info">Information sources</string>
+    <string name="salir">Exit</string>
+    <string name="continuar">Next</string>
 </resources>
