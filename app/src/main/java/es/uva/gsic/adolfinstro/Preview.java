@@ -155,13 +155,15 @@ public class Preview extends AppCompatActivity implements LocationListener {
         try {
             try{
                 assert tarea != null;
-                if (tarea.has(Auxiliar.recursoImagenBaja) && !tarea.getString(Auxiliar.recursoImagenBaja).equals("")) {
-                Picasso.get()
-                        .load(tarea.getString(Auxiliar.recursoImagenBaja))
-                        .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                        .tag(Auxiliar.cargaImagenPreview)
-                        .into(imageView);
-                imageView.setVisibility(View.VISIBLE);
+                if (tarea.has(Auxiliar.recursoImagenBaja) &&
+                        !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
+                        !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
+                    Picasso.get()
+                            .load(tarea.getString(Auxiliar.recursoImagenBaja))
+                            .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                            .tag(Auxiliar.cargaImagenPreview)
+                            .into(imageView);
+                    imageView.setVisibility(View.VISIBLE);
             } else {
                 if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
                     Picasso.get()

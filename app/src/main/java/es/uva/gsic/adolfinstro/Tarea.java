@@ -133,7 +133,7 @@ public class Tarea extends AppCompatActivity implements
                 JSONObject tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
                 try {
                     recursoAsociadoImagen300px = tarea.getString(Auxiliar.recursoImagenBaja);
-                    if(recursoAsociadoImagen300px.equals(""))
+                    if(recursoAsociadoImagen300px.equals("") || recursoAsociadoImagen300px.equals("?width=300"))
                         recursoAsociadoImagen300px = null;
                 }catch (Exception e){
                     recursoAsociadoImagen300px = null;
