@@ -1,0 +1,90 @@
+.cabecera{
+    background-color: #b53f51;
+    padding-top: 0.5rem;
+    padding-bottom: 0.25rem;
+}
+
+.titulo{
+    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
+    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
+    color: #fff;
+    font-size: 4.5rem;
+}
+
+.subtitulo{
+    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
+    color: #fff;
+    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
+    font-size: 1.6rem;
+    margin-top: -0.5rem;
+}
+
+.subsubtitulo{
+   color: #fff;
+    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
+   font-size: 1rem;
+   font-weight: 300;
+   margin-top: 1rem;
+   margin-bottom: -0.5rem;
+}
+
+a:link, a:visited, a:hover, a:active {
+    color: #b53f51;
+    text-decoration: none;
+}
+
+p {
+    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
+    font-size: 1.4rem;
+    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
+    color: rgb(58, 57, 57);
+    padding: 0rem 1rem 0rem 1rem;
+}
+
+h1 {
+    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
+    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
+    font-weight: 400;
+    font-size: 3rem;
+    padding: 0.5rem 1rem 0rem 1rem;
+}
+
+.botonFlotante{
+    position: fixed;
+    bottom: 5%;
+    right: 2%;
+    display: none;
+}
+
+.responsive {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+}
+
+@media screen and (max-width: 450px){
+    .titulo{
+        font-size: 3.5rem;
+	word-break: break-word;
+    }
+    .subtitulo{
+	font-size: 1.2rem;
+    }
+}
+
+@media screen and (max-width: 767px){
+    p {
+        text-align: justify;
+	padding: 0rem 0.25rem 0rem 0.25rem;
+    }
+    h1 {
+        text-align: center;
+	padding: 0.25rem 0.25rem 0rem 0.25rem;
+    }
+}
+
+@media (max-width: 1050px){
+   .oculta {
+	display: none !important;
+   }
+}
