@@ -138,7 +138,7 @@ public class Puntuacion extends AppCompatActivity
                                     PersistenciaDatos.ficheroCompletadas,
                                     json,
                                     Context.MODE_PRIVATE);
-                        Auxiliar.returnMain(getApplication().getApplicationContext());
+                        vuelveInicio(null);
                     }
                     //Toast.makeText(this, getString(R.string.gracias), Toast.LENGTH_SHORT).show();
                     //Auxiliar.returnMain(getApplication().getBaseContext());
@@ -162,8 +162,10 @@ public class Puntuacion extends AppCompatActivity
         Intent intent = new Intent(this, Maps.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(Auxiliar.textoParaElMapa, string);
+        if(string != null)
+            intent.putExtra(Auxiliar.textoParaElMapa, string);
         startActivity(intent);
+        finishAffinity();
     }
 
     @Override

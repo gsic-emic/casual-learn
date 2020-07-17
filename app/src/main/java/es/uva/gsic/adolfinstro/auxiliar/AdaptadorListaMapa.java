@@ -92,7 +92,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     public void onBindViewHolder(@NonNull AdaptadorListaMapa.ViewHolderMapa holder, int position){
         holder.tvTitulo.setText(lista.get(position).titulo);
         String uriFondo = lista.get(position).uriFondo;
-        if(uriFondo != null && !uriFondo.equals("")) {
+        if(uriFondo != null && !uriFondo.equals("") && !uriFondo.equals("?width=300")) {
             Picasso.get()
                     .load(uriFondo)
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)

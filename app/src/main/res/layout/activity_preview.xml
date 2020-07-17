@@ -33,7 +33,7 @@
 
     <ImageView
         android:id="@+id/imagenPreview"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="200dp"
         android:maxHeight="200dp"
         android:layout_marginTop="5dp"
@@ -43,6 +43,16 @@
         app:layout_constraintTop_toBottomOf="@id/clIdentificatePreview"
         android:visibility="gone"
         android:adjustViewBounds="true"/>
+
+    <ImageView
+        android:id="@+id/ivInfoFotoPreview"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        app:srcCompat="@drawable/ic_info_black_24dp"
+        app:layout_constraintStart_toStartOf="@id/imagenPreview"
+        app:layout_constraintBottom_toBottomOf="@id/imagenPreview"
+        android:visibility="gone"/>
+
 
     <TextView
         android:id="@+id/tituloPreview"
@@ -54,9 +64,7 @@
         app:layout_constraintTop_toBottomOf="@id/imagenPreview"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="5dp"
-        android:layout_marginHorizontal="5dp"
-        android:drawableTop="@drawable/ic_info_black_24dp"
-        android:onClick="boton"/>
+        android:layout_marginHorizontal="5dp" />
 
     <org.osmdroid.views.MapView
         android:id="@+id/mapPreview"
@@ -135,7 +143,7 @@
         app:layout_constraintTop_toTopOf="@id/botonAceptarPreview"
         app:layout_constraintBottom_toBottomOf="@id/botonAceptarPreview"
         android:background="@drawable/boton_rojo"
-        android:textColor="@android:color/holo_red_light"
+        android:textColor="@color/colorSecondary"
         android:layout_marginVertical="5dp"
         android:visibility="gone"/>
 
@@ -150,7 +158,7 @@
         app:layout_constraintTop_toTopOf="@id/botonAceptarPreview"
         app:layout_constraintBottom_toBottomOf="@id/botonAceptarPreview"
         android:background="@drawable/boton_amarillo"
-        android:textColor="@android:color/holo_orange_dark"
+        android:textColor="@color/colorSecondary"
         android:layout_marginVertical="5dp"
         android:visibility="gone"/>
 

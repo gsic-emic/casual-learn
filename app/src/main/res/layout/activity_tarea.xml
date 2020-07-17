@@ -16,10 +16,9 @@
             android:layout_marginTop="10dp"
             android:padding="10dp"
             android:id="@+id/ivImagenDescripcion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="200dp"
             android:maxHeight="200dp"
-            android:maxWidth="200dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -27,6 +26,16 @@
             android:visibility="gone"
             android:onClick="boton"
             android:adjustViewBounds="true"/>
+
+        <ImageView
+            android:id="@+id/ivInfoFotoTarea"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            app:srcCompat="@drawable/ic_info_black_24dp"
+            app:layout_constraintStart_toStartOf="@id/ivImagenDescripcion"
+            app:layout_constraintBottom_toBottomOf="@id/ivImagenDescripcion"
+            android:visibility="gone"/>
+
 
         <ImageView
             android:id="@+id/ivDenunciarPregunta"

@@ -34,6 +34,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="20dp"/>
 
+    <ImageView
+        android:id="@+id/ivInfoFotoLogin"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        app:srcCompat="@drawable/ic_info_black_24dp"
+        app:layout_constraintStart_toStartOf="@id/ivImangePrincipal"
+        app:layout_constraintBottom_toBottomOf="@id/ivImangePrincipal"
+        android:visibility="visible"/>
+
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin"
         android:layout_width="match_parent"

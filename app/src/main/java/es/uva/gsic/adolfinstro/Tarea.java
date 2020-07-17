@@ -133,38 +133,41 @@ public class Tarea extends AppCompatActivity implements
                 JSONObject tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
                 try {
                     recursoAsociadoImagen300px = tarea.getString(Auxiliar.recursoImagenBaja);
-                    if(recursoAsociadoImagen300px.equals(""))
+                    if(recursoAsociadoImagen300px.equals("") || recursoAsociadoImagen300px.equals("?width=300"))
                         recursoAsociadoImagen300px = null;
                 }catch (Exception e){
                     recursoAsociadoImagen300px = null;
                 }
-                if (recursoAsociadoImagen300px != null) {// Se intenta mostrar la imagen de baja resolución
-                    Picasso.get().load(recursoAsociadoImagen300px).tag(Auxiliar.cargaImagenTarea).into(ivImagenDescripcion);
-                    try{
-                        recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
-                        if(recursoAsociadoImagen.equals(""))
-                            recursoAsociadoImagen = recursoAsociadoImagen300px;
-                    }catch (Exception e){
-                        recursoAsociadoImagen = recursoAsociadoImagen300px;
-                    }
-                    ivImagenDescripcion.setVisibility(View.VISIBLE);
-                } else {
-                    try{
-                        recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
-                        if(recursoAsociadoImagen.equals(""))
-                            recursoAsociadoImagen = null;
-                    }catch (Exception e){
+                try{
+                    recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
+                    if(recursoAsociadoImagen.equals(""))
                         recursoAsociadoImagen = null;
-                    }
-                    if (recursoAsociadoImagen != null) {
+                }catch (Exception e){
+                    recursoAsociadoImagen = null;
+                }
+                String urlImagen = null;
+                if(recursoAsociadoImagen != null){
+                    if(recursoAsociadoImagen300px != null){ //Se muestra la imagen en baja resolución
+                        urlImagen = recursoAsociadoImagen300px;
+                        Picasso.get()
+                                .load(recursoAsociadoImagen300px)
+                                .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                .tag(Auxiliar.cargaImagenTarea)
+                                .into(ivImagenDescripcion);
+                    }else{ //Solo tiene imagen en alta resolución
+                        urlImagen = recursoAsociadoImagen;
                         Picasso.get()
                                 .load(recursoAsociadoImagen)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                                 .tag(Auxiliar.cargaImagenTarea)
                                 .into(ivImagenDescripcion);
-                        ivImagenDescripcion.setVisibility(View.VISIBLE);
                     }
+                    ivImagenDescripcion.setVisibility(View.VISIBLE);
                 }
+
+                if(ivImagenDescripcion.getVisibility() == View.VISIBLE)
+                    Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoTarea), urlImagen);
+
                 tipo = tarea.getString(Auxiliar.tipoRespuesta);
                 try{
                     respuestaEsperada = tarea.getString(Auxiliar.respuestaEsperada);

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -77,6 +78,8 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         setContentView(R.layout.activity_login);
+
+        Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoLogin), "https://commons.wikimedia.org/wiki/File:Ampudia_-_Castillo_1.jpg");
 
         //https://developers.google.com/identity/sign-in/android/sign-in
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

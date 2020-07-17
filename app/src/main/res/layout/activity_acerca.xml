@@ -80,7 +80,7 @@
             android:paddingHorizontal="10dp"
             android:layout_marginVertical="20dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvFondosEuropeos"/>
+            app:layout_constraintTop_toBottomOf="@id/ivWikidata"/>
 
         <View
             android:id="@+id/vista1"
@@ -134,7 +134,7 @@
             android:id="@+id/tvDesarrolladores"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableStart="@drawable/ic_info_black_24dp"
+            android:drawableStart="@drawable/ic_info_black_menu"
             android:drawablePadding="4dp"
             android:layout_marginTop="10dp"
             android:textSize="18sp"
@@ -203,7 +203,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivWikidata"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
             android:text="@string/fondosInvesticacion"
             android:textSize="25sp"
             android:paddingHorizontal="10dp"
@@ -233,7 +233,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladores"
+            app:layout_constraintTop_toBottomOf="@id/tvFondosEuropeos"
             android:text="@string/mapas"
             android:textSize="25sp"
             android:layout_marginTop="20dp"
