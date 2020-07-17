@@ -3,6 +3,7 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.widget.ImageView;
 
 import com.github.chrisbanes.photoview.PhotoView;
 import com.squareup.picasso.Picasso;
@@ -38,6 +39,9 @@ public class ImagenCompleta extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
+        Auxiliar.enlaceLicencia(this,
+                (ImageView) findViewById(R.id.ivInfoFotoCompleta),
+                Objects.requireNonNull(getIntent().getExtras()).getString("IMAGENCOMPLETA"));
     }
 
     /**

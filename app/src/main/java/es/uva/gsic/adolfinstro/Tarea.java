@@ -145,14 +145,17 @@ public class Tarea extends AppCompatActivity implements
                 }catch (Exception e){
                     recursoAsociadoImagen = null;
                 }
+                String urlImagen = null;
                 if(recursoAsociadoImagen != null){
                     if(recursoAsociadoImagen300px != null){ //Se muestra la imagen en baja resolución
+                        urlImagen = recursoAsociadoImagen300px;
                         Picasso.get()
                                 .load(recursoAsociadoImagen300px)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                                 .tag(Auxiliar.cargaImagenTarea)
                                 .into(ivImagenDescripcion);
                     }else{ //Solo tiene imagen en alta resolución
+                        urlImagen = recursoAsociadoImagen;
                         Picasso.get()
                                 .load(recursoAsociadoImagen)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
@@ -161,6 +164,9 @@ public class Tarea extends AppCompatActivity implements
                     }
                     ivImagenDescripcion.setVisibility(View.VISIBLE);
                 }
+
+                if(ivImagenDescripcion.getVisibility() == View.VISIBLE)
+                    Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoTarea), urlImagen);
 
                 tipo = tarea.getString(Auxiliar.tipoRespuesta);
                 try{

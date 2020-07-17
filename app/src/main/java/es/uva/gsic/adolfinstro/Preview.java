@@ -98,6 +98,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        String urlImagen = null;
+
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
         context = getApplicationContext(); //contexto de la aplicación
@@ -153,21 +155,25 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
 
         try {
+
             try{
                 assert tarea != null;
                 if (tarea.has(Auxiliar.recursoImagenBaja) &&
                         !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
                         !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
+                    urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
                     Picasso.get()
-                            .load(tarea.getString(Auxiliar.recursoImagenBaja))
+                            .load(urlImagen)
                             .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                             .tag(Auxiliar.cargaImagenPreview)
                             .into(imageView);
                     imageView.setVisibility(View.VISIBLE);
+
             } else {
                 if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
+                    urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
                     Picasso.get()
-                            .load(tarea.getString(Auxiliar.recursoImagen))
+                            .load(urlImagen)
                             .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                             .tag(Auxiliar.cargaImagenPreview)
                             .into(imageView);
@@ -176,6 +182,10 @@ public class Preview extends AppCompatActivity implements LocationListener {
             }}
             catch (Exception e){
                 e.printStackTrace();
+            }
+
+            if(imageView.getVisibility() == View.VISIBLE){
+                Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivInfoFotoPreview), urlImagen);
             }
 
             btAceptar = findViewById(R.id.botonAceptarPreview);

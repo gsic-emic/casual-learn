@@ -20,6 +20,7 @@ import android.text.style.URLSpan;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,8 +28,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 
 import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONArray;
@@ -45,7 +44,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import es.uva.gsic.adolfinstro.Acerca;
 import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
@@ -55,9 +53,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 public class Auxiliar {
 
-    //public static final String direccionIP = "http://192.168.1.121:10001/";
-    public static final String direccionIP = "http://192.168.1.14:10001/";
-    //public static final String direccionIP = "http://10.0.104.17:10001/";
+    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
@@ -752,7 +748,7 @@ public class Auxiliar {
      * @param contexto Contexto
      * @param texto Texto con el contenido a mostrar (se elimina el código html)
      * @return Objeto que se puede pasar a un TextView con los enlaces subrayados. NECESITA QUE EL
-     * TEXTVIEW SE LE INIDIQUE TEXTVIEW.setMovementMethod(LinkMovementMethod.getInstance());
+     * TEXTVIEW SE LE INDIQUE TEXTVIEW.setMovementMethod(LinkMovementMethod.getInstance());
      */
     public static SpannableStringBuilder creaEnlaces(final Context contexto, String texto){
         CharSequence charSequence = Html.fromHtml(texto);
@@ -772,5 +768,28 @@ public class Auxiliar {
             spannableStringBuilder.setSpan(clickableSpan, start, end, flags);
         }
         return spannableStringBuilder;
+    }
+
+    /**
+     * Método para establecer el enlace al fichero que contiene la imagen para la licencia
+     * @param context Contexto
+     * @param ivInfoFotoPreview Identificador del botón de información
+     * @param urlImagen URL de la imagen
+     */
+    public static void enlaceLicencia(final Context context, ImageView ivInfoFotoPreview, String urlImagen) {
+        if(urlImagen != null && urlImagen.contains("wikimedia")){
+            final Uri url = Uri.parse(urlImagen.replace("Special:FilePath/", "File:")
+                    .replace("?width=300", ""));
+            ivInfoFotoPreview.setVisibility(View.VISIBLE);
+            ivInfoFotoPreview.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, url);
+                    intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(intent);
+                }
+            });
+        }
     }
 }

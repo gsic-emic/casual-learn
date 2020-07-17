@@ -4,10 +4,11 @@
     android:maxWidth="150dp"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/ic_bocadillo">
+    android:background="@drawable/ic_bocadillo"
+    android:paddingBottom="5dp">
 
     <TextView
-        android:padding="15dp"
+        android:padding="5dp"
         android:id="@+id/tvTituloBocadillo"
         android:layout_width="match_parent"
         android:maxWidth="150dp"
@@ -21,7 +22,7 @@
         android:textStyle="bold"/>
 
     <TextView
-        android:padding="10dp"
+        android:padding="5dp"
         android:id="@+id/tvDistanciaBocadillo"
         android:layout_width="match_parent"
         android:maxWidth="150dp"
@@ -35,7 +36,7 @@
         android:drawableStart="@drawable/ic_walk_20dp"/>
 
     <TextView
-        android:padding="10dp"
+        android:padding="5dp"
         android:layout_marginBottom="5dp"
         android:id="@+id/tvInfoBocadillo"
         android:maxWidth="150dp"

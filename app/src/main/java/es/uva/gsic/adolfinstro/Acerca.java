@@ -85,14 +85,18 @@ public class Acerca extends AppCompatActivity {
      * @param view Vista
      */
     public void boton(View view) {
-        //Intent intent = new Intent(Intent.ACTION_VIEW);
-        //intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
         switch (view.getId()){
             case R.id.imagenGsic:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlgsic));
+                intent.setData(Uri.parse(getString(R.string.urlgsic)));
+                startActivity(intent);
+                //Auxiliar.navegadorInterno(this, getString(R.string.urlgsic));
                 break;
             case R.id.imagenUva:
-                Auxiliar.navegadorInterno(this, getString(R.string.urluva));
+                intent.setData(Uri.parse(getString(R.string.urluva)));
+                startActivity(intent);
+                //Auxiliar.navegadorInterno(this, getString(R.string.urluva));
                 break;
             case R.id.tvDesarrolladores:
                 Dialog dialogo = new Dialog(this);
