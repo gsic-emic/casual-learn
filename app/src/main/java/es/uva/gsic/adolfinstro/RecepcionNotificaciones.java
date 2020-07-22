@@ -5,10 +5,8 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;

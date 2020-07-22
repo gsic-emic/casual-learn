@@ -209,16 +209,17 @@ public class Auxiliar {
             AlertDialog.Builder brandBuilder = new AlertDialog.Builder(context);
             brandBuilder.setTitle(context.getString(R.string.tituloErrorMarca) + Build.MANUFACTURER.toLowerCase())
                     .setMessage(context.getString(R.string.mensajeSolucionMarca))
-                    .setPositiveButton(context.getString(R.string.accept), new Dialog.OnClickListener() {
+                    .setPositiveButton(context.getString(R.string.entiendo), new Dialog.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             actualizaListaBlanca(false, sharedPreferences);
                         }
                     })
-                    .setNegativeButton(context.getString(R.string.cancel), new Dialog.OnClickListener(){
+                    .setNegativeButton(context.getString(R.string.volverRecordar), new Dialog.OnClickListener(){
                         @Override
                         public void onClick(DialogInterface dialog, int which) { }
-                    });
+                    })
+                    .setCancelable(false);
             brandBuilder.show();
         }
         else{
@@ -536,6 +537,7 @@ public class Auxiliar {
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
             context.getPackageManager().getPackageInfo("com.twitter.android", PackageManager.GET_ACTIVITIES);
+            //context.getPackageManager().getPackageInfo("com.yammer.v1", PackageManager.GET_ACTIVITIES);
             Intent intent;
             List<String> listaURI = new ArrayList<>();
             String textoUsuario = null;
@@ -610,12 +612,16 @@ public class Auxiliar {
 
             if(intent != null) {
                 intent.setPackage("com.twitter.android");
+                //intent.setPackage("com.yammer.v1");
                 context.startActivity(intent);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         } catch (PackageManager.NameNotFoundException e) {
             Toast.makeText(context, context.getString(R.string.instalaTwitter), Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(context, e.toString(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
         }
     }
 

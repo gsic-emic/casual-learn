@@ -67,6 +67,10 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
     /** Google signIn */
     public static GoogleSignInOptions gso;
 
+    private AlertDialog.Builder dialogoAccesoSinId;
+
+    private Boolean dialogoAccesoSinIdVisible;
+
     @Override
     public void onCreate(Bundle sI){
         super.onCreate(sI);
@@ -95,6 +99,41 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
         firebaseAuth = FirebaseAuth.getInstance();
 
+        dialogoAccesoSinId = new AlertDialog.Builder(this);
+        dialogoAccesoSinId.setMessage(R.string.textoInicio);
+        dialogoAccesoSinId.setPositiveButton(R.string.autenticarseMasTarde, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialogoAccesoSinIdVisible = false;
+                saltaMapa(null);
+            }
+        });
+        dialogoAccesoSinId.setNegativeButton(R.string.autenticarseAhora, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialogoAccesoSinIdVisible = false;
+                lanzaGoogle();
+            }
+        });
+        dialogoAccesoSinId.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoAccesoSinIdVisible = false;
+            }
+        });
+
+        dialogoAccesoSinIdVisible = false;
+        if(sI != null && sI.getBoolean("DIALOGOSINID", false)){
+            dialogoAccesoSinIdVisible = true;
+            dialogoAccesoSinId.show();
+        }
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NotNull Bundle bundle){
+        bundle.putBoolean("DIALOGOSINID", dialogoAccesoSinIdVisible);
+        super.onSaveInstanceState(bundle);
     }
 
     @Override
@@ -151,7 +190,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                 alertBuilder.setTitle(getString(R.string.permi));
                 alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Se comprueba todos los permisos que necesite la app de nuevo, por este
@@ -167,6 +206,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                         System.exit(0);
                     }
                 });
+                alertBuilder.setCancelable(false);
                 alertBuilder.show();
                 break;
             }
@@ -274,21 +314,8 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
     public void boton(View view) {
         if(view.getId() == R.id.btInicioSinIdentificacion){
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-            alertDialog.setMessage(R.string.textoInicio);
-            alertDialog.setPositiveButton(R.string.autenticarseMasTarde, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    saltaMapa(null);
-                }
-            });
-            alertDialog.setNegativeButton(R.string.autenticarseAhora, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    lanzaGoogle();
-                }
-            });
-            alertDialog.show();
+            dialogoAccesoSinIdVisible = true;
+            dialogoAccesoSinId.show();
         }
     }
 }

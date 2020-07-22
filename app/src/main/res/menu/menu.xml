@@ -18,6 +18,8 @@
             <item android:id="@+id/acerca"
                 android:title="@string/by"
                 android:icon="@drawable/ic_info_black_menu"/>
+            <item android:id="@+id/cerrarSesion"
+                android:title="@string/cerrarSesion"/>
         </menu>
     </item>
 </menu>

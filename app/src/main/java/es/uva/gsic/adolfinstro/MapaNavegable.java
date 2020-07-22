@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -133,7 +132,7 @@ public class MapaNavegable extends AppCompatActivity
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();
                 myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
                 map.getOverlays().add(myLocationNewOverlay);
             }
             if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {
@@ -183,7 +182,7 @@ public class MapaNavegable extends AppCompatActivity
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();
                 myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
                 map.getOverlays().add(myLocationNewOverlay);
             }
             if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {

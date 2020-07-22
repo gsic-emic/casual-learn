@@ -4,7 +4,7 @@
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="accept">OK</string>
-    <string name="exi">Exit</string>
+    <string name="exi">Exit app</string>
     <string name="title_activity_task_camera">task_camera</string>
     <string name="task">Task</string>
     <string name="cancel">Cancel</string>
@@ -190,4 +190,10 @@
     <string name="fuentes_de_info">Information sources</string>
     <string name="salir">Exit</string>
     <string name="continuar">Next</string>
+    <string name="cerrarSesion">Log out</string>
+    <string name="iniciarSesion">Log in</string>
+    <string name="cerrarSesionMensaje">Are you sure you want to log out? If you log out you will lose all the responses saved on this device.</string>
+    <string name="entiendo">I get it</string>
+    <string name="volverRecordar">Remember later</string>
+    <string name="volverSolicitar">Request permissions</string>
 </resources>

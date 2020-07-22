@@ -82,5 +82,60 @@
             android:id="@+id/clCompletada"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletada"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:layout_marginEnd="15dp"
+            app:fabSize="normal"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:srcCompat="@drawable/ic_share_white" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletadaTwitter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintStart_toStartOf="@id/btCompartirCompletada"
+            app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletada"
+            app:srcCompat="@drawable/ic_twitter_logo_white"
+            android:visibility="gone"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletadaYammer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintStart_toStartOf="@id/btCompartirCompletada"
+            app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletadaTwitter"
+            app:srcCompat="@drawable/ic_yammer"
+            android:visibility="gone"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletadaInstagram"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintStart_toStartOf="@id/btCompartirCompletada"
+            app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletadaYammer"
+            app:srcCompat="@drawable/ic_instagram"
+            android:visibility="gone"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

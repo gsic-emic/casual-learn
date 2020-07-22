@@ -3,7 +3,7 @@
     <string name="permiM">La aplicación necesita todos los permisos solicitados</string>
     <string name="permi">Permisos</string>
     <string name="accept">Aceptar</string>
-    <string name="exi">Salir</string>
+    <string name="exi">Salir de la aplicación</string>
     <string name="task">Tarea</string>
     <string name="next">Siguiente</string>
     <string name="cancel">Cancelar</string>
@@ -162,4 +162,10 @@
     <string name="fuentes_de_info">Fuentes de información</string>
     <string name="salir">Salir</string>
     <string name="continuar">Continuar</string>
+    <string name="cerrarSesion">Cerrar sesión</string>
+    <string name="iniciarSesion">Iniciar sesión</string>
+    <string name="cerrarSesionMensaje">¿Quieres cerrar sesión? Si cierras sesión perderás todas las respuestas guardadas en este dispositivo.</string>
+    <string name="entiendo">Lo entiendo</string>
+    <string name="volverRecordar">Recordar más tarde</string>
+    <string name="volverSolicitar">Volver a solicitar</string>
 </resources>

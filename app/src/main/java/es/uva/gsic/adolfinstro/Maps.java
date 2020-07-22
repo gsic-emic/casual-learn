@@ -8,6 +8,8 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -85,7 +87,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20200615
+ * @version 20200722
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -132,6 +134,15 @@ public class  Maps extends AppCompatActivity implements
     /** Identificador de la primera cuadrícula */
     final String idPrimeraCuadricula = "1C";
 
+    private AlertDialog.Builder dialogoSalirApp;
+
+    Boolean dialogoSalirAppActivo = false;
+
+    private AlertDialog.Builder dialogoCerrarSesion;
+
+    Boolean dialogoCerrarSesionActivo = false;
+
+
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -152,6 +163,79 @@ public class  Maps extends AppCompatActivity implements
 
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
+
+        dialogoSalirApp = new AlertDialog.Builder(this);
+        dialogoSalirApp.setTitle(getString(R.string.exitT));
+        dialogoSalirApp.setMessage(getString(R.string.exit));
+        dialogoSalirApp.setPositiveButton(getString(R.string.salir), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //finishAffinity();//Se cierra la app. //El proceso puede seguir activo
+                finish();
+            }
+        });
+        dialogoSalirApp.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialogoSalirAppActivo = false;
+            }
+        });
+        dialogoSalirApp.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoSalirAppActivo = false;
+            }
+        });
+
+        dialogoSalirAppActivo = false;
+        if(savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOSALIR", false)) {
+            dialogoSalirAppActivo = true;
+            dialogoSalirApp.show();
+        }
+
+
+        final Application app = getApplication();
+        dialogoCerrarSesion = new AlertDialog.Builder(this);
+        dialogoCerrarSesion.setTitle(getString(R.string.cerrarSesion));
+        dialogoCerrarSesion.setMessage(getString(R.string.cerrarSesionMensaje));
+        dialogoCerrarSesion.setPositiveButton(getString(R.string.cerrarSesion), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    if(PersistenciaDatos.borraTodosFicheros(app)) {
+                        Login.firebaseAuth.signOut();
+                        Login.googleSignInClient.signOut().addOnCompleteListener(Maps.this, new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                vuelveLogin();
+                            }
+                        });
+                    }else{
+                        Toast.makeText(app, context.getResources().getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                    }
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+        dialogoCerrarSesion.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialogoCerrarSesionActivo = false;
+            }
+        });
+        dialogoCerrarSesion.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoCerrarSesionActivo = false;
+            }
+        });
+
+        dialogoCerrarSesionActivo = false;
+        if(savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOCERRARSESION", false)) {
+            dialogoCerrarSesionActivo = true;
+            dialogoCerrarSesion.show();
+        }
 
         //Se decide si se muestra el mapa
         if (noMolestar) {
@@ -175,6 +259,18 @@ public class  Maps extends AppCompatActivity implements
             contenedor.setLayoutManager(layoutManager);
 
             map.setTileSource(TileSourceFactory.MAPNIK);
+            //https://github.com/osmdroid/osmdroid/blob/master/osmdroid-android/src/main/java/org/osmdroid/tileprovider/tilesource/TileSourceFactory.java
+            /*final OnlineTileSourceBase WIKIMEDIA = new XYTileSource("Wikimedia",
+                    1, 19, 256, ".png", new String[] {
+                    "https://maps.wikimedia.org/osm-intl/" },
+                    "Wikimedia maps | Map data © OpenStreetMap contributors",
+                    new TileSourcePolicy(1,
+                            TileSourcePolicy.FLAG_NO_BULK
+                                    | TileSourcePolicy.FLAG_NO_PREVENTIVE
+                                    | TileSourcePolicy.FLAG_USER_AGENT_MEANINGFUL
+                                    | TileSourcePolicy.FLAG_USER_AGENT_NORMALIZED
+                    ));
+            map.setTileSource(WIKIMEDIA);*/
 
             //map.setTileSource(TileSourceFactory.OpenTopo);//Blanco y negro
 
@@ -264,12 +360,15 @@ public class  Maps extends AppCompatActivity implements
                     snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                    .requestIdToken(getString(R.string.default_web_client_id))
-                                    .requestEmail().build();
-                            Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
-                            Intent intent = Login.googleSignInClient.getSignInIntent();
-                            startActivityForResult(intent, Login.requestAuth);
+                            JSONObject idUser = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                            if(Login.firebaseAuth == null || idUser == null) {
+                                Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                        .requestIdToken(getString(R.string.default_web_client_id))
+                                        .requestEmail().build();
+                                Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
+                                Intent intent = Login.googleSignInClient.getSignInIntent();
+                                startActivityForResult(intent, Login.requestAuth);
+                            }
                         }
                     });
                     snackbar.setActionTextColor(getResources().getColor(R.color.texto));
@@ -342,6 +441,7 @@ public class  Maps extends AppCompatActivity implements
                 e.printStackTrace();
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
+            invalidateOptionsMenu();
         }
     }
 
@@ -392,7 +492,7 @@ public class  Maps extends AppCompatActivity implements
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();
                 myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
                 //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
                 myLocationNewOverlay.setEnableAutoStop(true);
             }
@@ -415,7 +515,7 @@ public class  Maps extends AppCompatActivity implements
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                 alertBuilder.setTitle(getString(R.string.permi));
                 alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Se comprueba todos los permisos que necesite la app de nuevo, por este
@@ -431,6 +531,7 @@ public class  Maps extends AppCompatActivity implements
                         System.exit(0);
                     }
                 });
+                alertBuilder.setCancelable(false);
                 alertBuilder.show();
                 break;
             }
@@ -444,7 +545,7 @@ public class  Maps extends AppCompatActivity implements
             myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
             myLocationNewOverlay.enableMyLocation();
             myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                    BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
             //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
             myLocationNewOverlay.setEnableAutoStop(true);
 
@@ -837,7 +938,7 @@ public class  Maps extends AppCompatActivity implements
      */
     private void pintaZona(List<String> ficherosPintar){
         //Distancia a la que se van a agrupar las tareas
-        double nivelZum = 0.075*(nivelMax) - 0.075*map.getZoomLevelDouble();
+        double nivelZum = 0.06*(nivelMax) - 0.06*map.getZoomLevelDouble();
         //Evito los marcadores duplicados
         nivelZum = Math.max(nivelZum, 0.02);//20m;
 
@@ -1006,6 +1107,8 @@ public class  Maps extends AppCompatActivity implements
 
         bundle.putDouble("LATITUDE", latitudeOrigen);
         bundle.putDouble("LONGITUDE", longitudeOrigen);
+        bundle.putBoolean("DIALOGOSALIR", dialogoSalirAppActivo);
+        bundle.putBoolean("DIALOGOCERRARSESION", dialogoCerrarSesionActivo);
         //bundle.putLong("ULTIMANOTIFICACION", ultimaNotificacion);
         super.onSaveInstanceState(bundle);
     }
@@ -1072,6 +1175,16 @@ public class  Maps extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu){
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        MenuItem menuItem = menu.findItem(R.id.cerrarSesion);
+        if(idUsuario == null) {
+            menuItem.setTitle(getString(R.string.iniciarSesion));
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     /**
      * Método que reacciona a la pulsación de alguno de los items del menú
      * @param item Opción seleccionada
@@ -1106,9 +1219,39 @@ public class  Maps extends AppCompatActivity implements
                 intent.putExtra(Auxiliar.peticion, PersistenciaDatos.ficheroCompletadas);
                 startActivity(intent);
                 return true;
+            case R.id.cerrarSesion:
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(idUsuario == null) {
+                    Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(getString(R.string.default_web_client_id))
+                            .requestEmail().build();
+                    Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
+                    startActivityForResult(Login.googleSignInClient.getSignInIntent(), Login.requestAuth);
+                }
+                else {
+                    dialogoCerrarSesionActivo = true;
+                    dialogoCerrarSesion.show();
+                    /*if (PersistenciaDatos.borraTodosFicheros(getApplication())) {
+                        Login.firebaseAuth.signOut();
+                        Login.googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                vuelveLogin();
+                            }
+                        });
+                    }*/
+                }
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void vuelveLogin(){
+        Intent intent = new Intent(this, Login.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finishAffinity();
     }
 
     /**
@@ -1116,23 +1259,8 @@ public class  Maps extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed(){
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-        alertBuilder.setTitle(getString(R.string.exitT));
-        alertBuilder.setMessage(getString(R.string.exit));
-        alertBuilder.setPositiveButton(getString(R.string.salir), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //finishAffinity();//Se cierra la app. //El proceso puede seguir activo
-                finish();
-            }
-        });
-        alertBuilder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-            }
-        });
-        alertBuilder.show();
+        dialogoSalirAppActivo = true;
+        dialogoSalirApp.show();
     }
 
     /**

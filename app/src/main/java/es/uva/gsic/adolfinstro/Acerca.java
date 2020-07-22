@@ -1,30 +1,16 @@
 package es.uva.gsic.adolfinstro;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.text.LineBreaker;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.text.style.URLSpan;
-import android.text.style.UnderlineSpan;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewDatabase;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +20,6 @@ import java.util.Objects;
 import java.util.Random;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
-import es.uva.gsic.adolfinstro.auxiliar.ClienteWeb;
 
 /**
  * Clase diseñada para mostrar la información de la aplicación
@@ -46,6 +31,12 @@ public class Acerca extends AppCompatActivity {
 
     /** Instancia del cuadro del textview donde se coloca la versión*/
     TextView version;
+
+    /** Dialogo para mostrar a los desarrolladores */
+    Dialog dialogoDesarrolladores;
+
+    /** Variable para saber si se está mostrando el dialogo de desarrolladores o no */
+    Boolean dialogoDesarrolladoresActivo;
 
     /**
      * Método para completar la interfaz gráfica del usuario. Se pinta la versión de la app.
@@ -78,6 +69,26 @@ public class Acerca extends AppCompatActivity {
         }else{
             version.setText(savedInstanceState.getString("TEXTOVERSION"));
         }
+
+        dialogoDesarrolladores = new Dialog(this);
+        dialogoDesarrolladores.setContentView(R.layout.dialogo_desarrolladores);
+        dialogoDesarrolladores.setCancelable(true);
+        dialogoDesarrolladores.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoDesarrolladoresActivo = false;
+            }
+        });
+        TextView textView = dialogoDesarrolladores.findViewById(R.id.tvEspacioDesarrolladores);
+        textView.setText(desarrolladores());
+
+        dialogoDesarrolladoresActivo = false;
+
+        if(savedInstanceState != null && savedInstanceState.getBoolean("DIALOGODESARROLLADORES", false)){
+            dialogoDesarrolladoresActivo = true;
+            dialogoDesarrolladores.show();
+        }
+
     }
 
     /**
@@ -87,24 +98,25 @@ public class Acerca extends AppCompatActivity {
     public void boton(View view) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        /*CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.setToolbarColor(getResources().getColor(R.color.colorPrimary));
+        builder.setSecondaryToolbarColor(getResources().getColor(R.color.colorPrimaryDark));
+        builder.enableUrlBarHiding();
+        CustomTabsIntent customTabsIntent = builder.build();*/
         switch (view.getId()){
             case R.id.imagenGsic:
+                //customTabsIntent.launchUrl(this, Uri.parse(getString(R.string.urlgsic)));
                 intent.setData(Uri.parse(getString(R.string.urlgsic)));
                 startActivity(intent);
-                //Auxiliar.navegadorInterno(this, getString(R.string.urlgsic));
                 break;
             case R.id.imagenUva:
+                //customTabsIntent.launchUrl(this, Uri.parse(getString(R.string.urluva)));
                 intent.setData(Uri.parse(getString(R.string.urluva)));
                 startActivity(intent);
-                //Auxiliar.navegadorInterno(this, getString(R.string.urluva));
                 break;
             case R.id.tvDesarrolladores:
-                Dialog dialogo = new Dialog(this);
-                dialogo.setContentView(R.layout.dialogo_desarrolladores);
-                dialogo.setCancelable(true);
-                TextView textView = dialogo.findViewById(R.id.tvEspacioDesarrolladores);
-                textView.setText(desarrolladores());
-                dialogo.show();
+                dialogoDesarrolladoresActivo = true;
+                dialogoDesarrolladores.show();
                 break;
             case R.id.ivJunta:
                 Auxiliar.navegadorInterno(this, getString(R.string.urlJunta));
@@ -145,12 +157,14 @@ public class Acerca extends AppCompatActivity {
         String salida = "";
         nombres.add(getString(R.string.pablo)+"\n");
         nombres.add(getString(R.string.adolfo)+"\n");
-        int pos;
+        /*int pos;
         Random random = new Random();
         while(nombres.size() > 0) {
             pos = random.nextInt(nombres.size());
             salida = salida.concat(nombres.remove(pos));
-        }
+        }*/
+        for(String n : nombres)
+            salida = salida.concat(n);
         return salida;
     }
 
@@ -181,6 +195,7 @@ public class Acerca extends AppCompatActivity {
     public void onSaveInstanceState(@NotNull Bundle b) {
         super.onSaveInstanceState(b);
         b.putString("TEXTOVERSION", version.getText().toString());
+        b.putBoolean("DIALOGODESARROLLADORES", dialogoDesarrolladoresActivo);
         //b.putBoolean("ENSENA", ensena);
     }
 }

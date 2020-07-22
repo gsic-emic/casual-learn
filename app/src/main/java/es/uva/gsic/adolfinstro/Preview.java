@@ -11,11 +11,9 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.text.LineBreaker;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.text.method.LinkMovementMethod;
@@ -606,8 +604,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 tareaLon,
                 usuarioLat,
                 usuarioLon);
-        //TODO reducir la distancia a 0.15
-        if(distancia <= 5.5){
+        //TODO cambiar a 0.15
+        if(distancia <= 5.15){
             botonesVisibles(true);
         }else{
             botonesVisibles(false);

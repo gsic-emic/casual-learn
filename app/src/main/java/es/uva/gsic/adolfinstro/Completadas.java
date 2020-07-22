@@ -9,9 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.text.LineBreaker;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
@@ -22,8 +20,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
@@ -199,9 +199,16 @@ public class Completadas extends AppCompatActivity implements
             e.printStackTrace();
         }
 
-        if(savedInstanceState != null) {
+        /*if(savedInstanceState != null) {
             editando = savedInstanceState.getBoolean("EDITANDO");
             onOptionsItemSelected((MenuItem) findViewById(R.id.editarCompletada));
+        }*/
+
+        if(savedInstanceState != null) {
+            if(savedInstanceState.getInt("COMPARTIENDO") == View.VISIBLE)
+                muestraOculta(true);
+            else
+                muestraOculta(false);
         }
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -305,10 +312,10 @@ public class Completadas extends AppCompatActivity implements
                     desbloqueaCampos();
                 }
                 return true;
-            case R.id.publicarCompletada:
+            /*case R.id.publicarCompletada:
                 //Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
                 Auxiliar.mandaTweet(this, tarea, hashtag);
-                return true;
+                return true;*/
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -831,5 +838,49 @@ public class Completadas extends AppCompatActivity implements
         super.onSaveInstanceState(b);
         b.putBoolean("EDITANDO", editando);
         b.putInt("POSICION", posicion);
+        b.putInt("COMPARTIENDO", (findViewById(R.id.btCompartirCompletadaTwitter)).getVisibility());
+    }
+
+    public void boton(View view) {
+        switch (view.getId()){
+            case R.id.btCompartirCompletada:
+                if((findViewById(R.id.btCompartirCompletadaTwitter)).getVisibility() == View.VISIBLE){
+                    muestraOculta(false);
+                }else{
+                    muestraOculta(true);
+                }
+                break;
+            case R.id.btCompartirCompletadaTwitter:
+                Auxiliar.mandaTweet(this, tarea, hashtag);
+                muestraOculta(false);
+                break;
+            case R.id.btCompartirCompletadaYammer:
+            case R.id.btCompartirCompletadaInstagram:
+                Toast.makeText(this, "Sin implementar", Toast.LENGTH_SHORT).show();
+                muestraOculta(false);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void muestraOculta(boolean mostrar){
+        Integer[] lista = {
+                R.id.btCompartirCompletadaTwitter,
+                R.id.btCompartirCompletadaYammer,
+                R.id.btCompartirCompletadaInstagram
+        };
+        for(int i : lista) {
+            if (mostrar)
+                ((FloatingActionButton) findViewById(i)).show();
+            else
+                ((FloatingActionButton) findViewById(i)).hide();
+        }
+        if (mostrar)
+            ((FloatingActionButton) findViewById(R.id.btCompartirCompletada))
+                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_close_24));
+        else
+            ((FloatingActionButton) findViewById(R.id.btCompartirCompletada))
+                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_share_white));
     }
 }
