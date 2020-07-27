@@ -24,6 +24,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -39,6 +40,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -231,36 +233,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 @SuppressLint("MissingPermission")
                 @Override
                 public boolean singleTapConfirmedHelper(GeoPoint p) {
-                    try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
-                        if(location != null){
-                            Intent intent = new Intent(context, MapaNavegable.class);
-                            intent.putExtra(Auxiliar.latitud + "user", location.getLatitude());
-                            intent.putExtra(Auxiliar.longitud + "user", location.getLongitude());
-                            intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
-                            intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
-                            startActivity(intent);
-                        }else{
-                            try{
-                                Intent intent = new Intent(context, MapaNavegable.class);
-                                intent.putExtra(Auxiliar.latitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLat));
-                                intent.putExtra(Auxiliar.longitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLon));
-                                intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
-                                intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
-                                startActivity(intent);
-                            }catch (Exception e){
-                                //Toast.makeText(context,  context.getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
-                                pintaSnackBar(context.getString(R.string.recuperandoPosicion));
-                            }
-                        }
-                    }catch (JSONException e){
-                        e.printStackTrace();
-                    }
+                    saltaNavegacion();
                     return false;
                 }
 
                 @Override
                 public boolean longPressHelper(GeoPoint p) {
-                    singleTapConfirmedHelper(p);
+                    saltaNavegacion();
                     return false;
                 }
             }));
@@ -276,8 +255,34 @@ public class Preview extends AppCompatActivity implements LocationListener {
             if(Login.firebaseAuth == null || idUsuario == null) {
                 snackBarLogin(R.id.clIdentificatePreview);
             }
-
         }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private void saltaNavegacion(){
+        try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
+            if(location != null){
+                Intent intent = new Intent(context, MapaNavegable.class);
+                intent.putExtra(Auxiliar.latitud + "user", location.getLatitude());
+                intent.putExtra(Auxiliar.longitud + "user", location.getLongitude());
+                intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
+                intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
+                startActivity(intent);
+            }else{
+                try{
+                    Intent intent = new Intent(context, MapaNavegable.class);
+                    intent.putExtra(Auxiliar.latitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLat));
+                    intent.putExtra(Auxiliar.longitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLon));
+                    intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
+                    intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
+                    startActivity(intent);
+                }catch (Exception e){
+                    //Toast.makeText(context,  context.getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
+                    pintaSnackBar(context.getString(R.string.recuperandoPosicion));
+                }
+            }
+        }catch (JSONException e){
             e.printStackTrace();
         }
     }
@@ -296,7 +301,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 startActivityForResult(intent, Login.requestAuth);
             }
         });
-        snackbar.setActionTextColor(getResources().getColor(R.color.texto));
+        snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary100));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.show();
     }
@@ -535,6 +540,27 @@ public class Preview extends AppCompatActivity implements LocationListener {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(@NotNull MenuItem item){
+
+        switch (item.getItemId()) {
+            case R.id.iPreview:
+                try {
+                    Toast.makeText(
+                            context,
+                            Auxiliar.textoTipoTarea(
+                                    this,
+                                    tarea.getString(Auxiliar.tipoRespuesta)),
+                            Toast.LENGTH_SHORT).show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     /**
      * Se sobrescribe le método onResume para activar la recepción de notificaciones y restaurar el mapa.
      * Se activa el seguimiento del usuario para mostrar la distancia a la tarea según se desplace
@@ -605,7 +631,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 usuarioLat,
                 usuarioLon);
         //TODO cambiar a 0.15
-        if(distancia <= 5.15){
+        if(distancia <= 0.15){
             botonesVisibles(true);
         }else{
             botonesVisibles(false);

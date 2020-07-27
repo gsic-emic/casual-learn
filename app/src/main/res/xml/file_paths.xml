@@ -9,4 +9,7 @@
     <external-path
         name="movies"
         path="Android/data/es.uva.gsic.adolfinstro/files/Movies" />
+    <external-path
+        name="cache"
+        path="Android/data/es.uva.gsic.adolfinstro/files/Cache" />
 </paths>

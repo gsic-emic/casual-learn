@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +20,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -49,7 +48,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * modificar la respuesta dada o complementarla.
  *
  * @author Pablo García Zarza
- * @version 20200515
+ * @version 20200723
  */
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
@@ -57,8 +56,6 @@ public class Completadas extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
-    /** TextView donde se coloca la pregunta de la tarea */
-    private TextView enunciado;
     /** EditText donde se incluye la respuesta textual del usuario */
     private EditText textoUsuario;
     /** Puntuación que el usuario tiene asignado a la tarea*/
@@ -86,6 +83,8 @@ public class Completadas extends AppCompatActivity implements
     /** Posicion al que se desplaza el scroll */
     private int posicion = 0;
 
+    private FloatingActionButton btCompartir;
+
     private String hashtag;
 
     /**
@@ -107,10 +106,11 @@ public class Completadas extends AppCompatActivity implements
                 getIntent().getExtras().getString(Auxiliar.id));
 
         //Referencias a objetos
-        enunciado = findViewById(R.id.tvDescripcionCompletada);
+        TextView titulo = findViewById(R.id.tituloCompletada);
+        TextView enunciado = findViewById(R.id.tvDescripcionCompletada);
         ratingBar = findViewById(R.id.rbPuntuacionCompletada);
         textoUsuario = findViewById(R.id.etRespuestaTextualCompletada);
-
+        btCompartir = findViewById(R.id.btCompartirCompletada);
 
         btAgregar = findViewById(R.id.btAgregarCompletada);
 
@@ -124,6 +124,8 @@ public class Completadas extends AppCompatActivity implements
         }
 
         try {
+            titulo.setText(tarea.getString(Auxiliar.titulo));
+
             enunciado.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
             enunciado.setMovementMethod(LinkMovementMethod.getInstance());
 
@@ -299,6 +301,7 @@ public class Completadas extends AppCompatActivity implements
                                 if(item!=null)
                                     item.setIcon(R.drawable.ic_edit_black_24dp);
                                 bloqueaYGuarda();
+                                btCompartir.show();
                             }
                         }
                     }catch (JSONException e){
@@ -310,6 +313,8 @@ public class Completadas extends AppCompatActivity implements
                     if(item!=null)
                         item.setIcon(R.drawable.ic_save_white_24dp);
                     desbloqueaCampos();
+                    muestraOculta(false);
+                    btCompartir.hide();
                 }
                 return true;
             /*case R.id.publicarCompletada:
@@ -318,21 +323,6 @@ public class Completadas extends AppCompatActivity implements
                 return true;*/
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    //https://developers.facebook.com/docs/instagram/sharing-to-feed/
-    public void mandaInstagram(){
-        try{
-            getPackageManager().getPackageArchiveInfo("com.instagram.android", PackageManager.GET_ACTIVITIES);
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_STREAM, Uri.parse("android.resource://es.uva.gsic.adolfinstro/" + R.drawable.nueva_tarea_completada));
-            intent.setPackage("com.instagram.android");
-            intent.setType("image/*");
-            intent.putExtra(Intent.EXTRA_TEXT, "casuallearn");
-            startActivity(intent);
-        }catch (Exception e){
-            //Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -373,9 +363,12 @@ public class Completadas extends AppCompatActivity implements
         }
         if(textoUsuario.getText().toString().isEmpty()){
             textoUsuario.setVisibility(View.GONE);
+            textoUsuario.setEnabled(false);
+            textoUsuario.setInputType(InputType.TYPE_NULL);
         }
         if(textoUsuario.getVisibility() != View.GONE){
             textoUsuario.setEnabled(false);
+            textoUsuario.setInputType(InputType.TYPE_NULL);
         }
         try {
             tarea.put(Auxiliar.rating, ratingBar.getRating());
@@ -468,6 +461,7 @@ public class Completadas extends AppCompatActivity implements
         }
 
         textoUsuario.setEnabled(true);
+        textoUsuario.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 
         ratingBar.setIsIndicator(false);
 
@@ -855,8 +849,12 @@ public class Completadas extends AppCompatActivity implements
                 muestraOculta(false);
                 break;
             case R.id.btCompartirCompletadaYammer:
+                Auxiliar.mandaYammer(this, tarea, hashtag);
+                muestraOculta(false);
+                break;
             case R.id.btCompartirCompletadaInstagram:
-                Toast.makeText(this, "Sin implementar", Toast.LENGTH_SHORT).show();
+                Auxiliar.mandaInsta(this, tarea, hashtag);
+                //Toast.makeText(this, getString(R.string.sinImplementar), Toast.LENGTH_SHORT).show();
                 muestraOculta(false);
                 break;
             default:
@@ -877,10 +875,8 @@ public class Completadas extends AppCompatActivity implements
                 ((FloatingActionButton) findViewById(i)).hide();
         }
         if (mostrar)
-            ((FloatingActionButton) findViewById(R.id.btCompartirCompletada))
-                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_close_24));
+            btCompartir.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_close_24));
         else
-            ((FloatingActionButton) findViewById(R.id.btCompartirCompletada))
-                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_share_white));
+            btCompartir.setImageDrawable(getResources().getDrawable(R.drawable.ic_share_white));
     }
 }

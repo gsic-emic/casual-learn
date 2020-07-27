@@ -12,8 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.List;
-import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.EstadoTarea;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;

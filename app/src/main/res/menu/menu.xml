@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/tresPuntos"
+    <!--<item android:id="@+id/tresPuntos"
         android:icon="@drawable/ic_more_vert_white_24dp"
         android:title=""
         app:showAsAction="always">
-        <menu>
-            <item android:id="@+id/ajustes"
-                android:title="@string/settings"
-                android:icon="@drawable/ic_settings_black_24dp" />
-            <item android:id="@+id/menuTareasPospuestas"
-                android:title="@string/tareasPospuestas" />
-            <item android:id="@+id/menuTareasRechazadas"
-                android:title="@string/tareasRechazadas" />
-            <item android:id="@+id/menuTareasCompletadas"
-                android:title="@string/tareasCompletadas" />
-            <item android:id="@+id/acerca"
-                android:title="@string/by"
-                android:icon="@drawable/ic_info_black_menu"/>
-            <item android:id="@+id/cerrarSesion"
-                android:title="@string/cerrarSesion"/>
-        </menu>
-    </item>
+        <menu>-->
+
+    <item android:id="@+id/ajustes"
+        android:title="@string/settings"
+        android:icon="@drawable/ic_settings_black_24dp" />
+
+    <item android:id="@+id/menuTareasCompletadas"
+        android:title="@string/tareasCompletadas" />
+
+    <item android:id="@+id/menuTareasPospuestas"
+        android:title="@string/tareasPospuestas" />
+
+    <item android:id="@+id/menuTareasRechazadas"
+        android:title="@string/tareasRechazadas" />
+
+    <item android:id="@+id/cerrarSesion"
+        android:title="@string/cerrarSesion"/>
+
+    <item android:id="@+id/acerca"
+        android:title="@string/by"
+        android:icon="@drawable/ic_info_black_menu"/>
+    <!--</menu>
+</item>-->
 </menu>

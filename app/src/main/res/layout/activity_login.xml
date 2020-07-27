@@ -7,99 +7,99 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/ic_fondo_login">
-
-    <TextView
-        android:id="@+id/tvAcceso"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="45sp"
-        android:textColor="#FFF"
-        android:textAlignment="gravity"
-        android:gravity="center"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/ivImangePrincipal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:padding="5dp"/>
+        android:background="@drawable/ic_fondo_login">
 
-    <ImageView
-        android:id="@+id/ivImangePrincipal"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:src="@drawable/imagen_principal"
-        app:layout_constraintTop_toBottomOf="@id/tvAcceso"
-        app:layout_constraintBottom_toTopOf="@id/glLogin1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <TextView
+            android:id="@+id/tvAcceso"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textSize="44sp"
+            android:textColor="#FFF"
+            android:textAlignment="gravity"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/ivImangePrincipal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:padding="5dp"/>
 
-    <ImageView
-        android:id="@+id/ivInfoFotoLogin"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        app:srcCompat="@drawable/ic_info_black_24dp"
-        app:layout_constraintStart_toStartOf="@id/ivImangePrincipal"
-        app:layout_constraintBottom_toBottomOf="@id/ivImangePrincipal"/>
+        <ImageView
+            android:id="@+id/ivImangePrincipal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:src="@drawable/imagen_principal"
+            app:layout_constraintTop_toBottomOf="@id/tvAcceso"
+            app:layout_constraintBottom_toTopOf="@id/glLogin1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <ImageView
+            android:id="@+id/ivInfoFotoLogin"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            app:srcCompat="@drawable/ic_info_black_24dp"
+            app:layout_constraintStart_toStartOf="@id/ivImangePrincipal"
+            app:layout_constraintBottom_toBottomOf="@id/ivImangePrincipal"/>
 
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glLogin"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/glLogin"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.1" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glLogin1"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.35" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/glLogin1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.35" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glLogin2"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.98" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/glLogin2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.98" />
 
-    <TextView
-        android:id="@+id/tvTextoInicio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/textoExplicativo"
-        app:layout_constraintTop_toBottomOf="@id/ivImangePrincipal"
-        app:layout_constraintBottom_toTopOf="@id/btInicioSinIdentificacion"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:textColor="@color/white"
-        android:padding="10dp"
-        android:textSize="16sp"/>
+        <TextView
+            android:id="@+id/tvTextoInicio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/textoExplicativo"
+            app:layout_constraintTop_toBottomOf="@id/ivImangePrincipal"
+            app:layout_constraintBottom_toTopOf="@id/btInicioSinIdentificacion"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textColor="@color/white"
+            android:paddingHorizontal="15dp"
+            android:paddingVertical="5dp"/>
 
-    <Button
-        android:id="@+id/btInicioSinIdentificacion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tvTextoInicio"
-        app:layout_constraintBottom_toTopOf="@id/btGoogle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:text="@string/pruebaApp"
-        android:onClick="boton"/>
+        <Button
+            android:id="@+id/btInicioSinIdentificacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tvTextoInicio"
+            app:layout_constraintBottom_toTopOf="@id/btGoogle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/pruebaApp"
+            android:onClick="boton"/>
 
-    <com.google.android.gms.common.SignInButton
-        android:id="@+id/btGoogle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/btInicioSinIdentificacion"
-        app:layout_constraintBottom_toBottomOf="@id/glLogin2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        <com.google.android.gms.common.SignInButton
+            android:id="@+id/btGoogle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/btInicioSinIdentificacion"
+            app:layout_constraintBottom_toBottomOf="@id/glLogin2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

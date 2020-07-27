@@ -8,7 +8,6 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -150,7 +149,7 @@ public class  Maps extends AppCompatActivity implements
      * @param savedInstanceState Bundle
      */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -203,6 +202,13 @@ public class  Maps extends AppCompatActivity implements
             public void onClick(DialogInterface dialog, int which) {
                 try {
                     if(PersistenciaDatos.borraTodosFicheros(app)) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean(Ajustes.NO_MOLESTAR_pref, false);
+                        editor.commit();
+                        editor.putString(Ajustes.HASHTAG_pref, getString(R.string.hashtag));
+                        editor.commit();
+                        editor.putInt(Ajustes.INTERVALO_pref, 4);
+                        editor.commit();
                         Login.firebaseAuth.signOut();
                         Login.googleSignInClient.signOut().addOnCompleteListener(Maps.this, new OnCompleteListener<Void>() {
                             @Override
@@ -371,7 +377,7 @@ public class  Maps extends AppCompatActivity implements
                             }
                         }
                     });
-                    snackbar.setActionTextColor(getResources().getColor(R.color.texto));
+                    snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary100));
                     snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
                     snackbar.show();
                 }
@@ -938,7 +944,7 @@ public class  Maps extends AppCompatActivity implements
      */
     private void pintaZona(List<String> ficherosPintar){
         //Distancia a la que se van a agrupar las tareas
-        double nivelZum = 0.06*(nivelMax) - 0.06*map.getZoomLevelDouble();
+        double nivelZum = 0.06 * nivelMax - 0.06 * map.getZoomLevelDouble();
         //Evito los marcadores duplicados
         nivelZum = Math.max(nivelZum, 0.02);//20m;
 
@@ -1128,9 +1134,11 @@ public class  Maps extends AppCompatActivity implements
 
         latitudeOrigen = bundle.getDouble("LATITUDE");
         longitudeOrigen = bundle.getDouble("LONGITUDE");
-        //ultimaNotificacion = bundle.getLong("ULTIMANOTIFICACION");
-        GeoPoint lastCenter = new GeoPoint(latitudeOrigen, longitudeOrigen);
-        mapController.setCenter(lastCenter);
+        
+        if(latitudeOrigen != 0 && longitudeOrigen != 0) {
+            GeoPoint lastCenter = new GeoPoint(latitudeOrigen, longitudeOrigen);
+            mapController.setCenter(lastCenter);
+        }
     }
 
     /**

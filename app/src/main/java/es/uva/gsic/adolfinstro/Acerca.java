@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 
@@ -98,6 +97,7 @@ public class Acerca extends AppCompatActivity {
     public void boton(View view) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        //NECESITA LA API 24 de mínimo
         /*CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
         builder.setToolbarColor(getResources().getColor(R.color.colorPrimary));
         builder.setSecondaryToolbarColor(getResources().getColor(R.color.colorPrimaryDark));

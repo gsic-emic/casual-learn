@@ -31,7 +31,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tvInfoBocadillo"
         app:layout_constraintTop_toBottomOf="@id/tvTituloBocadillo"
-        android:textSize="15sp"
+        android:textSize="14sp"
         android:textAlignment="center"
         android:drawableStart="@drawable/ic_walk_20dp"/>
 

@@ -1,6 +1,5 @@
 package es.uva.gsic.adolfinstro;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
@@ -45,7 +45,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * @author Pablo
  * @version 20200520
  */
-public class Login extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
+public class Login extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
 
     /** Código de identificación para la solicitud de los permisos de la app */
     private static final int requestCodePermissions = 1000;

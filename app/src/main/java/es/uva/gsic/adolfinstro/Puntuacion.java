@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RatingBar;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -138,12 +140,61 @@ public class Puntuacion extends AppCompatActivity
                     //Auxiliar.returnMain(getApplication().getBaseContext());
                 }
                 break;
-            case R.id.btCompartirTwitter:
-                Auxiliar.mandaTweet(this, PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroCompletadas, idTarea), hashtag);
+            case R.id.btCompartirPuntua:
+                if((findViewById(R.id.btCompartirPuntuaTwitter)).getVisibility() == View.VISIBLE){
+                    muestraOculta(false);
+                }else{
+                    muestraOculta(true);
+                }
+                break;
+            case R.id.btCompartirPuntuaTwitter:
+                Auxiliar.mandaTweet(
+                        this,
+                        PersistenciaDatos.recuperaTarea(getApplication(),
+                                PersistenciaDatos.ficheroCompletadas,
+                                idTarea),
+                        hashtag);
+                muestraOculta(false);
+                break;
+            case R.id.btCompartirPuntuaYammer:
+                Auxiliar.mandaYammer(this,
+                        PersistenciaDatos.recuperaTarea(getApplication(),
+                                PersistenciaDatos.ficheroCompletadas,
+                                idTarea),
+                        hashtag);
+                muestraOculta(false);
+                break;
+            case R.id.btCompartirPuntuaInstagram:
+                Auxiliar.mandaInsta(this,
+                        PersistenciaDatos.recuperaTarea(getApplication(),
+                                PersistenciaDatos.ficheroCompletadas,
+                                idTarea),
+                        hashtag);
+                muestraOculta(false);
                 break;
             default:
                 break;
         }
+    }
+
+    private void muestraOculta(boolean mostrar){
+        Integer[] lista = {
+                R.id.btCompartirPuntuaTwitter,
+                R.id.btCompartirPuntuaYammer,
+                R.id.btCompartirPuntuaInstagram
+        };
+        for(int i : lista) {
+            if (mostrar)
+                ((FloatingActionButton) findViewById(i)).show();
+            else
+                ((FloatingActionButton) findViewById(i)).hide();
+        }
+        if (mostrar)
+            ((FloatingActionButton) findViewById(R.id.btCompartirPuntua))
+                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_close_secondary));
+        else
+            ((FloatingActionButton) findViewById(R.id.btCompartirPuntua))
+                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_share_secondary));
     }
 
     private void vuelveInicio(String string) {
