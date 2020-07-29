@@ -200,4 +200,12 @@
     <string name="sinImplementar">Not implemented</string>
     <string name="instalaYammer">You should install the official Yammer client to share your answer</string>
     <string name="instalaInsta">You should install the official Instagram client to share your answer</string>
+    <string name="activaUbicacion">Turn on the location service of your device</string>
+    <string name="universidad_de_valladolid">Universidad de Valladolid</string>
+    <string name="junta_de_castilla_y_leon">Junta de Castilla y León</string>
+    <string name="dbpedia">DBpedia</string>
+    <string name="wikidata">WIKIDATA</string>
+    <string name="thumbnail">Thumbnail</string>
+    <string name="infoImagen">File info</string>
+    <string name="imagenFondo">Imagen de fondo</string>
 </resources>

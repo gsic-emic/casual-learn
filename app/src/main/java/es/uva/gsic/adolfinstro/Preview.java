@@ -631,7 +631,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 usuarioLat,
                 usuarioLon);
         //TODO cambiar a 0.15
-        if(distancia <= 0.15){
+        if(distancia <= 5.15){
             botonesVisibles(true);
         }else{
             botonesVisibles(false);

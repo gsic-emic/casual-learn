@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -129,6 +130,8 @@ public class MapaNavegable extends AppCompatActivity
         if(permisos.isEmpty()) {
             if(myLocationNewOverlay == null) {
                 GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+                gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
+                gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();
                 myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),

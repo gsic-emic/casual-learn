@@ -35,15 +35,17 @@
             app:layout_constraintTop_toBottomOf="@id/tvAcceso"
             app:layout_constraintBottom_toTopOf="@id/glLogin1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            android:contentDescription="@string/imagenFondo" />
 
         <ImageView
             android:id="@+id/ivInfoFotoLogin"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             app:srcCompat="@drawable/ic_info_black_24dp"
             app:layout_constraintStart_toStartOf="@id/ivImangePrincipal"
-            app:layout_constraintBottom_toBottomOf="@id/ivImangePrincipal"/>
+            app:layout_constraintBottom_toBottomOf="@id/ivImangePrincipal"
+            android:contentDescription="@string/infoImagen" />
 
 
         <androidx.constraintlayout.widget.Guideline

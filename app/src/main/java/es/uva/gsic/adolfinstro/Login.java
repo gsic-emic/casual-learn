@@ -220,13 +220,14 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
      * @param data datos
      */
     @Override
-    public void onActivityResult(int requestCode, int result, Intent data){
-        switch (requestCode){
+    public void onActivityResult(int requestCode, int result, Intent data) {
+        super.onActivityResult(requestCode, result, data);
+        switch (requestCode) {
             case requestAuth:
                 //No es necesario comprobar el resultado de la petición según la ayuda oficial
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 tareaCuenta(task);
-            break;
+                break;
             default:
         }
     }

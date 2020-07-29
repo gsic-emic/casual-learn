@@ -98,7 +98,7 @@
     <string name="horas">horas</string>
     <string name="dia">día</string>
     <string name="dias">días</string>
-    <string name="pulsaMarker">Pulsa en un marcador para ver los tipos de tarea</string>
+    <string name="pulsaMarker">Pulsa en un marcador para ver sus tareas</string>
     <string name="agrupacionTareas">Zona con varias tareas cercanas</string>
     <string name="tareaRegistrada">La tarea está completada, reportada, pospuesta o rechazada</string>
     <string name="hola">"Hola "</string>
@@ -144,7 +144,7 @@
     <string name="textoAccesoSinIdentificación">Sin identificarte no podrás realizar ninguna tarea</string>
     <string name="autenticarseMasTarde">Iniciar sesión más tarde</string>
     <string name="autenticarseAhora">Iniciar sesión ahora</string>
-    <string name="textoInicio">Identificándote podrás realizar tareas y además, las tareas que te propongamos estarán personalizadas</string>
+    <string name="textoInicio">Identificándote podrás realizar tareas y las que te propongamos estarán personalizadas</string>
     <string name="textoExplicativo">Casual Learn es una aplicación para aprender historia del arte de Castilla y León. ¡Podrás compartir tus conocimientos con personas que, como tú, están interesadas en la historia que les rodea!</string>
     <string name="textoInicioBreve">Inicia sesión para realizar tareas</string>
     <string name="autenticarse">Identificación</string>
@@ -171,4 +171,12 @@
     <string name="sinImplementar">Sin implementar</string>
     <string name="instalaYammer">Tienes que instalar el cliente oficial de Yammer para compartir la respuesta</string>
     <string name="instalaInsta">Tienes que instalar el cliente oficial de Instagram para compartir la respuesta</string>
+    <string name="activaUbicacion">Activa los servicios de ubicación de tu dispositivo</string>
+    <string name="universidad_de_valladolid">Universidad de Valladolid</string>
+    <string name="junta_de_castilla_y_leon">Junta de Castilla y León</string>
+    <string name="dbpedia">DBpedia</string>
+    <string name="wikidata">WIKIDATA</string>
+    <string name="thumbnail">Thumbnail</string>
+    <string name="infoImagen">Información de la imagen</string>
+    <string name="imagenFondo">Imagen de fondo</string>
 </resources>

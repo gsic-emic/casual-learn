@@ -10,10 +10,10 @@
       android:fillAlpha="1"/>
   <path
       android:pathData="m12.4911,10.4804c-0.2419,0.134 -6.5756,0.1205 -6.8156,-0.0146 -0.24,-0.1351 -0.2158,-3.6713 0.0261,-3.8053 0.2419,-0.134 6.5756,-0.1205 6.8156,0.0146 0.24,0.1351 0.2158,3.6713 -0.0261,3.8053z"
-      android:strokeAlpha="1"
-      android:strokeWidth="0.165"
+      android:strokeAlpha="0"
+      android:strokeWidth="0"
       android:fillColor="#000000"
-      android:strokeColor="#00ffffff"
+      android:strokeColor="#ffffff"
       android:fillAlpha="1"/>
   <path
       android:pathData="m12.0039,9.6888c0.1425,0.0093 0.1425,0.2527 0,0.2619 -0.1425,0.0093 -3.8878,0.0093 -4.0303,0 -0.1425,-0.0093 -0.1425,-0.2527 0,-0.2619 0.1425,-0.0093 3.8878,-0.0093 4.0303,0z"

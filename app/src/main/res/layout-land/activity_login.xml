@@ -36,16 +36,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="@id/glLoginV"
         android:paddingStart="20dp"
-        android:paddingEnd="5dp"/>
+        android:paddingEnd="5dp"
+        android:contentDescription="@string/imagenFondo" />
 
     <ImageView
         android:id="@+id/ivInfoFotoLogin"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         app:srcCompat="@drawable/ic_info_black_24dp"
         app:layout_constraintStart_toStartOf="@id/ivImangePrincipal"
         app:layout_constraintBottom_toBottomOf="@id/ivImangePrincipal"
-        android:visibility="visible"/>
+        android:visibility="visible"
+        android:contentDescription="@string/infoImagen" />
 
 
     <androidx.constraintlayout.widget.Guideline

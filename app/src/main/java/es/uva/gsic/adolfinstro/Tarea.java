@@ -62,8 +62,6 @@ public class Tarea extends AppCompatActivity implements
 
     /** Instancia del campo de texto donde introduce el usuario la respuesta*/
     private EditText etRespuestaTextual;
-    /** Instancia para volver a la actividad principal sin finalizar la tarea*/
-    private Button btVolver;
     /** Instancia del botón de la cámara*/
     private Button btCamara;
     /** Instancia del botón para finalizar la toma de imágenes */
@@ -197,8 +195,6 @@ public class Tarea extends AppCompatActivity implements
                         }
                     }
                 }
-
-                btVolver = findViewById(R.id.btVolver);
                 Button btAceptar = findViewById(R.id.btAceptar);
                 btCamara = findViewById(R.id.btCamara);
                 btTerminar = findViewById(R.id.btTerminar);
@@ -381,9 +377,6 @@ public class Tarea extends AppCompatActivity implements
     public void boton(View view) {
         final Intent intent;
         switch (view.getId()){
-            case R.id.btVolver:
-                onBackPressed();
-                break;
             case R.id.btAceptar:
                 if(tipo.equals(Auxiliar.tipoSinRespuesta)){
                     try {
@@ -599,7 +592,6 @@ public class Tarea extends AppCompatActivity implements
      * estadoBtCancelar y estadoBtCamara
      */
     private void setBotones(){
-        btVolver.setClickable(estadoBtCancelar);
         btCamara.setClickable(estadoBtCamara);
         if(btTerminar.getVisibility() == View.VISIBLE)
             btTerminar.setClickable(estadoBtCamara);

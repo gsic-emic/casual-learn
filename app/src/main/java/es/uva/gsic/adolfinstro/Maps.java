@@ -3,11 +3,13 @@ package es.uva.gsic.adolfinstro;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,10 +25,12 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
@@ -58,6 +62,7 @@ import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.DelayedMapListener;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
@@ -66,6 +71,7 @@ import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
@@ -140,6 +146,8 @@ public class  Maps extends AppCompatActivity implements
     private AlertDialog.Builder dialogoCerrarSesion;
 
     Boolean dialogoCerrarSesionActivo = false;
+
+    Guideline guiaMapa;
 
 
 
@@ -253,6 +261,8 @@ public class  Maps extends AppCompatActivity implements
             contenedor = findViewById(R.id.rvTareasMapa);
             RecyclerView.LayoutManager layoutManager;
 
+            guiaMapa = findViewById(R.id.guiaMapa);
+
             if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
                 layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
                 animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.desplaza_horizontal);
@@ -351,7 +361,20 @@ public class  Maps extends AppCompatActivity implements
                     }
                     return false;
                 }
-            }, 200));
+            }, 400));
+
+            //Para cerrar la lista de tareas y el bocadillo
+            map.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    InfoWindow.closeAllInfoWindowsOn(map);
+                    sinPulsarTarea.setVisibility(View.VISIBLE);
+                    //guiaMapa.setGuidelinePercent(1f);
+                    contenedor.setVisibility(View.GONE);
+                    contenedor.setAdapter(null);
+                    return false;
+                }
+            });
         }
 
         try{
@@ -587,6 +610,7 @@ public class  Maps extends AppCompatActivity implements
         JSONArray tareas = marcador.getTareasMarcador();
         if(tareas.length() > 0){
             sinPulsarTarea.setVisibility(View.GONE);
+            guiaMapa.setGuidelinePercent(0.8f);
             contenedor.setVisibility(View.VISIBLE);
             contenedor.setHasFixedSize(true);
 
@@ -646,7 +670,14 @@ public class  Maps extends AppCompatActivity implements
                 PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea, Context.MODE_PRIVATE);
             }else{
                 //Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
-                pintaSnackBar(getString(R.string.recuperandoPosicion));
+                if(myLocationNewOverlay != null){
+                    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+                        pintaSnackBar(getString(R.string.activaUbicacion));
+                        //checkPermissions();
+                    }
+                }else
+                    pintaSnackBar(getString(R.string.recuperandoPosicion));
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -699,7 +730,7 @@ public class  Maps extends AppCompatActivity implements
         } else
             texto = String.valueOf(size);
         paint.setStyle(Paint.Style.FILL);
-        int textSize = (int) (mitad+1);
+        int textSize = (int) (mitad + 1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(texto, mitad, mitad + (float)(textSize/2), paint);
@@ -944,9 +975,9 @@ public class  Maps extends AppCompatActivity implements
      */
     private void pintaZona(List<String> ficherosPintar){
         //Distancia a la que se van a agrupar las tareas
-        double nivelZum = 0.06 * nivelMax - 0.06 * map.getZoomLevelDouble();
+        double nivelZum = 0.05 * nivelMax - 0.05 * map.getZoomLevelDouble();
         //Evito los marcadores duplicados
-        nivelZum = Math.max(nivelZum, 0.02);//20m;
+        nivelZum = Math.max(nivelZum, 0.01);//10m;
 
         JSONArray todasTareas = new JSONArray();
         JSONObject cuadricula;
@@ -1134,7 +1165,7 @@ public class  Maps extends AppCompatActivity implements
 
         latitudeOrigen = bundle.getDouble("LATITUDE");
         longitudeOrigen = bundle.getDouble("LONGITUDE");
-        
+
         if(latitudeOrigen != 0 && longitudeOrigen != 0) {
             GeoPoint lastCenter = new GeoPoint(latitudeOrigen, longitudeOrigen);
             mapController.setCenter(lastCenter);
@@ -1396,6 +1427,7 @@ public class  Maps extends AppCompatActivity implements
                         cuadricula.put(Auxiliar.tareas, response);
                         cuadricula.put(Auxiliar.fechaUltimaModificacion, instante);
                         PersistenciaDatos.creaFichero(getApplication(), nombre, cuadricula, Context.MODE_PRIVATE);
+                        compruebaZona();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1427,12 +1459,19 @@ public class  Maps extends AppCompatActivity implements
         marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                InfoWindow.closeAllInfoWindowsOn(mapView);
+                //InfoWindow.closeAllInfoWindowsOn(mapView);
                 double distancia;
-                String msg;
+                String msg = getString(R.string.recuperandoPosicion);
                 try {
-                    distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
-                    msg = String.format(Locale.getDefault(), " %.3f km", distancia);
+                    if(myLocationNewOverlay != null){
+                        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                        if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                            msg = getString(R.string.activaUbicacion);
+                        }else{
+                            distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
+                            msg = String.format(Locale.getDefault(), " %.3f km", distancia);
+                        }
+                    }
                 } catch (Exception e) {
                     msg = getString(R.string.recuperandoPosicion);
                 }
