@@ -14,12 +14,13 @@
 
     <ImageView
         android:id="@+id/ivInfoFotoCompleta"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         app:srcCompat="@drawable/ic_info_black_24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:contentDescription="@string/infoImagen" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

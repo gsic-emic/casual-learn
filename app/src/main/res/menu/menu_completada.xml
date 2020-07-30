@@ -4,9 +4,9 @@
     <item android:id="@+id/editarCompletada"
         android:icon="@drawable/ic_edit_black_24dp"
         android:title="@string/editar"
-        app:showAsAction="ifRoom" />
-    <item android:id="@+id/publicarCompletada"
+        app:showAsAction="always" />
+    <!--<item android:id="@+id/publicarCompletada"
         android:icon="@drawable/ic_twitter_logo_white"
         android:title="@string/publicar"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" /> -->
 </menu>

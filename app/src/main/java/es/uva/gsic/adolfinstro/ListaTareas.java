@@ -1,12 +1,10 @@
 package es.uva.gsic.adolfinstro;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -31,7 +29,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * @author Pablo
  * @version 20200514
  */
-public class ListaTareas extends AppCompatActivity implements AdaptadorLista.ItemClickListener, AdaptadorLista.ItemLongClickLister{
+public class ListaTareas extends AppCompatActivity
+        implements AdaptadorLista.ItemClickListener, AdaptadorLista.ItemLongClickLister{
 
     /**
      * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
@@ -203,37 +202,9 @@ public class ListaTareas extends AppCompatActivity implements AdaptadorLista.Ite
 
     @Override
     public void onItemLongClick(View v, int position){
-        String tipoTarea = adapter.getTipo(position);
-        String mensaje = "";
-        switch (tipoTarea){
-            case Auxiliar.tipoSinRespuesta:
-                mensaje = getString(R.string.sinRespuesta);
-                break;
-            case Auxiliar.tipoPreguntaCorta:
-                mensaje = getString(R.string.preguntaCorta);
-                break;
-            case Auxiliar.tipoPreguntaLarga:
-                mensaje = getString(R.string.preguntaLarga);
-                break;
-            case Auxiliar.tipoPreguntaImagen:
-                mensaje = getString(R.string.preguntaImagen);
-                break;
-            case Auxiliar.tipoImagen:
-                mensaje = getString(R.string.imagen);
-                break;
-            case Auxiliar.tipoImagenMultiple:
-                mensaje = getString(R.string.imagenMultiple);
-                break;
-            case Auxiliar.tipoVideo:
-                mensaje = getString(R.string.video);
-                break;
-            case Auxiliar.tipoPreguntaImagenes:
-                mensaje = getString(R.string.preguntaImagenes);
-                break;
-            default:
-                break;
-        }
-        Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
+        String mensaje = Auxiliar.textoTipoTarea(this, adapter.getTipo(position));
+        if(mensaje != null)
+            Toast.makeText(this, mensaje, Toast.LENGTH_SHORT).show();
     }
 
     @Override

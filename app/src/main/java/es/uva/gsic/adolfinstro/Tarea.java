@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.text.LineBreaker;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,7 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
@@ -64,8 +62,6 @@ public class Tarea extends AppCompatActivity implements
 
     /** Instancia del campo de texto donde introduce el usuario la respuesta*/
     private EditText etRespuestaTextual;
-    /** Instancia para volver a la actividad principal sin finalizar la tarea*/
-    private Button btVolver;
     /** Instancia del botón de la cámara*/
     private Button btCamara;
     /** Instancia del botón para finalizar la toma de imágenes */
@@ -199,8 +195,6 @@ public class Tarea extends AppCompatActivity implements
                         }
                     }
                 }
-
-                btVolver = findViewById(R.id.btVolver);
                 Button btAceptar = findViewById(R.id.btAceptar);
                 btCamara = findViewById(R.id.btCamara);
                 btTerminar = findViewById(R.id.btTerminar);
@@ -320,6 +314,7 @@ public class Tarea extends AppCompatActivity implements
                 Auxiliar.returnMain(getBaseContext());
             }
         });
+        alertBuilder.setCancelable(false);
         alertBuilder.show();
     }
 
@@ -352,7 +347,7 @@ public class Tarea extends AppCompatActivity implements
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                 alertBuilder.setTitle(getString(R.string.permi));
                 alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Se comprueba todos los permisos que necesite la app de nuevo, por este
@@ -368,6 +363,7 @@ public class Tarea extends AppCompatActivity implements
                         System.exit(0);
                     }
                 });
+                alertBuilder.setCancelable(false);
                 alertBuilder.show();
                 break;
             }
@@ -381,9 +377,6 @@ public class Tarea extends AppCompatActivity implements
     public void boton(View view) {
         final Intent intent;
         switch (view.getId()){
-            case R.id.btVolver:
-                onBackPressed();
-                break;
             case R.id.btAceptar:
                 if(tipo.equals(Auxiliar.tipoSinRespuesta)){
                     try {
@@ -599,7 +592,6 @@ public class Tarea extends AppCompatActivity implements
      * estadoBtCancelar y estadoBtCamara
      */
     private void setBotones(){
-        btVolver.setClickable(estadoBtCancelar);
         btCamara.setClickable(estadoBtCamara);
         if(btTerminar.getVisibility() == View.VISIBLE)
             btTerminar.setClickable(estadoBtCamara);
@@ -918,6 +910,13 @@ public class Tarea extends AppCompatActivity implements
         alertBuilder.setPositiveButton(getString(R.string.continuar), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                tareaCompletadaFirebase();
+                Auxiliar.puntuaTarea(context, idTarea);
+            }
+        });
+        alertBuilder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
                 tareaCompletadaFirebase();
                 Auxiliar.puntuaTarea(context, idTarea);
             }

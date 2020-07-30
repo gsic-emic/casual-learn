@@ -9,12 +9,11 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="5dp"
+        android:layout_marginHorizontal="15dp"
         android:layout_marginBottom="5dp">
 
         <ImageView
-            android:layout_marginTop="10dp"
-            android:padding="10dp"
+            android:layout_marginTop="5dp"
             android:id="@+id/ivImagenDescripcion"
             android:layout_width="wrap_content"
             android:layout_height="200dp"
@@ -29,47 +28,45 @@
 
         <ImageView
             android:id="@+id/ivInfoFotoTarea"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             app:srcCompat="@drawable/ic_info_black_24dp"
             app:layout_constraintStart_toStartOf="@id/ivImagenDescripcion"
             app:layout_constraintBottom_toBottomOf="@id/ivImagenDescripcion"
-            android:visibility="gone"/>
-
-
-        <ImageView
-            android:id="@+id/ivDenunciarPregunta"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            app:srcCompat="@drawable/ic_error_outline_red_32dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:onClick="boton" />
+            android:visibility="gone"
+            android:contentDescription="@string/infoImagen" />
 
         <TextView
             android:id="@+id/tvDescripcion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:visibility="visible"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivImagenDescripcion"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
-            android:textSize="20sp"
-            android:visibility="visible"/>
+            app:layout_constraintTop_toBottomOf="@id/ivImagenDescripcion" />
+
+        <ImageView
+            android:id="@+id/ivDenunciarPregunta"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            app:srcCompat="@drawable/ic_baseline_report_problem_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDescripcion"
+            android:onClick="boton"
+            android:contentDescription="@string/denunciarPreguntaTitulo" />
 
         <EditText
             android:id="@+id/etRespuestaTextual"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:maxLength="600"
             android:hint="@string/hintRespuesta"
             android:maxLines="10"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDescripcion"
-            android:layout_marginBottom="10dp"
-            android:layout_marginHorizontal="5dp"
+            app:layout_constraintTop_toBottomOf="@id/ivDenunciarPregunta"
+            android:layout_marginTop="25dp"
             android:visibility="visible"
             android:inputType="textMultiLine"
             android:autofillHints="no" />
@@ -78,7 +75,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginVertical="5dp"
-            android:layout_marginHorizontal="5dp"
             android:id="@+id/clTarea"
             app:layout_constraintTop_toBottomOf="@id/etRespuestaTextual"
             app:layout_constraintBottom_toTopOf="@id/rvRealizaTarea" />
@@ -91,20 +87,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/clTarea"
             app:layout_constraintBottom_toTopOf="@id/btTerminar"
-            android:visibility="gone"
-            android:layout_marginBottom="10dp"/>
-
-        <Button style="@style/botonSecundario"
-            android:id="@+id/btVolver"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rvRealizaTarea"
-            android:layout_marginVertical="10dp"
-            android:text="@string/ahoraNo"
-            android:visibility="gone"
-            android:onClick="boton"/>
+            android:layout_marginTop="5dp"
+            android:visibility="gone"/>
 
         <Button style="@style/botonSecundario"
             android:id="@+id/btTerminar"
@@ -113,8 +97,7 @@
             app:layout_constraintEnd_toStartOf="@id/btCamara"
             app:layout_constraintBottom_toBottomOf="@id/btCamara"
             app:layout_constraintTop_toTopOf="@id/btCamara"
-            android:layout_marginVertical="10dp"
-            android:layout_marginHorizontal="10dp"
+            android:layout_marginHorizontal="15dp"
             android:text="@string/terminar"
             android:visibility="gone"
             android:onClick="boton"/>
@@ -143,8 +126,7 @@
             android:layout_marginVertical="10dp"
             android:text="@string/camara"
             android:visibility="gone"
-            android:onClick="boton"
-            android:layout_marginHorizontal="3dp"/>
+            android:onClick="boton"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

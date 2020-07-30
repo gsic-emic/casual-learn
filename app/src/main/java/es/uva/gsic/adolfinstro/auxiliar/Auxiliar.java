@@ -10,11 +10,18 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.text.Html;
+import android.text.Layout;
 import android.text.SpannableStringBuilder;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.view.View;
@@ -26,6 +33,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -36,6 +44,7 @@ import org.json.JSONObject;
 import org.osmdroid.util.BoundingBox;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,6 +60,13 @@ import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
+/**
+ * Clase auxiliar de la aplicación. Contiene los strings utilizados como identificadores de toda la
+ * aplicación. Los métodos son utilizados en otras clases.
+ *
+ * @author Pablo
+ * @version 20200727
+ */
 public class Auxiliar {
 
     public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
@@ -77,7 +93,6 @@ public class Auxiliar {
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
 
-    public static final String radio = "radio";
     public static final String nunca_mas = "NUNCA_MAS";
     public static final String ahora_no = "AHORA_NO";
 
@@ -126,10 +141,8 @@ public class Auxiliar {
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
-    //private static Random random = new Random();
 
-
-    private static final String[] listaFabricantes = {"huawei", "xiaomi"};
+    private static final String[] listaFabricantes = {"huawei", "xiaomi", "samsung", "oneplus"};
 
     public static int incr = 0;
 
@@ -152,6 +165,10 @@ public class Auxiliar {
             case 3:
                 mediaFile = File.createTempFile("VID_"+timeStamp, ".mp4",
                         context.getExternalFilesDir(Environment.DIRECTORY_MOVIES));
+                break;
+            case 4:
+                mediaFile = File.createTempFile(timeStamp, ".jpg",
+                        context.getExternalFilesDir("Cache"));
                 break;
             default:
         }
@@ -182,18 +199,27 @@ public class Auxiliar {
      */
     public static ArrayList<String> preQueryPermisos(Context context){
         ArrayList<String> permisos = new ArrayList<>();
-        if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED))
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED))
+            if(!(ActivityCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED))
                 permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-        if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED))
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.INTERNET);
-        if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED))
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.CAMERA);
-        if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED))
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.RECORD_AUDIO);
-        if(!(ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED))
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED))
             permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return permisos;
     }
@@ -203,22 +229,24 @@ public class Auxiliar {
      * @param context contexto
      * @param sharedPreferences preferencias
      */
-    public static void dialogoAyudaListaBlanca(Context context, final SharedPreferences sharedPreferences){
+    public static void dialogoAyudaListaBlanca(Context context,
+                                               final SharedPreferences sharedPreferences){
         List<String> fabricantesProblemas = Arrays.asList(listaFabricantes);
         if (fabricantesProblemas.contains(Build.MANUFACTURER.toLowerCase())) {
             AlertDialog.Builder brandBuilder = new AlertDialog.Builder(context);
             brandBuilder.setTitle(context.getString(R.string.tituloErrorMarca) + Build.MANUFACTURER.toLowerCase())
                     .setMessage(context.getString(R.string.mensajeSolucionMarca))
-                    .setPositiveButton(context.getString(R.string.accept), new Dialog.OnClickListener() {
+                    .setPositiveButton(context.getString(R.string.entiendo), new Dialog.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             actualizaListaBlanca(false, sharedPreferences);
                         }
                     })
-                    .setNegativeButton(context.getString(R.string.cancel), new Dialog.OnClickListener(){
+                    .setNegativeButton(context.getString(R.string.volverRecordar), new Dialog.OnClickListener(){
                         @Override
                         public void onClick(DialogInterface dialog, int which) { }
-                    });
+                    })
+                    .setCancelable(false);
             brandBuilder.show();
         }
         else{
@@ -231,7 +259,8 @@ public class Auxiliar {
      * @param listaBlanca valor que va a tomar la preferencia
      * @param sharedPreferences preferencias
      */
-    private static void actualizaListaBlanca(boolean listaBlanca, SharedPreferences sharedPreferences) {
+    private static void actualizaListaBlanca(boolean listaBlanca,
+                                             SharedPreferences sharedPreferences) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(Ajustes.LISTABLANCA_pref, listaBlanca);
         editor.commit();
@@ -257,7 +286,8 @@ public class Auxiliar {
      * @param lon2 Longitud del punto 2 (en grados)
      * @return Distancia (en km) entre los dos puntos
      */
-    public static double calculaDistanciaDosPuntos(double lat1, double lon1, double lat2, double lon2){
+    public static double calculaDistanciaDosPuntos(double lat1, double lon1,
+                                                   double lat2, double lon2){
         //Aproximación del radio de la Tierra en el ecuador
         double radioTierra = 6378.137;
         return 2 * radioTierra *
@@ -287,7 +317,9 @@ public class Auxiliar {
      * @param longitudUsuario Longitud de la posición del usuario
      * @return JSONObject con la tarea a realizar o null
      */
-    public static JSONObject tareaMasCercana(Application app, double latitudUsuario, double longitudUsuario){
+    public static JSONObject tareaMasCercana(Application app,
+                                             double latitudUsuario,
+                                             double longitudUsuario){
         //Inicializo la lista de tareas a la misma distancia
         List<JSONObject> tarea = new ArrayList<>();
         //Creo la referencia al objeto JSONObject para que no se esté creando y destruyendo en cada
@@ -405,40 +437,12 @@ public class Auxiliar {
         return iconoTarea;
     }
 
-    public static int iconoTipoTareaPreview(String tR) {
-        int iconoTarea;
-        switch (tR){
-            case Auxiliar.tipoSinRespuesta:
-                iconoTarea = R.drawable.ic_sinrespuesta_barra;
-                break;
-            case Auxiliar.tipoPreguntaCorta:
-                iconoTarea = R.drawable.ic_preguntacorta_barra;
-                break;
-            case Auxiliar.tipoPreguntaLarga:
-                iconoTarea = R.drawable.ic_preguntalarga_barra;
-                break;
-            case Auxiliar.tipoPreguntaImagen:
-                iconoTarea = R.drawable.ic_preguntaimagen_barra;
-                break;
-            case Auxiliar.tipoImagen:
-                iconoTarea = R.drawable.ic_imagen_barra;
-                break;
-            case Auxiliar.tipoImagenMultiple:
-                iconoTarea = R.drawable.ic_imagenmultiple_barra;
-                break;
-            case Auxiliar.tipoVideo:
-                iconoTarea = R.drawable.ic_video_barra;
-                break;
-            case Auxiliar.tipoPreguntaImagenes:
-                iconoTarea = R.drawable.ic_preguntaimagenesmultiples_barra;
-                break;
-            default:
-                iconoTarea = 0;
-                break;
-        }
-        return iconoTarea;
-    }
-
+    /**
+     * Método para obtener el icono que se muestra en la barra de de la descripción de la tarea y en
+     * la lista de tareas que están dentro del marcador
+     * @param tR Tipo de tarea
+     * @return Identificador único del icono
+     */
     public static int iconoTipoTareaLista(String tR) {
         int iconoTarea;
         switch (tR){
@@ -473,6 +477,13 @@ public class Auxiliar {
         return iconoTarea;
     }
 
+    /**
+     * Método para traducir la posición de la barra deslizable en ajustes a texto entendible por el
+     * usuario
+     * @param resources Recursos
+     * @param posicion Posición
+     * @return Texto que se tiene que mostrar a los usuarios
+     */
     public static String valorTexto(Resources resources, int posicion){
         switch (posicion){
             case 0:
@@ -501,17 +512,34 @@ public class Auxiliar {
             case 13:
             case 14:
             case 15:
-                return String.format("%d %s", posicion-8, resources.getString(R.string.dias));
+                return String.format("%d %s", posicion - 8, resources.getString(R.string.dias));
             default:
                 return resources.getString(R.string.valorActual);
         }
     }
 
-    private static final int[] minutosAjustes = {5, 15, 30, 60, 180, 240, 300, 360, 720, 1440, 2280, 4320, 5790, 7200, 8640, 10080};
+    /** Vector con los intervalos configurables para automatizar la notificación de tareas*/
+    private static final int[] minutosAjustes =
+            {5, 15, 30, 60, 180, 240, 300, 360, 720, 1440, 2280, 4320, 5790, 7200, 8640, 10080};
+
+    /**
+     * Método que devuelve la cantidad e minutos que se debe espera dependiendo de lo configurado
+     * por el usuario
+     * @param intervalo Posición que ocupa el intervalo en el vector
+     * @return Mínimo de minutos que tiene que pasar entre notificaciones
+     */
     public static int intervaloMinutos(int intervalo) {
         return minutosAjustes[intervalo];
     }
 
+    /**
+     * Método para centar el mapa entre el rectángulo que se crea con dos latitudos y dos longitudes
+     * @param lat1 Latitud 1
+     * @param long1 Longitud 1
+     * @param lat2 Latitud 2
+     * @param long2 Longitud 2
+     * @return Objeto que respresenta el mapa. Valido para osmdroid
+     */
     public static BoundingBox colocaMapa(Double lat1, Double long1, Double lat2, Double long2) {
         return  new BoundingBox(
                 Math.min(lat1, lat2),
@@ -530,12 +558,14 @@ public class Auxiliar {
      * Envía el contenido a la app de Twitter para que el usuario pueda compartirlo
      * @param context Contexto
      * @param tarea JSON de la tarea
-     * @param hashtag Etiqueta con la que se envía el tweet
+     * @param hashtag Etiquetas con la que se envía el tweet
      */
     public static void mandaTweet(Context context, JSONObject tarea, String hashtag){
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
-            context.getPackageManager().getPackageInfo("com.twitter.android", PackageManager.GET_ACTIVITIES);
+            context.getPackageManager().getPackageInfo("com.twitter.android",
+                    PackageManager.GET_ACTIVITIES);
+
             Intent intent;
             List<String> listaURI = new ArrayList<>();
             String textoUsuario = null;
@@ -561,7 +591,8 @@ public class Auxiliar {
                 case Auxiliar.tipoPreguntaLarga:
                 case Auxiliar.tipoSinRespuesta:
                     intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(context, tarea, textoUsuario, hashtag));
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, true));
                     intent.setType("text/plain");
                     break;
                 case Auxiliar.tipoPreguntaImagen:
@@ -572,7 +603,8 @@ public class Auxiliar {
                         intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
                     else
                         intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(context, tarea, textoUsuario, hashtag));
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, true));
                     intent.setType("text/plain");
                     if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
                         if(!listaURI.isEmpty()){
@@ -596,7 +628,8 @@ public class Auxiliar {
                     break;
                 case Auxiliar.tipoVideo:
                     intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT, contenidoTextoTweet(context, tarea, textoUsuario, hashtag));
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, true));
                     intent.setType("text/plain");
                     if(!listaURI.isEmpty()){
                         intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
@@ -612,22 +645,300 @@ public class Auxiliar {
                 intent.setPackage("com.twitter.android");
                 context.startActivity(intent);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(context, context.getString(R.string.instalaTwitter), Toast.LENGTH_SHORT).show();
+            Toast.makeText(context,
+                    context.getString(R.string.instalaTwitter),
+                    Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     /**
-     * Método para formar el contenido textual del Tweet
+     * Método para compartir la respuesta del usuario con Yammer. Solo permite compartir un único contenido
+     * multimedia (es lo que permite la app de Yammer)
+     * @param context Contexto
+     * @param tarea Tarea completa. Contiene la respuesta del usuario
+     * @param hashtag Etiquetas configurables por el usuario.
+     */
+    public static void mandaYammer(Context context, JSONObject tarea, String hashtag){
+        try {
+            context.getPackageManager().getPackageInfo(
+                    "com.yammer.v1", PackageManager.GET_ACTIVITIES);
+
+            Intent intent;
+            List<String> listaURI = new ArrayList<>();
+            String textoUsuario = null;
+            JSONArray respuestas;
+            try {
+                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+            } catch (Exception e) {
+                respuestas = new JSONArray();
+            }
+            JSONObject respuesta;
+            for (int i = 0; i < respuestas.length(); i++) {
+                respuesta = respuestas.getJSONObject(i);
+                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
+                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
+                    }
+                } else {//URI de video o fotos
+                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
+                }
+            }
+            switch (tarea.getString(Auxiliar.tipoRespuesta)) {
+                case Auxiliar.tipoPreguntaCorta:
+                case Auxiliar.tipoPreguntaLarga:
+                case Auxiliar.tipoSinRespuesta:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
+                    intent.setType("text/plain");
+                    break;
+                case Auxiliar.tipoPreguntaImagen:
+                case Auxiliar.tipoImagen:
+                case Auxiliar.tipoImagenMultiple:
+                case Auxiliar.tipoPreguntaImagenes:
+                    //if(listaURI.size() > 0)
+                    //intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                    //else
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
+                    intent.setType("text/plain");
+                    if (!listaURI.isEmpty()) {
+                        //Solo me permite enviar una imagen la app de yammer
+                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
+                        intent.setType("image/*");
+                    }
+                    break;
+                case Auxiliar.tipoVideo:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
+                    intent.setType("text/plain");
+                    if (!listaURI.isEmpty()) {
+                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
+                        intent.setType("video/*");
+                    }
+                    break;
+                default:
+                    intent = null;
+                    break;
+            }
+
+            if (intent != null) {
+                intent.setPackage("com.yammer.v1");
+                context.startActivity(intent);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(context,
+                    context.getString(R.string.instalaYammer),
+                    Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            //Toast.makeText(context, e.toString(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Método para publicar una respuesta en la red social Instagram. Como no permite el envío de texto se
+     * genera una imagen donde se escribe la respuesta del usuario. La tarea se publica como una historia.
+     *
+     * @param context Contexto
+     * @param tarea Tarea completa con la respuesta del usuario
+     * @param hashtag Lista de etiquetas que el usuario ha configurado en los ajustes de la aplicación.
+     */
+    public static void mandaInsta(Context context, JSONObject tarea, String hashtag){
+        try {
+            context.getPackageManager().getPackageInfo(
+                    "com.instagram.android", PackageManager.GET_ACTIVITIES);
+
+            Intent intent;
+            List<String> listaURI = new ArrayList<>();
+            String textoUsuario = null;
+            JSONArray respuestas;
+            try {
+                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+            }catch (Exception e){
+                respuestas = new JSONArray();
+            }
+            JSONObject respuesta;
+            for(int i = 0; i < respuestas.length(); i++){
+                respuesta = respuestas.getJSONObject(i);
+                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
+                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
+                    }
+                } else {//URI de video o fotos
+                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
+                }
+            }
+
+            ArrayList<Uri> uris = new ArrayList<>();
+            uris.add(
+                    uriTexto(
+                            context,
+                            context.getResources().getDrawable(R.drawable.ic_por_defecto_insta),
+                            contenidoTexto(
+                                    context,
+                                    tarea,
+                                    textoUsuario,
+                                    hashtag,
+                                    false)));
+
+            switch (tarea.getString(Auxiliar.tipoRespuesta)){
+                case Auxiliar.tipoPreguntaCorta:
+                case Auxiliar.tipoPreguntaLarga:
+                case Auxiliar.tipoSinRespuesta:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                    intent.setType("image/*");
+                    break;
+                case Auxiliar.tipoPreguntaImagen:
+                case Auxiliar.tipoImagen:
+                case Auxiliar.tipoImagenMultiple:
+                case Auxiliar.tipoPreguntaImagenes:
+                    if(listaURI.size() > 0)
+                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                    else
+                        intent = new Intent(Intent.ACTION_SEND);
+                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
+                        if(!listaURI.isEmpty()){
+                            for(String s : listaURI){
+                                uris.add(Uri.parse(s));
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("*/*");
+                        }
+                    }else{
+                        if(!listaURI.isEmpty()){
+                            for(String s : listaURI){
+                                uris.add(Uri.parse(s));
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("image/*");
+                        }
+                    }
+                    break;
+                case Auxiliar.tipoVideo:
+                    intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                    if(!listaURI.isEmpty()){
+                        for(String s : listaURI){
+                            uris.add(Uri.parse(s));
+                        }
+                        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                        intent.setType("*/*");
+                    }
+                    break;
+                default:
+                    intent = null;
+                    break;
+            }
+
+            if(intent != null) {
+                intent.setPackage("com.instagram.android");
+                context.startActivity(intent);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(context,
+                    context.getString(R.string.instalaInsta),
+                    Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Método con el que se crea una imagen con la respuesta que ha dado el usuario. Vacía el directorio
+     * de ficheros intermedios antes de generar el nuevo.
+     *
+     * @param context Contexto
+     * @param drawable Imagen genérica. Editable para que sea configurable con el color secundario
+     * @param texto Texto del usuario.
+     * @return Uri del fichero creado.
+     */
+    private static Uri uriTexto(Context context, Drawable drawable, String texto) {
+        Bitmap bitmap = Bitmap.createBitmap(
+                drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(),
+                Bitmap.Config.ARGB_8888);
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        TextPaint paint = new TextPaint();
+        paint.setARGB(255, 255, 255, 255); //blanco
+        paint.setStyle(Paint.Style.FILL);
+        paint.setTextSize(((int)(22 * context.getResources().getDisplayMetrics().density)));
+        paint.setTextAlign(Paint.Align.CENTER);
+        paint.setAntiAlias(true);
+        StaticLayout staticLayout = new StaticLayout(
+                texto,
+                paint,
+                (int)(bitmap.getWidth()/1.2),
+                Layout.Alignment.ALIGN_NORMAL,
+                1f,
+                0f,
+                false);
+
+        canvas.save();
+        canvas.translate(
+                (bitmap.getWidth())/2f,
+                ((bitmap.getHeight() - staticLayout.getHeight())/2f > 0)?
+                        ((bitmap.getHeight() - staticLayout.getHeight())/2f):
+                        0);
+        staticLayout.draw(canvas);
+        canvas.restore();
+
+        try {
+            File cache = context.getExternalFilesDir("cache");
+            assert cache != null;
+            if(cache.isDirectory()){
+                File[] borrarFicheros = cache.listFiles();
+                assert borrarFicheros != null;
+                for(File borrar : borrarFicheros){
+                    borrar.delete();
+                }
+            }
+
+            File foto = Auxiliar.createFile(4, context);
+
+            FileOutputStream fileOutputStream = null;
+            try {
+                fileOutputStream = new FileOutputStream(foto);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            } finally {
+                try {
+                    if (fileOutputStream != null)
+                        fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return FileProvider.getUriForFile(context, context.getResources().getString(R.string.fileProvider), foto);
+        }catch (IOException e){
+            return null;
+        }
+    }
+
+    /**
+     * Método para formar el contenido textual de la respuesta en la red social
      * @param context Contexto
      * @param tarea Tarea completa
      * @param textoUsuario Texto del usuario
      * @param hashtag Hashtag o lista de hashtags
      * @return Frase que se publicará en el tweet
      */
-    private static String contenidoTextoTweet(Context context, JSONObject tarea, String textoUsuario, String hashtag){
+    private static String contenidoTexto(Context context,
+                                         JSONObject tarea,
+                                         String textoUsuario,
+                                         String hashtag,
+                                         boolean recorta){
         String texto = null;
 
         String[] hashtags = hashtag.split(",");
@@ -641,16 +952,19 @@ public class Auxiliar {
             texto = tarea.getString(Auxiliar.titulo);
             if(textoUsuario != null){
                 texto = String.format("%s\n%s", texto, textoUsuario);
-                if(texto.length() + hashtags.length + tama > 279){ //espacios + texto
+                if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
                     texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
                 }
             }else{
-                texto = String.format("%s %s", context.getString(R.string.twitSinTexto), texto);
+                if(recorta)
+                    texto = String.format("%s %s", context.getString(R.string.twitSinTexto), texto);
+                else
+                    texto = String.format("%s %s", context.getString(R.string.yammerSinTexto), texto);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        //texto=(texto==null)?String.format("%s", hashtag):texto.concat(String.format("\n#%s", hashtag));
+
         for (String string : hashtags) {
             texto = String.format("%s %s", texto, string);
         }
@@ -665,13 +979,15 @@ public class Auxiliar {
      */
     public static void guardaRespuesta(Application app, Context appContext, String idTarea){
         JSONObject jsonObject = new JSONObject();
-        JSONObject tarea = PersistenciaDatos.recuperaTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea);
+        JSONObject tarea = PersistenciaDatos.
+                recuperaTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea);
         try{
             jsonObject.put("idTarea", idTarea);
             jsonObject.put("idUsuario", Login.firebaseAuth.getUid());
             jsonObject.put("instanteInicio", tarea.getString(Auxiliar.fechaInicio));
             jsonObject.put("instanteFin", tarea.getString(Auxiliar.fechaFinalizacion));
-            jsonObject.put("instanteModificacion", tarea.getString(Auxiliar.fechaUltimaModificacion));
+            jsonObject.put("instanteModificacion",
+                    tarea.getString(Auxiliar.fechaUltimaModificacion));
             jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
 
             int numeroMedia = 0;
@@ -681,7 +997,8 @@ public class Auxiliar {
                 for (int i = 0; i < respuestas.length(); i++) {
                     respuesta = respuestas.getJSONObject(i);
                     if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                        jsonObject.put("respuestaTextual", respuesta.getString(Auxiliar.respuestaRespuesta));
+                        jsonObject.put("respuestaTextual",
+                                respuesta.getString(Auxiliar.respuestaRespuesta));
                     } else {
                         ++numeroMedia;
                     }
@@ -753,7 +1070,9 @@ public class Auxiliar {
     public static SpannableStringBuilder creaEnlaces(final Context contexto, String texto){
         CharSequence charSequence = Html.fromHtml(texto);
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(charSequence);
-        URLSpan[] urlSpans = spannableStringBuilder.getSpans(0, spannableStringBuilder.length(), URLSpan.class);
+        URLSpan[] urlSpans = spannableStringBuilder.getSpans(0,
+                spannableStringBuilder.length(),
+                URLSpan.class);
         for(final URLSpan urlSpan : urlSpans){
             int start = spannableStringBuilder.getSpanStart(urlSpan);
             int end = spannableStringBuilder.getSpanEnd(urlSpan);
@@ -776,10 +1095,12 @@ public class Auxiliar {
      * @param ivInfoFotoPreview Identificador del botón de información
      * @param urlImagen URL de la imagen
      */
-    public static void enlaceLicencia(final Context context, ImageView ivInfoFotoPreview, String urlImagen) {
+    public static void enlaceLicencia(final Context context,
+                                      ImageView ivInfoFotoPreview,
+                                      String urlImagen) {
         if(urlImagen != null && urlImagen.contains("wikimedia")){
             final Uri url = Uri.parse(urlImagen.replace("Special:FilePath/", "File:")
-                    .replace("?width=300", ""));
+                    .replace("?width=300", "").concat("#Licensing"));
             ivInfoFotoPreview.setVisibility(View.VISIBLE);
             ivInfoFotoPreview.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -790,6 +1111,35 @@ public class Auxiliar {
                     context.startActivity(intent);
                 }
             });
+        }
+    }
+
+    /**
+     * Método para recuperar el texto asociado al tipo de tarea
+     * @param contexto Contexto
+     * @param tipoTarea Última parte de la información que envía desde el punto SPARQL
+     * @return Frase explicativa del tipo de tarea
+     */
+    public static String textoTipoTarea(Context contexto, String tipoTarea) {
+        switch (tipoTarea){
+            case Auxiliar.tipoSinRespuesta:
+                return contexto.getString(R.string.sinRespuesta);
+            case Auxiliar.tipoPreguntaCorta:
+                return contexto.getString(R.string.preguntaCorta);
+            case Auxiliar.tipoPreguntaLarga:
+                return contexto.getString(R.string.preguntaLarga);
+            case Auxiliar.tipoPreguntaImagen:
+                return contexto.getString(R.string.preguntaImagen);
+            case Auxiliar.tipoImagen:
+                return contexto.getString(R.string.imagen);
+            case Auxiliar.tipoImagenMultiple:
+                return contexto.getString(R.string.imagenMultiple);
+            case Auxiliar.tipoVideo:
+                return contexto.getString(R.string.video);
+            case Auxiliar.tipoPreguntaImagenes:
+                return contexto.getString(R.string.preguntaImagenes);
+            default:
+                return null;
         }
     }
 }

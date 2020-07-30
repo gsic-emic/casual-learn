@@ -5,11 +5,11 @@ import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 
-import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
@@ -32,9 +32,9 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
      */
     @Override
     public void onReceive(Context context, Intent intent) {
-        String idTarea="", accion = intent.getAction();
+        String idTarea = "", accion = intent.getAction();
         try {
-            idTarea = intent.getExtras().getString(Auxiliar.id);
+            idTarea = Objects.requireNonNull(intent.getExtras()).getString(Auxiliar.id);
             NotificationManager notificationManager = (NotificationManager) context.
                     getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.cancel(intent.getExtras().getInt("idNotificacion"));
@@ -48,6 +48,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                 try{
                     JSONObject tarea = PersistenciaDatos.obtenTarea((Application) context.getApplicationContext(),
                             PersistenciaDatos.ficheroNotificadas, idTarea);
+                    assert tarea != null;
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
                             PersistenciaDatos.ficheroTareasRechazadas,
@@ -99,7 +100,9 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
             try{
                 bundle = new Bundle();
                 bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-                JSONObject usuario = PersistenciaDatos.recuperaTarea(app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                JSONObject usuario = PersistenciaDatos.
+                        recuperaTarea(app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                assert usuario != null;
                 bundle.putString("idUsuario", usuario.getString(Auxiliar.uid));
                 Login.firebaseAnalytics.logEvent(evento, bundle);
             }catch (Exception e1){

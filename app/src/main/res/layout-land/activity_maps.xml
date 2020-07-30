@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
         android:layout_marginEnd="15dp"
-        app:fabCustomSize="50dp"
+        app:fabSize="auto"
         android:onClick="boton"
         app:backgroundTint="@color/colorSecondary"
         app:layout_constraintEnd_toStartOf="@id/guiaMapaV"
@@ -71,8 +71,8 @@
         android:visibility="visible"
         android:textAlignment="center"
         android:gravity="center"
-        android:padding="5dp"
-        android:textSize="20sp"
+        android:padding="15dp"
+        android:textSize="14sp"
         android:text="@string/pulsaMarker"/>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

@@ -19,8 +19,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -263,10 +261,6 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
      * @param location Punto del que se extraerá la latitud y la longitud
      */
     private void peticionTareasServidor(final Location location){
-        //TODO IP de depuración
-        /*String url = Auxiliar.direccionIP + "tareas?latitude="+location.getLatitude()
-                +"&longitude="+location.getLongitude()
-                +"&radio="+radio;*/
         String idUsuario = null;
         try{
             JSONObject usuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
@@ -479,14 +473,17 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 int iconoTarea;
                 if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
                     iconoTarea = R.drawable.ic_11_tareas;
+                //Elimino los enlaces
+                String textoTarea = jsonObject.getString(Auxiliar.recursoAsociadoTexto)
+                        .replaceAll("</a>", "")
+                        .replaceAll("<a.*?>","");
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(context.getString(R.string.nuevaTarea))
-                        .setStyle(new NotificationCompat.BigTextStyle().bigText(
-                                jsonObject.getString(Auxiliar.recursoAsociadoTexto)))
-                        .setContentText(jsonObject.getString(Auxiliar.recursoAsociadoTexto))
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))
+                        .setContentText(textoTarea)
                         .setLargeIcon(iconoGrandeNotificacion(context.getResources().getDrawable(iconoTarea)));
 
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

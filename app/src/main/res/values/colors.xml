@@ -7,9 +7,9 @@
     <color name="colorPrimaryLight68">#AD94999C</color>
     <color name="colorSecondary">#b53f51</color>
     <color name="colorSecondaryDark">#800229</color>
-    <color name="colorSecondaryDarkTranspa">#B3800229</color>
+    <color name="colorSecondaryDarkTranspa">#80800229</color>
     <color name="colorSecondaryLight">#eb6f7d</color>
-    <color name="colorSecondaryLightTranspa">#82eb6f7d</color>
+    <color name="colorSecondaryLightTranspa">#80EB6F7D</color>
     <color name="colorSecondaryAmarillo">#ca7582</color>
     <color name="colorSecondaryRojo">#dfacb4</color>
     <!--<color name="colorSecondary100">#dfd8c8</color>

@@ -1,10 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Casual Learn</string>
+    <string name="emailCasualLearn" translatable="false">casuallearnapp@gsic.uva.es</string>
     <string name="fileProvider" translatable="false">es.uva.gsic.adolfinstro.fileprovider</string>
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="accept">OK</string>
-    <string name="exi">Exit</string>
+    <string name="exi">Exit app</string>
     <string name="title_activity_task_camera">task_camera</string>
     <string name="task">Task</string>
     <string name="cancel">Cancel</string>
@@ -157,6 +158,7 @@
     <string name="preguntaImagenes">Ask and multiple photos</string>
     <string name="descripcionFuncionamientoPalabraClave">If you want multiples hashtags, split them with commas. We will take care of add # necessary</string>
     <string name="twitSinTexto">I just did a task with @CasualLearn in </string>
+    <string name="yammerSinTexto">I just did a task with Casual Learn in </string>
     <string name="iconoTareaPreview">Icon</string>
     <string name="previewVisita">Visit a place</string>
     <string name="previewRespuestaCorta">Short text task</string>
@@ -183,11 +185,27 @@
     <string name="mapas">Maps</string>
     <string name="urlLicencia" translatable="false">https://www.apache.org/licenses/LICENSE-2.0</string>
     <string name="errorTextoDenuncia">Select an option or describe the problem in the text box</string>
-    <string name="emailCasualLearn">casuallearnapp@gsic.uva.es</string>
     <string name="errorTarea">Mistake in a task</string>
     <string name="enviarCorreo">Send email</string>
     <string name="noEmail">You don\'t have any email client</string>
     <string name="fuentes_de_info">Information sources</string>
     <string name="salir">Exit</string>
     <string name="continuar">Next</string>
+    <string name="cerrarSesion">Log out</string>
+    <string name="iniciarSesion">Log in</string>
+    <string name="cerrarSesionMensaje">Are you sure you want to log out? If you log out you will lose all the responses saved on this device.</string>
+    <string name="entiendo">I get it</string>
+    <string name="volverRecordar">Remember later</string>
+    <string name="volverSolicitar">Request permissions</string>
+    <string name="sinImplementar">Not implemented</string>
+    <string name="instalaYammer">You should install the official Yammer client to share your answer</string>
+    <string name="instalaInsta">You should install the official Instagram client to share your answer</string>
+    <string name="activaUbicacion">Turn on the location service of your device</string>
+    <string name="universidad_de_valladolid">Universidad de Valladolid</string>
+    <string name="junta_de_castilla_y_leon">Junta de Castilla y León</string>
+    <string name="dbpedia">DBpedia</string>
+    <string name="wikidata">WIKIDATA</string>
+    <string name="thumbnail">Thumbnail</string>
+    <string name="infoImagen">File info</string>
+    <string name="imagenFondo">Imagen de fondo</string>
 </resources>

@@ -11,24 +11,37 @@
         android:layout_height="wrap_content">
 
         <TextView
+            android:id="@+id/tituloCompletada"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textAlignment="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="5dp"
+            android:layout_marginHorizontal="15dp" />
+
+
+        <TextView
             android:id="@+id/tvDescripcionCompletada"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
-            android:textSize="20sp"
+            app:layout_constraintTop_toBottomOf="@id/tituloCompletada"
+            android:layout_marginTop="5dp"
             android:visibility="visible"
-            android:layout_marginHorizontal="5dp"/>
+            android:layout_marginHorizontal="15dp"/>
 
         <EditText
             android:id="@+id/etRespuestaTextualCompletada"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="20sp"
+            android:layout_marginTop="5dp"
+            android:textSize="16sp"
             android:maxLength="600"
             android:hint="@string/hintRespuesta"
+            android:lines="2"
             android:maxLines="10"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -38,7 +51,7 @@
             android:inputType="textMultiLine"
             android:enabled="false"
             android:autofillHints="no"
-            android:layout_marginHorizontal="5dp"/>
+            android:layout_marginHorizontal="15dp"/>
 
         <Button style="@style/botonPrimario"
             android:id="@+id/btAgregarCompletada"
@@ -46,7 +59,8 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/etRespuestaTextualCompletada"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="20dp"
             android:text="@string/agregarContenido"
             android:drawableStart="@drawable/ic_add_blue_24dp"
             android:visibility="gone"/>
@@ -59,8 +73,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btAgregarCompletada"
             android:visibility="gone"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"/>
+            android:layout_marginTop="5dp"
+            android:layout_marginHorizontal="5dp"/>
 
         <RatingBar android:theme="@style/barraPuntua"
             android:id="@+id/rbPuntuacionCompletada"
@@ -72,6 +86,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rvImagenesAlumno"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletada"
+            android:layout_marginTop="5dp"
             android:visibility="visible" />
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -81,6 +97,61 @@
             android:layout_marginHorizontal="5dp"
             android:id="@+id/clCompletada"
             app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletada"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="15dp"
+            app:fabSize="auto"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/clCompletada"
+            app:srcCompat="@drawable/ic_share_white" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletadaTwitter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintStart_toStartOf="@id/btCompartirCompletada"
+            app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletada"
+            app:srcCompat="@drawable/ic_twitter_logo_white"
+            android:visibility="gone"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletadaYammer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintStart_toStartOf="@id/btCompartirCompletada"
+            app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletadaTwitter"
+            app:srcCompat="@drawable/ic_yammer"
+            android:visibility="gone"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletadaInstagram"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintStart_toStartOf="@id/btCompartirCompletada"
+            app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletadaYammer"
+            app:srcCompat="@drawable/ic_instagram"
+            android:visibility="gone"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

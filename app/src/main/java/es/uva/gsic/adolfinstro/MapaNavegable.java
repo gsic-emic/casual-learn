@@ -130,10 +130,12 @@ public class MapaNavegable extends AppCompatActivity
         if(permisos.isEmpty()) {
             if(myLocationNewOverlay == null) {
                 GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+                gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
+                gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();
                 myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
                 map.getOverlays().add(myLocationNewOverlay);
             }
             if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {
@@ -183,7 +185,7 @@ public class MapaNavegable extends AppCompatActivity
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();
                 myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.person));
+                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
                 map.getOverlays().add(myLocationNewOverlay);
             }
             if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {

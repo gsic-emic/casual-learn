@@ -4,6 +4,13 @@ import android.net.Uri;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.util.Objects;
+
+/**
+ * Clase para controlar la interacción del usuario frente al navegador interno
+ * @author pablo
+ * @version 20200727
+ */
 public abstract class ClienteWeb extends WebViewClient {
 
     /**
@@ -15,7 +22,7 @@ public abstract class ClienteWeb extends WebViewClient {
      */
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        if(Uri.parse(url).getScheme().toLowerCase().equals("https"))
+        if(Objects.requireNonNull(Uri.parse(url).getScheme()).toLowerCase().equals("https"))
             return false;
         else {
             navegadorExterno();
@@ -23,5 +30,9 @@ public abstract class ClienteWeb extends WebViewClient {
         }
     }
 
+    /**
+     * Método que hay que sobrescribir para que los enlaces que no sean http se abran en el navegador
+     * externo
+     */
     public abstract void navegadorExterno();
 }

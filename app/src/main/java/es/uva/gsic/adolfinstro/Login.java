@@ -1,6 +1,5 @@
 package es.uva.gsic.adolfinstro;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
@@ -45,7 +45,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * @author Pablo
  * @version 20200520
  */
-public class Login extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
+public class Login extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
 
     /** Código de identificación para la solicitud de los permisos de la app */
     private static final int requestCodePermissions = 1000;
@@ -66,6 +66,10 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
     /** Google signIn */
     public static GoogleSignInOptions gso;
+
+    private AlertDialog.Builder dialogoAccesoSinId;
+
+    private Boolean dialogoAccesoSinIdVisible;
 
     @Override
     public void onCreate(Bundle sI){
@@ -95,6 +99,41 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
         firebaseAuth = FirebaseAuth.getInstance();
 
+        dialogoAccesoSinId = new AlertDialog.Builder(this);
+        dialogoAccesoSinId.setMessage(R.string.textoInicio);
+        dialogoAccesoSinId.setPositiveButton(R.string.autenticarseMasTarde, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialogoAccesoSinIdVisible = false;
+                saltaMapa(null);
+            }
+        });
+        dialogoAccesoSinId.setNegativeButton(R.string.autenticarseAhora, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialogoAccesoSinIdVisible = false;
+                lanzaGoogle();
+            }
+        });
+        dialogoAccesoSinId.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoAccesoSinIdVisible = false;
+            }
+        });
+
+        dialogoAccesoSinIdVisible = false;
+        if(sI != null && sI.getBoolean("DIALOGOSINID", false)){
+            dialogoAccesoSinIdVisible = true;
+            dialogoAccesoSinId.show();
+        }
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NotNull Bundle bundle){
+        bundle.putBoolean("DIALOGOSINID", dialogoAccesoSinIdVisible);
+        super.onSaveInstanceState(bundle);
     }
 
     @Override
@@ -151,7 +190,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
                 alertBuilder.setTitle(getString(R.string.permi));
                 alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
+                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //Se comprueba todos los permisos que necesite la app de nuevo, por este
@@ -167,6 +206,7 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
                         System.exit(0);
                     }
                 });
+                alertBuilder.setCancelable(false);
                 alertBuilder.show();
                 break;
             }
@@ -180,13 +220,14 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
      * @param data datos
      */
     @Override
-    public void onActivityResult(int requestCode, int result, Intent data){
-        switch (requestCode){
+    public void onActivityResult(int requestCode, int result, Intent data) {
+        super.onActivityResult(requestCode, result, data);
+        switch (requestCode) {
             case requestAuth:
                 //No es necesario comprobar el resultado de la petición según la ayuda oficial
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 tareaCuenta(task);
-            break;
+                break;
             default:
         }
     }
@@ -274,21 +315,8 @@ public class Login extends Activity implements SharedPreferences.OnSharedPrefere
 
     public void boton(View view) {
         if(view.getId() == R.id.btInicioSinIdentificacion){
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-            alertDialog.setMessage(R.string.textoInicio);
-            alertDialog.setPositiveButton(R.string.autenticarseMasTarde, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    saltaMapa(null);
-                }
-            });
-            alertDialog.setNegativeButton(R.string.autenticarseAhora, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    lanzaGoogle();
-                }
-            });
-            alertDialog.show();
+            dialogoAccesoSinIdVisible = true;
+            dialogoAccesoSinId.show();
         }
     }
 }
