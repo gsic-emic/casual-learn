@@ -89,9 +89,9 @@ public class Acerca extends AppCompatActivity {
             dialogoDesarrolladores.show();
         }
 
-        Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoJunta), "https://commons.wikimedia.org/wiki/File:Logotipo_de_la_Junta_de_Castilla_y_Le%C3%B3n.svg");
-        Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoDbPedia), "https://commons.wikimedia.org/wiki/File:DBpediaLogo.svg");
-        Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoWikidata), "https://commons.wikimedia.org/wiki/File:Wikidata-logo-en.svg");
+        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoJunta), "https://commons.wikimedia.org/wiki/File:Logotipo_de_la_Junta_de_Castilla_y_Le%C3%B3n.svg");
+        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoDbPedia), "https://commons.wikimedia.org/wiki/File:DBpediaLogo.svg");
+        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoWikidata), "https://commons.wikimedia.org/wiki/File:Wikidata-logo-en.svg");
     }
 
     /**
