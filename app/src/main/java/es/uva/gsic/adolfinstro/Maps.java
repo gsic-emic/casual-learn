@@ -9,8 +9,8 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,7 +25,6 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,6 +34,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import androidx.appcompat.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -62,7 +62,6 @@ import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
@@ -71,7 +70,6 @@ import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
@@ -83,6 +81,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.Bocadillo;
@@ -92,12 +91,13 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20200722
+ * @version 20200730
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback {
+        ActivityCompat.OnRequestPermissionsResultCallback,
+        AdaptadorListaCoincidencia.ItemClickListenerDialogo {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
 
@@ -148,6 +148,10 @@ public class  Maps extends AppCompatActivity implements
     Boolean dialogoCerrarSesionActivo = false;
 
     Guideline guiaMapa;
+
+    Dialog dialogoCoincidecncias;
+
+    private AdaptadorListaCoincidencia adaptadorListaCoincidencia;
 
 
 
@@ -251,6 +255,16 @@ public class  Maps extends AppCompatActivity implements
             dialogoCerrarSesion.show();
         }
 
+        dialogoCoincidecncias = new Dialog(this);
+        dialogoCoincidecncias.setContentView(R.layout.dialogo_coincidencias);
+        dialogoCoincidecncias.setCancelable(true);
+        /*dialogoDesarrolladores.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoDesarrolladoresActivo = false;
+            }
+        });*/
+
         //Se decide si se muestra el mapa
         if (noMolestar) {
             setContentView(R.layout.no_molestar);
@@ -312,18 +326,6 @@ public class  Maps extends AppCompatActivity implements
             map.setMinZoomLevel(nivelMin);
             map.setMaxZoomLevel(nivelMax);
 
-            /*GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-            gpsMyLocationProvider.setLocationUpdateMinDistance(5);
-            gpsMyLocationProvider.setLocationUpdateMinTime(5000);
-            gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
-            gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
-            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-            myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
-            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-            myLocationNewOverlay.setEnableAutoStop(true);*/
-
             final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
             scaleBarOverlay = new ScaleBarOverlay(map);
             scaleBarOverlay.setCentred(true); //La barra de escala se queda en el centro
@@ -337,9 +339,13 @@ public class  Maps extends AppCompatActivity implements
             int ancho = displayMetrics.widthPixels;
             int alto = displayMetrics.heightPixels;
             if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-                scaleBarOverlay.setScaleBarOffset((int)(ancho / 2), (int) (alto * 0.05)); //posición en el el display
+                scaleBarOverlay.drawLongitudeScale(true);
+                scaleBarOverlay.drawLatitudeScale(false);
+                scaleBarOverlay.setScaleBarOffset((int)(ancho * 0.05), (int) (alto * 0.4)); //posición en el el display
             }else{
-                scaleBarOverlay.setScaleBarOffset((int)(ancho*0.4), (int) (alto * 0.05));
+                scaleBarOverlay.drawLongitudeScale(true);
+                scaleBarOverlay.drawLatitudeScale(false);
+                scaleBarOverlay.setScaleBarOffset((int)(ancho*0.02), (int) (alto * 0.4));
             }
 
             pintaItemsfijos();
@@ -372,6 +378,35 @@ public class  Maps extends AppCompatActivity implements
                     //guiaMapa.setGuidelinePercent(1f);
                     contenedor.setVisibility(View.GONE);
                     contenedor.setAdapter(null);
+                    return false;
+                }
+            });
+
+
+            SearchView searchView = findViewById(R.id.svMapa);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    JSONArray lugares = Auxiliar.buscaMunicipio(context, query.trim().toLowerCase());
+                    if(lugares.length() > 0){
+                        if(lugares.length() == 1){
+                            try {
+                                centraMapa(lugares.getJSONObject(0).getDouble("Latitud"),lugares.getJSONObject(0).getDouble("Longitud"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }else{
+                            dialogoCoincidencias(lugares);
+                        }
+                    }else{
+                        pintaSnackBar(getString(R.string.municipioNoEncontrado));
+                    }
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    //Aqui debería ir la sugerencia según escriba
                     return false;
                 }
             });
@@ -408,6 +443,36 @@ public class  Maps extends AppCompatActivity implements
         }catch (Exception e){
             //No hay nada que mostrar
         }
+    }
+
+    /**
+     * Método para modificar el dialogo de coincidencias de la búsqueda (agregar la lista de municipios
+     * que coincidan
+     * @param lugares Lista de municipios que puede haber buscado el usuario
+     */
+    private void dialogoCoincidencias(JSONArray lugares) {
+        List<ListaCoincidencias> lista = new ArrayList<>();
+        JSONObject lugar;
+        try {
+            for(int i = 0; i < lugares.length(); i++){
+                lugar = lugares.getJSONObject(i);
+            lista.add(new ListaCoincidencias(lugar));
+            }
+            RecyclerView recyclerView = dialogoCoincidecncias.findViewById(R.id.rvListaCoincidencias);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
+            adaptadorListaCoincidencia = new AdaptadorListaCoincidencia(this, lista);
+            adaptadorListaCoincidencia.setClickListenerDialogo(this);
+            recyclerView.setAdapter(adaptadorListaCoincidencia);
+            dialogoCoincidecncias.show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void centraMapa(double latitud, double longitud) {
+        mapController.setZoom(nivelMax - 2);
+        mapController.setCenter(new GeoPoint(latitud, longitud));
     }
 
     private void pintaSnackBar(String texto){
@@ -610,7 +675,8 @@ public class  Maps extends AppCompatActivity implements
         JSONArray tareas = marcador.getTareasMarcador();
         if(tareas.length() > 0){
             sinPulsarTarea.setVisibility(View.GONE);
-            guiaMapa.setGuidelinePercent(0.8f);
+            if(guiaMapa != null)
+                guiaMapa.setGuidelinePercent(0.8f);
             contenedor.setVisibility(View.VISIBLE);
             contenedor.setHasFixedSize(true);
 
@@ -1485,6 +1551,14 @@ public class  Maps extends AppCompatActivity implements
         map.invalidate();
     }
 
+    @Override
+    public void onItemClickDialogo(View view, int position) {
+        dialogoCoincidecncias.cancel();
+
+        centraMapa(adaptadorListaCoincidencia.getLatitud(position),
+                adaptadorListaCoincidencia.getLongitud(position));
+    }
+
     //private String idInstanteGETZONA = "instanteGETZONA";
 
     /**
@@ -1613,6 +1687,39 @@ public class  Maps extends AppCompatActivity implements
          */
         int getNumeroTareas() {
             return numeroTareas;
+        }
+    }
+
+    public static class ListaCoincidencias{
+        String municipio, provincia;
+        List<Double> posicion;
+
+        ListaCoincidencias(JSONObject jsonObject) throws JSONException {
+            this.municipio = jsonObject.getString("Municipio");
+            this.provincia = jsonObject.getString("Provincia");
+            posicion = new ArrayList<>();
+            posicion.add(jsonObject.getDouble("Latitud"));
+            posicion.add(jsonObject.getDouble("Longitud"));
+        }
+
+        public String getMunicipio() {
+            return municipio;
+        }
+
+        public String getProvincia() {
+            return provincia;
+        }
+
+        public List<Double> getPosicion() {
+            return posicion;
+        }
+
+        public double getLatitud(){
+            return posicion.get(0);
+        }
+
+        public double getLongitud(){
+            return posicion.get(1);
         }
     }
 

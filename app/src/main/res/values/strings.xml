@@ -208,4 +208,7 @@
     <string name="thumbnail">Thumbnail</string>
     <string name="infoImagen">File info</string>
     <string name="imagenFondo">Imagen de fondo</string>
+    <string name="buscaMunicipiosCyL">Search towns of Castilla y León</string>
+    <string name="municipioNoEncontrado">Town not found</string>
+    <string name="Coincidencias">Search matches</string>
 </resources>

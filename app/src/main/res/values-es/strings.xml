@@ -179,4 +179,7 @@
     <string name="thumbnail">Thumbnail</string>
     <string name="infoImagen">Información de la imagen</string>
     <string name="imagenFondo">Imagen de fondo</string>
+    <string name="buscaMunicipiosCyL">Busca municipios de Castilla y León</string>
+    <string name="municipioNoEncontrado">Municipio no encontrado</string>
+    <string name="Coincidencias">Coincidencias encontradas</string>
 </resources>
