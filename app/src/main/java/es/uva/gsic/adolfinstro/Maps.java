@@ -91,7 +91,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20200730
+ * @version 20200831
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -147,11 +147,13 @@ public class  Maps extends AppCompatActivity implements
 
     Boolean dialogoCerrarSesionActivo = false;
 
-    Guideline guiaMapa;
+    Guideline guiaMapaH, guiaMapaV;
 
     Dialog dialogoCoincidecncias;
 
     private AdaptadorListaCoincidencia adaptadorListaCoincidencia;
+
+    private RecyclerView.LayoutManager layoutManager;
 
 
 
@@ -273,9 +275,9 @@ public class  Maps extends AppCompatActivity implements
             map = findViewById(R.id.map);
             sinPulsarTarea = findViewById(R.id.tvTareasMapa);
             contenedor = findViewById(R.id.rvTareasMapa);
-            RecyclerView.LayoutManager layoutManager;
 
-            guiaMapa = findViewById(R.id.guiaMapa);
+            guiaMapaH = findViewById(R.id.guiaMapa);
+            guiaMapaV = findViewById(R.id.guiaMapaV);
 
             if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
                 layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -374,10 +376,16 @@ public class  Maps extends AppCompatActivity implements
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     InfoWindow.closeAllInfoWindowsOn(map);
-                    sinPulsarTarea.setVisibility(View.VISIBLE);
+                    //sinPulsarTarea.setVisibility(View.VISIBLE);
                     //guiaMapa.setGuidelinePercent(1f);
-                    contenedor.setVisibility(View.GONE);
+                    contenedor.setBackgroundColor(getResources().getColor(R.color.transparente));
                     contenedor.setAdapter(null);
+                    contenedor.setLayoutManager(null);
+                    contenedor.setVisibility(View.GONE);
+                    if(guiaMapaH != null)
+                        guiaMapaH.setGuidelinePercent(1f);
+                    else
+                        guiaMapaV.setGuidelinePercent(1f);
                     return false;
                 }
             });
@@ -602,6 +610,7 @@ public class  Maps extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
         //Se comprueba uno a uno si alguno de los permisos no se había aceptado
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean falta = false;
         for (int i : grantResults) {
             if (i == -1) {
@@ -630,7 +639,7 @@ public class  Maps extends AppCompatActivity implements
                 break;
             }
         }
-        if(!falta){
+        if (!falta) {
             GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
             gpsMyLocationProvider.setLocationUpdateMinDistance(5);
             gpsMyLocationProvider.setLocationUpdateMinTime(5000);
@@ -675,8 +684,12 @@ public class  Maps extends AppCompatActivity implements
         JSONArray tareas = marcador.getTareasMarcador();
         if(tareas.length() > 0){
             sinPulsarTarea.setVisibility(View.GONE);
-            if(guiaMapa != null)
-                guiaMapa.setGuidelinePercent(0.8f);
+            contenedor.setLayoutManager(layoutManager);
+            contenedor.setBackgroundColor(getResources().getColor(R.color.blackTransparente25));
+            if(guiaMapaH != null)
+                guiaMapaH.setGuidelinePercent(0.8f);
+            else
+                guiaMapaV.setGuidelinePercent(0.8f);
             contenedor.setVisibility(View.VISIBLE);
             contenedor.setHasFixedSize(true);
 
@@ -924,7 +937,7 @@ public class  Maps extends AppCompatActivity implements
             checkPermissions();
             if (map != null)
                 map.onResume();
-            if(estadoContenedor != null){
+            if(estadoContenedor != null && contenedor.getLayoutManager() != null){
                 contenedor.setVisibility(View.VISIBLE);
                 sinPulsarTarea.setVisibility(View.GONE);
                 contenedor.getLayoutManager().onRestoreInstanceState(estadoContenedor.getParcelable("CONTENEDOR"));

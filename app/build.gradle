@@ -15,8 +15,8 @@ android {
         applicationId "es.uva.gsic.adolfinstro"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 9
-        versionName "1.0.8"
+        versionCode 12
+        versionName "1.0.11"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
