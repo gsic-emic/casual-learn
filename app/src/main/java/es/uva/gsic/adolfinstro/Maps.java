@@ -399,7 +399,7 @@ public class  Maps extends AppCompatActivity implements
                     if(lugares.length() > 0){
                         if(lugares.length() == 1){
                             try {
-                                centraMapa(lugares.getJSONObject(0).getDouble("Latitud"),lugares.getJSONObject(0).getDouble("Longitud"));
+                                centraMapa(lugares.getJSONObject(0).getDouble("a"),lugares.getJSONObject(0).getDouble("o"));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -1708,11 +1708,11 @@ public class  Maps extends AppCompatActivity implements
         List<Double> posicion;
 
         ListaCoincidencias(JSONObject jsonObject) throws JSONException {
-            this.municipio = jsonObject.getString("Municipio");
-            this.provincia = jsonObject.getString("Provincia");
+            this.municipio = jsonObject.getString("m");
+            this.provincia = jsonObject.getString("p");
             posicion = new ArrayList<>();
-            posicion.add(jsonObject.getDouble("Latitud"));
-            posicion.add(jsonObject.getDouble("Longitud"));
+            posicion.add(jsonObject.getDouble("a"));
+            posicion.add(jsonObject.getDouble("o"));
         }
 
         public String getMunicipio() {

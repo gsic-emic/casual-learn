@@ -45,7 +45,6 @@ import org.osmdroid.util.BoundingBox;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -1187,7 +1186,7 @@ public class Auxiliar {
             userV = query.split(" ");
             for(int i = 0; i < Auxiliar.municipios.length(); i++){
                 municipio = Auxiliar.municipios.getJSONObject(i);
-                bdV = municipio.getString("Municipio").toLowerCase().split(" ");
+                bdV = municipio.getString("m").toLowerCase().split(" ");
                 coincidenciaPalabra = 0;
                 for(int j = 0; j < userV.length; j++){
                     if(!no.contains(userV[j])) {

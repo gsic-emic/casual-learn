@@ -84,7 +84,7 @@ public class AdaptadorListaCoincidencia extends RecyclerView.Adapter<AdaptadorLi
      */
     @Override
     public void onBindViewHolder(@NonNull AdaptadorListaCoincidencia.ViewHolder holder, int position) {
-        holder.tvContenido.setText(lista.get(position).getMunicipio() + ", " + lista.get(position).getProvincia());
+        holder.tvContenido.setText(String.format("%s, %s", lista.get(position).getMunicipio(), lista.get(position).getProvincia()));
     }
 
     /**
