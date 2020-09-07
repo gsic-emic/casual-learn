@@ -415,6 +415,7 @@ public class  Maps extends AppCompatActivity implements
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     //Aqui debería ir la sugerencia según escriba
+
                     return false;
                 }
             });

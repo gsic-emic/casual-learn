@@ -478,10 +478,12 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         .replaceAll("</a>", "")
                         .replaceAll("<a.*?>","");
 
+                String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
+
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setContentTitle(context.getString(R.string.nuevaTarea))
+                        .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))
                         .setContentText(textoTarea)
                         .setLargeIcon(iconoGrandeNotificacion(context.getResources().getDrawable(iconoTarea)));
