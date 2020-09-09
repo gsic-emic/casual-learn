@@ -5,7 +5,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minWidth="300dp">
+    android:minWidth="300dp"
+    android:minHeight="100dp">
     <TextView
         android:id="@+id/tvTituloCoincidencias"
         android:text="@string/Coincidencias"

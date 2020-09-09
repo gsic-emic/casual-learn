@@ -1,17 +1,13 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RatingBar;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -24,13 +20,12 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  *
  * @author Pablo
  */
-public class Puntuacion extends AppCompatActivity
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class Puntuacion extends AppCompatActivity {
 
     private String idTarea;
     private float puntuacion;
     private Button btEnviarPuntuacion;
-    private String hashtag;
+    //private String hashtag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +49,7 @@ public class Puntuacion extends AppCompatActivity
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
                 if(fromUser){
                     if(rating > 0){
-                        btEnviarPuntuacion.setText(getString(R.string.enviar));
+                        btEnviarPuntuacion.setText(getString(R.string.enviarPuntuacion));
                         puntuacion = rating;
                     }else{
                         btEnviarPuntuacion.setText(getString(R.string.cancel));
@@ -64,9 +59,9 @@ public class Puntuacion extends AppCompatActivity
             }
         });
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        /*SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.HASHTAG_pref);
+        onSharedPreferenceChanged(sharedPreferences, Ajustes.HASHTAG_pref);*/
     }
 
     /**
@@ -140,7 +135,7 @@ public class Puntuacion extends AppCompatActivity
                     //Auxiliar.returnMain(getApplication().getBaseContext());
                 }
                 break;
-            case R.id.btCompartirPuntua:
+            /*case R.id.btCompartirPuntua:
                 if((findViewById(R.id.btCompartirPuntuaTwitter)).getVisibility() == View.VISIBLE){
                     muestraOculta(false);
                 }else{
@@ -171,13 +166,13 @@ public class Puntuacion extends AppCompatActivity
                                 idTarea),
                         hashtag);
                 muestraOculta(false);
-                break;
+                break;*/
             default:
                 break;
         }
     }
 
-    private void muestraOculta(boolean mostrar){
+    /*private void muestraOculta(boolean mostrar){
         Integer[] lista = {
                 R.id.btCompartirPuntuaTwitter,
                 R.id.btCompartirPuntuaYammer,
@@ -195,19 +190,20 @@ public class Puntuacion extends AppCompatActivity
         else
             ((FloatingActionButton) findViewById(R.id.btCompartirPuntua))
                     .setImageDrawable(getResources().getDrawable(R.drawable.ic_share_secondary));
-    }
+    }*/
 
     private void vuelveInicio(String string) {
-        Intent intent = new Intent(this, Maps.class);
+        Intent intent = new Intent(this, CompartirRespuesta.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if(string != null)
-            intent.putExtra(Auxiliar.textoParaElMapa, string);
+        //if(string != null)
+        intent.putExtra(Auxiliar.textoParaElMapa, string);
+        intent.putExtra("ID", idTarea);
         startActivity(intent);
         finishAffinity();
     }
 
-    @Override
+    /*@Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key){
             case Ajustes.HASHTAG_pref:
@@ -216,5 +212,5 @@ public class Puntuacion extends AppCompatActivity
             default:
                 break;
         }
-    }
+    }*/
 }

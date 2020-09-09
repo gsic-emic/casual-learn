@@ -211,4 +211,10 @@
     <string name="buscaMunicipiosCyL">Search towns of Castilla y León</string>
     <string name="municipioNoEncontrado">Town not found</string>
     <string name="Coincidencias">Search matches</string>
+    <string name="skip">Skip</string>
+    <string name="enviarPuntuacion">Send score</string>
+    <string name="compartir_instagram">Share on Instagram</string>
+    <string name="compartir_yammer">Share on Yammer</string>
+    <string name="compartir_twitter">Share on Twitter</string>
+    <string name="compartir_respuesta">Share answer!</string>
 </resources>

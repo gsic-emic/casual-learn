@@ -47,6 +47,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
@@ -104,7 +105,7 @@ public class  Maps extends AppCompatActivity implements
     /** Instancia del texto informativo en el que el usuario todavía no ha pulsado ningún marcador */
     private TextView sinPulsarTarea;
     /** Objeto donde se expone toda la lista de tareas del marcador */
-    private RecyclerView contenedor;
+    private RecyclerView contenedor, contenedorBusqMapa;
 
     /** Objeto que almacenará, entre otras cosas, la última posición conocida del usuario*/
     private MyLocationNewOverlay myLocationNewOverlay;
@@ -275,6 +276,7 @@ public class  Maps extends AppCompatActivity implements
             map = findViewById(R.id.map);
             sinPulsarTarea = findViewById(R.id.tvTareasMapa);
             contenedor = findViewById(R.id.rvTareasMapa);
+            contenedorBusqMapa = findViewById(R.id.rvBusquedaMapa);
 
             guiaMapaH = findViewById(R.id.guiaMapa);
             guiaMapaV = findViewById(R.id.guiaMapaV);
@@ -309,6 +311,8 @@ public class  Maps extends AppCompatActivity implements
             map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zoom con dos dedos
             mapController = map.getController();
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+
+            final FloatingActionButton btCentrar = findViewById(R.id.btCentrar);
             if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
                 JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
                 try {
@@ -391,11 +395,11 @@ public class  Maps extends AppCompatActivity implements
             });
 
 
-            SearchView searchView = findViewById(R.id.svMapa);
+            final SearchView searchView = findViewById(R.id.svMapa);
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    JSONArray lugares = Auxiliar.buscaMunicipio(context, query.trim().toLowerCase());
+                    /*JSONArray lugares = Auxiliar.buscaMunicipio(context, query.trim().toLowerCase());
                     if(lugares.length() > 0){
                         if(lugares.length() == 1){
                             try {
@@ -405,16 +409,64 @@ public class  Maps extends AppCompatActivity implements
                             }
                         }else{
                             dialogoCoincidencias(lugares);
-                        }
+                        //}
                     }else{
                         pintaSnackBar(getString(R.string.municipioNoEncontrado));
-                    }
+                    }*/
                     return false;
                 }
 
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     //Aqui debería ir la sugerencia según escriba
+                    if(newText.trim().length() > 0) {
+                        JSONArray municipios = Auxiliar.buscaMunicipio(context, newText.trim().toLowerCase());
+                        if(municipios.length() > 0) {
+                            if(btCentrar.isShown())
+                                btCentrar.hide();
+                            contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
+                            contenedorBusqMapa.setBackgroundColor(getResources().getColor(R.color.transparente));
+                            contenedorBusqMapa.setVisibility(View.VISIBLE);
+                            contenedorBusqMapa.setHasFixedSize(true);
+                            List<ListaCoincidencias> lista = new ArrayList<>();
+                            JSONObject lugar;
+                            try{
+                                for(int i = 0; i < municipios.length(); i++){
+                                    lugar = municipios.getJSONObject(i);
+                                    if(lista.isEmpty())
+                                        lista.add(new ListaCoincidencias(lugar));
+                                    else{
+                                        ListaCoincidencias coincidencia;
+                                        boolean agregado = false;
+                                        for(int j = 0; j < lista.size(); j++){
+                                            coincidencia = lista.get(j);
+                                            if(coincidencia.getPoblacion() < lugar.getInt("g")) {
+                                                lista.add(j, new ListaCoincidencias(lugar));
+                                                agregado = true;
+                                                break;
+                                            }
+                                        }
+                                        if(!agregado)
+                                            lista.add(new ListaCoincidencias(lugar));
+                                    }
+                                }
+                                adaptadorListaCoincidencia = new AdaptadorListaCoincidencia(context, lista);
+                                adaptadorListaCoincidencia.setClickListenerDialogo(Maps.this);
+                                contenedorBusqMapa.setAdapter(adaptadorListaCoincidencia);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }else{
+                            ocultaContenedorBusqMapa();
+                            if(!btCentrar.isShown())
+                                btCentrar.show();
+                        }
+
+                    }else{
+                        ocultaContenedorBusqMapa();
+                        if(!btCentrar.isShown())
+                            btCentrar.show();
+                    }
 
                     return false;
                 }
@@ -427,20 +479,20 @@ public class  Maps extends AppCompatActivity implements
                 pintaSnackBar(contenido);
             else {
                 JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                if(Login.firebaseAuth == null || idUsuario == null) {
+                if(idUsuario == null) {
                     Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
                     snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
                     snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             JSONObject idUser = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                            if(Login.firebaseAuth == null || idUser == null) {
+                            if(idUser == null) {
                                 Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                                         .requestIdToken(getString(R.string.default_web_client_id))
                                         .requestEmail().build();
                                 Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
                                 Intent intent = Login.googleSignInClient.getSignInIntent();
-                                startActivityForResult(intent, Login.requestAuth);
+                                startActivityForResult(intent, Login.requestAuth + 1);
                             }
                         }
                     });
@@ -455,6 +507,16 @@ public class  Maps extends AppCompatActivity implements
     }
 
     /**
+     * Método para ocultar la lista de coincidencias de la búsqueda
+     */
+    private void ocultaContenedorBusqMapa() {
+        contenedorBusqMapa.setBackgroundColor(getResources().getColor(R.color.transparente));
+        contenedorBusqMapa.setAdapter(null);
+        contenedorBusqMapa.setLayoutManager(null);
+        contenedorBusqMapa.setVisibility(View.GONE);
+    }
+
+    /**
      * Método para modificar el dialogo de coincidencias de la búsqueda (agregar la lista de municipios
      * que coincidan
      * @param lugares Lista de municipios que puede haber buscado el usuario
@@ -465,7 +527,22 @@ public class  Maps extends AppCompatActivity implements
         try {
             for(int i = 0; i < lugares.length(); i++){
                 lugar = lugares.getJSONObject(i);
-            lista.add(new ListaCoincidencias(lugar));
+                if(lista.isEmpty())
+                    lista.add(new ListaCoincidencias(lugar));
+                else{
+                    ListaCoincidencias coincidencia;
+                    boolean agregado = false;
+                    for(int j = 0; j < lista.size(); j++){
+                        coincidencia = lista.get(j);
+                        if(coincidencia.getPoblacion() < lugar.getInt("g")) {
+                            lista.add(j, new ListaCoincidencias(lugar));
+                            agregado = true;
+                            break;
+                        }
+                    }
+                    if(!agregado)
+                        lista.add(new ListaCoincidencias(lugar));
+                }
             }
             RecyclerView recyclerView = dialogoCoincidecncias.findViewById(R.id.rvListaCoincidencias);
             recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -496,7 +573,7 @@ public class  Maps extends AppCompatActivity implements
     public void onActivityResult(int requestCode, int result, Intent data) {
         super.onActivityResult(requestCode, result, data);
         switch (requestCode) {
-            case Login.requestAuth:
+            case (Login.requestAuth+1):
                 //No es necesario comprobar el resultado de la petición según la ayuda oficial
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 GoogleSignInAccount account = null;
@@ -512,18 +589,22 @@ public class  Maps extends AppCompatActivity implements
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
-        AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
-        Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>(){
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-                    FirebaseUser firebaseUser = Login.firebaseAuth.getCurrentUser();
-                    updateUI(firebaseUser, true);
-                }else{
-                    updateUI(null, true);
+        try {
+            AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
+            Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        FirebaseUser firebaseUser = Login.firebaseAuth.getCurrentUser();
+                        updateUI(firebaseUser, true);
+                    } else {
+                        updateUI(null, true);
+                    }
                 }
-            }
-        });
+            });
+        }catch (Exception e){
+            updateUI(null, true);
+        }
     }
 
     public void updateUI(FirebaseUser firebaseUser, boolean registro){
@@ -1345,7 +1426,7 @@ public class  Maps extends AppCompatActivity implements
                             .requestIdToken(getString(R.string.default_web_client_id))
                             .requestEmail().build();
                     Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
-                    startActivityForResult(Login.googleSignInClient.getSignInIntent(), Login.requestAuth);
+                    startActivityForResult(Login.googleSignInClient.getSignInIntent(), Login.requestAuth + 1);
                 }
                 else {
                     dialogoCerrarSesionActivo = true;
@@ -1567,7 +1648,12 @@ public class  Maps extends AppCompatActivity implements
 
     @Override
     public void onItemClickDialogo(View view, int position) {
-        dialogoCoincidecncias.cancel();
+        if(dialogoCoincidecncias != null && dialogoCoincidecncias.isShowing())
+            dialogoCoincidecncias.cancel();
+
+        if(contenedorBusqMapa != null && contenedorBusqMapa.getVisibility() == View.VISIBLE){
+            ocultaContenedorBusqMapa();
+        }
 
         centraMapa(adaptadorListaCoincidencia.getLatitud(position),
                 adaptadorListaCoincidencia.getLongitud(position));
@@ -1707,13 +1793,15 @@ public class  Maps extends AppCompatActivity implements
     public static class ListaCoincidencias{
         String municipio, provincia;
         List<Double> posicion;
+        int poblacion;
 
         ListaCoincidencias(JSONObject jsonObject) throws JSONException {
-            this.municipio = jsonObject.getString("m");
-            this.provincia = jsonObject.getString("p");
+            municipio = jsonObject.getString("m");
+            provincia = jsonObject.getString("p");
             posicion = new ArrayList<>();
             posicion.add(jsonObject.getDouble("a"));
             posicion.add(jsonObject.getDouble("o"));
+            poblacion = jsonObject.getInt("g");
         }
 
         public String getMunicipio() {
@@ -1724,16 +1812,16 @@ public class  Maps extends AppCompatActivity implements
             return provincia;
         }
 
-        public List<Double> getPosicion() {
-            return posicion;
-        }
-
         public double getLatitud(){
             return posicion.get(0);
         }
 
         public double getLongitud(){
             return posicion.get(1);
+        }
+
+        public int getPoblacion() {
+            return poblacion;
         }
     }
 

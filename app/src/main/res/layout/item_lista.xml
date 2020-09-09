@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.22" />
+        app:layout_constraintGuide_percent="0.25" />
 
     <ImageView
         android:id="@+id/ivListaTipoTarea"
@@ -45,7 +45,9 @@
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tvListaFechaTarea"
+        android:textColor="@color/colorPrimaryDark"  />
 
     <TextView
         android:id="@+id/tvListaFechaTarea"
@@ -54,9 +56,12 @@
         app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvListaTitulo"
-        android:paddingBottom="16dp"/>
+        app:layout_constraintBottom_toTopOf="@id/viewListaPospuestasLinea"
+        android:textColor="@color/colorPrimary"
+        android:paddingBottom="5dp"/>
 
     <View
+        android:id="@+id/viewListaPospuestasLinea"
         app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

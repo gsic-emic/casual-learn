@@ -1174,7 +1174,7 @@ public class Auxiliar {
 
     public static JSONArray buscaMunicipio(Context context, String query) {
         JSONArray salida = new JSONArray();
-        String[] bdV, userV;
+        String[] bdV, u, userV;
         List<Integer> municipiosValidos = new ArrayList<>();
         int coincidenciaPalabra, coincidencias = 0;
         final List<String> no = Arrays.asList("de", "del", "la", "los", "el", "y", "las");
@@ -1183,22 +1183,31 @@ public class Auxiliar {
 
         JSONObject municipio;
         try {
+            u = query.split(" ");
+            StringBuilder queryBuilder = new StringBuilder();
+            for(int i = 0; i < u.length; i++)
+                if(!no.contains(u[i]))
+                    queryBuilder.append(u[i]).append(" ");
+            query = queryBuilder.toString();
             userV = query.split(" ");
-            for(int i = 0; i < Auxiliar.municipios.length(); i++){
+            u = null;
+            int tama = Auxiliar.municipios.length();
+            for(int i = 0; i < tama; i++){
                 municipio = Auxiliar.municipios.getJSONObject(i);
-                bdV = municipio.getString("m").toLowerCase().split(" ");
+                bdV = municipio.getString("n").toLowerCase().split(" ");
                 coincidenciaPalabra = 0;
                 for(int j = 0; j < userV.length; j++){
                     if(!no.contains(userV[j])) {
-                        if (j == 0) {//Valen las palabras del no
-                            for (String bd : bdV) {
-                                if (bd.equals(userV[j])) {
+                        for (String bd : bdV) {
+                            if(!no.contains(bd)) {
+                                if (bd.contains(userV[j])) {
                                     coincidenciaPalabra++;
                                     if (coincidenciaPalabra > coincidencias) {
                                         coincidencias = coincidenciaPalabra;
                                         municipiosValidos = new ArrayList<>();
                                     }
-                                    municipiosValidos.add(i);
+                                    if (coincidenciaPalabra == coincidencias)
+                                        municipiosValidos.add(i);
                                     break;
                                 }
                             }
@@ -1216,7 +1225,7 @@ public class Auxiliar {
         return salida;
     }
 
-    private static JSONArray leeFicheroMunicipios(Context context) {
+    public static JSONArray leeFicheroMunicipios(Context context) {
         JSONArray array;
         BufferedReader bufferedReader = null;
         try {

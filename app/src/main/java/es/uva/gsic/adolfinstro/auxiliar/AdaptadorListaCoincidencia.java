@@ -27,7 +27,7 @@ public class AdaptadorListaCoincidencia extends RecyclerView.Adapter<AdaptadorLi
      */
     public static class ViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener{
-        TextView tvContenido;
+        TextView tvContenidoM, tvContenidoP;
 
         /**
          * Constructor de la subclase. Fija las referencias.
@@ -35,7 +35,8 @@ public class AdaptadorListaCoincidencia extends RecyclerView.Adapter<AdaptadorLi
          */
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvContenido = itemView.findViewById(R.id.tvcontenidoCoincidencia);
+            tvContenidoM = itemView.findViewById(R.id.tvcontenidoCoincidenciaMunicipio);
+            tvContenidoP = itemView.findViewById(R.id.tvcontenidoCoincidenciaProvincia);
             itemView.setOnClickListener(this);
         }
 
@@ -84,7 +85,8 @@ public class AdaptadorListaCoincidencia extends RecyclerView.Adapter<AdaptadorLi
      */
     @Override
     public void onBindViewHolder(@NonNull AdaptadorListaCoincidencia.ViewHolder holder, int position) {
-        holder.tvContenido.setText(String.format("%s, %s", lista.get(position).getMunicipio(), lista.get(position).getProvincia()));
+        holder.tvContenidoM.setText(lista.get(position).getMunicipio());
+        holder.tvContenidoP.setText(lista.get(position).getProvincia());
     }
 
     /**

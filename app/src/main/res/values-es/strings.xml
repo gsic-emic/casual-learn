@@ -182,4 +182,10 @@
     <string name="buscaMunicipiosCyL">Busca municipios de Castilla y León</string>
     <string name="municipioNoEncontrado">Municipio no encontrado</string>
     <string name="Coincidencias">Coincidencias encontradas</string>
+    <string name="skip">Omitir</string>
+    <string name="enviarPuntuacion">Enviar puntuación</string>
+    <string name="compartir_instagram">Compartir en Instagram</string>
+    <string name="compartir_yammer">Compartir en Yammer</string>
+    <string name="compartir_twitter">Compartir en Twitter</string>
+    <string name="compartir_respuesta">¡Comparte la respuesta!</string>
 </resources>

@@ -342,6 +342,7 @@ public class Tarea extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
         //Se comprueba uno a uno si alguno de los permisos no se había aceptado
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         for (int i : grantResults) {
             if (i == -1) {
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);

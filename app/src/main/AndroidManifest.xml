@@ -27,8 +27,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MapaNavegable"
-            android:label="@string/navega"/>
+        <activity
+            android:name=".CompartirRespuesta"
+            android:label="@string/compartir_respuesta"/>
+        <activity
+            android:name=".MapaNavegable"
+            android:label="@string/navega" />
         <activity
             android:name=".Completadas"
             android:label="@string/tareaCompletada" />
@@ -38,13 +42,13 @@
             android:label="@string/infoTarea" />
         <activity
             android:name=".Puntuacion"
-            android:label="@string/score"/>
+            android:label="@string/score" />
         <activity
             android:name=".ImagenCompleta"
-            android:label="@string/imagenAmpliable"/>
+            android:label="@string/imagenAmpliable" />
         <activity
             android:name=".Acerca"
-            android:label="@string/acercade"/>
+            android:label="@string/acercade" />
         <activity
             android:name=".Tarea"
             android:label="@string/tareaRealizar">
@@ -61,16 +65,17 @@
             android:name=".Maps"
             android:label="@string/app_name"
             android:theme="@style/AppTheme" />
-        <activity android:name=".Login"
+        <activity
+            android:name=".Login"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <receiver android:name=".AlarmaProceso"/>
-
+        <receiver android:name=".AlarmaProceso" />
         <receiver
             android:name=".RecepcionNotificaciones"
             android:enabled="true"
@@ -91,6 +96,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
