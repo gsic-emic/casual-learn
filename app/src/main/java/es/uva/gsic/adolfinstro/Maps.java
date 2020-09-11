@@ -92,7 +92,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20200831
+ * @version 20200911
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -149,8 +149,6 @@ public class  Maps extends AppCompatActivity implements
     Boolean dialogoCerrarSesionActivo = false;
 
     Guideline guiaMapaH, guiaMapaV;
-
-    Dialog dialogoCoincidecncias;
 
     private AdaptadorListaCoincidencia adaptadorListaCoincidencia;
 
@@ -258,16 +256,6 @@ public class  Maps extends AppCompatActivity implements
             dialogoCerrarSesion.show();
         }
 
-        dialogoCoincidecncias = new Dialog(this);
-        dialogoCoincidecncias.setContentView(R.layout.dialogo_coincidencias);
-        dialogoCoincidecncias.setCancelable(true);
-        /*dialogoDesarrolladores.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                dialogoDesarrolladoresActivo = false;
-            }
-        });*/
-
         //Se decide si se muestra el mapa
         if (noMolestar) {
             setContentView(R.layout.no_molestar);
@@ -323,8 +311,6 @@ public class  Maps extends AppCompatActivity implements
                 }
             }else {
                 centraPrimeraVez();
-                //mapController.setCenter(telecoPoint); //Centramos la posición en algún lugar conocido
-                //mapController.setZoom(8.0);
             }
             //RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(map);
             //rotationGestureOverlay.setEnabled(true);
@@ -356,7 +342,6 @@ public class  Maps extends AppCompatActivity implements
 
             pintaItemsfijos();
 
-            //checkPermissions();
             map.addMapListener(new DelayedMapListener(new MapListener() {
                 @Override
                 public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
@@ -380,8 +365,6 @@ public class  Maps extends AppCompatActivity implements
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     InfoWindow.closeAllInfoWindowsOn(map);
-                    //sinPulsarTarea.setVisibility(View.VISIBLE);
-                    //guiaMapa.setGuidelinePercent(1f);
                     contenedor.setBackgroundColor(getResources().getColor(R.color.transparente));
                     contenedor.setAdapter(null);
                     contenedor.setLayoutManager(null);
@@ -409,7 +392,7 @@ public class  Maps extends AppCompatActivity implements
                             }
                         }else{
                             dialogoCoincidencias(lugares);
-                        //}
+                        }
                     }else{
                         pintaSnackBar(getString(R.string.municipioNoEncontrado));
                     }*/
@@ -420,12 +403,15 @@ public class  Maps extends AppCompatActivity implements
                 public boolean onQueryTextChange(String newText) {
                     //Aqui debería ir la sugerencia según escriba
                     if(newText.trim().length() > 0) {
-                        JSONArray municipios = Auxiliar.buscaMunicipio(context, newText.trim().toLowerCase());
+                        JSONArray municipios = Auxiliar.buscaMunicipio(
+                                context, newText.trim().toLowerCase());
                         if(municipios.length() > 0) {
                             if(btCentrar.isShown())
                                 btCentrar.hide();
-                            contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
-                            contenedorBusqMapa.setBackgroundColor(getResources().getColor(R.color.transparente));
+                            contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
+                                    context, LinearLayoutManager.VERTICAL, false));
+                            contenedorBusqMapa.setBackgroundColor(getResources().
+                                    getColor(R.color.transparente));
                             contenedorBusqMapa.setVisibility(View.VISIBLE);
                             contenedorBusqMapa.setHasFixedSize(true);
                             List<ListaCoincidencias> lista = new ArrayList<>();
@@ -478,14 +464,19 @@ public class  Maps extends AppCompatActivity implements
             if(!contenido.equals(""))
                 pintaSnackBar(contenido);
             else {
-                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                        getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
                 if(idUsuario == null) {
-                    Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
+                    Snackbar snackbar = Snackbar.make(
+                            findViewById(R.id.clIdentificateMapa),
+                            R.string.textoInicioBreve,
+                            Snackbar.LENGTH_INDEFINITE);
                     snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
                     snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            JSONObject idUser = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                            JSONObject idUser = PersistenciaDatos.recuperaTarea(
+                                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
                             if(idUser == null) {
                                 Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                                         .requestIdToken(getString(R.string.default_web_client_id))
@@ -514,46 +505,6 @@ public class  Maps extends AppCompatActivity implements
         contenedorBusqMapa.setAdapter(null);
         contenedorBusqMapa.setLayoutManager(null);
         contenedorBusqMapa.setVisibility(View.GONE);
-    }
-
-    /**
-     * Método para modificar el dialogo de coincidencias de la búsqueda (agregar la lista de municipios
-     * que coincidan
-     * @param lugares Lista de municipios que puede haber buscado el usuario
-     */
-    private void dialogoCoincidencias(JSONArray lugares) {
-        List<ListaCoincidencias> lista = new ArrayList<>();
-        JSONObject lugar;
-        try {
-            for(int i = 0; i < lugares.length(); i++){
-                lugar = lugares.getJSONObject(i);
-                if(lista.isEmpty())
-                    lista.add(new ListaCoincidencias(lugar));
-                else{
-                    ListaCoincidencias coincidencia;
-                    boolean agregado = false;
-                    for(int j = 0; j < lista.size(); j++){
-                        coincidencia = lista.get(j);
-                        if(coincidencia.getPoblacion() < lugar.getInt("g")) {
-                            lista.add(j, new ListaCoincidencias(lugar));
-                            agregado = true;
-                            break;
-                        }
-                    }
-                    if(!agregado)
-                        lista.add(new ListaCoincidencias(lugar));
-                }
-            }
-            RecyclerView recyclerView = dialogoCoincidecncias.findViewById(R.id.rvListaCoincidencias);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-
-            adaptadorListaCoincidencia = new AdaptadorListaCoincidencia(this, lista);
-            adaptadorListaCoincidencia.setClickListenerDialogo(this);
-            recyclerView.setAdapter(adaptadorListaCoincidencia);
-            dialogoCoincidecncias.show();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     private void centraMapa(double latitud, double longitud) {
@@ -1648,9 +1599,6 @@ public class  Maps extends AppCompatActivity implements
 
     @Override
     public void onItemClickDialogo(View view, int position) {
-        if(dialogoCoincidecncias != null && dialogoCoincidecncias.isShowing())
-            dialogoCoincidecncias.cancel();
-
         if(contenedorBusqMapa != null && contenedorBusqMapa.getVisibility() == View.VISIBLE){
             ocultaContenedorBusqMapa();
         }

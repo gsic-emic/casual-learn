@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:background="@color/colorSecondary"
         android:textColor="@color/colorSecondaryText"
-        android:padding="15dp"
+        android:padding="@dimen/margen_texto"
         android:textSize="20sp"
         android:textAlignment="center" />
     <ScrollView
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:textAlignment="center"
             android:paddingTop="30dp"
-            android:paddingHorizontal="20dp"/>
+            android:paddingHorizontal="@dimen/margen_texto"/>
 
     </ScrollView>
 </LinearLayout>

@@ -46,13 +46,13 @@
             android:id="@+id/tituloPreview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="@dimen/tama_titulo"
             android:textStyle="bold"
             android:textAlignment="center"
             app:layout_constraintTop_toBottomOf="@id/imagenPreview"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="5dp"
-            android:layout_marginHorizontal="15dp" />
+            android:layout_marginHorizontal="@dimen/margen_texto" />
 
         <org.osmdroid.views.MapView
             android:id="@+id/mapPreview"
@@ -81,7 +81,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="5dp"
-            android:layout_marginHorizontal="15dp"/>
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
 
         <TextView
             android:id="@+id/tvExplicacionDistancia"
@@ -90,12 +90,11 @@
             android:textAlignment="center"
             android:layout_marginTop="20dp"
             android:paddingTop="5dp"
-            android:paddingHorizontal="10dp"
+            android:paddingHorizontal="@dimen/margen_texto"
             android:text="@string/distanciaRecuperar"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textoPreview"
             app:layout_constraintBottom_toTopOf="@id/tvDistancia"
-            android:layout_marginHorizontal="5dp"
             android:visibility="gone"/>
 
         <TextView
@@ -106,7 +105,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvExplicacionDistancia"
-            android:layout_margin="10dp"
+            android:layout_margin="@dimen/margen_texto"
             android:visibility="gone"/>
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout

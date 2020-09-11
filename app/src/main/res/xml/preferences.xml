@@ -35,20 +35,5 @@
             app:defaultValue="@string/hashtag"
             app:dialogMessage="@string/descripcionFuncionamientoPalabraClave"/>
     </PreferenceCategory>
-    <!--<PreferenceCategory
-        android:key="datosUsuario"
-        android:title="@string/datosUsuario">
-        <EditTextPreference
-            android:key="nombre"
-            android:enabled="false"/>
-        <EditTextPreference
-            android:key="correo"
-            android:enabled="false"/>
-    </PreferenceCategory>-->
-    <!--<EditTextPreference
-        app:key="token"
-        app:enableCopying="false"
-        app:defaultValue=" "
-        app:enabled="false" />-->
 
 </PreferenceScreen>

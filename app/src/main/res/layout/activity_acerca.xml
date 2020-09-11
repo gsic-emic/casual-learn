@@ -236,7 +236,7 @@
             android:text="@string/proyectosSistema"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/vista3"
-            android:paddingHorizontal="15dp"/>
+            android:paddingHorizontal="@dimen/margen_texto"/>
 
         <TextView
             android:id="@+id/tvMapasAcercaDe"
@@ -269,7 +269,7 @@
             android:drawablePadding="4dp"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
-            android:layout_marginHorizontal="8dp"/>
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
 
 
         <TextView
@@ -304,7 +304,7 @@
             android:drawablePadding="4dp"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
-            android:layout_marginHorizontal="8dp"/>
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
 
         <TextView
             android:id="@+id/tvPhotoView"
@@ -316,7 +316,7 @@
             android:text="@string/PhotoView"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
-            android:layout_marginHorizontal="8dp"/>
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
 
         <TextView
             android:id="@+id/tvPicasso"
@@ -328,6 +328,6 @@
             android:text="@string/Picasso"
             android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
-            android:layout_marginHorizontal="8dp"/>
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

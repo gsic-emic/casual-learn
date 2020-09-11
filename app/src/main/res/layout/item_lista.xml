@@ -42,7 +42,7 @@
         android:id="@+id/tvListaTitulo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
+        android:textSize="@dimen/tama_titulo"
         app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

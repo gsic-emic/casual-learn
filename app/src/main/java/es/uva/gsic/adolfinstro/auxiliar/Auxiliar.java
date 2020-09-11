@@ -338,7 +338,11 @@ public class Auxiliar {
             JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareasUsuario);
             for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
                 tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id))) {
+                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id)) &&
+                        !PersistenciaDatos.existeTarea(
+                                app,
+                                PersistenciaDatos.ficheroNotificadas,
+                                tareaEvaluada.getString(Auxiliar.id))) {
                     if (!tarea.isEmpty()) {
                         distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
                                 tareaEvaluada.getDouble(Auxiliar.longitud),

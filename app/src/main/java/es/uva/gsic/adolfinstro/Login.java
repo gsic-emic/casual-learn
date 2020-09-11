@@ -139,7 +139,7 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
     @Override
     public void onStart(){
         super.onStart();
-        checkPermissions();
+        //checkPermissions();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         updateUI(firebaseUser, false);
     }

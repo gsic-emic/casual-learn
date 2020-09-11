@@ -420,7 +420,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         if(idUsuario != null) {
             if (comprueba) {//Se comprueba cuando se ha lanzado la última notificación
                 if (datosValidos) {//Se comprueba si los datos son válidos (inicio proceso)
-                    /** Distancia máxima que podría andar en el intervalo de comprobación*/
+                    /* Distancia máxima que podría andar en el intervalo de comprobación*/
                     double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
                     if (distanciaAndada <= maxAndado) {//Se comprueba si el usuario está caminando
                         //Comprobación de la ubucación actual a las tareas almacenadas
