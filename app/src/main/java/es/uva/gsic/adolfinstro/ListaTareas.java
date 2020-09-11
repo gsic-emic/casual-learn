@@ -163,7 +163,7 @@ public class ListaTareas extends AppCompatActivity
                         intent.putExtra(Auxiliar.previa, Auxiliar.tareasRechazadas);
                     }
                     startActivity(intent);
-                    jTarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    //jTarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, jTarea, Context.MODE_PRIVATE);
                 }catch (Exception e){
                     //

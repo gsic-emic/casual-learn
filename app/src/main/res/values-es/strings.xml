@@ -62,7 +62,7 @@
     <string name="respuestaEspeTitulo">Respuesta esperada</string>
     <string name="respuestaEspeCorrecta">¡Respuesta correcta!</string>
     <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
-    <string name="nuevaTarea">¡¡Nueva tarea!!</string>
+    <string name="nuevaTarea">¡Nueva tarea en</string>
     <string name="enviar">Enviar</string>
     <string name="gracias">¡¡Gracias!! Con tus valoraciones mejoran las tareas recomendadas</string>
     <string name="realizar">Realizar</string>
@@ -179,4 +179,13 @@
     <string name="thumbnail">Thumbnail</string>
     <string name="infoImagen">Información de la imagen</string>
     <string name="imagenFondo">Imagen de fondo</string>
+    <string name="buscaMunicipiosCyL">Busca municipios de Castilla y León</string>
+    <string name="municipioNoEncontrado">Municipio no encontrado</string>
+    <string name="Coincidencias">Coincidencias encontradas</string>
+    <string name="skip">Omitir</string>
+    <string name="enviarPuntuacion">Enviar puntuación</string>
+    <string name="compartir_instagram">Compartir en Instagram</string>
+    <string name="compartir_yammer">Compartir en Yammer</string>
+    <string name="compartir_twitter">Compartir en Twitter</string>
+    <string name="compartir_respuesta">¡Comparte la respuesta!</string>
 </resources>

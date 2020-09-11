@@ -9,8 +9,8 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,7 +25,6 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,6 +34,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import androidx.appcompat.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +47,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
@@ -62,7 +63,6 @@ import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.DelayedMapListener;
-import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
@@ -71,7 +71,6 @@ import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
@@ -83,6 +82,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.Bocadillo;
@@ -92,19 +92,20 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20200722
+ * @version 20200911
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback {
+        ActivityCompat.OnRequestPermissionsResultCallback,
+        AdaptadorListaCoincidencia.ItemClickListenerDialogo {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
 
     /** Instancia del texto informativo en el que el usuario todavía no ha pulsado ningún marcador */
     private TextView sinPulsarTarea;
     /** Objeto donde se expone toda la lista de tareas del marcador */
-    private RecyclerView contenedor;
+    private RecyclerView contenedor, contenedorBusqMapa;
 
     /** Objeto que almacenará, entre otras cosas, la última posición conocida del usuario*/
     private MyLocationNewOverlay myLocationNewOverlay;
@@ -147,7 +148,11 @@ public class  Maps extends AppCompatActivity implements
 
     Boolean dialogoCerrarSesionActivo = false;
 
-    Guideline guiaMapa;
+    Guideline guiaMapaH, guiaMapaV;
+
+    private AdaptadorListaCoincidencia adaptadorListaCoincidencia;
+
+    private RecyclerView.LayoutManager layoutManager;
 
 
 
@@ -259,9 +264,10 @@ public class  Maps extends AppCompatActivity implements
             map = findViewById(R.id.map);
             sinPulsarTarea = findViewById(R.id.tvTareasMapa);
             contenedor = findViewById(R.id.rvTareasMapa);
-            RecyclerView.LayoutManager layoutManager;
+            contenedorBusqMapa = findViewById(R.id.rvBusquedaMapa);
 
-            guiaMapa = findViewById(R.id.guiaMapa);
+            guiaMapaH = findViewById(R.id.guiaMapa);
+            guiaMapaV = findViewById(R.id.guiaMapaV);
 
             if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
                 layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -293,6 +299,8 @@ public class  Maps extends AppCompatActivity implements
             map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zoom con dos dedos
             mapController = map.getController();
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+
+            final FloatingActionButton btCentrar = findViewById(R.id.btCentrar);
             if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
                 JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
                 try {
@@ -303,26 +311,12 @@ public class  Maps extends AppCompatActivity implements
                 }
             }else {
                 centraPrimeraVez();
-                //mapController.setCenter(telecoPoint); //Centramos la posición en algún lugar conocido
-                //mapController.setZoom(8.0);
             }
             //RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(map);
             //rotationGestureOverlay.setEnabled(true);
             //map.getOverlays().add(rotationGestureOverlay);
             map.setMinZoomLevel(nivelMin);
             map.setMaxZoomLevel(nivelMax);
-
-            /*GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-            gpsMyLocationProvider.setLocationUpdateMinDistance(5);
-            gpsMyLocationProvider.setLocationUpdateMinTime(5000);
-            gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
-            gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
-            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-            myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                    BitmapFactory.decodeResource(getResources(), R.drawable.person));
-            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-            myLocationNewOverlay.setEnableAutoStop(true);*/
 
             final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
             scaleBarOverlay = new ScaleBarOverlay(map);
@@ -337,14 +331,17 @@ public class  Maps extends AppCompatActivity implements
             int ancho = displayMetrics.widthPixels;
             int alto = displayMetrics.heightPixels;
             if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-                scaleBarOverlay.setScaleBarOffset((int)(ancho / 2), (int) (alto * 0.05)); //posición en el el display
+                scaleBarOverlay.drawLongitudeScale(true);
+                scaleBarOverlay.drawLatitudeScale(false);
+                scaleBarOverlay.setScaleBarOffset((int)(ancho * 0.05), (int) (alto * 0.4)); //posición en el el display
             }else{
-                scaleBarOverlay.setScaleBarOffset((int)(ancho*0.4), (int) (alto * 0.05));
+                scaleBarOverlay.drawLongitudeScale(true);
+                scaleBarOverlay.drawLatitudeScale(false);
+                scaleBarOverlay.setScaleBarOffset((int)(ancho*0.02), (int) (alto * 0.4));
             }
 
             pintaItemsfijos();
 
-            //checkPermissions();
             map.addMapListener(new DelayedMapListener(new MapListener() {
                 @Override
                 public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
@@ -368,10 +365,95 @@ public class  Maps extends AppCompatActivity implements
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
                     InfoWindow.closeAllInfoWindowsOn(map);
-                    sinPulsarTarea.setVisibility(View.VISIBLE);
-                    //guiaMapa.setGuidelinePercent(1f);
-                    contenedor.setVisibility(View.GONE);
+                    contenedor.setBackgroundColor(getResources().getColor(R.color.transparente));
                     contenedor.setAdapter(null);
+                    contenedor.setLayoutManager(null);
+                    contenedor.setVisibility(View.GONE);
+                    if(guiaMapaH != null)
+                        guiaMapaH.setGuidelinePercent(1f);
+                    else
+                        guiaMapaV.setGuidelinePercent(1f);
+                    return false;
+                }
+            });
+
+
+            final SearchView searchView = findViewById(R.id.svMapa);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    /*JSONArray lugares = Auxiliar.buscaMunicipio(context, query.trim().toLowerCase());
+                    if(lugares.length() > 0){
+                        if(lugares.length() == 1){
+                            try {
+                                centraMapa(lugares.getJSONObject(0).getDouble("a"),lugares.getJSONObject(0).getDouble("o"));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }else{
+                            dialogoCoincidencias(lugares);
+                        }
+                    }else{
+                        pintaSnackBar(getString(R.string.municipioNoEncontrado));
+                    }*/
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    //Aqui debería ir la sugerencia según escriba
+                    if(newText.trim().length() > 0) {
+                        JSONArray municipios = Auxiliar.buscaMunicipio(
+                                context, newText.trim().toLowerCase());
+                        if(municipios.length() > 0) {
+                            if(btCentrar.isShown())
+                                btCentrar.hide();
+                            contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
+                                    context, LinearLayoutManager.VERTICAL, false));
+                            contenedorBusqMapa.setBackgroundColor(getResources().
+                                    getColor(R.color.transparente));
+                            contenedorBusqMapa.setVisibility(View.VISIBLE);
+                            contenedorBusqMapa.setHasFixedSize(true);
+                            List<ListaCoincidencias> lista = new ArrayList<>();
+                            JSONObject lugar;
+                            try{
+                                for(int i = 0; i < municipios.length(); i++){
+                                    lugar = municipios.getJSONObject(i);
+                                    if(lista.isEmpty())
+                                        lista.add(new ListaCoincidencias(lugar));
+                                    else{
+                                        ListaCoincidencias coincidencia;
+                                        boolean agregado = false;
+                                        for(int j = 0; j < lista.size(); j++){
+                                            coincidencia = lista.get(j);
+                                            if(coincidencia.getPoblacion() < lugar.getInt("g")) {
+                                                lista.add(j, new ListaCoincidencias(lugar));
+                                                agregado = true;
+                                                break;
+                                            }
+                                        }
+                                        if(!agregado)
+                                            lista.add(new ListaCoincidencias(lugar));
+                                    }
+                                }
+                                adaptadorListaCoincidencia = new AdaptadorListaCoincidencia(context, lista);
+                                adaptadorListaCoincidencia.setClickListenerDialogo(Maps.this);
+                                contenedorBusqMapa.setAdapter(adaptadorListaCoincidencia);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }else{
+                            ocultaContenedorBusqMapa();
+                            if(!btCentrar.isShown())
+                                btCentrar.show();
+                        }
+
+                    }else{
+                        ocultaContenedorBusqMapa();
+                        if(!btCentrar.isShown())
+                            btCentrar.show();
+                    }
+
                     return false;
                 }
             });
@@ -382,21 +464,26 @@ public class  Maps extends AppCompatActivity implements
             if(!contenido.equals(""))
                 pintaSnackBar(contenido);
             else {
-                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                if(Login.firebaseAuth == null || idUsuario == null) {
-                    Snackbar snackbar = Snackbar.make(findViewById(R.id.clIdentificateMapa), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                        getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(idUsuario == null) {
+                    Snackbar snackbar = Snackbar.make(
+                            findViewById(R.id.clIdentificateMapa),
+                            R.string.textoInicioBreve,
+                            Snackbar.LENGTH_INDEFINITE);
                     snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
                     snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            JSONObject idUser = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                            if(Login.firebaseAuth == null || idUser == null) {
+                            JSONObject idUser = PersistenciaDatos.recuperaTarea(
+                                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                            if(idUser == null) {
                                 Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                                         .requestIdToken(getString(R.string.default_web_client_id))
                                         .requestEmail().build();
                                 Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
                                 Intent intent = Login.googleSignInClient.getSignInIntent();
-                                startActivityForResult(intent, Login.requestAuth);
+                                startActivityForResult(intent, Login.requestAuth + 1);
                             }
                         }
                     });
@@ -408,6 +495,21 @@ public class  Maps extends AppCompatActivity implements
         }catch (Exception e){
             //No hay nada que mostrar
         }
+    }
+
+    /**
+     * Método para ocultar la lista de coincidencias de la búsqueda
+     */
+    private void ocultaContenedorBusqMapa() {
+        contenedorBusqMapa.setBackgroundColor(getResources().getColor(R.color.transparente));
+        contenedorBusqMapa.setAdapter(null);
+        contenedorBusqMapa.setLayoutManager(null);
+        contenedorBusqMapa.setVisibility(View.GONE);
+    }
+
+    private void centraMapa(double latitud, double longitud) {
+        mapController.setZoom(nivelMax - 2);
+        mapController.setCenter(new GeoPoint(latitud, longitud));
     }
 
     private void pintaSnackBar(String texto){
@@ -422,7 +524,7 @@ public class  Maps extends AppCompatActivity implements
     public void onActivityResult(int requestCode, int result, Intent data) {
         super.onActivityResult(requestCode, result, data);
         switch (requestCode) {
-            case Login.requestAuth:
+            case (Login.requestAuth+1):
                 //No es necesario comprobar el resultado de la petición según la ayuda oficial
                 Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                 GoogleSignInAccount account = null;
@@ -438,18 +540,22 @@ public class  Maps extends AppCompatActivity implements
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
-        AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
-        Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>(){
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if(task.isSuccessful()){
-                    FirebaseUser firebaseUser = Login.firebaseAuth.getCurrentUser();
-                    updateUI(firebaseUser, true);
-                }else{
-                    updateUI(null, true);
+        try {
+            AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
+            Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        FirebaseUser firebaseUser = Login.firebaseAuth.getCurrentUser();
+                        updateUI(firebaseUser, true);
+                    } else {
+                        updateUI(null, true);
+                    }
                 }
-            }
-        });
+            });
+        }catch (Exception e){
+            updateUI(null, true);
+        }
     }
 
     public void updateUI(FirebaseUser firebaseUser, boolean registro){
@@ -537,6 +643,7 @@ public class  Maps extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
         //Se comprueba uno a uno si alguno de los permisos no se había aceptado
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean falta = false;
         for (int i : grantResults) {
             if (i == -1) {
@@ -565,7 +672,7 @@ public class  Maps extends AppCompatActivity implements
                 break;
             }
         }
-        if(!falta){
+        if (!falta) {
             GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
             gpsMyLocationProvider.setLocationUpdateMinDistance(5);
             gpsMyLocationProvider.setLocationUpdateMinTime(5000);
@@ -610,7 +717,12 @@ public class  Maps extends AppCompatActivity implements
         JSONArray tareas = marcador.getTareasMarcador();
         if(tareas.length() > 0){
             sinPulsarTarea.setVisibility(View.GONE);
-            guiaMapa.setGuidelinePercent(0.8f);
+            contenedor.setLayoutManager(layoutManager);
+            contenedor.setBackgroundColor(getResources().getColor(R.color.blackTransparente25));
+            if(guiaMapaH != null)
+                guiaMapaH.setGuidelinePercent(0.8f);
+            else
+                guiaMapaV.setGuidelinePercent(0.8f);
             contenedor.setVisibility(View.VISIBLE);
             contenedor.setHasFixedSize(true);
 
@@ -858,7 +970,7 @@ public class  Maps extends AppCompatActivity implements
             checkPermissions();
             if (map != null)
                 map.onResume();
-            if(estadoContenedor != null){
+            if(estadoContenedor != null && contenedor.getLayoutManager() != null){
                 contenedor.setVisibility(View.VISIBLE);
                 sinPulsarTarea.setVisibility(View.GONE);
                 contenedor.getLayoutManager().onRestoreInstanceState(estadoContenedor.getParcelable("CONTENEDOR"));
@@ -1265,7 +1377,7 @@ public class  Maps extends AppCompatActivity implements
                             .requestIdToken(getString(R.string.default_web_client_id))
                             .requestEmail().build();
                     Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
-                    startActivityForResult(Login.googleSignInClient.getSignInIntent(), Login.requestAuth);
+                    startActivityForResult(Login.googleSignInClient.getSignInIntent(), Login.requestAuth + 1);
                 }
                 else {
                     dialogoCerrarSesionActivo = true;
@@ -1485,6 +1597,16 @@ public class  Maps extends AppCompatActivity implements
         map.invalidate();
     }
 
+    @Override
+    public void onItemClickDialogo(View view, int position) {
+        if(contenedorBusqMapa != null && contenedorBusqMapa.getVisibility() == View.VISIBLE){
+            ocultaContenedorBusqMapa();
+        }
+
+        centraMapa(adaptadorListaCoincidencia.getLatitud(position),
+                adaptadorListaCoincidencia.getLongitud(position));
+    }
+
     //private String idInstanteGETZONA = "instanteGETZONA";
 
     /**
@@ -1613,6 +1735,41 @@ public class  Maps extends AppCompatActivity implements
          */
         int getNumeroTareas() {
             return numeroTareas;
+        }
+    }
+
+    public static class ListaCoincidencias{
+        String municipio, provincia;
+        List<Double> posicion;
+        int poblacion;
+
+        ListaCoincidencias(JSONObject jsonObject) throws JSONException {
+            municipio = jsonObject.getString("m");
+            provincia = jsonObject.getString("p");
+            posicion = new ArrayList<>();
+            posicion.add(jsonObject.getDouble("a"));
+            posicion.add(jsonObject.getDouble("o"));
+            poblacion = jsonObject.getInt("g");
+        }
+
+        public String getMunicipio() {
+            return municipio;
+        }
+
+        public String getProvincia() {
+            return provincia;
+        }
+
+        public double getLatitud(){
+            return posicion.get(0);
+        }
+
+        public double getLongitud(){
+            return posicion.get(1);
+        }
+
+        public int getPoblacion() {
+            return poblacion;
         }
     }
 

@@ -5,8 +5,4 @@
         android:icon="@drawable/ic_edit_black_24dp"
         android:title="@string/editar"
         app:showAsAction="always" />
-    <!--<item android:id="@+id/publicarCompletada"
-        android:icon="@drawable/ic_twitter_logo_white"
-        android:title="@string/publicar"
-        app:showAsAction="ifRoom" /> -->
 </menu>

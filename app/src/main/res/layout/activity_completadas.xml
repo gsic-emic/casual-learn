@@ -14,14 +14,13 @@
             android:id="@+id/tituloCompletada"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="@dimen/tama_titulo"
             android:textStyle="bold"
             android:textAlignment="center"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="5dp"
-            android:layout_marginHorizontal="15dp" />
-
+            android:layout_marginHorizontal="@dimen/margen_texto" />
 
         <TextView
             android:id="@+id/tvDescripcionCompletada"
@@ -31,7 +30,7 @@
             app:layout_constraintTop_toBottomOf="@id/tituloCompletada"
             android:layout_marginTop="5dp"
             android:visibility="visible"
-            android:layout_marginHorizontal="15dp"/>
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
 
         <EditText
             android:id="@+id/etRespuestaTextualCompletada"
@@ -51,7 +50,7 @@
             android:inputType="textMultiLine"
             android:enabled="false"
             android:autofillHints="no"
-            android:layout_marginHorizontal="15dp"/>
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
 
         <Button style="@style/botonPrimario"
             android:id="@+id/btAgregarCompletada"

@@ -151,8 +151,9 @@ public class MapaNavegable extends AppCompatActivity
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
-        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean falta = false;
+        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
         for (int i : grantResults) {
             if (i == -1) {
                 falta = true;
@@ -179,8 +180,8 @@ public class MapaNavegable extends AppCompatActivity
                 break;
             }
         }
-        if(!falta){
-            if(myLocationNewOverlay == null) {
+        if (!falta) {
+            if (myLocationNewOverlay == null) {
                 GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();

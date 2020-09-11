@@ -139,7 +139,7 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
     @Override
     public void onStart(){
         super.onStart();
-        checkPermissions();
+        //checkPermissions();
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         updateUI(firebaseUser, false);
     }
@@ -184,6 +184,7 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         //Se comprueba uno a uno si alguno de los permisos no se había aceptado
         for (int i : grantResults) {
             if (i == -1) {

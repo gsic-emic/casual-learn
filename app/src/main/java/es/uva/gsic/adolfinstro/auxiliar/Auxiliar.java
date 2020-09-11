@@ -43,9 +43,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.util.BoundingBox;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -145,6 +147,8 @@ public class Auxiliar {
     private static final String[] listaFabricantes = {"huawei", "xiaomi", "samsung", "oneplus"};
 
     public static int incr = 0;
+
+    public static JSONArray municipios = null;
 
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
@@ -334,7 +338,11 @@ public class Auxiliar {
             JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareasUsuario);
             for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
                 tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id))) {
+                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id)) &&
+                        !PersistenciaDatos.existeTarea(
+                                app,
+                                PersistenciaDatos.ficheroNotificadas,
+                                tareaEvaluada.getString(Auxiliar.id))) {
                     if (!tarea.isEmpty()) {
                         distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
                                 tareaEvaluada.getDouble(Auxiliar.longitud),
@@ -1141,5 +1149,110 @@ public class Auxiliar {
             default:
                 return null;
         }
+    }
+
+    /*public static double[] buscaMunicipio(Context context, String query) {
+        double latitud = 0, longitud = 0;
+        final String[] no = {"de", "del", "la", "los", "el", "y", "las"};
+        if(Auxiliar.municipios == null || Auxiliar.municipios.length() == 0)
+            Auxiliar.municipios = leeFicheroMunicipios(context);
+
+        JSONObject municipio;
+        try {
+            for(int i = 0; i < Auxiliar.municipios.length(); i++){
+                    municipio = Auxiliar.municipios.getJSONObject(i);
+                    if(municipio.getString("Municipio").equals(query)) {
+                        latitud = municipio.getDouble("Latitud");
+                        longitud = municipio.getDouble("Longitud");
+                        break;
+                    }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if(latitud != 0 && longitud != 0)
+            return new double[]{latitud, longitud};
+        else
+            return new double[]{};
+    }*/
+
+    public static JSONArray buscaMunicipio(Context context, String query) {
+        JSONArray salida = new JSONArray();
+        String[] bdV, u, userV;
+        List<Integer> municipiosValidos = new ArrayList<>();
+        int coincidenciaPalabra, coincidencias = 0;
+        final List<String> no = Arrays.asList("de", "del", "la", "los", "el", "y", "las");
+        if(Auxiliar.municipios == null || Auxiliar.municipios.length() == 0)
+            Auxiliar.municipios = leeFicheroMunicipios(context);
+
+        JSONObject municipio;
+        try {
+            u = query.split(" ");
+            StringBuilder queryBuilder = new StringBuilder();
+            for(int i = 0; i < u.length; i++)
+                if(!no.contains(u[i]))
+                    queryBuilder.append(u[i]).append(" ");
+            query = queryBuilder.toString();
+            userV = query.split(" ");
+            u = null;
+            int tama = Auxiliar.municipios.length();
+            for(int i = 0; i < tama; i++){
+                municipio = Auxiliar.municipios.getJSONObject(i);
+                bdV = municipio.getString("n").toLowerCase().split(" ");
+                coincidenciaPalabra = 0;
+                for(int j = 0; j < userV.length; j++){
+                    if(!no.contains(userV[j])) {
+                        for (String bd : bdV) {
+                            if(!no.contains(bd)) {
+                                if (bd.contains(userV[j])) {
+                                    coincidenciaPalabra++;
+                                    if (coincidenciaPalabra > coincidencias) {
+                                        coincidencias = coincidenciaPalabra;
+                                        municipiosValidos = new ArrayList<>();
+                                    }
+                                    if (coincidenciaPalabra == coincidencias)
+                                        municipiosValidos.add(i);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for(int i : municipiosValidos){
+                salida.put(Auxiliar.municipios.get(i));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return salida;
+    }
+
+    public static JSONArray leeFicheroMunicipios(Context context) {
+        JSONArray array;
+        BufferedReader bufferedReader = null;
+        try {
+            InputStreamReader inputStreamReader = new InputStreamReader(context.getResources().openRawResource(R.raw.municipios_castilla_y_leon));
+            bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuffer stringBuffer = new StringBuffer();
+            String inter;
+            while ((inter = bufferedReader.readLine()) != null) {
+                stringBuffer.append(inter);
+            }
+            array = new JSONArray(stringBuffer.toString());
+        } catch (IOException | JSONException e){
+            array = null;
+        }finally {
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return array;
     }
 }

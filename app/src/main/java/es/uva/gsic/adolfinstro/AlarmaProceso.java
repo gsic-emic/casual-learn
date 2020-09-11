@@ -172,36 +172,46 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
      */
     private void posicionamiento() {
         locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(context,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        JSONObject idUsuario = PersistenciaDatos.
+                recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if (
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED
+                &&
+                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED
+        ) {
             cancelaAlarmaProceso(context);
         }else {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    0, 0, locationListener = new LocationListener() {
-                @Override
-                public void onLocationChanged(Location location) {
-                    //Fundamental eliminar la actualización antes de continuar para que no entre más
-                    //de una vez en la comprobación
-                    locationManager.removeUpdates(locationListener);
-                    compruebaTareas(location);
-                }
+            if (idUsuario != null) { //Compruebo la posición únicamente si el usuario está identificado
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        0, 0, locationListener = new LocationListener() {
+                            @Override
+                            public void onLocationChanged(Location location) {
+                                //Fundamental eliminar la actualización antes de continuar para que
+                                // no entre más de una vez en la comprobación
+                                locationManager.removeUpdates(locationListener);
+                                compruebaTareas(location);
+                            }
 
-                @Override
-                public void onStatusChanged(String provider, int status, Bundle extras) {
+                            @Override
+                            public void onStatusChanged(String provider, int status, Bundle extras) {
 
-                }
+                            }
 
-                @Override
-                public void onProviderEnabled(String provider) {
+                            @Override
+                            public void onProviderEnabled(String provider) {
 
-                }
+                            }
 
-                @Override
-                public void onProviderDisabled(String provider) {
+                            @Override
+                            public void onProviderDisabled(String provider) {
 
-                }
-            });
+                            }
+                        });
+            }
+            else //Si el usuario no está identificado cancelo la alarma
+                cancelaAlarmaProceso(context);
         }
     }
 
@@ -410,7 +420,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         if(idUsuario != null) {
             if (comprueba) {//Se comprueba cuando se ha lanzado la última notificación
                 if (datosValidos) {//Se comprueba si los datos son válidos (inicio proceso)
-                    /** Distancia máxima que podría andar en el intervalo de comprobación*/
+                    /* Distancia máxima que podría andar en el intervalo de comprobación*/
                     double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
                     if (distanciaAndada <= maxAndado) {//Se comprueba si el usuario está caminando
                         //Comprobación de la ubucación actual a las tareas almacenadas
@@ -478,10 +488,12 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         .replaceAll("</a>", "")
                         .replaceAll("<a.*?>","");
 
+                String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
+
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.ic_launcher_foreground)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setContentTitle(context.getString(R.string.nuevaTarea))
+                        .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))
                         .setContentText(textoTarea)
                         .setLargeIcon(iconoGrandeNotificacion(context.getResources().getDrawable(iconoTarea)));

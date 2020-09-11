@@ -15,8 +15,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/rbPuntuacion"
         android:text="@string/textoPuntua"
-        android:textSize="18sp"
-        android:paddingHorizontal="10dp"/>
+        android:textSize="@dimen/tama_titulo"
+        android:paddingHorizontal="@dimen/margen_texto"/>
 
     <RatingBar
         android:id="@+id/rbPuntuacion"
@@ -25,7 +25,7 @@
         app:layout_constraintTop_toBottomOf="@id/tvPuntuaTarea"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btCompartirPuntuaInstagram"
+        app:layout_constraintBottom_toTopOf="@id/btEnviarPuntuacion"
         android:numStars="5"
         android:rating="0"
         android:stepSize="1"
@@ -39,75 +39,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_marginBottom="20dp"
-        android:text="@string/cancel"
+        android:text="@string/skip"
         android:onClick="boton" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btCompartirPuntua"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="15dp"
-        app:fabSize="normal"
-        android:onClick="boton"
-        app:backgroundTint="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/btEnviarPuntuacion"
-        app:layout_constraintTop_toTopOf="@id/btEnviarPuntuacion"
-        app:srcCompat="@drawable/ic_share_secondary" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btCompartirPuntuaTwitter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        app:fabSize="mini"
-        android:onClick="boton"
-        app:backgroundTint="@color/white"
-        app:layout_constraintStart_toStartOf="@id/btCompartirPuntua"
-        app:layout_constraintEnd_toEndOf="@id/btCompartirPuntua"
-        app:layout_constraintBottom_toTopOf="@id/btCompartirPuntua"
-        app:srcCompat="@drawable/ic_twitter_logo_color"
-        android:visibility="gone"/>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btCompartirPuntuaYammer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        app:fabSize="mini"
-        android:onClick="boton"
-        app:backgroundTint="@color/white"
-        app:layout_constraintStart_toStartOf="@id/btCompartirPuntua"
-        app:layout_constraintEnd_toEndOf="@id/btCompartirPuntua"
-        app:layout_constraintBottom_toTopOf="@id/btCompartirPuntuaTwitter"
-        app:srcCompat="@drawable/ic_yammer"
-        android:visibility="gone"/>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btCompartirPuntuaInstagram"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        app:fabSize="mini"
-        android:onClick="boton"
-        app:backgroundTint="@color/white"
-        app:layout_constraintStart_toStartOf="@id/btCompartirPuntua"
-        app:layout_constraintEnd_toEndOf="@id/btCompartirPuntua"
-        app:layout_constraintBottom_toTopOf="@id/btCompartirPuntuaYammer"
-        app:srcCompat="@drawable/ic_instagram_color"
-        android:visibility="gone"/>
-
-    <!--<Button
-        android:id="@+id/btCompartirTwitter"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/btEnviarPuntuacion"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:drawableStart="@drawable/ic_twitter_logo_color"
-        android:drawablePadding="2dp"
-        android:layout_marginBottom="20dp"
-        android:text="@string/compartir"
-        android:onClick="boton" />-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

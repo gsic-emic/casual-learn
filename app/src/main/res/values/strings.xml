@@ -69,7 +69,7 @@
     <string name="respuestaEspeTitulo">Expected response</string>
     <string name="respuestaEspeCorrecta">Correct answer!</string>
     <string name="respuestaEspeIncrrecta">Wrong answer!</string>
-    <string name="nuevaTarea">New task!!</string>
+    <string name="nuevaTarea">New task in</string>
     <string name="enviar">Send</string>
     <string name="gracias">Thanks!!</string>
     <string name="realizar">Do</string>
@@ -208,4 +208,13 @@
     <string name="thumbnail">Thumbnail</string>
     <string name="infoImagen">File info</string>
     <string name="imagenFondo">Imagen de fondo</string>
+    <string name="buscaMunicipiosCyL">Search towns of Castilla y León</string>
+    <string name="municipioNoEncontrado">Town not found</string>
+    <string name="Coincidencias">Search matches</string>
+    <string name="skip">Skip</string>
+    <string name="enviarPuntuacion">Send score</string>
+    <string name="compartir_instagram">Share on Instagram</string>
+    <string name="compartir_yammer">Share on Yammer</string>
+    <string name="compartir_twitter">Share on Twitter</string>
+    <string name="compartir_respuesta">Share answer!</string>
 </resources>

@@ -19,6 +19,7 @@
     <color name="colorSecondary700">#dfb559</color>
     <color name="colorSecondary900">#dfa72c</color>-->
     <color name="blackTransparente">#BF000000</color>
+    <color name="blackTransparente25">#40000000</color>
     <color name="colorSecondary100">#f1dcae</color>
     <color name="colorSecondary300">#e8c578</color>
     <color name="colorSecondary500">#dfae43</color>
@@ -31,4 +32,5 @@
     <color name="texto">#131313</color>
     <color name="white">#FFF</color>
     <color name="black">#000</color>
+    <color name="transparente">#0000</color>
 </resources>
