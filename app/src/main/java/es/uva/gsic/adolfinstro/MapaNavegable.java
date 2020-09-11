@@ -5,18 +5,20 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.Html;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
-import org.jetbrains.annotations.NotNull;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -29,6 +31,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -39,10 +42,9 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * las indicaciones.
  *
  * @author Pablo
- * @version 20200607
+ * @version 20200911
  */
-public class MapaNavegable extends AppCompatActivity
-        implements ActivityCompat.OnRequestPermissionsResultCallback {
+public class MapaNavegable extends AppCompatActivity {
 
     /** Contexto */
     Context context;
@@ -88,13 +90,6 @@ public class MapaNavegable extends AppCompatActivity
         map.setMultiTouchControls(true);
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
-        /*GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-        myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-        myLocationNewOverlay.enableMyLocation();
-        myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                BitmapFactory.decodeResource(getResources(), R.drawable.person));
-        map.getOverlays().add(myLocationNewOverlay);*/
-
         map.setMaxZoomLevel(19.5);
         map.setMinZoomLevel(3.0);
         mapController.setZoom(19.5);
@@ -125,8 +120,18 @@ public class MapaNavegable extends AppCompatActivity
         }
     }
 
+    List<String> permisos;
+
     public void checkPermissions(){
-        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
+        permisos = new ArrayList<>();
+        String textoPermisos = String.format(
+                "%s%s", getString(R.string.necesidad_permisos), getString(R.string.ubicacion_primer));
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+
         if(permisos.isEmpty()) {
             if(myLocationNewOverlay == null) {
                 GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
@@ -145,55 +150,28 @@ public class MapaNavegable extends AppCompatActivity
             zumRecuadro(Auxiliar.colocaMapa(latitudMarker, longitudMarker, latitudUser, longitudUser));
         }
         else {
-            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), 1000);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean falta = false;
-        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
-        for (int i : grantResults) {
-            if (i == -1) {
-                falta = true;
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                alertBuilder.setTitle(getString(R.string.permi));
-                alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
-                        // motivo se puede salir del for directamente
-                        checkPermissions();
-                    }
-                });
-                alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
-                        //cierra
-                        System.exit(0);
-                    }
-                });
-                alertBuilder.show();
-                break;
-            }
-        }
-        if (!falta) {
-            if (myLocationNewOverlay == null) {
-                GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-                myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-                myLocationNewOverlay.enableMyLocation();
-                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
-                map.getOverlays().add(myLocationNewOverlay);
-            }
-            if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {
-                latitudUser = myLocationNewOverlay.getMyLocation().getLatitude();
-                longitudUser = myLocationNewOverlay.getMyLocation().getLongitude();
-            }
-            zumRecuadro(Auxiliar.colocaMapa(latitudMarker, longitudMarker, latitudUser, longitudUser));
+            AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
+            alertaExplicativa.setTitle(getString(R.string.permi));
+            alertaExplicativa.setMessage(Html.fromHtml(textoPermisos));
+            alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                    // motivo se puede salir del for directamente
+                    ActivityCompat.requestPermissions(
+                            MapaNavegable.this,
+                            permisos.toArray(new String[permisos.size()]),
+                            1003);
+                }
+            });
+            alertaExplicativa.setNegativeButton(getString(R.string.volver), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    onBackPressed();
+                }
+            });
+            alertaExplicativa.setCancelable(false);
+            alertaExplicativa.show();
         }
     }
 

@@ -45,7 +45,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20200525
+ * @version 20200911
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */
@@ -248,7 +248,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
         //Inicio del servicio, se tiene que recuperar la tarea del servidor
         //Validez de un día para las tareas
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if(idUsuario != null) {
             if (latitudGet == 0 || longitudGet == 0 || ((new Date().getTime() - momento) > 7200000)) {
                 peticionTareasServidor(location);
@@ -273,7 +274,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     private void peticionTareasServidor(final Location location){
         String idUsuario = null;
         try{
-            JSONObject usuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            JSONObject usuario = PersistenciaDatos.recuperaTarea(
+                    application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
             idUsuario = usuario.getString(Auxiliar.uid);
         }catch (Exception e){
             e.printStackTrace();
@@ -416,7 +418,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 (Auxiliar.intervaloMinutos(intervalo) > 0)?
                         Auxiliar.intervaloMinutos(intervalo)*60*1000:
                         20000);
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if(idUsuario != null) {
             if (comprueba) {//Se comprueba cuando se ha lanzado la última notificación
                 if (datosValidos) {//Se comprueba si los datos son válidos (inicio proceso)
@@ -491,7 +494,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.ic_walk_white)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))

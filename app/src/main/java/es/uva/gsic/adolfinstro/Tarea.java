@@ -7,6 +7,7 @@ import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,6 +17,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.Html;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.LinkMovementMethod;
@@ -47,14 +49,14 @@ import es.uva.gsic.adolfinstro.auxiliar.AdaptadorVideosCompletados;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
-import static java.util.Objects.*;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Clase encargada de mostrar la tarea al usuario. A medida que complete la actividad se irá almacenando
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20200607
+ * @version 20200911
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -278,7 +280,7 @@ public class Tarea extends AppCompatActivity implements
                 estadoBtCamara = true;
                 estadoBtCancelar = true;
 
-                checkPermissions();
+                //checkPermissions();
 
                 tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
                 tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
@@ -299,18 +301,6 @@ public class Tarea extends AppCompatActivity implements
         alertBuilder.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                /*try {
-                    JSONObject tarea = PersistenciaDatos.obtenTarea(
-                            getApplication(),
-                            PersistenciaDatos.ficheroNotificadas,
-                            idTarea);
-                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                    PersistenciaDatos.reemplazaJSON(getApplication(),
-                            PersistenciaDatos.ficheroTareasUsuario,
-                            tarea);
-                }catch (Exception e){
-                    //
-                }*/
                 Auxiliar.returnMain(getBaseContext());
             }
         });
@@ -318,59 +308,7 @@ public class Tarea extends AppCompatActivity implements
         alertBuilder.show();
     }
 
-    /** Código de identificación para la solicitud de los permisos de la app */
-    private static final int requestCodePermissions = 1002;
-
-    /**
-     * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
-     * En la actualidad, solicita permisos de localización y cámara.
-     */
-    public void checkPermissions() {
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
-            System.exit(-1);
-        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
-        if (permisos.size() > 0) //Evitamos hacer una petición con un array nulo
-            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
-    }
-
-    /**
-     * Método que devuelve el resultado de la solicitud de permisos.
-     * @param requestCode Código de la petición de permismos.
-     * @param permissions Permisos que se han solicitado.
-     * @param grantResults Valor otorgado por el usuario al permiso.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
-        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        for (int i : grantResults) {
-            if (i == -1) {
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                alertBuilder.setTitle(getString(R.string.permi));
-                alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
-                        // motivo se puede salir del for directamente
-                        checkPermissions();
-                    }
-                });
-                alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se cierra
-
-                        System.exit(0);
-                    }
-                });
-                alertBuilder.setCancelable(false);
-                alertBuilder.show();
-                break;
-            }
-        }
-    }
-
+    List<String> permisos;
     /**
      * Método que atiende a las pulsaciones en los botones
      * @param view Referencia al lanzador del evento
@@ -407,26 +345,58 @@ public class Tarea extends AppCompatActivity implements
                     Auxiliar.puntuaTarea(this, idTarea);
                 } else {
                     guardaRespuestaPregunta();
-                    /*if (guardaRespuestaPregunta())
-                        Auxiliar.puntuaTarea(this, idTarea);*/
                 }
                 break;
             case R.id.btCamara:
-                bloqueaBotones();
-                switch (tipo){
-                    case Auxiliar.tipoPreguntaImagen:
+                permisos = new ArrayList<>();
+
+                String textoPermisos = getString(R.string.necesidad_permisos);
+
+                if(!(ActivityCompat.checkSelfPermission(
+                        this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)) {
+                    permisos.add(Manifest.permission.CAMERA);
+                    textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_camara));
+                }
+                if(tipo.equals(Auxiliar.tipoVideo) && !(ActivityCompat.checkSelfPermission(
+                        this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)) {
+                    permisos.add(Manifest.permission.RECORD_AUDIO);
+                    textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_micro));
+                }
+
+                if(permisos.isEmpty()) {
+                    bloqueaBotones();
+                    switch (tipo) {
+                        case Auxiliar.tipoPreguntaImagen:
                             realizaCaptura(0);
-                        break;
-                    case Auxiliar.tipoImagen:
+                            break;
+                        case Auxiliar.tipoImagen:
                             realizaCaptura(1);
-                        break;
-                    case Auxiliar.tipoImagenMultiple:
-                    case Auxiliar.tipoPreguntaImagenes:
+                            break;
+                        case Auxiliar.tipoImagenMultiple:
+                        case Auxiliar.tipoPreguntaImagenes:
                             realizaCaptura(2);
-                        break;
-                    case Auxiliar.tipoVideo:
+                            break;
+                        case Auxiliar.tipoVideo:
                             realizaVideo();
-                        break;
+                            break;
+                    }
+                }else{
+                    AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
+                    alertaExplicativa.setTitle(getString(R.string.permi));
+                    alertaExplicativa.setMessage(Html.fromHtml(textoPermisos));
+                    alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                            // motivo se puede salir del for directamente
+                            ActivityCompat.requestPermissions(
+                                    Tarea.this,
+                                    permisos.toArray(new String[permisos.size()]),
+                                    1004);
+                        }
+                    });
+                    alertaExplicativa.setCancelable(true);
+                    alertaExplicativa.show();
                 }
                 break;
             case R.id.ivImagenDescripcion:
@@ -442,7 +412,6 @@ public class Tarea extends AppCompatActivity implements
                         startActivity(intent);
                     }
                     else{//No hay ninguna imagen. Este mensaje no debería aparecer nunca
-                        //Toast.makeText(this, getString(R.string.recursoMaximaResolucion), Toast.LENGTH_LONG).show();
                         muestraSnackBar(getString(R.string.recursoMaximaResolucion));
                     }
                 }
@@ -455,7 +424,6 @@ public class Tarea extends AppCompatActivity implements
                         }else{
                             guardaRespuesta(etRespuestaTextual.getText().toString());
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
-                            //muestraSnackBar(getString(R.string.imagenesG));
                         }
                     }else {
                         guardaRespuesta(etRespuestaTextual.getText().toString());
@@ -525,6 +493,12 @@ public class Tarea extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para guardar la respuesta de texto que haya dado el usuario. Agrega esta respueta al
+     * vector de las trespuestas.
+     * @param respuestaTextual Frase o palabras dadas por el usuario.
+     * @throws Exception Posibles excepciones al manipular el JSON
+     */
     private void guardaRespuesta(String respuestaTextual) throws Exception {
         JSONObject json;
         json = PersistenciaDatos.obtenTarea(
@@ -567,16 +541,6 @@ public class Tarea extends AppCompatActivity implements
         bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
         bundle.putString("idUsuario", Login.firebaseAuth.getUid());
         Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
-        /*JSONObject tarea = null;
-        try{
-            tarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
-            tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-            PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroDenunciadas, tarea, Context.MODE_PRIVATE);
-        }catch (Exception e){
-            if(tarea!=null)
-                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroDenunciadas, tarea, Context.MODE_PRIVATE);
-        }
-        Auxiliar.returnMain(this);*/
     }
 
     /**
@@ -598,6 +562,9 @@ public class Tarea extends AppCompatActivity implements
             btTerminar.setClickable(estadoBtCamara);
     }
 
+    /**
+     * Método para hacer visible el botón para finalizar la tarea
+     */
     private void activaBtTerminar(){
         btTerminar.setVisibility(View.VISIBLE);
         btTerminar.setClickable(true);
@@ -626,12 +593,10 @@ public class Tarea extends AppCompatActivity implements
                 startActivityForResult(takePicture, tipo);//Los requestCode solo pueden ser de 16 bits
             }
             else{
-                //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
                 muestraSnackBar(getString(R.string.errorOpera));
                 desbloqueaBt();
             }
         } else{
-            //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
             muestraSnackBar(getString(R.string.errorOpera));
             desbloqueaBt();
         }
@@ -660,13 +625,11 @@ public class Tarea extends AppCompatActivity implements
                 takeVideo.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
                 startActivityForResult(takeVideo, 3);
             }else{
-                //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
                 muestraSnackBar(getString(R.string.errorOpera));
                 desbloqueaBt();
             }
         }
         else{
-            //Toast.makeText(this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
             muestraSnackBar(getString(R.string.errorOpera));
             desbloqueaBt();
         }
@@ -716,7 +679,6 @@ public class Tarea extends AppCompatActivity implements
                             else {
                                 imagenesCamaraList.add( new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
                                 actualizaContenedorImagenes(-1);
-                                //Toast.makeText(this, getString(R.string.imagenG), Toast.LENGTH_SHORT).show();
                                 muestraSnackBar(getString(R.string.imagenG));
                             }
                             //Auxiliar.publicaGaleria(this, photoURI);
@@ -733,7 +695,6 @@ public class Tarea extends AppCompatActivity implements
                         break;
                     default:
                         mensajeError();
-                        //Auxiliar.errorToast(this);
                         muestraSnackBar(getString(R.string.errorOpera));
                 }
                 break;
@@ -750,7 +711,6 @@ public class Tarea extends AppCompatActivity implements
                             desbloqueaBt();
                             imagenesCamaraList.add(new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
                             actualizaContenedorImagenes(-1);
-                            //Toast.makeText(this, getString(R.string.imagenGN), Toast.LENGTH_SHORT).show();
                             muestraSnackBar(getString(R.string.imagenGN));
                         }
                         break;
@@ -778,9 +738,7 @@ public class Tarea extends AppCompatActivity implements
                                     Context.MODE_PRIVATE))
                                 mensajeError();
                             else {
-                                //Toast.makeText(this, getString(R.string.videoG), Toast.LENGTH_SHORT).show();
                                 muestraSnackBar(getString(R.string.videoG));
-                                //Auxiliar.puntuaTarea(this, idTarea);
                                 imagenesCamaraList.add(new Completadas.ImagenesCamara(videoURI, View.VISIBLE));
                                 actualizaContenedorVideos(-1);
                                 activaBtTerminar();
@@ -796,7 +754,6 @@ public class Tarea extends AppCompatActivity implements
                         break;
                     default:
                         mensajeError();
-                        //Auxiliar.errorToast(this);
                         muestraSnackBar(getString(R.string.errorOpera));
                 }
                 break;
@@ -874,31 +831,16 @@ public class Tarea extends AppCompatActivity implements
                     Auxiliar.puntuaTarea(this, idTarea);
                 }
             }
-            /*else {
-                try {
-                    tarea = PersistenciaDatos.recuperaTarea(
-                            getApplication(),
-                            PersistenciaDatos.ficheroNotificadas,
-                            idTarea);
-                    assert tarea != null;
-                    tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
-                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                    if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                            tarea,
-                            respuesta, Context.MODE_PRIVATE))
-                        mensajeError();
-                }catch (Exception e){
-                    if(tarea != null)
-                        PersistenciaDatos.guardaJSON(getApplication(),
-                                PersistenciaDatos.ficheroNotificadas,
-                                tarea, Context.MODE_PRIVATE);
-                }
-            }*/
         }
     }
 
+    /**
+     * Método para indicar al usuario si la respuesta que ha dado es correcta o no
+     * @param context Contexto
+     * @param acierto Indica si el usuario ha acertado o no
+     */
     private void mensajeRespuestaEsperada(final Context context, boolean acierto){
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
         alertBuilder.setTitle(getString(R.string.respuestaEspeTitulo));
         if(acierto){
             alertBuilder.setIcon(R.drawable.ic_check_green_24dp);
@@ -913,6 +855,7 @@ public class Tarea extends AppCompatActivity implements
             public void onClick(DialogInterface dialog, int which) {
                 tareaCompletadaFirebase();
                 Auxiliar.puntuaTarea(context, idTarea);
+                finish();
             }
         });
         alertBuilder.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -920,8 +863,10 @@ public class Tarea extends AppCompatActivity implements
             public void onCancel(DialogInterface dialog) {
                 tareaCompletadaFirebase();
                 Auxiliar.puntuaTarea(context, idTarea);
+                finish();
             }
         });
+        alertBuilder.setCancelable(false);
         alertBuilder.show();
     }
 
@@ -932,7 +877,6 @@ public class Tarea extends AppCompatActivity implements
     @Override
     protected void onSaveInstanceState(@NotNull Bundle bundle){
         super.onSaveInstanceState(bundle);
-        //bundle.putInt("RESTANTES", restantes);
         bundle.putBoolean("ESTADOCAMARA", estadoBtCamara);
         bundle.putBoolean("ESTADOCANCELAR", estadoBtCancelar);
         bundle.putBoolean("ESTADOTERMINAR", estadoBtTerminar);
@@ -964,57 +908,6 @@ public class Tarea extends AppCompatActivity implements
         setBotones();
     }
 
-
-    ///**
-     /* Clase que se encarga de obtener la imagen del servidor
-     */
-    //private class DownloadImages extends AsyncTask<URL, Void, Bitmap> {
-
-        ///**
-         /* Método encargado de descargar las imágenes de las URLs que indiquen
-         * @param urls URLs a descargar. Según está implementado, solamente descarga la primera URL
-         * @return Imagen descargada o null si no se pudo descargar
-         */
-        /*protected Bitmap doInBackground(URL... urls) {
-            try {
-                ivImagenDescripcion.setImageResource(R.drawable.ic_cloud_download_blue_80dp);
-                ivImagenDescripcion.setVisibility(View.VISIBLE);
-                RotateAnimation rotateAnimation = new RotateAnimation(
-                        0f,
-                        359f,
-                        Animation.RELATIVE_TO_SELF,
-                        0.5f,
-                        Animation.RELATIVE_TO_SELF,
-                        0.5f
-                );
-                rotateAnimation.setInterpolator(new LinearInterpolator());
-                rotateAnimation.setRepeatCount(Animation.INFINITE);
-                rotateAnimation.setDuration(1200);
-                ivImagenDescripcion.startAnimation(rotateAnimation);
-                return BitmapFactory.decodeStream(urls[0].openConnection().getInputStream());
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
-        }*/
-
-        //**
-         /* Método que carga la imagen descargada en la interfaz gráfica de la aplicación
-         * @param bitmap Imagen que se va a mostrar
-         */
-        //@Override
-        /*protected void onPostExecute(Bitmap bitmap){
-            ivImagenDescripcion.setAnimation(null);
-            if (bitmap != null) {
-                ivImagenDescripcion.setImageBitmap(bitmap);
-                ivImagenDescripcion.setAdjustViewBounds(true);
-            } else {
-                ivImagenDescripcion.setImageResource(R.drawable.ic_close_red_80dp);
-            }
-            ivImagenDescripcion.setVisibility(View.VISIBLE);
-        }
-    }*/
-
     /**
      * Método que establece la conexión con la base de datos si no existiera
      */
@@ -1030,24 +923,6 @@ public class Tarea extends AppCompatActivity implements
     @Override
     public void onBackPressed(){
         super.onBackPressed();
-        /*JSONObject tarea = null;
-        try {
-            tarea = PersistenciaDatos.obtenTarea(
-                    getApplication(),
-                    PersistenciaDatos.ficheroNotificadas,
-                    idTarea);
-            tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-            PersistenciaDatos.guardaJSON(getApplication(),
-                    PersistenciaDatos.ficheroTareasPospuestas,
-                    tarea,
-                    Context.MODE_PRIVATE);
-            Picasso.get().cancelTag(Auxiliar.cargaImagenTarea);
-        }catch (Exception e){
-            if(tarea!=null){
-                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                        tarea, Context.MODE_PRIVATE);
-            }
-        }*/
         finish();
     }
 
@@ -1133,6 +1008,10 @@ public class Tarea extends AppCompatActivity implements
         return false;
     }
 
+    /**
+     * Método para mostrar algún aviso al usuario mendiante una snackBar
+     * @param texto Texto que se desea mostrar al usuario
+     */
     private void muestraSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clTarea), R.string.app_name, Snackbar.LENGTH_SHORT);
         snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
@@ -1141,6 +1020,9 @@ public class Tarea extends AppCompatActivity implements
         snackbar.show();
     }
 
+    /**
+     * Método para indicar dejar registro en Firebase de una tarea completada
+     */
     private void tareaCompletadaFirebase(){
         Bundle bundle = new Bundle();
         bundle.putString("idTarea", Auxiliar.idReducida(idTarea));

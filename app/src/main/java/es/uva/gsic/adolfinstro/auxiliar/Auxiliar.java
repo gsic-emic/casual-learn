@@ -197,7 +197,7 @@ public class Auxiliar {
     }
 
     /**
-     * Método para preparar la petición de los permisos necesarios al usuario
+     * Método para preparar la petición de los permisos relacionados con la posición
      * @param context Contexto
      * @return Permisos que faltan por condeder
      */
@@ -212,19 +212,6 @@ public class Auxiliar {
                     context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                     == PackageManager.PERMISSION_GRANTED))
                 permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.INTERNET);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.CAMERA);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.RECORD_AUDIO);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return permisos;
     }
 

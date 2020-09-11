@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
@@ -8,13 +9,16 @@ import androidx.preference.PreferenceManager;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,7 +44,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
@@ -53,6 +56,8 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -63,7 +68,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20200703
+ * @version 20200911
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -250,7 +255,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
             }
 
             //Identifiación usuario. Si existe el fichero con el identificador no muestro la barra
-            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
             if(idUsuario == null) {
                 snackBarLogin(R.id.clIdentificatePreview);
             }
@@ -277,7 +283,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
                     startActivity(intent);
                 }catch (Exception e){
-                    //Toast.makeText(context,  context.getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                     pintaSnackBar(context.getString(R.string.recuperandoPosicion));
                 }
             }
@@ -362,6 +367,30 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 e.printStackTrace();
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
+            permisos = new ArrayList<>();
+            String textoPermisos = getString(R.string.necesidad_permisos);
+            //Compruebo permisos de localización en primer y segundo plano
+            if(!(ActivityCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED)) {
+                permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+            }
+            //Comprobación para saber si el usuario se ha identificado
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if(idUsuario != null) {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    if(!(ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED)) {
+                        permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                        textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                    }
+            }
+            if(permisos.isEmpty())
+                new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
+            else
+                solicitaPermisoUbicacion(textoPermisos);
         }
     }
 
@@ -573,14 +602,33 @@ public class Preview extends AppCompatActivity implements LocationListener {
         recepcionNotificaciones = new RecepcionNotificaciones();
         registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        permisos = new ArrayList<>();
         try {
+            String textoPermisos = getString(R.string.necesidad_permisos);
+
             if (ActivityCompat.checkSelfPermission(
                     this,
-                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED  &&
-                    ActivityCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 botonesVisibles(false);
+                permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+            }
+
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if(idUsuario != null) {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    if(!(ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED)) {
+                        permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                        textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                    }
+            }else{
+                new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
+            }
+
+            if(!permisos.isEmpty()){
+                solicitaPermisoUbicacion(textoPermisos);
             } else {
                 locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER, 1000, 2, this);
@@ -603,6 +651,33 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
         if(map != null)
             map.onResume();
+    }
+
+    List<String> permisos;
+
+    private void solicitaPermisoUbicacion(String textoDialogo) {
+        AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
+        alertaExplicativa.setTitle(getString(R.string.permi));
+        alertaExplicativa.setMessage(Html.fromHtml(textoDialogo));
+        alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                // motivo se puede salir del for directamente
+                ActivityCompat.requestPermissions(
+                        Preview.this,
+                        permisos.toArray(new String[permisos.size()]),
+                        1002);
+            }
+        });
+        alertaExplicativa.setNegativeButton(getString(R.string.volver), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onBackPressed();
+            }
+        });
+        alertaExplicativa.setCancelable(false);
+        alertaExplicativa.show();
     }
 
     /**

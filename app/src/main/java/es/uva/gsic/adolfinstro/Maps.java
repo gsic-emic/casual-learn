@@ -9,8 +9,8 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Application;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,8 +23,10 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.Html;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -97,7 +99,6 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback,
         AdaptadorListaCoincidencia.ItemClickListenerDialogo {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
@@ -382,20 +383,6 @@ public class  Maps extends AppCompatActivity implements
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    /*JSONArray lugares = Auxiliar.buscaMunicipio(context, query.trim().toLowerCase());
-                    if(lugares.length() > 0){
-                        if(lugares.length() == 1){
-                            try {
-                                centraMapa(lugares.getJSONObject(0).getDouble("a"),lugares.getJSONObject(0).getDouble("o"));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }else{
-                            dialogoCoincidencias(lugares);
-                        }
-                    }else{
-                        pintaSnackBar(getString(R.string.municipioNoEncontrado));
-                    }*/
                     return false;
                 }
 
@@ -523,19 +510,15 @@ public class  Maps extends AppCompatActivity implements
     @Override
     public void onActivityResult(int requestCode, int result, Intent data) {
         super.onActivityResult(requestCode, result, data);
-        switch (requestCode) {
-            case (Login.requestAuth+1):
-                //No es necesario comprobar el resultado de la petición según la ayuda oficial
-                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                GoogleSignInAccount account = null;
-                try {
-                    account = task.getResult(ApiException.class);
-                    firebaseAuthWithGoogle(account);
-                } catch (ApiException e) {
-                    e.printStackTrace();
-                }
-                break;
-            default:
+        if (requestCode == Login.requestAuth + 1) {//No es necesario comprobar el resultado de la petición según la ayuda oficial
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            GoogleSignInAccount account = null;
+            try {
+                account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -577,6 +560,7 @@ public class  Maps extends AppCompatActivity implements
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             invalidateOptionsMenu();
+            checkPermissions();
         }
     }
 
@@ -607,87 +591,84 @@ public class  Maps extends AppCompatActivity implements
         });
     }
 
+    List<String> permisos;
+
     /**
      * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
-     * En la actualidad, solicita permisos de localización y cámara.
+     * Solicita el permiso de localización.
      */
     public void checkPermissions() {
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
-            System.exit(-1);
-        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
-        if (permisos.size() > 0) //Evitamos hacer una petición con un array nulo
-            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
-        else{
+        permisos = new ArrayList<>();
+        String textoPermisos = getString(R.string.necesidad_permisos);
+        //Compruebo permisos de localización en primer y segundo plano
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)) {
+            permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+        }
+        //Comprobación para saber si el usuario se ha identificado
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if(idUsuario != null) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                if(!(ActivityCompat.checkSelfPermission(
+                        context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED)) {
+                    permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                    textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                }
+        }
+
+        //Si no falta ningún servicio se activa el servicio en segundo plano (si el usuario se ha identificado).
+        //Muestra la posición del usuario en el mapa
+        if(!permisos.isEmpty()){
+            AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
+            alertaExplicativa.setTitle(getString(R.string.permi));
+            alertaExplicativa.setMessage(Html.fromHtml(textoPermisos));
+            alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                    // motivo se puede salir del for directamente
+                    ActivityCompat.requestPermissions(
+                            Maps.this,
+                            permisos.toArray(new String[permisos.size()]),
+                            requestCodePermissions);
+                }
+            });
+            alertaExplicativa.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finishAffinity();
+                }
+            });
+            alertaExplicativa.setCancelable(false);
+            alertaExplicativa.show();
+        }else{
+            if(idUsuario != null)
+                lanzaServicioPosicionamiento();
             if(myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
-                GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-                gpsMyLocationProvider.setLocationUpdateMinDistance(5);
-                gpsMyLocationProvider.setLocationUpdateMinTime(5000);
-                gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
-                gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
-                myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-                myLocationNewOverlay.enableMyLocation();
-                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
-                //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-                myLocationNewOverlay.setEnableAutoStop(true);
+                activaPosicionMapa();
             }
         }
     }
 
-    /**
-     * Método que devuelve el resultado de la solicitud de permisos.
-     * @param requestCode Código de la petición de permismos.
-     * @param permissions Permisos que se han solicitado.
-     * @param grantResults Valor otorgado por el usuario al permiso.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
-        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean falta = false;
-        for (int i : grantResults) {
-            if (i == -1) {
-                falta = true;
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                alertBuilder.setTitle(getString(R.string.permi));
-                alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
-                        // motivo se puede salir del for directamente
-                        checkPermissions();
-                    }
-                });
-                alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
-                        //cierra
-                        System.exit(0);
-                    }
-                });
-                alertBuilder.setCancelable(false);
-                alertBuilder.show();
-                break;
-            }
-        }
-        if (!falta) {
-            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-            gpsMyLocationProvider.setLocationUpdateMinDistance(5);
-            gpsMyLocationProvider.setLocationUpdateMinTime(5000);
-            gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
-            gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
-            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-            myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                    BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
-            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-            myLocationNewOverlay.setEnableAutoStop(true);
-
-            pintaItemsfijos();
-        }
+    private void activaPosicionMapa() {
+        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+        gpsMyLocationProvider.setLocationUpdateMinDistance(5);
+        gpsMyLocationProvider.setLocationUpdateMinTime(5000);
+        gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
+        gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
+        myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+        myLocationNewOverlay.enableMyLocation();
+        myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
+        //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
+        myLocationNewOverlay.setEnableAutoStop(true);
+        pintaItemsfijos();
     }
+
+
 
     /**
      * Método para pintar los Overlays que siempre se desea que estén en el mapa
@@ -823,8 +804,6 @@ public class  Maps extends AppCompatActivity implements
                         drawable = context.getResources().getDrawable(R.drawable.ic_marcador700);
                     else
                         drawable = context.getResources().getDrawable(R.drawable.ic_marcador900);
-
-
 
         //Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
         Bitmap bitmap = Bitmap.createBitmap(
@@ -1235,6 +1214,8 @@ public class  Maps extends AppCompatActivity implements
                 finishAffinity();
                 startActivity(intent);
                 break;
+            default:
+                break;
         }
     }
 
@@ -1294,8 +1275,8 @@ public class  Maps extends AppCompatActivity implements
         switch (key){
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
-                if(!noMolestar)
-                    lanzaServicioPosicionamiento();
+                /*if(!noMolestar)
+                    lanzaServicioPosicionamiento();*/
                 break;
             case Ajustes.LISTABLANCA_pref:
                 if(sharedPreferences.getBoolean(key, true))

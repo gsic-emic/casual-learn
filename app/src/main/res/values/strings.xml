@@ -5,7 +5,7 @@
     <string name="permi">Permissions</string>
     <string name="permiM">The app needs all permissions!</string>
     <string name="accept">OK</string>
-    <string name="exi">Exit app</string>
+    <string name="exi">Exit</string>
     <string name="title_activity_task_camera">task_camera</string>
     <string name="task">Task</string>
     <string name="cancel">Cancel</string>
@@ -217,4 +217,13 @@
     <string name="compartir_yammer">Share on Yammer</string>
     <string name="compartir_twitter">Share on Twitter</string>
     <string name="compartir_respuesta">Share answer!</string>
+    <string name="necesita_camara">Camera not found</string>
+    <string name="necesita_camaraM">The application needs a camera to perform tasks</string>
+    <string name="solicitar">Request</string>
+    <string name="necesidad_permisos">The following permissions are required:</string>
+    <string name="ubicacion_primer"><![CDATA[<p>The app needs to know your <b>foreground location</b> in order to show your position on the map.</p>]]></string>
+    <string name="ubicacion_segundo"><![CDATA[<p>The app needs to know your <b>position in the background</b> to notify you of nearby tasks.</p>]]></string>
+    <string name="volver">Back</string>
+    <string name="permiso_camara"><![CDATA[The app needs to access the device\'s <p>camera</b> to take photos or record videos.</p>]]></string>
+    <string name="permiso_micro"><![CDATA[<p>The app needs access to the <b>microphone</b>. With this permission the videos can have audio.</p>]]></string>
 </resources>

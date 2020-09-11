@@ -3,7 +3,7 @@
     <string name="permiM">La aplicación necesita todos los permisos solicitados</string>
     <string name="permi">Permisos</string>
     <string name="accept">Aceptar</string>
-    <string name="exi">Salir de la aplicación</string>
+    <string name="exi">Salir</string>
     <string name="task">Tarea</string>
     <string name="next">Siguiente</string>
     <string name="cancel">Cancelar</string>
@@ -188,4 +188,13 @@
     <string name="compartir_yammer">Compartir en Yammer</string>
     <string name="compartir_twitter">Compartir en Twitter</string>
     <string name="compartir_respuesta">¡Comparte la respuesta!</string>
+    <string name="necesita_camara">Cámara no encontrada</string>
+    <string name="necesita_camaraM">La aplicación necesita una cámara para poder realizar algunas tareas.</string>
+    <string name="solicitar">Solicitar</string>
+    <string name="necesidad_permisos">Se necesitan los siguientes permisos:</string>
+    <string name="ubicacion_primer"><![CDATA[<p>Se necesita conocer tu <b>ubicación en primer plano</b> para poder mostrar tu posición en el mapa.</p>]]></string>
+    <string name="ubicacion_segundo"><![CDATA[<p>Se necesita conocer tu <b>posición en segundo plano</b> para notificarte de las tareas cercanas.</p>]]></string>
+    <string name="volver">Atrás</string>
+    <string name="permiso_camara"><![CDATA[<p>Se necesita acceder a la <b>cámara</b> del dispositivo para tomar fotografías o grabar vídeos.</p>]]></string>
+    <string name="permiso_micro"><![CDATA[<p>Se necesita acceder al <b>micrófono</b> para que los vídeos tengan audio.</p>]]></string>
 </resources>
