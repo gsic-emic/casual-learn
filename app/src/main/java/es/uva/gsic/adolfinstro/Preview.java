@@ -305,7 +305,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 startActivityForResult(intent, Login.requestAuth + 2);
             }
         });
-        snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary100));
+        snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary50));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.show();
     }

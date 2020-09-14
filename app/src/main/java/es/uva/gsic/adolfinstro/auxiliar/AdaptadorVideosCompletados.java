@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import es.uva.gsic.adolfinstro.Completadas;
 import es.uva.gsic.adolfinstro.R;
 
 /**
@@ -53,7 +52,7 @@ public class AdaptadorVideosCompletados extends RecyclerView.Adapter<AdaptadorVi
         }
     }
 
-    private List<Completadas.ImagenesCamara> lista;
+    private List<ImagenesCamara> lista;
     private LayoutInflater layoutInflater;
     private static ItemClickListenerVideo itemClickVideo;
 
@@ -62,7 +61,7 @@ public class AdaptadorVideosCompletados extends RecyclerView.Adapter<AdaptadorVi
      * @param context Contexto
      * @param uris Lista con toda la información necesaria de los vídeos.
      */
-    public AdaptadorVideosCompletados(Context context, List<Completadas.ImagenesCamara> uris){
+    public AdaptadorVideosCompletados(Context context, List<ImagenesCamara> uris){
         lista = uris;
         layoutInflater = LayoutInflater.from(context);
     }

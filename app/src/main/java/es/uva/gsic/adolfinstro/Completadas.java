@@ -41,6 +41,7 @@ import java.util.Objects;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorImagenesCompletadas;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorVideosCompletados;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.auxiliar.ImagenesCamara;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
@@ -548,7 +549,6 @@ public class Completadas extends AppCompatActivity implements
         if(editando) {
             if(listaURI.size() <= 1){ //El usuario no puede eliminar todos los recursos gráficos
                 muestraSnack(getResources().getString(R.string.agregaImagenAntesBorrar));
-                //Toast.makeText(this, getString(R.string.agregaImagenAntesBorrar), Toast.LENGTH_SHORT).show();
             }else{
                 Uri uri = imagenesCamaras.get(position).getDireccion();
                 uriGuardadas.remove(uri);
@@ -766,62 +766,62 @@ public class Completadas extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Subclase para controlar los items del contenedor
-     */
-    public static class ImagenesCamara {
-        /** Identificador único del objeto */
-        private Uri direccion;
-        /** Visibilidad de la imagen de borrado */
-        private int visible;
-
-        /**
-         * Contructor de la clase.
-         *
-         * @param direccion Identificador único del recurso
-         * @param visible Visibilidad del borrado del recurso
-         */
-        ImagenesCamara(Uri direccion, int visible){
-            this.direccion = direccion;
-            this.visible = visible;
-        }
-
-        /**
-         * Constructor de la clase.
-         * @param direccion Identificador único del recurso
-         * @param visible Visibilidad del borrado del recurso
-         */
-        ImagenesCamara(String direccion, int visible){
-            this(Uri.parse(direccion), visible);
-        }
-
-        /**
-         * Método para obtener el identificador único del recurso
-         *
-         * @return Identificador único del recurso
-         */
-        public Uri getDireccion(){
-            return direccion;
-        }
-
-        /**
-         * Método para saber si el borrado del recurso es visible o no
-         *
-         * @return Estado de la visibilidad del recurso
-         */
-        public int getVisible(){
-            return visible;
-        }
-
-        /**
-         * Método para establecer la visibilidad del recurso.
-         *
-         * @param codigo Nueva visibilidad
-         */
-        public void setVisible(int codigo){
-            visible = codigo;
-        }
-    }
+//    /**
+//     * Subclase para controlar los items del contenedor
+//     */
+//    public static class ImagenesCamara {
+//        /** Identificador único del objeto */
+//        private Uri direccion;
+//        /** Visibilidad de la imagen de borrado */
+//        private int visible;
+//
+//        /**
+//         * Contructor de la clase.
+//         *
+//         * @param direccion Identificador único del recurso
+//         * @param visible Visibilidad del borrado del recurso
+//         */
+//        ImagenesCamara(Uri direccion, int visible){
+//            this.direccion = direccion;
+//            this.visible = visible;
+//        }
+//
+//        /**
+//         * Constructor de la clase.
+//         * @param direccion Identificador único del recurso
+//         * @param visible Visibilidad del borrado del recurso
+//         */
+//        ImagenesCamara(String direccion, int visible){
+//            this(Uri.parse(direccion), visible);
+//        }
+//
+//        /**
+//         * Método para obtener el identificador único del recurso
+//         *
+//         * @return Identificador único del recurso
+//         */
+//        public Uri getDireccion(){
+//            return direccion;
+//        }
+//
+//        /**
+//         * Método para saber si el borrado del recurso es visible o no
+//         *
+//         * @return Estado de la visibilidad del recurso
+//         */
+//        public int getVisible(){
+//            return visible;
+//        }
+//
+//        /**
+//         * Método para establecer la visibilidad del recurso.
+//         *
+//         * @param codigo Nueva visibilidad
+//         */
+//        public void setVisible(int codigo){
+//            visible = codigo;
+//        }
+//    }
 
     /**
      * Se almacena el estado cuando se produce una rotación del terminal
@@ -854,7 +854,6 @@ public class Completadas extends AppCompatActivity implements
                 break;
             case R.id.btCompartirCompletadaInstagram:
                 Auxiliar.mandaInsta(this, tarea, hashtag);
-                //Toast.makeText(this, getString(R.string.sinImplementar), Toast.LENGTH_SHORT).show();
                 muestraOculta(false);
                 break;
             default:

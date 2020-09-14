@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
@@ -88,10 +87,6 @@ public class Acerca extends AppCompatActivity {
             dialogoDesarrolladoresActivo = true;
             dialogoDesarrolladores.show();
         }
-
-        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoJunta), "https://commons.wikimedia.org/wiki/File:Logotipo_de_la_Junta_de_Castilla_y_Le%C3%B3n.svg");
-        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoDbPedia), "https://commons.wikimedia.org/wiki/File:DBpediaLogo.svg");
-        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoWikidata), "https://commons.wikimedia.org/wiki/File:Wikidata-logo-en.svg");
     }
 
     /**
@@ -149,8 +144,6 @@ public class Acerca extends AppCompatActivity {
             default:
                 break;
         }
-        //if(view.getId() != R.id.tvDesarrolladores)
-        //    startActivity(intent);
     }
 
     /**
@@ -161,12 +154,6 @@ public class Acerca extends AppCompatActivity {
         String salida = "";
         nombres.add(getString(R.string.pablo)+"\n");
         nombres.add(getString(R.string.adolfo)+"\n");
-        /*int pos;
-        Random random = new Random();
-        while(nombres.size() > 0) {
-            pos = random.nextInt(nombres.size());
-            salida = salida.concat(nombres.remove(pos));
-        }*/
         for(String n : nombres)
             salida = salida.concat(n);
         return salida;
@@ -200,6 +187,5 @@ public class Acerca extends AppCompatActivity {
         super.onSaveInstanceState(b);
         b.putString("TEXTOVERSION", version.getText().toString());
         b.putBoolean("DIALOGODESARROLLADORES", dialogoDesarrolladoresActivo);
-        //b.putBoolean("ENSENA", ensena);
     }
 }

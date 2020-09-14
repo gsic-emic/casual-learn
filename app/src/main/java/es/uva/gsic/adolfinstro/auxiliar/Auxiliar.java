@@ -175,6 +175,7 @@ public class Auxiliar {
                         context.getExternalFilesDir("Cache"));
                 break;
             default:
+                break;
         }
         return mediaFile;
     }
@@ -289,6 +290,7 @@ public class Auxiliar {
                                         ((1-Math.cos(Math.toRadians(lon2 - lon1)))/2)
                 ));
     }
+
     /**
      * Método que obtiene la última parte de un recurso
      * @param tipoRespuesta URI del tipo de tarea
@@ -543,11 +545,11 @@ public class Auxiliar {
                 Math.min(long1, long2));
     }
 
-    public static void publicaGaleria(Context contexto, Uri uri) {
+    /*public static void publicaGaleria(Context contexto, Uri uri) {
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         intent.setData(uri);
         contexto.sendBroadcast(intent);
-    }
+    }*/
 
     /**
      * Envía el contenido a la app de Twitter para que el usuario pueda compartirlo
@@ -731,7 +733,6 @@ public class Auxiliar {
                     context.getString(R.string.instalaYammer),
                     Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            //Toast.makeText(context, e.toString(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
     }
@@ -1138,31 +1139,13 @@ public class Auxiliar {
         }
     }
 
-    /*public static double[] buscaMunicipio(Context context, String query) {
-        double latitud = 0, longitud = 0;
-        final String[] no = {"de", "del", "la", "los", "el", "y", "las"};
-        if(Auxiliar.municipios == null || Auxiliar.municipios.length() == 0)
-            Auxiliar.municipios = leeFicheroMunicipios(context);
-
-        JSONObject municipio;
-        try {
-            for(int i = 0; i < Auxiliar.municipios.length(); i++){
-                    municipio = Auxiliar.municipios.getJSONObject(i);
-                    if(municipio.getString("Municipio").equals(query)) {
-                        latitud = municipio.getDouble("Latitud");
-                        longitud = municipio.getDouble("Longitud");
-                        break;
-                    }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        if(latitud != 0 && longitud != 0)
-            return new double[]{latitud, longitud};
-        else
-            return new double[]{};
-    }*/
-
+    /**
+     * Método para obtener una lista de municipios dependiente de los caracteres que haya introducido
+     * el usuario.
+     * @param context Contexto
+     * @param query Caracteres introducidos por el usuario
+     * @return Lista de municipios que coinciden con la búsqueda. El array puede estar vacío.
+     */
     public static JSONArray buscaMunicipio(Context context, String query) {
         JSONArray salida = new JSONArray();
         String[] bdV, u, userV;
@@ -1216,6 +1199,11 @@ public class Auxiliar {
         return salida;
     }
 
+    /**
+     * Método para cargar la lista de municipios en memoria.
+     * @param context Contexto
+     * @return Municipios de Castilla y León
+     */
     public static JSONArray leeFicheroMunicipios(Context context) {
         JSONArray array;
         BufferedReader bufferedReader = null;

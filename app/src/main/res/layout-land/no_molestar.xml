@@ -19,7 +19,7 @@
         android:theme="@style/switchColor"
         android:id="@+id/switchNoMolestar"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:text="@string/noMolestar"
         android:checked="true"
         app:layout_constraintTop_toBottomOf="@id/tvNoMolestar"

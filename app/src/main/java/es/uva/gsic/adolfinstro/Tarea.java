@@ -1,12 +1,5 @@
 package es.uva.gsic.adolfinstro;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
@@ -32,6 +25,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.snackbar.Snackbar;
 import com.squareup.picasso.Picasso;
 
@@ -47,6 +47,7 @@ import java.util.List;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorImagenesCompletadas;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorVideosCompletados;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.auxiliar.ImagenesCamara;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 import static java.util.Objects.requireNonNull;
@@ -97,7 +98,7 @@ public class Tarea extends AppCompatActivity implements
 
     RecepcionNotificaciones recepcionNotificaciones;
 
-    private List<Completadas.ImagenesCamara> imagenesCamaraList;
+    private List<ImagenesCamara> imagenesCamaraList;
 
     private int posicion;
 
@@ -217,7 +218,7 @@ public class Tarea extends AppCompatActivity implements
                     for(int t = 0; t < respuetas.length(); t++){
                         respuesta = respuetas.getJSONObject(t);
                         if(respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.uri)){
-                            imagenesCamaraList.add(new Completadas.ImagenesCamara(respuesta.getString(Auxiliar.respuestaRespuesta), View.VISIBLE));
+                            imagenesCamaraList.add(new ImagenesCamara(respuesta.getString(Auxiliar.respuestaRespuesta), View.VISIBLE));
                         }
                     }
                     switch (tipo){
@@ -677,7 +678,7 @@ public class Tarea extends AppCompatActivity implements
                                     Context.MODE_PRIVATE))
                                 mensajeError();
                             else {
-                                imagenesCamaraList.add( new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
+                                imagenesCamaraList.add( new ImagenesCamara(photoURI, View.VISIBLE));
                                 actualizaContenedorImagenes(-1);
                                 muestraSnackBar(getString(R.string.imagenG));
                             }
@@ -709,7 +710,7 @@ public class Tarea extends AppCompatActivity implements
                         else {
                             activaBtTerminar();
                             desbloqueaBt();
-                            imagenesCamaraList.add(new Completadas.ImagenesCamara(photoURI, View.VISIBLE));
+                            imagenesCamaraList.add(new ImagenesCamara(photoURI, View.VISIBLE));
                             actualizaContenedorImagenes(-1);
                             muestraSnackBar(getString(R.string.imagenGN));
                         }
@@ -739,7 +740,7 @@ public class Tarea extends AppCompatActivity implements
                                 mensajeError();
                             else {
                                 muestraSnackBar(getString(R.string.videoG));
-                                imagenesCamaraList.add(new Completadas.ImagenesCamara(videoURI, View.VISIBLE));
+                                imagenesCamaraList.add(new ImagenesCamara(videoURI, View.VISIBLE));
                                 actualizaContenedorVideos(-1);
                                 activaBtTerminar();
                             }

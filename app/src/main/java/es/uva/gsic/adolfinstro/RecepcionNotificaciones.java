@@ -17,7 +17,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que se encarga de recibir las notificaciones destinadas a la aplicación.
  *
- * @author GSIC
+ * @author Pablo
+ * @version 20200914
  */
 public class RecepcionNotificaciones extends BroadcastReceiver {
 
@@ -89,23 +90,23 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
 
     }
 
+    /**
+     * Método para registrar cuando una tarea es pospuesta o rechazada
+     * @param app Aplicación
+     * @param evento Llave donde se indica si la tarea se ha rechazada o pospuesto
+     * @param idTarea Identificador de la tarea
+     */
     private void tareaFirebase(Application app, String evento, String idTarea){
         Bundle bundle;
-        try {
-            bundle = new Bundle();
-            bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-            bundle.putString("idUsuario", Login.firebaseAuth.getUid());
-            Login.firebaseAnalytics.logEvent(evento, bundle);
-        } catch (Exception e) {
-            try{
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if(idUsuario != null) {
+            try {
                 bundle = new Bundle();
                 bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-                JSONObject usuario = PersistenciaDatos.
-                        recuperaTarea(app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                assert usuario != null;
-                bundle.putString("idUsuario", usuario.getString(Auxiliar.uid));
+                bundle.putString("idUsuario", idUsuario.getString(Auxiliar.uid));
                 Login.firebaseAnalytics.logEvent(evento, bundle);
-            }catch (Exception e1){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

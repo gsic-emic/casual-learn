@@ -46,12 +46,8 @@ public class Ajustes extends AppCompatActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key){
-            case Ajustes.NO_MOLESTAR_pref:
-                reiniciaMapa = estadoAnterior != sharedPreferences.getBoolean(key, false);
-                break;
-            default:
-                break;
+        if (Ajustes.NO_MOLESTAR_pref.equals(key)) {
+            reiniciaMapa = estadoAnterior != sharedPreferences.getBoolean(key, false);
         }
     }
 

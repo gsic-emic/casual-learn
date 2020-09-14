@@ -19,13 +19,13 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase para gestionar la puntuación de las tareas
  *
  * @author Pablo
+ * @version 20200914
  */
 public class Puntuacion extends AppCompatActivity {
 
     private String idTarea;
     private float puntuacion;
     private Button btEnviarPuntuacion;
-    //private String hashtag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +58,6 @@ public class Puntuacion extends AppCompatActivity {
                 }
             }
         });
-
-        /*SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.HASHTAG_pref);*/
     }
 
     /**
@@ -93,7 +89,7 @@ public class Puntuacion extends AppCompatActivity {
     public void onBackPressed(){
         super.onBackPressed();
         Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
-        vuelveInicio(getString(R.string.puntuaCompletada));
+        pantallaCompartir(getString(R.string.puntuaCompletada));
     }
 
     /**
@@ -101,116 +97,49 @@ public class Puntuacion extends AppCompatActivity {
      * @param view Vista pulsada
      */
     public void boton(View view) {
-        switch (view.getId()){
-            case R.id.btEnviarPuntuacion:
-                if(puntuacion > 0){
-                    //SE GUARDA LA PUNTUACIÓN
-                    JSONObject json = null;
-                    try {
-                        json = PersistenciaDatos.obtenTarea(
-                                getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                idTarea);
-                        json.put(Auxiliar.rating, puntuacion);
-                        json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+        if (view.getId() == R.id.btEnviarPuntuacion) {
+            if (puntuacion > 0) {
+                //SE GUARDA LA PUNTUACIÓN
+                JSONObject json = null;
+                try {
+                    json = PersistenciaDatos.obtenTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroCompletadas,
+                            idTarea);
+                    json.put(Auxiliar.rating, puntuacion);
+                    json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    PersistenciaDatos.guardaJSON(getApplication(),
+                            PersistenciaDatos.ficheroCompletadas,
+                            json,
+                            Context.MODE_PRIVATE);
+                } catch (Exception e) {
+                    if (json != null)
                         PersistenciaDatos.guardaJSON(getApplication(),
                                 PersistenciaDatos.ficheroCompletadas,
                                 json,
                                 Context.MODE_PRIVATE);
-                    }catch (Exception e){
-                        if(json != null)
-                            PersistenciaDatos.guardaJSON(getApplication(),
-                                    PersistenciaDatos.ficheroCompletadas,
-                                    json,
-                                    Context.MODE_PRIVATE);
-                        vuelveInicio(null);
-                    }
-                    //Toast.makeText(this, getString(R.string.gracias), Toast.LENGTH_SHORT).show();
-                    //Auxiliar.returnMain(getApplication().getBaseContext());
-                    Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
-                    vuelveInicio(getString(R.string.gracias));
-                } else{
-                    Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
-                    vuelveInicio(getString(R.string.puntuaCompletada));
-                    //Auxiliar.returnMain(getApplication().getBaseContext());
+                    pantallaCompartir(null);
                 }
-                break;
-            /*case R.id.btCompartirPuntua:
-                if((findViewById(R.id.btCompartirPuntuaTwitter)).getVisibility() == View.VISIBLE){
-                    muestraOculta(false);
-                }else{
-                    muestraOculta(true);
-                }
-                break;
-            case R.id.btCompartirPuntuaTwitter:
-                Auxiliar.mandaTweet(
-                        this,
-                        PersistenciaDatos.recuperaTarea(getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                idTarea),
-                        hashtag);
-                muestraOculta(false);
-                break;
-            case R.id.btCompartirPuntuaYammer:
-                Auxiliar.mandaYammer(this,
-                        PersistenciaDatos.recuperaTarea(getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                idTarea),
-                        hashtag);
-                muestraOculta(false);
-                break;
-            case R.id.btCompartirPuntuaInstagram:
-                Auxiliar.mandaInsta(this,
-                        PersistenciaDatos.recuperaTarea(getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                idTarea),
-                        hashtag);
-                muestraOculta(false);
-                break;*/
-            default:
-                break;
+                Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
+                pantallaCompartir(getString(R.string.gracias));
+            } else {
+                Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
+                pantallaCompartir(getString(R.string.puntuaCompletada));
+            }
         }
     }
 
-    /*private void muestraOculta(boolean mostrar){
-        Integer[] lista = {
-                R.id.btCompartirPuntuaTwitter,
-                R.id.btCompartirPuntuaYammer,
-                R.id.btCompartirPuntuaInstagram
-        };
-        for(int i : lista) {
-            if (mostrar)
-                ((FloatingActionButton) findViewById(i)).show();
-            else
-                ((FloatingActionButton) findViewById(i)).hide();
-        }
-        if (mostrar)
-            ((FloatingActionButton) findViewById(R.id.btCompartirPuntua))
-                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_close_secondary));
-        else
-            ((FloatingActionButton) findViewById(R.id.btCompartirPuntua))
-                    .setImageDrawable(getResources().getDrawable(R.drawable.ic_share_secondary));
-    }*/
-
-    private void vuelveInicio(String string) {
+    /**
+     * Método para llevar al usuario a la pantalla de compartir
+     * @param string Texto que se mostrará en la actividad de mapas
+     */
+    private void pantallaCompartir(String string) {
         Intent intent = new Intent(this, CompartirRespuesta.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        //if(string != null)
         intent.putExtra(Auxiliar.textoParaElMapa, string);
         intent.putExtra("ID", idTarea);
         startActivity(intent);
         finishAffinity();
     }
-
-    /*@Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key){
-            case Ajustes.HASHTAG_pref:
-                hashtag = sharedPreferences.getString(key, getString(R.string.hashtag));
-                break;
-            default:
-                break;
-        }
-    }*/
 }

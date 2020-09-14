@@ -53,12 +53,9 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
     Application application;
 
-    private NotificationChannel channel;
     private NotificationManager notificationManager;
     private int intervalo;
-    private boolean noMolestar;
     private String idInstanteGET = "instanteGET";
-    private String idUltimaPosicion = "ultimaPosicionAlarma";
     private String idInstanteNotAuto = "instanteNotAuto";
 
     private final int intervaloComprobacion = 120000;
@@ -87,7 +84,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
         //Se necesita un canal para API 26 y superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            channel = new NotificationChannel(Auxiliar.channelId,
+            NotificationChannel channel = new NotificationChannel(Auxiliar.channelId,
                     context.getString(R.string.canalTareas),
                     NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription(context.getString(R.string.canalTareas));
@@ -155,10 +152,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 intervalo = sharedPreferences.getInt(key, 5);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
-                noMolestar = sharedPreferences.getBoolean(key, false);
+                boolean noMolestar = sharedPreferences.getBoolean(key, false);
                 if(noMolestar){
-                    //stopLocation();
-                    //terminaServicio();
                     new AlarmaProceso().cancelaAlarmaProceso(context);
                 }
                 break;
@@ -238,6 +233,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         application,
                         PersistenciaDatos.ficheroInstantes,
                         idInstanteGET);
+                assert instante != null;
                 latitudGet = instante.getDouble(Auxiliar.latitud);
                 longitudGet = instante.getDouble(Auxiliar.longitud);
                 momento = instante.getLong(Auxiliar.instante);
@@ -365,6 +361,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         double distanciaAndada=1200, latitud=0, longitud=0,latitudAnt, longitudAnt;
         boolean datosValidos = false;
 
+        String idUltimaPosicion = "ultimaPosicionAlarma";
         if(PersistenciaDatos.existeTarea(
                 application,
                 PersistenciaDatos.ficheroPosicion,

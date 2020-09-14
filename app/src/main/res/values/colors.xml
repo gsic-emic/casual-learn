@@ -20,6 +20,7 @@
     <color name="colorSecondary900">#dfa72c</color>-->
     <color name="blackTransparente">#BF000000</color>
     <color name="blackTransparente25">#40000000</color>
+    <color name="colorSecondary50">#f5e7c9</color>
     <color name="colorSecondary100">#f1dcae</color>
     <color name="colorSecondary300">#e8c578</color>
     <color name="colorSecondary500">#dfae43</color>

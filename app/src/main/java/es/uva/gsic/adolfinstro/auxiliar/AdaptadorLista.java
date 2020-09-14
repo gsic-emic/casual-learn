@@ -13,14 +13,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import es.uva.gsic.adolfinstro.ListaTareas;
 import es.uva.gsic.adolfinstro.R;
 
 /**
  * Clase para ver la lista de tareas completadas, pendientes o realizadas dentro de un contenedor.
  *
  * @author pablo
- * @version 20200626
+ * @version 20200914
  */
 public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHolder> {
 
@@ -72,7 +71,7 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
         }
     }
 
-    private List<ListaTareas.TareasLista> lista;
+    private List<TareasLista> lista;
     private LayoutInflater layoutInflater;
     private static ItemClickListener itemClickListener;
     private static ItemLongClickLister itemLongClickLister;
@@ -82,7 +81,7 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
      * @param c Contexto
      * @param l Lista de objetos con la información necesaria de la cada una de las tareas
      */
-    public AdaptadorLista(Context c, List<ListaTareas.TareasLista> l){
+    public AdaptadorLista(Context c, List<TareasLista> l){
         lista = l;
         layoutInflater = LayoutInflater.from(c);
     }
@@ -107,10 +106,10 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
      */
     @Override
     public void onBindViewHolder(@NonNull AdaptadorLista.ViewHolder holder, int position) {
-        holder.tvTitulo.setText(lista.get(position).titulo);
-        holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
-        holder.tvFecha.setText(lista.get(position).fecha);
-        float puntuacion = lista.get(position).puntuacion;
+        holder.tvTitulo.setText(lista.get(position).getTitulo());
+        holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()));
+        holder.tvFecha.setText(lista.get(position).getFecha());
+        float puntuacion = lista.get(position).getPuntuacion();
         if(puntuacion >= 0){
             holder.ratingBar.setRating(puntuacion);
             holder.ratingBar.setVisibility(View.VISIBLE);
@@ -132,7 +131,7 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
      * @return Identificador del marcador
      */
     public String getId(int posicion){
-        return lista.get(posicion).id;
+        return lista.get(posicion).getId();
     }
 
     /**
@@ -141,7 +140,7 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
      * @return Tipo de respuesta esperada del marcador
      */
     public String getTipo(int posicion){
-        return lista.get(posicion).tipoTarea;
+        return lista.get(posicion).getTipoTarea();
     }
 
     /**
