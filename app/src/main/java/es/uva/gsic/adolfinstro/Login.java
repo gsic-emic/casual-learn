@@ -80,7 +80,7 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
 
         setContentView(R.layout.activity_login);
 
-        Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoLogin), "https://commons.wikimedia.org/wiki/File:Ampudia_-_Castillo_1.jpg");
+        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoLogin), "https://commons.wikimedia.org/wiki/File:Ampudia_-_Castillo_1.jpg");
 
         //https://developers.google.com/identity/sign-in/android/sign-in
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)

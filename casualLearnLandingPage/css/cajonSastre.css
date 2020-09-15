@@ -1,52 +1,45 @@
 .cabecera{
-    background-color: #b53f51;
-    padding-top: 0.5rem;
-    padding-bottom: 0.25rem;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
 }
 
 .titulo{
-    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
-    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
-    color: #fff;
+    font-family: 'Roboto', sans-serif;
     font-size: 4.5rem;
 }
 
 .subtitulo{
-    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
-    color: #fff;
-    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-size: 1.6rem;
-    margin-top: -0.5rem;
+    color: #7d8e74;
 }
 
 .subsubtitulo{
-   color: #fff;
     font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
-   font-size: 1rem;
-   font-weight: 300;
-   margin-top: 1rem;
-   margin-bottom: -0.5rem;
+    font-size: 3rem;
+    font-weight: 300;
+    margin-top: 1rem;
+    margin-bottom: -0.5rem;
 }
 
 a:link, a:visited, a:hover, a:active {
-    color: #b53f51;
-    text-decoration: none;
+    color: #666b6e;
+    text-decoration: underline;
 }
 
 p {
-    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
     font-size: 1.4rem;
-    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
-    color: rgb(58, 57, 57);
+    font-family: 'Roboto', sans-serif;
+    color: #a15b1c;
     padding: 0rem 1rem 0rem 1rem;
 }
 
 h1 {
-    /*font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;*/
-    font-family: Roboto, Helvetica, 'Helvetica Neue', sans-serif;
+    font-family: 'Roboto', sans-serif;;
     font-weight: 400;
+    color: #7d8e74;
     font-size: 3rem;
-    padding: 0.5rem 1rem 0rem 1rem;
+    padding: 0.5rem 1rem 1.5rem 1rem;
 }
 
 .botonFlotante{
@@ -58,8 +51,23 @@ h1 {
 
 .responsive {
     width: 100%;
-    max-width: 200px;
+    max-width: 300px;
     height: auto;
+    margin-top: -0.5;
+}
+
+.responsive2 {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+}
+
+.imagen {
+    max-height: 600px;
+}
+
+.colorfondo {
+    background-color: #f2e6c6a8;
 }
 
 @media screen and (max-width: 450px){
@@ -68,18 +76,31 @@ h1 {
 	word-break: break-word;
     }
     .subtitulo{
-	font-size: 1.2rem;
+    word-break: break-word;
+    }
+    .imagen{
+        max-width: 280px;
+    }
+    .responsive{
+        max-width: 250px;
+    }
+    .responsive2{
+        max-width: 300px;
+    }
+    .cabecera{
+        padding-top: 1rem;
+        padding-bottom: 2rem;
     }
 }
 
 @media screen and (max-width: 767px){
     p {
         text-align: justify;
-	padding: 0rem 0.25rem 0rem 0.25rem;
+	    padding: 0rem 0.25rem 0rem 0.25rem;
     }
     h1 {
         text-align: center;
-	padding: 0.25rem 0.25rem 0rem 0.25rem;
+	padding: 0rem 0.25rem 0.5rem 0.25rem;
     }
 }
 

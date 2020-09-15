@@ -6,11 +6,11 @@
   <path
       android:pathData="M-5.8556,0.0035l32.2807,-4.8016l4.6721,12.638l-32.2807,4.8016z"
       android:strokeWidth="0"
-      android:fillColor="@color/colorSecondary"/>
+      android:fillColor="@color/white"/>
   <path
       android:pathData="M-3.966,11.7687l32.2807,-4.8016l4.6721,12.638l-32.2807,4.8016z"
       android:strokeWidth="0"
-      android:fillColor="@color/colorPrimary"/>
+      android:fillColor="#ccd7dd"/>
   <path
       android:pathData="M-1.9322,21.6259l32.2807,-4.8016l4.6721,12.638l-32.2807,4.8016z"
       android:strokeWidth="0"
