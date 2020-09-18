@@ -49,13 +49,12 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * modificar la respuesta dada o complementarla.
  *
  * @author Pablo García Zarza
- * @version 20200723
+ * @version 20200918
  */
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
         View.OnClickListener,
-        AdaptadorVideosCompletados.ItemClickListenerVideo,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        AdaptadorVideosCompletados.ItemClickListenerVideo {
 
     /** EditText donde se incluye la respuesta textual del usuario */
     private EditText textoUsuario;
@@ -87,6 +86,8 @@ public class Completadas extends AppCompatActivity implements
     private FloatingActionButton btCompartir;
 
     private String hashtag;
+
+    private boolean enviaWifi;
 
     /**
      * Método de creación de la actividad. Pinta la interfaz gráfica y establece las referencias
@@ -216,7 +217,8 @@ public class Completadas extends AppCompatActivity implements
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.HASHTAG_pref);
+        hashtag = sharedPreferences.getString(Ajustes.HASHTAG_pref, getString(R.string.hashtag));
+        enviaWifi = sharedPreferences.getBoolean(Ajustes.WIFI_pref, false);
     }
 
     /**
@@ -432,7 +434,7 @@ public class Completadas extends AppCompatActivity implements
             e.printStackTrace();
         }
         try {
-            Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), tarea.getString(Auxiliar.id));
+            Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), tarea.getString(Auxiliar.id), enviaWifi);
             Bundle bundle = new Bundle();
             bundle.putString("user", Login.firebaseAuth.getUid());
             bundle.putString("idTarea", tarea.getString(Auxiliar.id));
@@ -753,75 +755,6 @@ public class Completadas extends AppCompatActivity implements
         original.close();
         copia.close();
     }
-
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key){
-            case Ajustes.HASHTAG_pref:
-                hashtag = sharedPreferences.getString(key, getString(R.string.hashtag));
-                break;
-            default:
-                break;
-        }
-    }
-
-//    /**
-//     * Subclase para controlar los items del contenedor
-//     */
-//    public static class ImagenesCamara {
-//        /** Identificador único del objeto */
-//        private Uri direccion;
-//        /** Visibilidad de la imagen de borrado */
-//        private int visible;
-//
-//        /**
-//         * Contructor de la clase.
-//         *
-//         * @param direccion Identificador único del recurso
-//         * @param visible Visibilidad del borrado del recurso
-//         */
-//        ImagenesCamara(Uri direccion, int visible){
-//            this.direccion = direccion;
-//            this.visible = visible;
-//        }
-//
-//        /**
-//         * Constructor de la clase.
-//         * @param direccion Identificador único del recurso
-//         * @param visible Visibilidad del borrado del recurso
-//         */
-//        ImagenesCamara(String direccion, int visible){
-//            this(Uri.parse(direccion), visible);
-//        }
-//
-//        /**
-//         * Método para obtener el identificador único del recurso
-//         *
-//         * @return Identificador único del recurso
-//         */
-//        public Uri getDireccion(){
-//            return direccion;
-//        }
-//
-//        /**
-//         * Método para saber si el borrado del recurso es visible o no
-//         *
-//         * @return Estado de la visibilidad del recurso
-//         */
-//        public int getVisible(){
-//            return visible;
-//        }
-//
-//        /**
-//         * Método para establecer la visibilidad del recurso.
-//         *
-//         * @param codigo Nueva visibilidad
-//         */
-//        public void setVisible(int codigo){
-//            visible = codigo;
-//        }
-//    }
 
     /**
      * Se almacena el estado cuando se produce una rotación del terminal

@@ -197,4 +197,6 @@
     <string name="volver">Atrás</string>
     <string name="permiso_camara"><![CDATA[<p>Se necesita acceder a la <b>cámara</b> del dispositivo para tomar fotografías o grabar vídeos.</p>]]></string>
     <string name="permiso_micro"><![CDATA[<p>Se necesita acceder al <b>micrófono</b> para que los vídeos tengan audio.</p>]]></string>
+    <string name="enviarWifi">Enviar puntuaciones solamente cuando esté conectado a una red Wi-Fi</string>
+    <string name="logotipo_eslogan">Logo con eslogan</string>
 </resources>

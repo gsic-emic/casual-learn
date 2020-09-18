@@ -35,5 +35,12 @@
             app:defaultValue="@string/hashtag"
             app:dialogMessage="@string/descripcionFuncionamientoPalabraClave"/>
     </PreferenceCategory>
+    <PreferenceCategory
+        android:key="datosCategoria">
+        <SwitchPreference
+            app:key="opcionWifi"
+            app:title="@string/enviarWifi"
+            app:defaultValue="false" />
+    </PreferenceCategory>
 
 </PreferenceScreen>

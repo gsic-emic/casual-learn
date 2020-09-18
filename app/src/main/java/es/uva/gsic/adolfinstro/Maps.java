@@ -57,6 +57,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -408,7 +409,7 @@ public class  Maps extends AppCompatActivity implements
                     //Aqui debería ir la sugerencia según escriba
                     if(newText.trim().length() > 0) {
                         JSONArray municipios = Auxiliar.buscaMunicipio(
-                                context, newText.trim().toLowerCase());
+                                context, StringUtils.stripAccents(newText.trim().toLowerCase()));
                         if(municipios.length() > 0) {
                             if(btCentrar.isShown())
                                 btCentrar.hide();
@@ -821,18 +822,18 @@ public class  Maps extends AppCompatActivity implements
         else
             paint.setARGB(255, 0, 0, 0);
         if(size <= 20)
-            drawable = context.getResources().getDrawable(R.drawable.ic_marcador100);
+            drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador100);
         else
             if(size <= 40)
-                drawable = context.getResources().getDrawable(R.drawable.ic_marcador300);
+                drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador300);
             else
                 if(size <= 60)
-                    drawable = context.getResources().getDrawable(R.drawable.ic_marcador500);
+                    drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador500);
                 else
                     if(size <= 80)
-                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador700);
+                        drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador700);
                     else
-                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador900);
+                        drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador900);
 
         //Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
         Bitmap bitmap = Bitmap.createBitmap(
@@ -845,12 +846,15 @@ public class  Maps extends AppCompatActivity implements
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         String texto;
+        int textSize;
         if(size>99) {
             texto = "99+";
-        } else
+            textSize = (int) (mitad - 15);
+        } else {
             texto = String.valueOf(size);
+            textSize = (int) (mitad + 1);
+        }
         paint.setStyle(Paint.Style.FILL);
-        int textSize = (int) (mitad + 1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(texto, mitad, mitad + (float)(textSize/2), paint);

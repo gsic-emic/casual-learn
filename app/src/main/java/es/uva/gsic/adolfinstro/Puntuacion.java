@@ -1,10 +1,13 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RatingBar;
@@ -19,13 +22,14 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase para gestionar la puntuación de las tareas
  *
  * @author Pablo
- * @version 20200914
+ * @version 20200917
  */
 public class Puntuacion extends AppCompatActivity {
 
     private String idTarea;
     private float puntuacion;
     private Button btEnviarPuntuacion;
+    private boolean enviaWifi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,9 @@ public class Puntuacion extends AppCompatActivity {
                 }
             }
         });
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        enviaWifi = sharedPreferences.getBoolean(Ajustes.WIFI_pref, false);
     }
 
     /**
@@ -88,7 +95,7 @@ public class Puntuacion extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         super.onBackPressed();
-        Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
+        Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
         pantallaCompartir(getString(R.string.puntuaCompletada));
     }
 
@@ -120,10 +127,10 @@ public class Puntuacion extends AppCompatActivity {
                                 Context.MODE_PRIVATE);
                     pantallaCompartir(null);
                 }
-                Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
+                Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
                 pantallaCompartir(getString(R.string.gracias));
             } else {
-                Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea);
+                Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
                 pantallaCompartir(getString(R.string.puntuaCompletada));
             }
         }

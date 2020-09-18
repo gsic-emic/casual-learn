@@ -14,6 +14,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -67,7 +69,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20200727
+ * @version 20200918
  */
 public class Auxiliar {
 
@@ -972,14 +974,40 @@ public class Auxiliar {
      * @param app Aplicación
      * @param appContext Contexto
      * @param idTarea Identificador único de la tarea
+     * @param enviaWifi Preferencia del usuario que indica si solo quiere enviar por Wi-Fi
      */
-    public static void guardaRespuesta(Application app, Context appContext, String idTarea){
+    public static void guardaRespuesta(Application app,
+                                       Context appContext,
+                                       String idTarea,
+                                       Boolean enviaWifi){
+
+        int tipoConectividad = tipoConectividad(appContext);
+        //Si no está conectado o está conectado pero solo lo quiere enviar por WiFi guardo el envío para después
+        if (tipoConectividad == -1 || (tipoConectividad == 1 && enviaWifi)) {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(Auxiliar.id, idTarea);
+                PersistenciaDatos.guardaJSON(app,
+                        PersistenciaDatos.ficheroSinEnviar,
+                        jsonObject,
+                        Context.MODE_PRIVATE);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }else {
+            enviaResultados(app, appContext, idTarea);
+        }
+    }
+
+    public static void enviaResultados(Application app, Context contexto, String idTarea){
         JSONObject jsonObject = new JSONObject();
         JSONObject tarea = PersistenciaDatos.
                 recuperaTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea);
-        try{
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        try {
             jsonObject.put("idTarea", idTarea);
-            jsonObject.put("idUsuario", Login.firebaseAuth.getUid());
+            jsonObject.put("idUsuario", idUsuario.getString(Auxiliar.uid));
             jsonObject.put("instanteInicio", tarea.getString(Auxiliar.fechaInicio));
             jsonObject.put("instanteFin", tarea.getString(Auxiliar.fechaFinalizacion));
             jsonObject.put("instanteModificacion",
@@ -987,7 +1015,7 @@ public class Auxiliar {
             jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
 
             int numeroMedia = 0;
-            if(tarea.has(Auxiliar.respuestas)) {
+            if (tarea.has(Auxiliar.respuestas)) {
                 JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
                 JSONObject respuesta;
                 for (int i = 0; i < respuestas.length(); i++) {
@@ -999,25 +1027,47 @@ public class Auxiliar {
                         ++numeroMedia;
                     }
                 }
-                if(numeroMedia > 0)
+                if (numeroMedia > 0)
                     jsonObject.put("numeroMedia", numeroMedia);
             }
-            if(tarea.has(Auxiliar.rating))
+            if (tarea.has(Auxiliar.rating))
                 jsonObject.put("puntuacion", tarea.getDouble(Auxiliar.rating));
-        }catch (Exception e){
+        } catch (Exception e) {
             jsonObject = null;
         }
 
-        if(jsonObject != null) {
+        if (jsonObject != null) {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
                     Auxiliar.direccionIP + "tareasCompletadas",
                     jsonObject,
                     null,
                     null
             );
-            ColaConexiones.getInstance(appContext).getRequestQueue().add(jsonObjectRequest);
+            ColaConexiones.getInstance(contexto).getRequestQueue().add(jsonObjectRequest);
         }
     }
+
+    /**
+     * Comprueba que tipo de conectividad tiene el dispositivo
+     * @param contexto Contexto
+     * @return  0 Wi-FI
+     *          1 Datos
+     *          -1 Sin conectividad
+     */
+    public static int tipoConectividad(Context contexto){
+        ConnectivityManager connectivityManager = (ConnectivityManager) contexto.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo == null || !networkInfo.isConnected())
+            return -1;
+        else{
+            if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+                return 0;
+            else
+                return 1;
+        }
+    }
+
+
 
     /**
      * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
@@ -1148,43 +1198,31 @@ public class Auxiliar {
      */
     public static JSONArray buscaMunicipio(Context context, String query) {
         JSONArray salida = new JSONArray();
-        String[] bdV, u, userV;
+        String[] bdV, userV;
         List<Integer> municipiosValidos = new ArrayList<>();
         int coincidenciaPalabra, coincidencias = 0;
-        final List<String> no = Arrays.asList("de", "del", "la", "los", "el", "y", "las");
         if(Auxiliar.municipios == null || Auxiliar.municipios.length() == 0)
             Auxiliar.municipios = leeFicheroMunicipios(context);
 
         JSONObject municipio;
         try {
-            u = query.split(" ");
-            StringBuilder queryBuilder = new StringBuilder();
-            for(int i = 0; i < u.length; i++)
-                if(!no.contains(u[i]))
-                    queryBuilder.append(u[i]).append(" ");
-            query = queryBuilder.toString();
             userV = query.split(" ");
-            u = null;
             int tama = Auxiliar.municipios.length();
             for(int i = 0; i < tama; i++){
                 municipio = Auxiliar.municipios.getJSONObject(i);
-                bdV = municipio.getString("n").toLowerCase().split(" ");
+                bdV = municipio.getString("n").split(" ");
                 coincidenciaPalabra = 0;
-                for(int j = 0; j < userV.length; j++){
-                    if(!no.contains(userV[j])) {
-                        for (String bd : bdV) {
-                            if(!no.contains(bd)) {
-                                if (bd.contains(userV[j])) {
-                                    coincidenciaPalabra++;
-                                    if (coincidenciaPalabra > coincidencias) {
-                                        coincidencias = coincidenciaPalabra;
-                                        municipiosValidos = new ArrayList<>();
-                                    }
-                                    if (coincidenciaPalabra == coincidencias)
-                                        municipiosValidos.add(i);
-                                    break;
-                                }
+                for (String s : userV) {
+                    for (String bd : bdV) {
+                        if (bd.contains(s)) {
+                            coincidenciaPalabra++;
+                            if (coincidenciaPalabra > coincidencias) {
+                                coincidencias = coincidenciaPalabra;
+                                municipiosValidos = new ArrayList<>();
                             }
+                            if (coincidenciaPalabra == coincidencias)
+                                municipiosValidos.add(i);
+                            break;
                         }
                     }
                 }

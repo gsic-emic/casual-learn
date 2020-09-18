@@ -34,4 +34,10 @@
     <color name="white">#FFF</color>
     <color name="black">#000</color>
     <color name="transparente">#0000</color>
+    <color name="paleta_piedra">#f2e6c6</color>
+    <color name="paleta_agua">#ccd7dd</color>
+    <color name="paleta_vegetacion">#7d8e74</color>
+    <color name="paleta">#dfae43</color>
+    <color name="paleta_suelo">#a15b1c</color>
+
 </resources>

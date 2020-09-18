@@ -61,6 +61,10 @@ h1 {
     max-width: 400px;
     height: auto;
 }
+.responsive3 {
+    width: 100%;
+    height: auto;
+}
 
 .imagen {
     max-height: 600px;
@@ -88,7 +92,7 @@ h1 {
         max-width: 300px;
     }
     .cabecera{
-        padding-top: 1rem;
+        padding-top: 1.5rem;
         padding-bottom: 2rem;
     }
 }

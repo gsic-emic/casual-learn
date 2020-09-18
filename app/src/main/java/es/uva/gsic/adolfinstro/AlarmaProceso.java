@@ -45,7 +45,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20200911
+ * @version 20200918
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */
@@ -61,6 +61,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     private final int intervaloComprobacion = 120000;
 
     public static boolean tareasActualizadas = false;
+
+    private boolean enviaWifi;
 
     LocationManager locationManager;
 
@@ -104,6 +106,36 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
         posicionamiento();
+        compruebaRespuestasSinEnviar(application, context);
+    }
+
+    /**
+     * Método para enviar al servidor las respuetas del usuario que no se han podido enviar antes.
+     * @param application App
+     * @param context Contexto
+     */
+    private void compruebaRespuestasSinEnviar(Application application, Context context) {
+        int tipoConectividad = Auxiliar.tipoConectividad(context);
+
+        if(tipoConectividad == 0 || (tipoConectividad == 1 && !enviaWifi)){
+            JSONArray respuestasPendientes = PersistenciaDatos.leeFichero(application, PersistenciaDatos.ficheroSinEnviar);
+            if(respuestasPendientes.length() > 0) {
+                JSONObject tareaPendiente;
+                for (int i = 0; i < respuestasPendientes.length(); i++) {
+                    try {
+                        tareaPendiente = respuestasPendientes.getJSONObject(i);
+                        Auxiliar.enviaResultados(application, context, tareaPendiente.getString(Auxiliar.id));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                respuestasPendientes = new JSONArray();
+                PersistenciaDatos.guardaFichero(application,
+                        PersistenciaDatos.ficheroSinEnviar,
+                        respuestasPendientes,
+                        Context.MODE_PRIVATE);
+            }
+        }
     }
 
     /**
@@ -156,6 +188,9 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 if(noMolestar){
                     new AlarmaProceso().cancelaAlarmaProceso(context);
                 }
+                break;
+            case Ajustes.WIFI_pref:
+                enviaWifi = sharedPreferences.getBoolean(key, false);
                 break;
             default:
                 break;

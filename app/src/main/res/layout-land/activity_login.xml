@@ -15,9 +15,9 @@
         android:src="@drawable/icono_princi_borrar"
         android:padding="10dp"
         app:layout_constraintTop_toTopOf="@id/glLogin"
-        app:layout_constraintBottom_toTopOf="@id/glLogin1"
+        app:layout_constraintBottom_toTopOf="@id/glLogin2"
         app:layout_constraintStart_toStartOf="@id/glLogin4"
-        app:layout_constraintEnd_toEndOf="@id/glLogin5"
+        app:layout_constraintEnd_toEndOf="@id/glLogin3"
         android:contentDescription="@string/logotipo_eslogan" />
 
     <androidx.constraintlayout.widget.Guideline
@@ -25,7 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1" />
+        app:layout_constraintGuide_percent="0.2" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin4"
@@ -35,39 +35,32 @@
         app:layout_constraintGuide_percent="0.05" />
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glLogin5"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.95" />
-
-    <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.6" />
+        app:layout_constraintGuide_percent="0.5" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.98" />
+        app:layout_constraintGuide_percent="0.8" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glLogin3"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.65" />
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.55" />
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/btGoogle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/glLogin3"
-        app:layout_constraintBottom_toTopOf="@id/btInicioSinIdentificacion"
+        app:layout_constraintTop_toBottomOf="@id/glLogin"
+        app:layout_constraintBottom_toTopOf="@id/glLogin1"
         app:layout_constraintEnd_toEndOf="@id/btInicioSinIdentificacion"
         app:layout_constraintStart_toStartOf="@id/btInicioSinIdentificacion" />
 
@@ -75,15 +68,15 @@
         android:id="@+id/btInicioSinIdentificacion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/glLogin1"
+        app:layout_constraintBottom_toTopOf="@id/glLogin2"
+        app:layout_constraintStart_toStartOf="@id/glLogin3"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="@string/pruebaApp"
         android:background="@drawable/boton_inicio_sin_cuenta"
         android:fontFamily="@font/roboto_medium"
         android:onClick="boton"
-        android:text="@string/pruebaApp"
         android:textColor="@color/common_google_signin_btn_text_light_focused"
-        app:layout_constraintBottom_toTopOf="@id/glLogin2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btGoogle"
         android:textAllCaps="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

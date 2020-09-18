@@ -226,4 +226,6 @@
     <string name="volver">Back</string>
     <string name="permiso_camara"><![CDATA[The app needs to access the device\'s <p>camera</b> to take photos or record videos.</p>]]></string>
     <string name="permiso_micro"><![CDATA[<p>The app needs access to the <b>microphone</b>. With this permission the videos can have audio.</p>]]></string>
+    <string name="enviarWifi">Send scores only when the device has Wi-Fi connectivity</string>
+    <string name="logotipo_eslogan">Logo Slogan</string>
 </resources>

@@ -44,9 +44,6 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  */
 public class Login extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
 
-    /** Código de identificación para la solicitud de los permisos de la app */
-    private static final int requestCodePermissions = 1000;
-
     /** Código con el que se lanza la actividad de identificación del usuario con cuenta Google */
     public static final int requestAuth = 1010;
 
@@ -124,7 +121,6 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
             dialogoAccesoSinIdVisible = true;
             dialogoAccesoSinId.show();
         }
-
     }
 
     @Override

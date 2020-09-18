@@ -68,7 +68,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20200911
+ * @version 20200918
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -125,143 +125,151 @@ public class Preview extends AppCompatActivity implements LocationListener {
             tarea = null;
         }
 
-        try{
-            switch (tarea.getString(Auxiliar.tipoRespuesta)){
-                case Auxiliar.tipoSinRespuesta:
-                    setTitle(R.string.previewVisita);
-                    break;
-                case Auxiliar.tipoPreguntaCorta:
-                    setTitle(R.string.previewRespuestaCorta);
-                    break;
-                case Auxiliar.tipoPreguntaLarga:
-                    setTitle(R.string.previewRespuestaLarga);
-                    break;
-                case Auxiliar.tipoPreguntaImagen:
-                    setTitle(R.string.previewRespuestaImagen);
-                    break;
-                case Auxiliar.tipoPreguntaImagenes:
-                    setTitle(R.string.previewRespuestaImagenes);
-                    break;
-                case Auxiliar.tipoImagen:
-                    setTitle(R.string.previewFoto);
-                    break;
-                case Auxiliar.tipoImagenMultiple:
-                    setTitle(R.string.previewMultiplesFotos);
-                    break;
-                case Auxiliar.tipoVideo:
-                    setTitle(R.string.previewVideo);
-                    break;
-                default:
-                    break;
-            }
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
-
-        try {
-            try{
-                assert tarea != null;
-                if (tarea.has(Auxiliar.recursoImagenBaja) &&
-                        !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
-                        !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
-                    urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
-                    Picasso.get()
-                            .load(urlImagen)
-                            .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                            .tag(Auxiliar.cargaImagenPreview)
-                            .into(imageView);
-                    imageView.setVisibility(View.VISIBLE);
-
-            } else {
-                if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
-                    urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
-                    Picasso.get()
-                            .load(urlImagen)
-                            .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                            .tag(Auxiliar.cargaImagenPreview)
-                            .into(imageView);
-                    imageView.setVisibility(View.VISIBLE);
+        if(tarea != null) {
+            try {
+                switch (tarea.getString(Auxiliar.tipoRespuesta)) {
+                    case Auxiliar.tipoSinRespuesta:
+                        setTitle(R.string.previewVisita);
+                        break;
+                    case Auxiliar.tipoPreguntaCorta:
+                        setTitle(R.string.previewRespuestaCorta);
+                        break;
+                    case Auxiliar.tipoPreguntaLarga:
+                        setTitle(R.string.previewRespuestaLarga);
+                        break;
+                    case Auxiliar.tipoPreguntaImagen:
+                        setTitle(R.string.previewRespuestaImagen);
+                        break;
+                    case Auxiliar.tipoPreguntaImagenes:
+                        setTitle(R.string.previewRespuestaImagenes);
+                        break;
+                    case Auxiliar.tipoImagen:
+                        setTitle(R.string.previewFoto);
+                        break;
+                    case Auxiliar.tipoImagenMultiple:
+                        setTitle(R.string.previewMultiplesFotos);
+                        break;
+                    case Auxiliar.tipoVideo:
+                        setTitle(R.string.previewVideo);
+                        break;
+                    default:
+                        break;
                 }
-            }}
-            catch (Exception e){
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            if(imageView.getVisibility() == View.VISIBLE){
-                Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivInfoFotoPreview), urlImagen);
-            }
+            try {
+                try {
+                    assert tarea != null;
+                    if (tarea.has(Auxiliar.recursoImagenBaja) &&
+                            !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
+                            !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
+                        urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
+                        Picasso.get()
+                                .load(urlImagen)
+                                .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                .tag(Auxiliar.cargaImagenPreview)
+                                .into(imageView);
+                        imageView.setVisibility(View.VISIBLE);
 
-            btAceptar = findViewById(R.id.botonAceptarPreview);
-            btPosponer = findViewById(R.id.botonAhoraNoPreview);
-            btRechazar = findViewById(R.id.botonRechazarPreview);
-            explicacionDistancia = findViewById(R.id.tvExplicacionDistancia);
-            textoDistancia = findViewById(R.id.tvDistancia);
-            map = findViewById(R.id.mapPreview);
-            map.setTileSource(TileSourceFactory.MAPNIK);
-            IMapController mapController = map.getController();
-            //roadManager = new OSRMRoadManager(this);
-
-            double latitud = tarea.getDouble(Auxiliar.latitud);
-            double longitud = tarea.getDouble(Auxiliar.longitud);
-            GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
-
-            mapController.setCenter(posicionTarea);
-            mapController.setZoom(17.5);
-            map.setMaxZoomLevel(17.5);
-            map.setMinZoomLevel(17.5);
-            map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-
-            map.setMultiTouchControls(false);
-
-            map.setTilesScaledToDpi(true);
-
-            map.setClickable(false);
-            map.setEnabled(false);
-
-
-            TextView titulo = findViewById(R.id.tituloPreview);
-            titulo.setText(tarea.getString(Auxiliar.titulo));
-
-            TextView descripcion = findViewById(R.id.textoPreview);
-            descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
-            descripcion.setMovementMethod(LinkMovementMethod.getInstance());
-
-            Marker marker = new Marker(map);
-            marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
-            marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
-            //marker.setTitle(extras.getString(Auxiliar.titulo));
-            marker.setInfoWindow(null);
-
-            map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
-                @SuppressLint("MissingPermission")
-                @Override
-                public boolean singleTapConfirmedHelper(GeoPoint p) {
-                    saltaNavegacion();
-                    return false;
+                    } else {
+                        if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
+                            urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
+                            Picasso.get()
+                                    .load(urlImagen)
+                                    .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                    .tag(Auxiliar.cargaImagenPreview)
+                                    .into(imageView);
+                            imageView.setVisibility(View.VISIBLE);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
-                @Override
-                public boolean longPressHelper(GeoPoint p) {
-                    saltaNavegacion();
-                    return false;
+                if (imageView.getVisibility() == View.VISIBLE) {
+                    Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivInfoFotoPreview), urlImagen);
                 }
-            }));
-            map.getOverlays().add(marker);
 
-            if(!getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion)){
-                botonesVisibles(false);
-            }else{
-                botonesVisibles(true);
-            }
+                btAceptar = findViewById(R.id.botonAceptarPreview);
+                btPosponer = findViewById(R.id.botonAhoraNoPreview);
+                btRechazar = findViewById(R.id.botonRechazarPreview);
+                explicacionDistancia = findViewById(R.id.tvExplicacionDistancia);
+                textoDistancia = findViewById(R.id.tvDistancia);
+                map = findViewById(R.id.mapPreview);
+                map.setTileSource(TileSourceFactory.MAPNIK);
+                IMapController mapController = map.getController();
+                //roadManager = new OSRMRoadManager(this);
 
-            //Identifiación usuario. Si existe el fichero con el identificador no muestro la barra
-            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-            if(idUsuario == null) {
-                snackBarLogin(R.id.clIdentificatePreview);
+                double latitud = tarea.getDouble(Auxiliar.latitud);
+                double longitud = tarea.getDouble(Auxiliar.longitud);
+                GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
+
+                mapController.setCenter(posicionTarea);
+                mapController.setZoom(17.5);
+                map.setMaxZoomLevel(17.5);
+                map.setMinZoomLevel(17.5);
+                map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+
+                map.setMultiTouchControls(false);
+
+                map.setTilesScaledToDpi(true);
+
+                map.setClickable(false);
+                map.setEnabled(false);
+
+
+                TextView titulo = findViewById(R.id.tituloPreview);
+                titulo.setText(tarea.getString(Auxiliar.titulo));
+
+                TextView descripcion = findViewById(R.id.textoPreview);
+                descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+                descripcion.setMovementMethod(LinkMovementMethod.getInstance());
+
+                Marker marker = new Marker(map);
+                marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
+                marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
+                //marker.setTitle(extras.getString(Auxiliar.titulo));
+                marker.setInfoWindow(null);
+
+                map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+                    @SuppressLint("MissingPermission")
+                    @Override
+                    public boolean singleTapConfirmedHelper(GeoPoint p) {
+                        saltaNavegacion();
+                        return false;
+                    }
+
+                    @Override
+                    public boolean longPressHelper(GeoPoint p) {
+                        saltaNavegacion();
+                        return false;
+                    }
+                }));
+                map.getOverlays().add(marker);
+
+                if (!getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion)) {
+                    botonesVisibles(false);
+                } else {
+                    botonesVisibles(true);
+                }
+
+                //Identifiación usuario. Si existe el fichero con el identificador no muestro la barra
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                        getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if (idUsuario == null) {
+                    snackBarLogin(R.id.clIdentificatePreview);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }catch (Exception e){
-            e.printStackTrace();
+        }else{//Por si le salta una notificación, sale de la sesión y pulsa en la notficación
+            Intent intent = new Intent(this, Login.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finishAffinity();
         }
     }
 

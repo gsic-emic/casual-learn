@@ -37,6 +37,7 @@ import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -537,11 +538,16 @@ public class Tarea extends AppCompatActivity implements
         intent.setAction(Auxiliar.nunca_mas);
         intent.putExtra(Auxiliar.id, idTarea);
         sendBroadcast(intent);
-
-        Bundle bundle = new Bundle();
-        bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-        bundle.putString("idUsuario", Login.firebaseAuth.getUid());
-        Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
+        try {
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            Bundle bundle = new Bundle();
+            bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+            bundle.putString("idUsuario", idUsuario.getString(Auxiliar.uid));
+            Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -1025,9 +1031,15 @@ public class Tarea extends AppCompatActivity implements
      * Método para indicar dejar registro en Firebase de una tarea completada
      */
     private void tareaCompletadaFirebase(){
-        Bundle bundle = new Bundle();
-        bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-        bundle.putString("idUsuario", Login.firebaseAuth.getUid());
-        Login.firebaseAnalytics.logEvent("tareaCompletada", bundle);
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            bundle.putString("idUsuario", idUsuario.getString(Auxiliar.uid));
+            Login.firebaseAnalytics.logEvent("tareaCompletada", bundle);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

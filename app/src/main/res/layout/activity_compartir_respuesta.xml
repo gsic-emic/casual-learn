@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/tvTextoCompartir"
         app:layout_constraintStart_toStartOf="parent"
-        android:drawablePadding="5dp"
+        android:padding="15dp"
         android:drawableStart="@drawable/ic_instagram_color"
         android:text="@string/compartir_instagram"
         android:layout_marginHorizontal="20dp"
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/btCompartirInsta"
         app:layout_constraintStart_toStartOf="parent"
-        android:drawablePadding="5dp"
+        android:padding="15dp"
         android:drawableStart="@drawable/ic_yammer"
         android:text="@string/compartir_yammer"
         android:layout_margin="20dp"
@@ -47,10 +47,10 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/btCompartirYammer"
         app:layout_constraintStart_toStartOf="parent"
-        android:drawablePadding="5dp"
         android:drawableStart="@drawable/ic_twitter_logo_color"
         android:text="@string/compartir_twitter"
         android:layout_margin="20dp"
+        android:padding="15dp"
         android:onClick="boton"/>
 
     <Button
