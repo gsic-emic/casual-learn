@@ -822,18 +822,18 @@ public class  Maps extends AppCompatActivity implements
         else
             paint.setARGB(255, 0, 0, 0);
         if(size <= 20)
-            drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador100);
+            drawable = context.getResources().getDrawable(R.drawable.ic_marcador100);
         else
             if(size <= 40)
-                drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador300);
+                drawable = context.getResources().getDrawable(R.drawable.ic_marcador300);
             else
                 if(size <= 60)
-                    drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador500);
+                    drawable = context.getResources().getDrawable(R.drawable.ic_marcador500);
                 else
                     if(size <= 80)
-                        drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador700);
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador700);
                     else
-                        drawable = context.getResources().getDrawable(R.drawable.ic_n_marcador900);
+                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador900);
 
         //Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
         Bitmap bitmap = Bitmap.createBitmap(

@@ -134,7 +134,7 @@ public class Completadas extends AppCompatActivity implements
             try {
                 ratingBar.setRating((float) tarea.getDouble(Auxiliar.rating));
             }catch (Exception e){
-                e.printStackTrace();
+                //e.printStackTrace();
             }
 
             if(tarea.has(Auxiliar.respuestas)) {
@@ -374,8 +374,20 @@ public class Completadas extends AppCompatActivity implements
             textoUsuario.setInputType(InputType.TYPE_NULL);
         }
         try {
-            tarea.put(Auxiliar.rating, ratingBar.getRating());
-        } catch (JSONException e) {
+            double puntuacionAnterior;
+            try{
+                puntuacionAnterior = tarea.getDouble(Auxiliar.rating);
+            }catch (Exception e){
+                puntuacionAnterior = -1;
+            }
+            if(puntuacionAnterior < 0) {
+                if (ratingBar.getRating() > 0)
+                    tarea.put(Auxiliar.rating, ratingBar.getRating());
+            }
+            else {
+                tarea.put(Auxiliar.rating, ratingBar.getRating());
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
         ratingBar.setIsIndicator(true);

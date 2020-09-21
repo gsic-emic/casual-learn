@@ -560,6 +560,7 @@ public class Auxiliar {
      * @param hashtag Etiquetas con la que se envía el tweet
      */
     public static void mandaTweet(Context context, JSONObject tarea, String hashtag){
+        final int maxMulti = 3;
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
             context.getPackageManager().getPackageInfo("com.twitter.android",
@@ -585,6 +586,19 @@ public class Auxiliar {
                     listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
                 }
             }
+
+            ArrayList<Uri> uris = new ArrayList<>();
+            uris.add(
+                    uriTexto(
+                            context,
+                            context.getResources().getDrawable(R.drawable.ic_por_defecto_insta),
+                            contenidoTexto(
+                                    context,
+                                    tarea,
+                                    textoUsuario,
+                                    hashtag,
+                                    false)));
+
             switch (tarea.getString(Auxiliar.tipoRespuesta)){
                 case Auxiliar.tipoPreguntaCorta:
                 case Auxiliar.tipoPreguntaLarga:
@@ -593,46 +607,47 @@ public class Auxiliar {
                     intent.putExtra(Intent.EXTRA_TEXT,
                             contenidoTexto(context, tarea, textoUsuario, hashtag, true));
                     intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                    intent.setType("image/*");
                     break;
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoImagen:
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagenes:
-                    if(listaURI.size() > 0)
+                case Auxiliar.tipoVideo:
+                    //if(listaURI.size() > 0)
                         intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    else
-                        intent = new Intent(Intent.ACTION_SEND);
+                    //else
+                        //intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_TEXT,
                             contenidoTexto(context, tarea, textoUsuario, hashtag, true));
                     intent.setType("text/plain");
                     if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
                         if(!listaURI.isEmpty()){
-                            ArrayList<Uri> uris = new ArrayList<>();
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("video/*");
+                            intent.setType("*/*");
                         }
                     }else{
                         if(!listaURI.isEmpty()){
-                            ArrayList<Uri> uris = new ArrayList<>();
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
                             intent.setType("image/*");
                         }
-                    }
-                    break;
-                case Auxiliar.tipoVideo:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, true));
-                    intent.setType("text/plain");
-                    if(!listaURI.isEmpty()){
-                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
-                        intent.setType("video/*");
                     }
                     break;
                 default:
@@ -748,6 +763,7 @@ public class Auxiliar {
      * @param hashtag Lista de etiquetas que el usuario ha configurado en los ajustes de la aplicación.
      */
     public static void mandaInsta(Context context, JSONObject tarea, String hashtag){
+        final int maxMulti = 9;
         try {
             context.getPackageManager().getPackageInfo(
                     "com.instagram.android", PackageManager.GET_ACTIVITIES);
@@ -797,36 +813,37 @@ public class Auxiliar {
                 case Auxiliar.tipoImagen:
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagenes:
+                case Auxiliar.tipoVideo:
                     if(listaURI.size() > 0)
                         intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
                     else
                         intent = new Intent(Intent.ACTION_SEND);
                     if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
                         if(!listaURI.isEmpty()){
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
                             intent.setType("*/*");
                         }
                     }else{
                         if(!listaURI.isEmpty()){
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
                             intent.setType("image/*");
                         }
-                    }
-                    break;
-                case Auxiliar.tipoVideo:
-                    intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    if(!listaURI.isEmpty()){
-                        for(String s : listaURI){
-                            uris.add(Uri.parse(s));
-                        }
-                        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                        intent.setType("*/*");
                     }
                     break;
                 default:
@@ -953,18 +970,33 @@ public class Auxiliar {
                 if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
                     texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
                 }
+                if(!recorta){
+                    texto = String.format("%s %s\n\n%s %s\n\n%s %s",
+                            context.getString(R.string.yammerSinTexto),
+                            tarea.getString(Auxiliar.titulo),
+                            context.getString(R.string.tareaPregunta),
+                            tarea.getString(Auxiliar.recursoAsociadoTexto),
+                            context.getString(R.string.tareaRespuesta),
+                            textoUsuario);
+                }
             }else{
                 if(recorta)
                     texto = String.format("%s %s", context.getString(R.string.twitSinTexto), texto);
                 else
-                    texto = String.format("%s %s", context.getString(R.string.yammerSinTexto), texto);
+                    texto = String.format("%s %s\n\n%s %s",
+                            context.getString(R.string.yammerSinTexto),
+                            tarea.getString(Auxiliar.titulo),
+                            context.getString(R.string.tareaPregunta),
+                            tarea.getString(Auxiliar.recursoAsociadoTexto));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        for (String string : hashtags) {
-            texto = String.format("%s %s", texto, string);
+        if(recorta) {
+            for (String string : hashtags) {
+                texto = String.format("%s %s", texto, string);
+            }
         }
         return texto;
     }

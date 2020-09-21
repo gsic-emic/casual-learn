@@ -110,7 +110,8 @@
             app:backgroundTint="@color/colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:srcCompat="@drawable/ic_share_white" />
+            app:srcCompat="@drawable/ic_share_white"
+            android:contentDescription="@string/botonCompartir"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btCompartirCompletadaTwitter"
@@ -124,7 +125,8 @@
             app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
             app:layout_constraintBottom_toTopOf="@id/btCompartirCompletada"
             app:srcCompat="@drawable/ic_twitter_logo_white"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:contentDescription="@string/botonTwitter"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btCompartirCompletadaYammer"
@@ -138,7 +140,8 @@
             app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
             app:layout_constraintBottom_toTopOf="@id/btCompartirCompletadaTwitter"
             app:srcCompat="@drawable/ic_yammer"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:contentDescription="@string/botonYammer"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btCompartirCompletadaInstagram"
@@ -152,7 +155,8 @@
             app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
             app:layout_constraintBottom_toTopOf="@id/btCompartirCompletadaYammer"
             app:srcCompat="@drawable/ic_instagram"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:contentDescription="@string/botonInstagram"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

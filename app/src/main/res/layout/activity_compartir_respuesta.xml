@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CompartirRespuesta">
+    tools:context=".CompartirRespuesta"
+    android:background="@color/white">
 
     <TextView
         android:id="@+id/tvTextoCompartir"
@@ -27,7 +28,8 @@
         android:text="@string/compartir_instagram"
         android:layout_marginHorizontal="20dp"
         android:layout_marginVertical="40dp"
-        android:onClick="boton"/>
+        android:onClick="boton"
+        android:contentDescription="@string/botonInstagram"/>
 
     <Button
         android:id="@+id/btCompartirYammer"
@@ -39,7 +41,8 @@
         android:drawableStart="@drawable/ic_yammer"
         android:text="@string/compartir_yammer"
         android:layout_margin="20dp"
-        android:onClick="boton"/>
+        android:onClick="boton"
+        android:contentDescription="@string/botonYammer"/>
 
     <Button
         android:id="@+id/btCompartirTwitter"
@@ -51,7 +54,8 @@
         android:text="@string/compartir_twitter"
         android:layout_margin="20dp"
         android:padding="15dp"
-        android:onClick="boton"/>
+        android:onClick="boton"
+        android:contentDescription="@string/botonTwitter"/>
 
     <Button
         style="@style/botonPrimario"

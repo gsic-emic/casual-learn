@@ -157,8 +157,8 @@
     <string name="tareaGuardada">Task successfully modified</string>
     <string name="preguntaImagenes">Ask and multiple photos</string>
     <string name="descripcionFuncionamientoPalabraClave">If you want multiples hashtags, split them with commas. We will take care of add # necessary</string>
-    <string name="twitSinTexto">I just did a task with @CasualLearn in </string>
-    <string name="yammerSinTexto">I just did a task with Casual Learn in </string>
+    <string name="twitSinTexto">I just did a task with @CasualLearn in:</string>
+    <string name="yammerSinTexto">I just did a task with Casual Learn in:</string>
     <string name="iconoTareaPreview">Icon</string>
     <string name="previewVisita">Visit a place</string>
     <string name="previewRespuestaCorta">Short text task</string>
@@ -228,4 +228,12 @@
     <string name="permiso_micro"><![CDATA[<p>The app needs access to the <b>microphone</b>. With this permission the videos can have audio.</p>]]></string>
     <string name="enviarWifi">Send scores only when the device has Wi-Fi connectivity</string>
     <string name="logotipo_eslogan">Logo Slogan</string>
+    <string name="botonCentrar">Button to center the map on the user\'s position</string>
+    <string name="botonNavegar">Button to start the navigation to the task location. The navigation is done in another app.</string>
+    <string name="botonCompartir">Button to share the answer</string>
+    <string name="botonTwitter">Button to share the answer in Twitter</string>
+    <string name="botonInstagram">Button to share the answer in Instagram</string>
+    <string name="botonYammer">Button to share the answer in Yammer</string>
+    <string name="tareaPregunta">The question of the task was:</string>
+    <string name="tareaRespuesta">My answer has been:</string>
 </resources>

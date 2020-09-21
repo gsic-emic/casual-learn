@@ -65,7 +65,7 @@
     <com.google.android.gms.common.SignInButton
         android:id="@+id/btGoogle"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         app:layout_constraintTop_toBottomOf="@id/glLogin3"
         app:layout_constraintBottom_toTopOf="@id/btInicioSinIdentificacion"
         app:layout_constraintEnd_toEndOf="@id/btInicioSinIdentificacion"
@@ -74,7 +74,7 @@
     <Button
         android:id="@+id/btInicioSinIdentificacion"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:background="@drawable/boton_inicio_sin_cuenta"
         android:fontFamily="@font/roboto_medium"
         android:onClick="boton"

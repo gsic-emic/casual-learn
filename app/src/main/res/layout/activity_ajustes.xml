@@ -7,7 +7,8 @@
     android:fillViewport="true">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content">
+        android:layout_width="wrap_content"
+        android:background="@color/white">
         <FrameLayout
             android:id="@+id/container_ajustes"
             android:layout_width="match_parent"

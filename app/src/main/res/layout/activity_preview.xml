@@ -6,10 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Preview"
-    android:fillViewport="true">
+    android:fillViewport="true" >
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/white">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
@@ -34,8 +35,8 @@
 
         <ImageView
             android:id="@+id/ivInfoFotoPreview"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:srcCompat="@drawable/ic_info_black_24dp"
             app:layout_constraintStart_toStartOf="@id/imagenPreview"
             app:layout_constraintBottom_toBottomOf="@id/imagenPreview"

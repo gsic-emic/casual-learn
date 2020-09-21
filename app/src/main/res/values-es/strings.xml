@@ -129,8 +129,8 @@
     <string name="tareaGuardada">Tarea modificada correctamente</string>
     <string name="preguntaImagenes">Tarea que solicita responder a una pregunta y realizar múltiples fotografías</string>
     <string name="descripcionFuncionamientoPalabraClave">Si quieres utilizar múltiples <i>hashtags</i>, sepáralos con comas. Nosotros nos encargarmos de poner los # necesarios</string>
-    <string name="twitSinTexto">He realizado una tarea con @CasualLearn en </string>
-    <string name="yammerSinTexto">He realizado una tarea con Casual Learn en </string>
+    <string name="twitSinTexto">He realizado una tarea con @CasualLearn en:</string>
+    <string name="yammerSinTexto">He realizado una tarea con Casual Learn en:</string>
     <string name="iconoTareaPreview">Icono</string>
     <string name="previewVisita">Visita un lugar</string>
     <string name="previewRespuestaCorta">Tarea de respuesta corta</string>
@@ -199,4 +199,12 @@
     <string name="permiso_micro"><![CDATA[<p>Se necesita acceder al <b>micrófono</b> para que los vídeos tengan audio.</p>]]></string>
     <string name="enviarWifi">Enviar puntuaciones solamente cuando esté conectado a una red Wi-Fi</string>
     <string name="logotipo_eslogan">Logo con eslogan</string>
+    <string name="botonCentrar">Botón para centrar el mapa en la ubicación del usuario</string>
+    <string name="botonNavegar">Botón para iniciar la navegación hasta la posición de la tarea. La navegación se realiza en otra aplicación.</string>
+    <string name="botonCompartir">Botón para compartir la respuesta en las distintas redes sociales</string>
+    <string name="botonTwitter">Botón para compartir la respuesta en Twitter</string>
+    <string name="botonInstagram">Botón para compartir la respuesta en Instagram</string>
+    <string name="botonYammer">Botón para compartir la respuesta en Yammer</string>
+    <string name="tareaPregunta">La pregunta de la tarea era:</string>
+    <string name="tareaRespuesta">Mi respuesta ha sido:</string>
 </resources>
