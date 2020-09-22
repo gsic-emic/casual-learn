@@ -11,14 +11,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import es.uva.gsic.adolfinstro.Completadas;
 import es.uva.gsic.adolfinstro.R;
 
 /**
  * Clase para adaptar las imágenes y vídeos que ha realizado el usuario y mostrarla.
  *
  * @author pablo
- * @version 20200626
+ * @version 20200914
  */
 public class AdaptadorImagenesCompletadas
         extends RecyclerView.Adapter<AdaptadorImagenesCompletadas.ViewHolder> {
@@ -54,7 +53,7 @@ public class AdaptadorImagenesCompletadas
         }
     }
 
-    private List<Completadas.ImagenesCamara> lista;
+    private List<ImagenesCamara> lista;
     private LayoutInflater layoutInflater;
     private static ItemClickListener itemClick;
 
@@ -63,7 +62,7 @@ public class AdaptadorImagenesCompletadas
      * @param context Contexto
      * @param uris Lista de objetos donde se incluye el uri y el estado de visión de la papelera
      */
-    public AdaptadorImagenesCompletadas(Context context, List<Completadas.ImagenesCamara> uris){
+    public AdaptadorImagenesCompletadas(Context context, List<ImagenesCamara> uris){
         lista = uris;
         layoutInflater = LayoutInflater.from(context);
     }

@@ -16,7 +16,6 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 
 /**
@@ -56,7 +55,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
         }
     }
 
-    private List<Maps.TareasMapaLista> lista;
+    private List<TareasMapaLista> lista;
     private LayoutInflater layoutInflater;
     private static ItemClickListener itemClickListenerMapa;
 
@@ -65,7 +64,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
      * @param context Contexto
      * @param lista Lista con la información necesaria de cada objeto
      */
-    public AdaptadorListaMapa(Context context, List<Maps.TareasMapaLista> lista){
+    public AdaptadorListaMapa(Context context, List<TareasMapaLista> lista){
         this.lista = lista;
         layoutInflater = LayoutInflater.from(context);
     }
@@ -90,18 +89,18 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
      */
     @Override
     public void onBindViewHolder(@NonNull AdaptadorListaMapa.ViewHolderMapa holder, int position){
-        holder.tvTitulo.setText(lista.get(position).titulo);
-        String uriFondo = lista.get(position).uriFondo;
+        holder.tvTitulo.setText(lista.get(position).getTitulo());
+        String uriFondo = lista.get(position).getUriFondo();
         if(uriFondo != null && !uriFondo.equals("") && !uriFondo.equals("?width=300")) {
             Picasso.get()
                     .load(uriFondo)
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                     .tag(Auxiliar.cargaImagenPreview)
                     .into(holder.ivFondo);
-            holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTareaLista(lista.get(position).tipoTarea));
+            holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTareaLista(lista.get(position).getTipoTarea()));
         }
         else {
-            holder.ivFondo.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).tipoTarea));
+            holder.ivFondo.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()));
             holder.ivTipoTarea.setImageResource(android.R.color.transparent);
         }
     }
@@ -118,14 +117,14 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
      * @param posicion Posición pulsada
      * @return Identificador del objeto pulsado
      */
-    public String getId(int posicion) { return lista.get(posicion).id; }
+    public String getId(int posicion) { return lista.get(posicion).getId(); }
 
     /**
      * Método para obtener toda la información del marcador que se pulse
      * @param position Posición pulsada
      * @return JSONObject con toda la información de la tarea
      */
-    public JSONObject getTarea(int position) { return  lista.get(position).tarea; }
+    public JSONObject getTarea(int position) { return  lista.get(position).getTarea(); }
 
     /**
      * Método para establecer la pulsación simple

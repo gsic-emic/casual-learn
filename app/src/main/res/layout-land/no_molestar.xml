@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white">
 
     <TextView
         android:id="@+id/tvNoMolestar"
@@ -19,7 +20,7 @@
         android:theme="@style/switchColor"
         android:id="@+id/switchNoMolestar"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:text="@string/noMolestar"
         android:checked="true"
         app:layout_constraintTop_toBottomOf="@id/tvNoMolestar"

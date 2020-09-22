@@ -52,12 +52,6 @@ public class Bocadillo extends InfoWindow {
             titulo = mView.findViewById(R.id.tvInfoBocadillo);
             titulo.setVisibility(View.VISIBLE);
         }
-        /*mView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((Marker)item).closeInfoWindow();
-            }
-        });*/
     }
 
     /**

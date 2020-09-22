@@ -20,7 +20,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * Clase que gestiona las llamadas a los ficheros para la persistencia de datos
  *
  * @author Pablo
- * @version 20200722
+ * @version 20200918
  */
 public class PersistenciaDatos {
     /** Fichero donde se almacenan las tareas recibidas desde el servidor que el usuario puede iniciar*/
@@ -41,6 +41,8 @@ public class PersistenciaDatos {
     public static final String ficheroDenunciadas = "denunciadas";
     /** Fichero con la última posición del usuario */
     public static final String ficheroPosicion = "posicion";
+    /** Fichero con las respuestas que aun no se han podido enviar a la pasarela */
+    public static final String ficheroSinEnviar = "respuestas";
 
     public static final String ficheroPrimeraCuadricula = "primeraCuadricula";
     public static final String ficheroPosicionesCuadriculas = "posicionesCuadriculas";

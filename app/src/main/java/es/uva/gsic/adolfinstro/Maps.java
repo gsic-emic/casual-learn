@@ -9,8 +9,8 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.app.Application;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,8 +23,10 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.Html;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -55,6 +57,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,12 +84,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.Bocadillo;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
+import es.uva.gsic.adolfinstro.auxiliar.ListaCoincidencias;
+import es.uva.gsic.adolfinstro.auxiliar.Marcador;
+import es.uva.gsic.adolfinstro.auxiliar.TareasMapaLista;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
@@ -97,7 +104,6 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
-        ActivityCompat.OnRequestPermissionsResultCallback,
         AdaptadorListaCoincidencia.ItemClickListenerDialogo {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
@@ -133,28 +139,41 @@ public class  Maps extends AppCompatActivity implements
     /** Clave para obtener la última posición y el zum del mapa */
     private final String idPosicionZoom = "posicionZum";
 
+    /** Animación para el despliegue de la lista de tareas */
     private Animation animation;
 
+    /** Adaptador para la lista de tareas del marcador */
     private static AdaptadorListaMapa adaptadorListaMapa;
 
     /** Identificador de la primera cuadrícula */
     final String idPrimeraCuadricula = "1C";
 
+    /** Diálogo para salir de la apliación */
     private AlertDialog.Builder dialogoSalirApp;
-
+    /** Boolean que determian si el dialogo de salir de la aplicación está activo */
     Boolean dialogoSalirAppActivo = false;
 
+    /** Díalogo de cierre de sesión*/
     private AlertDialog.Builder dialogoCerrarSesion;
-
+    /** Boolean pa determinar si el dialogo de cierre de sesión está activo */
     Boolean dialogoCerrarSesionActivo = false;
 
-    Guideline guiaMapaH, guiaMapaV;
+    /** Guía de la vista vertical */
+    Guideline guiaMapaH;
+    /** Guía de la vista apaisada*/
+    Guideline guiaMapaV;
 
+    /** Adaptador para la lista de municipios cuando se realiza una búsqueda*/
     private AdaptadorListaCoincidencia adaptadorListaCoincidencia;
 
+    /**
+     * Layout sobre el que se pone la lista de tareas del marcador. Se adapta a la vista vertical o
+     * apaisada
+     */
     private RecyclerView.LayoutManager layoutManager;
 
-
+    /** Lista de permisos que la aplicación necesita solicitar al usuario*/
+    private List<String> permisos;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -171,7 +190,6 @@ public class  Maps extends AppCompatActivity implements
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        //sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
@@ -304,6 +322,7 @@ public class  Maps extends AppCompatActivity implements
             if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
                 JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
                 try {
+                    assert posicion != null;
                     mapController.setCenter(new GeoPoint(posicion.getDouble(Auxiliar.latitud), posicion.getDouble(Auxiliar.longitud)));
                     mapController.setZoom(posicion.getDouble(Auxiliar.zum));
                 } catch (JSONException e) {
@@ -382,20 +401,6 @@ public class  Maps extends AppCompatActivity implements
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
-                    /*JSONArray lugares = Auxiliar.buscaMunicipio(context, query.trim().toLowerCase());
-                    if(lugares.length() > 0){
-                        if(lugares.length() == 1){
-                            try {
-                                centraMapa(lugares.getJSONObject(0).getDouble("a"),lugares.getJSONObject(0).getDouble("o"));
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }else{
-                            dialogoCoincidencias(lugares);
-                        }
-                    }else{
-                        pintaSnackBar(getString(R.string.municipioNoEncontrado));
-                    }*/
                     return false;
                 }
 
@@ -404,7 +409,7 @@ public class  Maps extends AppCompatActivity implements
                     //Aqui debería ir la sugerencia según escriba
                     if(newText.trim().length() > 0) {
                         JSONArray municipios = Auxiliar.buscaMunicipio(
-                                context, newText.trim().toLowerCase());
+                                context, StringUtils.stripAccents(newText.trim().toLowerCase()));
                         if(municipios.length() > 0) {
                             if(btCentrar.isShown())
                                 btCentrar.hide();
@@ -487,7 +492,7 @@ public class  Maps extends AppCompatActivity implements
                             }
                         }
                     });
-                    snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary100));
+                    snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary50));
                     snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
                     snackbar.show();
                 }
@@ -507,11 +512,21 @@ public class  Maps extends AppCompatActivity implements
         contenedorBusqMapa.setVisibility(View.GONE);
     }
 
+    /**
+     * Método para centrar el mapa en una ubicación. El nivel de zum se ajusta a dos puntos menos que
+     * el nivel de zum máximo
+     * @param latitud Latitud de la ubicación
+     * @param longitud Longitud de la ubicación
+     */
     private void centraMapa(double latitud, double longitud) {
         mapController.setZoom(nivelMax - 2);
         mapController.setCenter(new GeoPoint(latitud, longitud));
     }
 
+    /**
+     * Método para pintar la snackBar con el texto que se desee mostrar al usuario
+     * @param texto Texto que se desea mostrar al usuarios
+     */
     private void pintaSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
         snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
@@ -523,19 +538,15 @@ public class  Maps extends AppCompatActivity implements
     @Override
     public void onActivityResult(int requestCode, int result, Intent data) {
         super.onActivityResult(requestCode, result, data);
-        switch (requestCode) {
-            case (Login.requestAuth+1):
-                //No es necesario comprobar el resultado de la petición según la ayuda oficial
-                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                GoogleSignInAccount account = null;
-                try {
-                    account = task.getResult(ApiException.class);
-                    firebaseAuthWithGoogle(account);
-                } catch (ApiException e) {
-                    e.printStackTrace();
-                }
-                break;
-            default:
+        if (requestCode == Login.requestAuth + 1) {//No es necesario comprobar el resultado de la petición según la ayuda oficial
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            GoogleSignInAccount account = null;
+            try {
+                account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -577,9 +588,9 @@ public class  Maps extends AppCompatActivity implements
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             invalidateOptionsMenu();
+            checkPermissions();
         }
     }
-
 
     /**
      * Método para centrar el mapa en Castilla y León
@@ -609,85 +620,84 @@ public class  Maps extends AppCompatActivity implements
 
     /**
      * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
-     * En la actualidad, solicita permisos de localización y cámara.
+     * Solicita el permiso de localización.
      */
     public void checkPermissions() {
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
-            System.exit(-1);
-        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
-        if (permisos.size() > 0) //Evitamos hacer una petición con un array nulo
-            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
-        else{
+        permisos = new ArrayList<>();
+        String textoPermisos = getString(R.string.necesidad_permisos);
+        //Compruebo permisos de localización en primer y segundo plano
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED)) {
+            permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+        }
+        //Comprobación para saber si el usuario se ha identificado
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if(idUsuario != null) {
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                if(!(ActivityCompat.checkSelfPermission(
+                        context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        == PackageManager.PERMISSION_GRANTED)) {
+                    permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                    textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                }
+        }
+
+        //Si no falta ningún servicio se activa el servicio en segundo plano (si el usuario se ha identificado).
+        //Muestra la posición del usuario en el mapa
+        if(!permisos.isEmpty()){
+            AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
+            alertaExplicativa.setTitle(getString(R.string.permi));
+            alertaExplicativa.setMessage(Html.fromHtml(textoPermisos));
+            alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                    // motivo se puede salir del for directamente
+                    ActivityCompat.requestPermissions(
+                            Maps.this,
+                            permisos.toArray(new String[permisos.size()]),
+                            requestCodePermissions);
+                }
+            });
+            alertaExplicativa.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    finishAffinity();
+                }
+            });
+            alertaExplicativa.setCancelable(false);
+            alertaExplicativa.show();
+        }else{
+            if(idUsuario != null)
+                lanzaServicioPosicionamiento();
             if(myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
-                GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-                gpsMyLocationProvider.setLocationUpdateMinDistance(5);
-                gpsMyLocationProvider.setLocationUpdateMinTime(5000);
-                gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
-                gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
-                myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-                myLocationNewOverlay.enableMyLocation();
-                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                        BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
-                //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-                myLocationNewOverlay.setEnableAutoStop(true);
+                activaPosicionMapa();
             }
         }
     }
 
     /**
-     * Método que devuelve el resultado de la solicitud de permisos.
-     * @param requestCode Código de la petición de permismos.
-     * @param permissions Permisos que se han solicitado.
-     * @param grantResults Valor otorgado por el usuario al permiso.
+     * Método que, una vez que se han obtenido los permisos necesarios, se muestra en el mapa la
+     * posición del usuario. Si se detecta el usuario, se cambia el monigote por una flecha.
      */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
-        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean falta = false;
-        for (int i : grantResults) {
-            if (i == -1) {
-                falta = true;
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                alertBuilder.setTitle(getString(R.string.permi));
-                alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
-                        // motivo se puede salir del for directamente
-                        checkPermissions();
-                    }
-                });
-                alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
-                        //cierra
-                        System.exit(0);
-                    }
-                });
-                alertBuilder.setCancelable(false);
-                alertBuilder.show();
-                break;
-            }
-        }
-        if (!falta) {
-            GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
-            gpsMyLocationProvider.setLocationUpdateMinDistance(5);
-            gpsMyLocationProvider.setLocationUpdateMinTime(5000);
-            gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
-            gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
-            myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
-            myLocationNewOverlay.enableMyLocation();
-            myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
-                    BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
-            //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
-            myLocationNewOverlay.setEnableAutoStop(true);
-
-            pintaItemsfijos();
-        }
+    private void activaPosicionMapa() {
+        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(context);
+        gpsMyLocationProvider.setLocationUpdateMinDistance(5);
+        gpsMyLocationProvider.setLocationUpdateMinTime(5000);
+        gpsMyLocationProvider.addLocationSource(LocationManager.GPS_PROVIDER);
+        gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
+        myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
+        myLocationNewOverlay.enableMyLocation();
+        myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
+        //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
+        myLocationNewOverlay.setEnableAutoStop(true);
+        pintaItemsfijos();
     }
+
+
 
     /**
      * Método para pintar los Overlays que siempre se desea que estén en el mapa
@@ -710,8 +720,8 @@ public class  Maps extends AppCompatActivity implements
     }*/
 
     /**
-     * Método para representar un marcador en el mapa
-     * @param marcador Marcador a representar
+     * Método para mostrar la lista de tareas que contiene el marcador.
+     * @param marcador Marcador en cuyo interior está la lista de tareas
      */
     public void pintaLista(Marcador marcador){
         JSONArray tareas = marcador.getTareasMarcador();
@@ -784,7 +794,8 @@ public class  Maps extends AppCompatActivity implements
                 //Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                 if(myLocationNewOverlay != null){
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+                    if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                            && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
                         pintaSnackBar(getString(R.string.activaUbicacion));
                         //checkPermissions();
                     }
@@ -824,8 +835,6 @@ public class  Maps extends AppCompatActivity implements
                     else
                         drawable = context.getResources().getDrawable(R.drawable.ic_marcador900);
 
-
-
         //Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
         Bitmap bitmap = Bitmap.createBitmap(
                 drawable.getIntrinsicWidth(),
@@ -837,114 +846,20 @@ public class  Maps extends AppCompatActivity implements
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         String texto;
+        int textSize;
         if(size>99) {
             texto = "99+";
-        } else
+            textSize = (int) (mitad - 15);
+        } else {
             texto = String.valueOf(size);
+            textSize = (int) (mitad + 1);
+        }
         paint.setStyle(Paint.Style.FILL);
-        int textSize = (int) (mitad + 1);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText(texto, mitad, mitad + (float)(textSize/2), paint);
-        //paint.setARGB(200 - 198 + 2*size, 136, 73, 248);
-        //canvas.drawCircle(mitad, canvas.getHeight() - mitad/3, mitad/8, paint);
-        //canvas.drawCircle(mitad, mitad, mitad/2, paint);
         return bitmap;
     }
-
-    /*/**
-     * Método para representar las tareas de dentro de un marcador mediante quesitos.
-     *
-     * @deprecated Sustituido por generaBitmapMarkerNumer(int numeroTareas)
-     * @param listaTareas tipo de tareas que están presentes en el marcador
-     * @return Bitmap a representar
-     */
-    /*private Bitmap generaBitmapMarker(List<String> listaTareas){
-        Bitmap bitmap = Bitmap.createBitmap(50, 50, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        Paint paint = new Paint();
-        float xy = (float)bitmap.getWidth()/2;
-        float radio = xy/2;
-        List<String> tipoTarea = new ArrayList<>();
-        List<Integer> numeroTipoTarea = new ArrayList<>();
-
-        tipoTarea.add(Auxiliar.tipoSinRespuesta);
-        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoSinRespuesta));
-
-
-        tipoTarea.add(Auxiliar.tipoPreguntaCorta);
-        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaCorta));
-
-        tipoTarea.add(Auxiliar.tipoPreguntaLarga);
-        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaLarga));
-
-        tipoTarea.add(Auxiliar.tipoPreguntaImagen);
-        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoPreguntaImagen));
-
-        tipoTarea.add(Auxiliar.tipoImagen);
-        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagen));
-
-
-        tipoTarea.add(Auxiliar.tipoImagenMultiple);
-        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoImagenMultiple));
-
-        tipoTarea.add(Auxiliar.tipoVideo);
-        numeroTipoTarea.add(compruebaVecesTipo(listaTareas, Auxiliar.tipoVideo));
-
-        float resta = radio/tipoTarea.size();
-        int casos = 7;
-        float angulo = (float)360/casos;
-        float anguloInicio;
-        anguloInicio = 0;
-        RectF rectF = new RectF(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        for(int i = 0; i< tipoTarea.size(); i++){
-            if(numeroTipoTarea.get(i)>0) {
-                switch (tipoTarea.get(i)) {
-                    case Auxiliar.tipoSinRespuesta:
-                        paint.setARGB(255, 255, 51, 51);
-                        break;
-                    case Auxiliar.tipoPreguntaCorta:
-                        paint.setARGB(255, 160, 160, 160);
-                        break;
-                    case Auxiliar.tipoPreguntaLarga:
-                        paint.setARGB(255, 51, 255, 255);
-                        break;
-                    case Auxiliar.tipoPreguntaImagen:
-                        paint.setARGB(255, 255, 255, 51);
-                        break;
-                    case Auxiliar.tipoImagen:
-                        paint.setARGB(255, 32, 32, 32);
-                        break;
-                    case Auxiliar.tipoImagenMultiple:
-                        paint.setARGB(255, 51, 255, 51);
-                        break;
-                    case Auxiliar.tipoVideo:
-                        paint.setARGB(255, 51, 51, 255);
-                        break;
-                    default:
-                        break;
-                }
-            }else{
-                paint.setARGB(255, 255, 255, 255);
-            }
-            canvas.drawArc(rectF, anguloInicio, angulo, true, paint);
-            anguloInicio += angulo;
-            radio -= resta;
-        }
-        return bitmap;
-    }
-
-    private int compruebaVecesTipo(List<String> listaTareas, String tipoRespuesta){
-        if(listaTareas.contains(tipoRespuesta)){
-            int i = 0;
-            for(String s :listaTareas){
-                if(s.equals(tipoRespuesta))
-                    i++;
-            }
-            return i;
-        }
-        return 0;
-    }**/
 
     /**
      * Método para calcular la distancia entre dos puntos
@@ -956,8 +871,6 @@ public class  Maps extends AppCompatActivity implements
         return Auxiliar.calculaDistanciaDosPuntos(punto1.getLatitude(), punto1.getLongitude(),
                 punto2.getLatitude(), punto2.getLongitude());
     }
-
-    //private LocationManager locationManager;
 
     /**
      * Se restaura el mapa tal y como se indica en la guía. Se restaura la lista de tareas si es que
@@ -979,6 +892,8 @@ public class  Maps extends AppCompatActivity implements
         }
     }
 
+    private int numeroCuadriculasPendientes = 0;
+
     /**
      * Método para comprobar si en la parte del mapa que se muestra al usuario hay tareas que representar.
      * Si no se ha descargado del servidor las tareas se solicita la descarga. Si las tareas están desfasdas se
@@ -994,7 +909,7 @@ public class  Maps extends AppCompatActivity implements
                     map.getBoundingBox().getLatNorth(),
                     map.getBoundingBox().getLonWest());
             if (puntoPartida == null) {//La primera cuadrícula vendrá dada por el punto más al norte y al oeste
-                puntoPartida = establecePimeraCuadricula(map.getBoundingBox());
+                puntoPartida = establecePimeraCuadricula();
             }
             //Número de cuadrículas verticales y horizontales en la vista actual
             int cuadriculasVerticales = numeroCuadriculas(puntoPartida.getLatitude(), map.getBoundingBox().getLatSouth());
@@ -1004,8 +919,13 @@ public class  Maps extends AppCompatActivity implements
             boolean nuevoCuadrado;
             JSONObject jsonObject;
             List<String> ficherosPintar = new ArrayList<>();
-            JSONArray posicionesCuadriculas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroPosicionesCuadriculas);
+            JSONArray posicionesCuadriculas = PersistenciaDatos.leeFichero(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPosicionesCuadriculas);
             //Se recorren las cuadrículas
+            synchronized ((Object)numeroCuadriculasPendientes) {
+                numeroCuadriculasPendientes = 0;
+            }
             if(map.getBoundingBox().getDiagonalLengthInMeters()/2000 < 2) {
                 for (int i = 0; i < cuadriculasHorizontales; i++) {
                     puntoVariable.setLongitude(puntoPartida.getLongitude() + i * incremento);
@@ -1113,8 +1033,8 @@ public class  Maps extends AppCompatActivity implements
         List<Marcador> listaMarcadores = new ArrayList<>();
         Marcador marcador;
         double latitud, longitud;
-        //Map<Integer, Double> latitudes, longitudes;
-        boolean anterior = false/*, anterior2 = false*/;
+
+        boolean anterior = false;
         try {
             while (todasTareas.length() > 0) {//Barro todas las tareas disponibles en el fichero
                 tarea = (JSONObject)todasTareas.remove(0);
@@ -1126,7 +1046,6 @@ public class  Maps extends AppCompatActivity implements
                     marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
                     marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
                     marcador.agregaTareaAlMarcador(tarea);
-                    //marcador.incrementaTareas();
                     listaMarcadores.add(marcador);
                 } else {
                     for (int i = 0; i < listaMarcadores.size(); i++) {
@@ -1134,17 +1053,16 @@ public class  Maps extends AppCompatActivity implements
                         marcador = listaMarcadores.get(i);
                         if (latitud == marcador.getLatitud() &&
                                 longitud == marcador.getLongitud()) { //La tarea es de la misma posición
-                            //marcador.incrementaTareas();
                             marcador.agregaTareaAlMarcador(tarea);
                             listaMarcadores.set(i, marcador);
                             anterior = true;
                             break;
                         } else {//Se comprueba la distancia a la tarea del marcador
-                            if (Auxiliar.calculaDistanciaDosPuntos(marcador.latitud, marcador.longitud,
+                            if (Auxiliar.calculaDistanciaDosPuntos(
+                                    marcador.getLatitud(), marcador.getLongitud(),
                                     latitud, longitud)
                                     <= nivelZum) { //Se agrega al marcador ya que se debe agrupar
                                 marcador.setTitulo(getString(R.string.agrupacionTareas));
-                                //marcador.incrementaTareas();
                                 marcador.agregaTareaAlMarcador(tarea);
 
                                 listaMarcadores.set(i, marcador);
@@ -1197,16 +1115,16 @@ public class  Maps extends AppCompatActivity implements
         }
         if(contenedor != null && contenedor.getVisibility() == View.VISIBLE){
             estadoContenedor = new Bundle();
-            estadoContenedor.putParcelable("CONTENEDOR", contenedor.getLayoutManager().onSaveInstanceState());
+            estadoContenedor.putParcelable(
+                    "CONTENEDOR",
+                    Objects.requireNonNull(contenedor.getLayoutManager()).onSaveInstanceState());
         }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        /*if(locationManager != null) {
-            locationManager.removeUpdates(this);
-        }*/
+        /*if(locationManager != null) locationManager.removeUpdates(this);*/
     }
 
     /**
@@ -1217,12 +1135,9 @@ public class  Maps extends AppCompatActivity implements
         switch (view.getId()){
             case R.id.btCentrar: //Solo centra la posición si se ha conseguido recuperar
                 if(myLocationNewOverlay.getMyLocation() != null) {
-                    //establecePimeraCuadricula(map.getBoundingBox());
                     mapController.setZoom(nivelMax);
                     mapController.setCenter(myLocationNewOverlay.getMyLocation());
-                    //onLocationChanged(myLocationNewOverlay.getMyLocationProvider().getLastKnownLocation());
                 }else{ //Si aún no se conoce se muestra un mensaje
-                    //Toast.makeText(this, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                     pintaSnackBar(getString(R.string.recuperandoPosicion));
                 }
                 break;
@@ -1234,6 +1149,8 @@ public class  Maps extends AppCompatActivity implements
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 finishAffinity();
                 startActivity(intent);
+                break;
+            default:
                 break;
         }
     }
@@ -1258,7 +1175,6 @@ public class  Maps extends AppCompatActivity implements
         bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putBoolean("DIALOGOSALIR", dialogoSalirAppActivo);
         bundle.putBoolean("DIALOGOCERRARSESION", dialogoCerrarSesionActivo);
-        //bundle.putLong("ULTIMANOTIFICACION", ultimaNotificacion);
         super.onSaveInstanceState(bundle);
     }
 
@@ -1294,8 +1210,8 @@ public class  Maps extends AppCompatActivity implements
         switch (key){
             case Ajustes.NO_MOLESTAR_pref:
                 noMolestar = sharedPreferences.getBoolean(key, false);
-                if(!noMolestar)
-                    lanzaServicioPosicionamiento();
+                /*if(!noMolestar)
+                    lanzaServicioPosicionamiento();*/
                 break;
             case Ajustes.LISTABLANCA_pref:
                 if(sharedPreferences.getBoolean(key, true))
@@ -1330,7 +1246,7 @@ public class  Maps extends AppCompatActivity implements
     public boolean onPrepareOptionsMenu(Menu menu){
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         MenuItem menuItem = menu.findItem(R.id.cerrarSesion);
-        if(idUsuario == null) {
+        if(idUsuario == null) {//Si el usuario no se ha identificado se cambia la etiqueta a mostrar
             menuItem.setTitle(getString(R.string.iniciarSesion));
         }
         return super.onPrepareOptionsMenu(menu);
@@ -1370,7 +1286,7 @@ public class  Maps extends AppCompatActivity implements
                 intent.putExtra(Auxiliar.peticion, PersistenciaDatos.ficheroCompletadas);
                 startActivity(intent);
                 return true;
-            case R.id.cerrarSesion:
+            case R.id.cerrarSesion://Puede ser el de inicio de sesión si el usuario aún no se ha identificado
                 JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
                 if(idUsuario == null) {
                     Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -1382,15 +1298,6 @@ public class  Maps extends AppCompatActivity implements
                 else {
                     dialogoCerrarSesionActivo = true;
                     dialogoCerrarSesion.show();
-                    /*if (PersistenciaDatos.borraTodosFicheros(getApplication())) {
-                        Login.firebaseAuth.signOut();
-                        Login.googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                vuelveLogin();
-                            }
-                        });
-                    }*/
                 }
                 return true;
             default:
@@ -1398,6 +1305,9 @@ public class  Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para volver a la pantalla de inicio.
+     */
     private void vuelveLogin(){
         Intent intent = new Intent(this, Login.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -1419,10 +1329,9 @@ public class  Maps extends AppCompatActivity implements
      * se construye dicha cuadrícula.</del> Se establece el punto en Teleco para que tenga sentido hacer una
      * caché en la pasarela
      *
-     * @param boundingBox Caja del mapa mostrado
      * @return Punto más al norte y más al oeste
      */
-    public GeoPoint establecePimeraCuadricula(BoundingBox boundingBox){
+    public GeoPoint establecePimeraCuadricula(){
         //double latN = boundingBox.getLatNorth();
         //double lonO = boundingBox.getLonWest();
         double latN = 41.66247;
@@ -1514,6 +1423,9 @@ public class  Maps extends AppCompatActivity implements
                 "&este=" + caja.getLonEast() +
                 "&sur=" + caja.getLatSouth() +
                 "&oeste=" + caja.getLonWest();
+        synchronized ((Object)numeroCuadriculasPendientes) {
+            ++numeroCuadriculasPendientes;
+        }
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
@@ -1522,24 +1434,18 @@ public class  Maps extends AppCompatActivity implements
                     long instante = System.currentTimeMillis();
                     JSONObject cuadricula = new JSONObject();
                     cuadricula.put(Auxiliar.id, nombre);
-                    /*JSONArray tareasValidas = new JSONArray();
-                    JSONObject tarea;
-                    double norte = caja.getLatNorth();
-                    double sur = caja.getLatSouth();
-                    double oeste = caja.getLonWest();
-                    double este = caja.getLonEast();
-                    for(int i = 0; i < response.length(); i++){
-                        tarea = response.getJSONObject(i);
-                        if(puntoContenido(
-                                tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud),
-                                norte, sur, este, oeste))
-                            tareasValidas.put(tarea);
-                    }*/
                     if (response.length() > 0) {
                         cuadricula.put(Auxiliar.tareas, response);
                         cuadricula.put(Auxiliar.fechaUltimaModificacion, instante);
                         PersistenciaDatos.creaFichero(getApplication(), nombre, cuadricula, Context.MODE_PRIVATE);
-                        compruebaZona();
+
+                    }
+                    synchronized ((Object)numeroCuadriculasPendientes) {
+                        if(numeroCuadriculasPendientes > 0) {
+                            --numeroCuadriculasPendientes;
+                            if (numeroCuadriculasPendientes == 0)
+                                compruebaZona();
+                        }
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1551,14 +1457,10 @@ public class  Maps extends AppCompatActivity implements
         ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
     }
 
-    /*private boolean puntoContenido(double latP, double lonP, double norte, double sur, double este, double oeste){
-        return latP < norte && latP > sur && lonP > oeste && lonP < este;
-    }*/
-
-
     /**
-     * Método que se utiliza para agregar un marcador al mapa
-     * @param marcador Contiene toda la información necesaria para agregar el marcador al mapa y cuando se pulse mostrar la lista de tareas
+     * Método que se utiliza para agregar y representar un marcador al mapa. Al pulsar
+     * sobre el marcador se muestra la lista de tareas que contiene
+     * @param marcador Información que representa al marcador
      */
     void newMarker(final Marcador marcador) {
         Marker marker = new Marker(map);
@@ -1606,172 +1508,4 @@ public class  Maps extends AppCompatActivity implements
         centraMapa(adaptadorListaCoincidencia.getLatitud(position),
                 adaptadorListaCoincidencia.getLongitud(position));
     }
-
-    //private String idInstanteGETZONA = "instanteGETZONA";
-
-    /**
-     * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
-     */
-    public static class TareasMapaLista {
-        public String id, titulo, tipoTarea, uriFondo;
-        public JSONObject tarea;
-        TareasMapaLista(String id, String titulo, String tipoTarea, String uriFondo, JSONObject tarea){
-            this.id = id;
-            this.titulo = titulo;
-            this.tipoTarea = tipoTarea;
-            this.tarea = tarea;
-            this.uriFondo = uriFondo;
-        }
-    }
-
-    /**
-     * Subclase con la que se representa al marcador del mapa
-     */
-    private static class Marcador{
-        /** Título del marcador*/
-        private String titulo;
-        /** Latitud y longitud donde se coloca al marcador */
-        private double latitud, longitud;
-        /** Tareas que contendrá el marcador*/
-        private JSONArray tareasMarcador;
-        /** Número de tareas que están en el interior del marcador */
-        private int numeroTareas;
-
-        /**
-         * Constructor de la subclase. Establece los valores iniciales e inicia la lista.
-         */
-        Marcador(){
-            titulo = null;
-            latitud = 0;
-            longitud = 0;
-            tareasMarcador = new JSONArray();
-        }
-
-        /**
-         * Método para establecer un título al marcador
-         * @param titulo Título del marcador
-         */
-        void setTitulo(String titulo) {
-            this.titulo = titulo;
-        }
-
-        /**
-         * Método para recuperar un título del marcador
-         * @return Título del marcador. Si no se ha establecido es null
-         */
-        String getTitulo(){
-            return titulo;
-        }
-
-        /**
-         * Método para establecer la posición del marcador en el mapa
-         * @param latitud Latitud
-         * @param longitud Longitud
-         */
-        void setPosicionMarcador(double latitud, double longitud) {
-            this.latitud = latitud;
-            this.longitud = longitud;
-        }
-
-        /**
-         * Método para recuperar la latitud del marcador
-         * @return Latitud
-         */
-        double getLatitud() {
-            return latitud;
-        }
-
-        /**
-         * Método para recuperar la longitud del marcador
-         * @return Longitud
-         */
-        double getLongitud() {
-            return longitud;
-        }
-
-        /**
-         * Método para agregar una nueva tarea al marcador
-         * @param tarea Tarea que se desea agregar
-         */
-        void agregaTareaAlMarcador(JSONObject tarea){
-            tareasMarcador.put(tarea);
-            incrementaTareas();
-        }
-
-        /**
-         * Método para establecer la lista de tareas del marcador
-         * @param tareas Tareas del marcador
-         */
-        void setTareasMarcador(JSONArray tareas){
-            tareasMarcador = tareas;
-        }
-
-        /**
-         * Método para recuperar la lista de tareas del marcador
-         * @return Lista de tareas del marcador
-         */
-        JSONArray getTareasMarcador(){
-            return tareasMarcador;
-        }
-
-        /**
-         * Método para incrementar el número de tareas del marcador
-         */
-        void incrementaTareas(){
-            ++numeroTareas;
-        }
-
-        /**
-         * Método para establecer el número de tareas que tiene el marcador
-         * @param numeroTareas Número de tareas del marcador
-         */
-        void setNumeroTareas(int numeroTareas){
-            this.numeroTareas = numeroTareas;
-        }
-
-        /**
-         * Método para obtener el número de tareas del marcador
-         * @return Número de tareas
-         */
-        int getNumeroTareas() {
-            return numeroTareas;
-        }
-    }
-
-    public static class ListaCoincidencias{
-        String municipio, provincia;
-        List<Double> posicion;
-        int poblacion;
-
-        ListaCoincidencias(JSONObject jsonObject) throws JSONException {
-            municipio = jsonObject.getString("m");
-            provincia = jsonObject.getString("p");
-            posicion = new ArrayList<>();
-            posicion.add(jsonObject.getDouble("a"));
-            posicion.add(jsonObject.getDouble("o"));
-            poblacion = jsonObject.getInt("g");
-        }
-
-        public String getMunicipio() {
-            return municipio;
-        }
-
-        public String getProvincia() {
-            return provincia;
-        }
-
-        public double getLatitud(){
-            return posicion.get(0);
-        }
-
-        public double getLongitud(){
-            return posicion.get(1);
-        }
-
-        public int getPoblacion() {
-            return poblacion;
-        }
-    }
-
-
 }

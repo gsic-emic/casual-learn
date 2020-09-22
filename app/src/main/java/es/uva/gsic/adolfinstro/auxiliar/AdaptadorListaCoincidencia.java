@@ -11,14 +11,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 
 /**
  * Clase para mostrar las coincidencias de la búsqueda que realice el usuario
  *
  * @author Pablo
- * @version 20200730
+ * @version 20200914
  */
 public class AdaptadorListaCoincidencia extends RecyclerView.Adapter<AdaptadorListaCoincidencia.ViewHolder> {
 
@@ -51,7 +50,7 @@ public class AdaptadorListaCoincidencia extends RecyclerView.Adapter<AdaptadorLi
         }
     }
 
-    private List<Maps.ListaCoincidencias> lista;
+    private List<ListaCoincidencias> lista;
     private LayoutInflater layoutInflater;
     private static ItemClickListenerDialogo itemClickListenerDialogo;
 
@@ -60,7 +59,7 @@ public class AdaptadorListaCoincidencia extends RecyclerView.Adapter<AdaptadorLi
      * @param c Contexto
      * @param l Lista de objetos con la información necesaria de la cada una de las tareas
      */
-    public AdaptadorListaCoincidencia(Context c, List<Maps.ListaCoincidencias> l){
+    public AdaptadorListaCoincidencia(Context c, List<ListaCoincidencias> l){
         lista = l;
         layoutInflater = LayoutInflater.from(c);
     }

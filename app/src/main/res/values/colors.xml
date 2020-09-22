@@ -5,21 +5,16 @@
     <color name="colorPrimary50">#80666B6E</color>
     <color name="colorPrimaryLight">#94999c</color>
     <color name="colorPrimaryLight68">#AD94999C</color>
-    <color name="colorSecondary">#b53f51</color>
-    <color name="colorSecondaryDark">#800229</color>
-    <color name="colorSecondaryDarkTranspa">#80800229</color>
-    <color name="colorSecondaryLight">#eb6f7d</color>
-    <color name="colorSecondaryLightTranspa">#80EB6F7D</color>
-    <color name="colorSecondaryAmarillo">#ca7582</color>
-    <color name="colorSecondaryRojo">#dfacb4</color>
-    <!--<color name="colorSecondary100">#dfd8c8</color>
-    <color name="colorSecondary300">#dfd1b2</color>
-    <color name="colorSecondary500">#dfc386</color>
-    <color name="colorSecondaryText">#000</color>
-    <color name="colorSecondary700">#dfb559</color>
-    <color name="colorSecondary900">#dfa72c</color>-->
+    <color name="colorSecondary">#a15b1c</color>
+    <color name="colorSecondaryDark">#6d3000</color>
+    <color name="colorSecondaryDarkTranspa">#806D3000</color>
+    <color name="colorSecondaryLight">#d68848</color>
+    <color name="colorSecondaryLightTranspa">#80D68848</color>
+    <color name="colorSecondaryAmarillo">#a15b1c</color>
+    <color name="colorSecondaryRojo">#BFDFACB4</color>
     <color name="blackTransparente">#BF000000</color>
     <color name="blackTransparente25">#40000000</color>
+    <color name="colorSecondary50">#f5e7c9</color>
     <color name="colorSecondary100">#f1dcae</color>
     <color name="colorSecondary300">#e8c578</color>
     <color name="colorSecondary500">#dfae43</color>
@@ -33,4 +28,10 @@
     <color name="white">#FFF</color>
     <color name="black">#000</color>
     <color name="transparente">#0000</color>
+    <color name="paleta_piedra">#f2e6c6</color>
+    <color name="paleta_agua">#ccd7dd</color>
+    <color name="paleta_vegetacion">#7d8e74</color>
+    <color name="paleta">#dfae43</color>
+    <color name="paleta_suelo">#a15b1c</color>
+
 </resources>

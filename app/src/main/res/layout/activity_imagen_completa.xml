@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ImagenCompleta"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:background="@color/white">
 
     <com.github.chrisbanes.photoview.PhotoView
         android:id="@+id/photoView"
@@ -14,8 +15,8 @@
 
     <ImageView
         android:id="@+id/ivInfoFotoCompleta"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         app:srcCompat="@drawable/ic_info_black_24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
@@ -8,13 +9,16 @@ import androidx.preference.PreferenceManager;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,7 +44,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
@@ -53,6 +56,8 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -63,7 +68,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20200703
+ * @version 20200918
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -120,142 +125,151 @@ public class Preview extends AppCompatActivity implements LocationListener {
             tarea = null;
         }
 
-        try{
-            switch (tarea.getString(Auxiliar.tipoRespuesta)){
-                case Auxiliar.tipoSinRespuesta:
-                    setTitle(R.string.previewVisita);
-                    break;
-                case Auxiliar.tipoPreguntaCorta:
-                    setTitle(R.string.previewRespuestaCorta);
-                    break;
-                case Auxiliar.tipoPreguntaLarga:
-                    setTitle(R.string.previewRespuestaLarga);
-                    break;
-                case Auxiliar.tipoPreguntaImagen:
-                    setTitle(R.string.previewRespuestaImagen);
-                    break;
-                case Auxiliar.tipoPreguntaImagenes:
-                    setTitle(R.string.previewRespuestaImagenes);
-                    break;
-                case Auxiliar.tipoImagen:
-                    setTitle(R.string.previewFoto);
-                    break;
-                case Auxiliar.tipoImagenMultiple:
-                    setTitle(R.string.previewMultiplesFotos);
-                    break;
-                case Auxiliar.tipoVideo:
-                    setTitle(R.string.previewVideo);
-                    break;
-                default:
-                    break;
-            }
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
-
-        try {
-            try{
-                assert tarea != null;
-                if (tarea.has(Auxiliar.recursoImagenBaja) &&
-                        !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
-                        !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
-                    urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
-                    Picasso.get()
-                            .load(urlImagen)
-                            .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                            .tag(Auxiliar.cargaImagenPreview)
-                            .into(imageView);
-                    imageView.setVisibility(View.VISIBLE);
-
-            } else {
-                if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
-                    urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
-                    Picasso.get()
-                            .load(urlImagen)
-                            .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                            .tag(Auxiliar.cargaImagenPreview)
-                            .into(imageView);
-                    imageView.setVisibility(View.VISIBLE);
+        if(tarea != null) {
+            try {
+                switch (tarea.getString(Auxiliar.tipoRespuesta)) {
+                    case Auxiliar.tipoSinRespuesta:
+                        setTitle(R.string.previewVisita);
+                        break;
+                    case Auxiliar.tipoPreguntaCorta:
+                        setTitle(R.string.previewRespuestaCorta);
+                        break;
+                    case Auxiliar.tipoPreguntaLarga:
+                        setTitle(R.string.previewRespuestaLarga);
+                        break;
+                    case Auxiliar.tipoPreguntaImagen:
+                        setTitle(R.string.previewRespuestaImagen);
+                        break;
+                    case Auxiliar.tipoPreguntaImagenes:
+                        setTitle(R.string.previewRespuestaImagenes);
+                        break;
+                    case Auxiliar.tipoImagen:
+                        setTitle(R.string.previewFoto);
+                        break;
+                    case Auxiliar.tipoImagenMultiple:
+                        setTitle(R.string.previewMultiplesFotos);
+                        break;
+                    case Auxiliar.tipoVideo:
+                        setTitle(R.string.previewVideo);
+                        break;
+                    default:
+                        break;
                 }
-            }}
-            catch (Exception e){
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
 
-            if(imageView.getVisibility() == View.VISIBLE){
-                Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivInfoFotoPreview), urlImagen);
-            }
+            try {
+                try {
+                    assert tarea != null;
+                    if (tarea.has(Auxiliar.recursoImagenBaja) &&
+                            !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
+                            !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
+                        urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
+                        Picasso.get()
+                                .load(urlImagen)
+                                .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                .tag(Auxiliar.cargaImagenPreview)
+                                .into(imageView);
+                        imageView.setVisibility(View.VISIBLE);
 
-            btAceptar = findViewById(R.id.botonAceptarPreview);
-            btPosponer = findViewById(R.id.botonAhoraNoPreview);
-            btRechazar = findViewById(R.id.botonRechazarPreview);
-            explicacionDistancia = findViewById(R.id.tvExplicacionDistancia);
-            textoDistancia = findViewById(R.id.tvDistancia);
-            map = findViewById(R.id.mapPreview);
-            map.setTileSource(TileSourceFactory.MAPNIK);
-            IMapController mapController = map.getController();
-            //roadManager = new OSRMRoadManager(this);
-
-            double latitud = tarea.getDouble(Auxiliar.latitud);
-            double longitud = tarea.getDouble(Auxiliar.longitud);
-            GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
-
-            mapController.setCenter(posicionTarea);
-            mapController.setZoom(17.5);
-            map.setMaxZoomLevel(17.5);
-            map.setMinZoomLevel(17.5);
-            map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-
-            map.setMultiTouchControls(false);
-
-            map.setTilesScaledToDpi(true);
-
-            map.setClickable(false);
-            map.setEnabled(false);
-
-
-            TextView titulo = findViewById(R.id.tituloPreview);
-            titulo.setText(tarea.getString(Auxiliar.titulo));
-
-            TextView descripcion = findViewById(R.id.textoPreview);
-            descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
-            descripcion.setMovementMethod(LinkMovementMethod.getInstance());
-
-            Marker marker = new Marker(map);
-            marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
-            marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
-            //marker.setTitle(extras.getString(Auxiliar.titulo));
-            marker.setInfoWindow(null);
-
-            map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
-                @SuppressLint("MissingPermission")
-                @Override
-                public boolean singleTapConfirmedHelper(GeoPoint p) {
-                    saltaNavegacion();
-                    return false;
+                    } else {
+                        if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
+                            urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
+                            Picasso.get()
+                                    .load(urlImagen)
+                                    .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                    .tag(Auxiliar.cargaImagenPreview)
+                                    .into(imageView);
+                            imageView.setVisibility(View.VISIBLE);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
-                @Override
-                public boolean longPressHelper(GeoPoint p) {
-                    saltaNavegacion();
-                    return false;
+                if (imageView.getVisibility() == View.VISIBLE) {
+                    Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivInfoFotoPreview), urlImagen);
                 }
-            }));
-            map.getOverlays().add(marker);
 
-            if(!getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion)){
-                botonesVisibles(false);
-            }else{
-                botonesVisibles(true);
-            }
+                btAceptar = findViewById(R.id.botonAceptarPreview);
+                btPosponer = findViewById(R.id.botonAhoraNoPreview);
+                btRechazar = findViewById(R.id.botonRechazarPreview);
+                explicacionDistancia = findViewById(R.id.tvExplicacionDistancia);
+                textoDistancia = findViewById(R.id.tvDistancia);
+                map = findViewById(R.id.mapPreview);
+                map.setTileSource(TileSourceFactory.MAPNIK);
+                IMapController mapController = map.getController();
+                //roadManager = new OSRMRoadManager(this);
 
-            //Identifiación usuario. Si existe el fichero con el identificador no muestro la barra
-            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-            if(idUsuario == null) {
-                snackBarLogin(R.id.clIdentificatePreview);
+                double latitud = tarea.getDouble(Auxiliar.latitud);
+                double longitud = tarea.getDouble(Auxiliar.longitud);
+                GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
+
+                mapController.setCenter(posicionTarea);
+                mapController.setZoom(17.5);
+                map.setMaxZoomLevel(17.5);
+                map.setMinZoomLevel(17.5);
+                map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+
+                map.setMultiTouchControls(false);
+
+                map.setTilesScaledToDpi(true);
+
+                map.setClickable(false);
+                map.setEnabled(false);
+
+
+                TextView titulo = findViewById(R.id.tituloPreview);
+                titulo.setText(tarea.getString(Auxiliar.titulo));
+
+                TextView descripcion = findViewById(R.id.textoPreview);
+                descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+                descripcion.setMovementMethod(LinkMovementMethod.getInstance());
+
+                Marker marker = new Marker(map);
+                marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
+                marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
+                //marker.setTitle(extras.getString(Auxiliar.titulo));
+                marker.setInfoWindow(null);
+
+                map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+                    @SuppressLint("MissingPermission")
+                    @Override
+                    public boolean singleTapConfirmedHelper(GeoPoint p) {
+                        saltaNavegacion();
+                        return false;
+                    }
+
+                    @Override
+                    public boolean longPressHelper(GeoPoint p) {
+                        saltaNavegacion();
+                        return false;
+                    }
+                }));
+                map.getOverlays().add(marker);
+
+                if (!getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion)) {
+                    botonesVisibles(false);
+                } else {
+                    botonesVisibles(true);
+                }
+
+                //Identifiación usuario. Si existe el fichero con el identificador no muestro la barra
+                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                        getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if (idUsuario == null) {
+                    snackBarLogin(R.id.clIdentificatePreview);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        }catch (Exception e){
-            e.printStackTrace();
+        }else{//Por si le salta una notificación, sale de la sesión y pulsa en la notficación
+            Intent intent = new Intent(this, Login.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finishAffinity();
         }
     }
 
@@ -277,7 +291,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
                     startActivity(intent);
                 }catch (Exception e){
-                    //Toast.makeText(context,  context.getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                     pintaSnackBar(context.getString(R.string.recuperandoPosicion));
                 }
             }
@@ -300,7 +313,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 startActivityForResult(intent, Login.requestAuth + 2);
             }
         });
-        snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary100));
+        snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary50));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
         snackbar.show();
     }
@@ -362,6 +375,30 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 e.printStackTrace();
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
+            permisos = new ArrayList<>();
+            String textoPermisos = getString(R.string.necesidad_permisos);
+            //Compruebo permisos de localización en primer y segundo plano
+            if(!(ActivityCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED)) {
+                permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+            }
+            //Comprobación para saber si el usuario se ha identificado
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if(idUsuario != null) {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    if(!(ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED)) {
+                        permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                        textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                    }
+            }
+            if(permisos.isEmpty())
+                new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
+            else
+                solicitaPermisoUbicacion(textoPermisos);
         }
     }
 
@@ -573,14 +610,33 @@ public class Preview extends AppCompatActivity implements LocationListener {
         recepcionNotificaciones = new RecepcionNotificaciones();
         registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        permisos = new ArrayList<>();
         try {
+            String textoPermisos = getString(R.string.necesidad_permisos);
+
             if (ActivityCompat.checkSelfPermission(
                     this,
-                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED  &&
-                    ActivityCompat.checkSelfPermission(
-                            this,
-                            Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 botonesVisibles(false);
+                permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+            }
+
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if(idUsuario != null) {
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    if(!(ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED)) {
+                        permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                        textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                    }
+            }else{
+                new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
+            }
+
+            if(!permisos.isEmpty()){
+                solicitaPermisoUbicacion(textoPermisos);
             } else {
                 locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER, 1000, 2, this);
@@ -603,6 +659,33 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
         if(map != null)
             map.onResume();
+    }
+
+    List<String> permisos;
+
+    private void solicitaPermisoUbicacion(String textoDialogo) {
+        AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
+        alertaExplicativa.setTitle(getString(R.string.permi));
+        alertaExplicativa.setMessage(Html.fromHtml(textoDialogo));
+        alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Se comprueba todos los permisos que necesite la app de nuevo, por este
+                // motivo se puede salir del for directamente
+                ActivityCompat.requestPermissions(
+                        Preview.this,
+                        permisos.toArray(new String[permisos.size()]),
+                        1002);
+            }
+        });
+        alertaExplicativa.setNegativeButton(getString(R.string.volver), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onBackPressed();
+            }
+        });
+        alertaExplicativa.setCancelable(false);
+        alertaExplicativa.show();
     }
 
     /**

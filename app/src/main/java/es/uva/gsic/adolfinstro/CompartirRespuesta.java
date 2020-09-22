@@ -52,7 +52,7 @@ public class CompartirRespuesta extends AppCompatActivity
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btCompartirVolver:
-                vuelveInicio(textoPuntua);
+                muestraMapa(textoPuntua);
                 break;
             case R.id.btCompartirTwitter:
                 Auxiliar.mandaTweet(
@@ -81,7 +81,11 @@ public class CompartirRespuesta extends AppCompatActivity
         }
     }
 
-    private void vuelveInicio(String string) {
+    /**
+     * Método para llevar al usuario a la pantalla de mapas
+     * @param string Texto que se le va a mostrar en el mapa
+     */
+    private void muestraMapa(String string) {
         Intent intent = new Intent(this, Maps.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -94,7 +98,7 @@ public class CompartirRespuesta extends AppCompatActivity
     @Override
     public void onBackPressed(){
         super.onBackPressed();
-        vuelveInicio(textoPuntua);
+        muestraMapa(textoPuntua);
     }
 
     /**

@@ -12,7 +12,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -34,8 +33,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
@@ -43,12 +40,9 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase que permite a los usuarios identificarse frente al sistema.
  *
  * @author Pablo
- * @version 20200520
+ * @version 20200911
  */
 public class Login extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
-
-    /** Código de identificación para la solicitud de los permisos de la app */
-    private static final int requestCodePermissions = 1000;
 
     /** Código con el que se lanza la actividad de identificación del usuario con cuenta Google */
     public static final int requestAuth = 1010;
@@ -83,7 +77,7 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
 
         setContentView(R.layout.activity_login);
 
-        Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoLogin), "https://commons.wikimedia.org/wiki/File:Ampudia_-_Castillo_1.jpg");
+        //Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoLogin), "https://commons.wikimedia.org/wiki/File:Ampudia_-_Castillo_1.jpg");
 
         //https://developers.google.com/identity/sign-in/android/sign-in
         gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -127,7 +121,6 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
             dialogoAccesoSinIdVisible = true;
             dialogoAccesoSinId.show();
         }
-
     }
 
     @Override
@@ -139,9 +132,22 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
     @Override
     public void onStart(){
         super.onStart();
-        //checkPermissions();
-        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
-        updateUI(firebaseUser, false);
+        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
+            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+            alertBuilder.setTitle(getString(R.string.necesita_camara));
+            alertBuilder.setMessage(getString(R.string.necesita_camaraM));
+            alertBuilder.setPositiveButton(getString(R.string.salir), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    System.exit(-1);
+                }
+            });
+            alertBuilder.setCancelable(false);
+            alertBuilder.show();
+        }else{
+            FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+            updateUI(firebaseUser, false);
+        }
     }
 
     /**
@@ -162,56 +168,6 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
     private void lanzaGoogle(){
         Intent intent = googleSignInClient.getSignInIntent();
         startActivityForResult(intent, requestAuth);
-    }
-
-    /**
-     * Método para comprobar si el usuario ha otorgado a la aplicación los permisos necesarios.
-     * En la actualidad, solicita permisos de localización y cámara.
-     */
-    public void checkPermissions(){
-        if(!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY))
-            System.exit(-1);
-        ArrayList<String> permisos = Auxiliar.preQueryPermisos(this);
-        if (permisos.size()>0) //Evitamos hacer una petición con un array nulo
-            ActivityCompat.requestPermissions(this, permisos.toArray(new String[permisos.size()]), requestCodePermissions);
-    }
-
-    /**
-     * Método que devuelve el resultado de la solicitud de permisos.
-     * @param requestCode Código de la petición de permismos.
-     * @param permissions Permisos que se han solicitado.
-     * @param grantResults Valor otorgado por el usuario al permiso.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        //Se comprueba uno a uno si alguno de los permisos no se había aceptado
-        for (int i : grantResults) {
-            if (i == -1) {
-                AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
-                alertBuilder.setTitle(getString(R.string.permi));
-                alertBuilder.setMessage(getString(R.string.permiM));
-                alertBuilder.setPositiveButton(getString(R.string.volverSolicitar), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Se comprueba todos los permisos que necesite la app de nuevo, por este
-                        // motivo se puede salir del for directamente
-                        checkPermissions();
-                    }
-                });
-                alertBuilder.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        //Si el usuario no quiere conceder los permisos que necesita la aplicación se
-                        //cierra
-                        System.exit(0);
-                    }
-                });
-                alertBuilder.setCancelable(false);
-                alertBuilder.show();
-                break;
-            }
-        }
     }
 
     /**
@@ -282,7 +238,6 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
             }catch (JSONException e){
                 e.printStackTrace();
             }
-            //Toast.makeText(this, String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()), Toast.LENGTH_SHORT).show();
             saltaMapa(firebaseUser.getDisplayName());
         }
     }

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
  * Clase para controlar la pantalla de ajustes de la aplicación
  *
  * @author pablo
- * @version 20200727
+ * @version 20200917
  */
 public class Ajustes extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -27,6 +27,8 @@ public class Ajustes extends AppCompatActivity
     /** Clave para identificar la lista de etiquetas que el usuario quiere que se publique junto a la
      * respuesta */
     public static final String HASHTAG_pref = "hashtag";
+    /**Clave para identificar la opción del envío solo mediante Wi-Fi*/
+    public static final String WIFI_pref = "opcionWifi";
 
     public static SharedPreferences sharedPreferences;
     private boolean reiniciaMapa = false;
@@ -46,12 +48,8 @@ public class Ajustes extends AppCompatActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key){
-            case Ajustes.NO_MOLESTAR_pref:
-                reiniciaMapa = estadoAnterior != sharedPreferences.getBoolean(key, false);
-                break;
-            default:
-                break;
+        if (Ajustes.NO_MOLESTAR_pref.equals(key)) {
+            reiniciaMapa = estadoAnterior != sharedPreferences.getBoolean(key, false);
         }
     }
 

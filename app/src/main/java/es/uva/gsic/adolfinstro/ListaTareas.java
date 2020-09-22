@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,31 +22,17 @@ import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorLista;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
+import es.uva.gsic.adolfinstro.auxiliar.TareasLista;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase que presenta al usuario los distintos tipos de listas de la aplicación.
  *
  * @author Pablo
- * @version 20200514
+ * @version 20200914
  */
 public class ListaTareas extends AppCompatActivity
         implements AdaptadorLista.ItemClickListener, AdaptadorLista.ItemLongClickLister{
-
-    /**
-     * Estrucutra de la lista de Tareas. Se va a utilizar en los infladores
-     */
-    public static class TareasLista{
-        public String id, titulo, tipoTarea, fecha;
-        public float puntuacion;
-        TareasLista(String id, String titulo, String tipoTarea, String fecha, float puntuacion){
-            this.id = id;
-            this.titulo = titulo;
-            this.tipoTarea = tipoTarea;
-            this.fecha = fecha;
-            this.puntuacion = puntuacion;
-        }
-    }
 
     /** Objeto donde se introducen las tareas de la lista con el formato adecuado */
     private AdaptadorLista adapter;
@@ -144,7 +131,6 @@ public class ListaTareas extends AppCompatActivity
 
     @Override
     public void onItemClick(View view, int position) {
-        //Toast.makeText(this, adapter.getItem(position), Toast.LENGTH_SHORT).show();
         String idTarea = adapter.getId(position);
         JSONObject jTarea;
         switch (peticion) {
@@ -178,28 +164,6 @@ public class ListaTareas extends AppCompatActivity
         }
     }
 
-
-    /**
-    private void sacarRechazada(final String idTarea) {
-        AlertDialog.Builder confirmacion = new AlertDialog.Builder(this);
-        confirmacion.setTitle(getString(R.string.restaurarTarea));
-        confirmacion.setMessage(getString(R.string.restaurarTareaTexto));
-        confirmacion.setPositiveButton(getString(R.string.accept), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    JSONObject tareaRestaurar = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasRechazadas, idTarea);
-                    PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroTareasUsuario, tareaRestaurar, Context.MODE_PRIVATE);
-                    cargaTareas();
-                }catch (Exception e){
-                    Toast.makeText(ListaTareas.this, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        confirmacion.setNegativeButton(getString(R.string.cancel), null);
-        confirmacion.show();
-    }*/
-
     @Override
     public void onItemLongClick(View v, int position){
         String mensaje = Auxiliar.textoTipoTarea(this, adapter.getTipo(position));
@@ -231,7 +195,7 @@ public class ListaTareas extends AppCompatActivity
     }
 
     @Override
-    public void onSaveInstanceState(Bundle b) {
+    public void onSaveInstanceState(@NotNull Bundle b) {
         super.onSaveInstanceState(b);
         b.putInt("POSICION", posicionPulsada);
     }

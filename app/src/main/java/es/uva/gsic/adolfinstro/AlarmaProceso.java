@@ -45,7 +45,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20200525
+ * @version 20200918
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */
@@ -53,17 +53,16 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
     Application application;
 
-    private NotificationChannel channel;
     private NotificationManager notificationManager;
     private int intervalo;
-    private boolean noMolestar;
     private String idInstanteGET = "instanteGET";
-    private String idUltimaPosicion = "ultimaPosicionAlarma";
     private String idInstanteNotAuto = "instanteNotAuto";
 
     private final int intervaloComprobacion = 120000;
 
     public static boolean tareasActualizadas = false;
+
+    private boolean enviaWifi;
 
     LocationManager locationManager;
 
@@ -87,7 +86,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
         //Se necesita un canal para API 26 y superior
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            channel = new NotificationChannel(Auxiliar.channelId,
+            NotificationChannel channel = new NotificationChannel(Auxiliar.channelId,
                     context.getString(R.string.canalTareas),
                     NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription(context.getString(R.string.canalTareas));
@@ -107,6 +106,36 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
         posicionamiento();
+        compruebaRespuestasSinEnviar(application, context);
+    }
+
+    /**
+     * Método para enviar al servidor las respuetas del usuario que no se han podido enviar antes.
+     * @param application App
+     * @param context Contexto
+     */
+    private void compruebaRespuestasSinEnviar(Application application, Context context) {
+        int tipoConectividad = Auxiliar.tipoConectividad(context);
+
+        if(tipoConectividad == 0 || (tipoConectividad == 1 && !enviaWifi)){
+            JSONArray respuestasPendientes = PersistenciaDatos.leeFichero(application, PersistenciaDatos.ficheroSinEnviar);
+            if(respuestasPendientes.length() > 0) {
+                JSONObject tareaPendiente;
+                for (int i = 0; i < respuestasPendientes.length(); i++) {
+                    try {
+                        tareaPendiente = respuestasPendientes.getJSONObject(i);
+                        Auxiliar.enviaResultados(application, context, tareaPendiente.getString(Auxiliar.id));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                respuestasPendientes = new JSONArray();
+                PersistenciaDatos.guardaFichero(application,
+                        PersistenciaDatos.ficheroSinEnviar,
+                        respuestasPendientes,
+                        Context.MODE_PRIVATE);
+            }
+        }
     }
 
     /**
@@ -155,12 +184,13 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 intervalo = sharedPreferences.getInt(key, 5);
                 break;
             case Ajustes.NO_MOLESTAR_pref:
-                noMolestar = sharedPreferences.getBoolean(key, false);
+                boolean noMolestar = sharedPreferences.getBoolean(key, false);
                 if(noMolestar){
-                    //stopLocation();
-                    //terminaServicio();
                     new AlarmaProceso().cancelaAlarmaProceso(context);
                 }
+                break;
+            case Ajustes.WIFI_pref:
+                enviaWifi = sharedPreferences.getBoolean(key, false);
                 break;
             default:
                 break;
@@ -238,6 +268,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         application,
                         PersistenciaDatos.ficheroInstantes,
                         idInstanteGET);
+                assert instante != null;
                 latitudGet = instante.getDouble(Auxiliar.latitud);
                 longitudGet = instante.getDouble(Auxiliar.longitud);
                 momento = instante.getLong(Auxiliar.instante);
@@ -248,7 +279,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
         //Inicio del servicio, se tiene que recuperar la tarea del servidor
         //Validez de un día para las tareas
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if(idUsuario != null) {
             if (latitudGet == 0 || longitudGet == 0 || ((new Date().getTime() - momento) > 7200000)) {
                 peticionTareasServidor(location);
@@ -273,7 +305,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     private void peticionTareasServidor(final Location location){
         String idUsuario = null;
         try{
-            JSONObject usuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            JSONObject usuario = PersistenciaDatos.recuperaTarea(
+                    application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
             idUsuario = usuario.getString(Auxiliar.uid);
         }catch (Exception e){
             e.printStackTrace();
@@ -363,6 +396,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         double distanciaAndada=1200, latitud=0, longitud=0,latitudAnt, longitudAnt;
         boolean datosValidos = false;
 
+        String idUltimaPosicion = "ultimaPosicionAlarma";
         if(PersistenciaDatos.existeTarea(
                 application,
                 PersistenciaDatos.ficheroPosicion,
@@ -416,7 +450,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 (Auxiliar.intervaloMinutos(intervalo) > 0)?
                         Auxiliar.intervaloMinutos(intervalo)*60*1000:
                         20000);
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if(idUsuario != null) {
             if (comprueba) {//Se comprueba cuando se ha lanzado la última notificación
                 if (datosValidos) {//Se comprueba si los datos son válidos (inicio proceso)
@@ -491,7 +526,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_foreground)
+                        .setSmallIcon(R.drawable.ic_walk_white)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))

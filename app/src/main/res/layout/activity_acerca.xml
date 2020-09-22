@@ -10,19 +10,26 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_height="wrap_content"
-        android:layout_width="match_parent">
+        android:layout_width="match_parent"
+        android:background="@color/white">
 
         <ImageView
             android:id="@+id/ivIcono"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:srcCompat="@mipmap/ic_launcher"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:srcCompat="@mipmap/ic_launcher_foreground"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:paddingTop="10dp"
-            android:paddingBottom="5dp"
+            app:layout_constraintBottom_toBottomOf="@id/glAcerca"
             android:contentDescription="@string/app_name" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/glAcerca"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.1"/>
 
         <TextView
             android:id="@+id/tvVersion"
@@ -36,7 +43,7 @@
         <TextView
             android:id="@+id/tvLicencia"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:textSize="12sp"
             android:text="@string/licencia"
             app:layout_constraintStart_toStartOf="parent"
@@ -110,7 +117,7 @@
         <TextView
             android:id="@+id/tvDesarrolladores"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:drawableStart="@drawable/ic_info_black_menu"
             android:drawablePadding="4dp"
             android:layout_marginTop="10dp"
@@ -262,7 +269,8 @@
         <TextView
             android:id="@+id/tvOpenStreepMap"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/vista4"
             android:text="@string/openStreetMap"
@@ -297,7 +305,8 @@
         <TextView
             android:id="@+id/tvOsmdroid"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/vista5"
             android:text="@string/Osmdroid"
@@ -309,7 +318,8 @@
         <TextView
             android:id="@+id/tvPhotoView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvOsmdroid"
             android:drawablePadding="4dp"
@@ -321,7 +331,8 @@
         <TextView
             android:id="@+id/tvPicasso"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
+            android:gravity="center_vertical"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvPhotoView"
             android:drawablePadding="4dp"

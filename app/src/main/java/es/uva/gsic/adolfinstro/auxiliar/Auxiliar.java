@@ -14,6 +14,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -67,7 +69,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20200727
+ * @version 20200918
  */
 public class Auxiliar {
 
@@ -175,6 +177,7 @@ public class Auxiliar {
                         context.getExternalFilesDir("Cache"));
                 break;
             default:
+                break;
         }
         return mediaFile;
     }
@@ -197,7 +200,7 @@ public class Auxiliar {
     }
 
     /**
-     * Método para preparar la petición de los permisos necesarios al usuario
+     * Método para preparar la petición de los permisos relacionados con la posición
      * @param context Contexto
      * @return Permisos que faltan por condeder
      */
@@ -212,19 +215,6 @@ public class Auxiliar {
                     context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                     == PackageManager.PERMISSION_GRANTED))
                 permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.INTERNET);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.CAMERA);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.RECORD_AUDIO);
-        if(!(ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED))
-            permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return permisos;
     }
 
@@ -302,6 +292,7 @@ public class Auxiliar {
                                         ((1-Math.cos(Math.toRadians(lon2 - lon1)))/2)
                 ));
     }
+
     /**
      * Método que obtiene la última parte de un recurso
      * @param tipoRespuesta URI del tipo de tarea
@@ -556,11 +547,11 @@ public class Auxiliar {
                 Math.min(long1, long2));
     }
 
-    public static void publicaGaleria(Context contexto, Uri uri) {
+    /*public static void publicaGaleria(Context contexto, Uri uri) {
         Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
         intent.setData(uri);
         contexto.sendBroadcast(intent);
-    }
+    }*/
 
     /**
      * Envía el contenido a la app de Twitter para que el usuario pueda compartirlo
@@ -569,6 +560,7 @@ public class Auxiliar {
      * @param hashtag Etiquetas con la que se envía el tweet
      */
     public static void mandaTweet(Context context, JSONObject tarea, String hashtag){
+        final int maxMulti = 3;
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
             context.getPackageManager().getPackageInfo("com.twitter.android",
@@ -594,6 +586,19 @@ public class Auxiliar {
                     listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
                 }
             }
+
+            ArrayList<Uri> uris = new ArrayList<>();
+            uris.add(
+                    uriTexto(
+                            context,
+                            context.getResources().getDrawable(R.drawable.ic_por_defecto_insta),
+                            contenidoTexto(
+                                    context,
+                                    tarea,
+                                    textoUsuario,
+                                    hashtag,
+                                    false)));
+
             switch (tarea.getString(Auxiliar.tipoRespuesta)){
                 case Auxiliar.tipoPreguntaCorta:
                 case Auxiliar.tipoPreguntaLarga:
@@ -602,46 +607,47 @@ public class Auxiliar {
                     intent.putExtra(Intent.EXTRA_TEXT,
                             contenidoTexto(context, tarea, textoUsuario, hashtag, true));
                     intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                    intent.setType("image/*");
                     break;
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoImagen:
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagenes:
-                    if(listaURI.size() > 0)
+                case Auxiliar.tipoVideo:
+                    //if(listaURI.size() > 0)
                         intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    else
-                        intent = new Intent(Intent.ACTION_SEND);
+                    //else
+                        //intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_TEXT,
                             contenidoTexto(context, tarea, textoUsuario, hashtag, true));
                     intent.setType("text/plain");
                     if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
                         if(!listaURI.isEmpty()){
-                            ArrayList<Uri> uris = new ArrayList<>();
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("video/*");
+                            intent.setType("*/*");
                         }
                     }else{
                         if(!listaURI.isEmpty()){
-                            ArrayList<Uri> uris = new ArrayList<>();
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
                             intent.setType("image/*");
                         }
-                    }
-                    break;
-                case Auxiliar.tipoVideo:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, true));
-                    intent.setType("text/plain");
-                    if(!listaURI.isEmpty()){
-                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
-                        intent.setType("video/*");
                     }
                     break;
                 default:
@@ -744,7 +750,6 @@ public class Auxiliar {
                     context.getString(R.string.instalaYammer),
                     Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
-            //Toast.makeText(context, e.toString(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
     }
@@ -758,6 +763,7 @@ public class Auxiliar {
      * @param hashtag Lista de etiquetas que el usuario ha configurado en los ajustes de la aplicación.
      */
     public static void mandaInsta(Context context, JSONObject tarea, String hashtag){
+        final int maxMulti = 9;
         try {
             context.getPackageManager().getPackageInfo(
                     "com.instagram.android", PackageManager.GET_ACTIVITIES);
@@ -807,36 +813,37 @@ public class Auxiliar {
                 case Auxiliar.tipoImagen:
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagenes:
+                case Auxiliar.tipoVideo:
                     if(listaURI.size() > 0)
                         intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
                     else
                         intent = new Intent(Intent.ACTION_SEND);
                     if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
                         if(!listaURI.isEmpty()){
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
                             intent.setType("*/*");
                         }
                     }else{
                         if(!listaURI.isEmpty()){
+                            int i = 0;
                             for(String s : listaURI){
-                                uris.add(Uri.parse(s));
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
                             }
                             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
                             intent.setType("image/*");
                         }
-                    }
-                    break;
-                case Auxiliar.tipoVideo:
-                    intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    if(!listaURI.isEmpty()){
-                        for(String s : listaURI){
-                            uris.add(Uri.parse(s));
-                        }
-                        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                        intent.setType("*/*");
                     }
                     break;
                 default:
@@ -963,18 +970,33 @@ public class Auxiliar {
                 if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
                     texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
                 }
+                if(!recorta){
+                    texto = String.format("%s %s\n\n%s %s\n\n%s %s",
+                            context.getString(R.string.yammerSinTexto),
+                            tarea.getString(Auxiliar.titulo),
+                            context.getString(R.string.tareaPregunta),
+                            tarea.getString(Auxiliar.recursoAsociadoTexto),
+                            context.getString(R.string.tareaRespuesta),
+                            textoUsuario);
+                }
             }else{
                 if(recorta)
                     texto = String.format("%s %s", context.getString(R.string.twitSinTexto), texto);
                 else
-                    texto = String.format("%s %s", context.getString(R.string.yammerSinTexto), texto);
+                    texto = String.format("%s %s\n\n%s %s",
+                            context.getString(R.string.yammerSinTexto),
+                            tarea.getString(Auxiliar.titulo),
+                            context.getString(R.string.tareaPregunta),
+                            tarea.getString(Auxiliar.recursoAsociadoTexto));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        for (String string : hashtags) {
-            texto = String.format("%s %s", texto, string);
+        if(recorta) {
+            for (String string : hashtags) {
+                texto = String.format("%s %s", texto, string);
+            }
         }
         return texto;
     }
@@ -984,14 +1006,40 @@ public class Auxiliar {
      * @param app Aplicación
      * @param appContext Contexto
      * @param idTarea Identificador único de la tarea
+     * @param enviaWifi Preferencia del usuario que indica si solo quiere enviar por Wi-Fi
      */
-    public static void guardaRespuesta(Application app, Context appContext, String idTarea){
+    public static void guardaRespuesta(Application app,
+                                       Context appContext,
+                                       String idTarea,
+                                       Boolean enviaWifi){
+
+        int tipoConectividad = tipoConectividad(appContext);
+        //Si no está conectado o está conectado pero solo lo quiere enviar por WiFi guardo el envío para después
+        if (tipoConectividad == -1 || (tipoConectividad == 1 && enviaWifi)) {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(Auxiliar.id, idTarea);
+                PersistenciaDatos.guardaJSON(app,
+                        PersistenciaDatos.ficheroSinEnviar,
+                        jsonObject,
+                        Context.MODE_PRIVATE);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }else {
+            enviaResultados(app, appContext, idTarea);
+        }
+    }
+
+    public static void enviaResultados(Application app, Context contexto, String idTarea){
         JSONObject jsonObject = new JSONObject();
         JSONObject tarea = PersistenciaDatos.
                 recuperaTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea);
-        try{
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        try {
             jsonObject.put("idTarea", idTarea);
-            jsonObject.put("idUsuario", Login.firebaseAuth.getUid());
+            jsonObject.put("idUsuario", idUsuario.getString(Auxiliar.uid));
             jsonObject.put("instanteInicio", tarea.getString(Auxiliar.fechaInicio));
             jsonObject.put("instanteFin", tarea.getString(Auxiliar.fechaFinalizacion));
             jsonObject.put("instanteModificacion",
@@ -999,7 +1047,7 @@ public class Auxiliar {
             jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
 
             int numeroMedia = 0;
-            if(tarea.has(Auxiliar.respuestas)) {
+            if (tarea.has(Auxiliar.respuestas)) {
                 JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
                 JSONObject respuesta;
                 for (int i = 0; i < respuestas.length(); i++) {
@@ -1011,25 +1059,47 @@ public class Auxiliar {
                         ++numeroMedia;
                     }
                 }
-                if(numeroMedia > 0)
+                if (numeroMedia > 0)
                     jsonObject.put("numeroMedia", numeroMedia);
             }
-            if(tarea.has(Auxiliar.rating))
+            if (tarea.has(Auxiliar.rating))
                 jsonObject.put("puntuacion", tarea.getDouble(Auxiliar.rating));
-        }catch (Exception e){
+        } catch (Exception e) {
             jsonObject = null;
         }
 
-        if(jsonObject != null) {
+        if (jsonObject != null) {
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
                     Auxiliar.direccionIP + "tareasCompletadas",
                     jsonObject,
                     null,
                     null
             );
-            ColaConexiones.getInstance(appContext).getRequestQueue().add(jsonObjectRequest);
+            ColaConexiones.getInstance(contexto).getRequestQueue().add(jsonObjectRequest);
         }
     }
+
+    /**
+     * Comprueba que tipo de conectividad tiene el dispositivo
+     * @param contexto Contexto
+     * @return  0 Wi-FI
+     *          1 Datos
+     *          -1 Sin conectividad
+     */
+    public static int tipoConectividad(Context contexto){
+        ConnectivityManager connectivityManager = (ConnectivityManager) contexto.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo == null || !networkInfo.isConnected())
+            return -1;
+        else{
+            if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI)
+                return 0;
+            else
+                return 1;
+        }
+    }
+
+
 
     /**
      * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
@@ -1151,70 +1221,40 @@ public class Auxiliar {
         }
     }
 
-    /*public static double[] buscaMunicipio(Context context, String query) {
-        double latitud = 0, longitud = 0;
-        final String[] no = {"de", "del", "la", "los", "el", "y", "las"};
-        if(Auxiliar.municipios == null || Auxiliar.municipios.length() == 0)
-            Auxiliar.municipios = leeFicheroMunicipios(context);
-
-        JSONObject municipio;
-        try {
-            for(int i = 0; i < Auxiliar.municipios.length(); i++){
-                    municipio = Auxiliar.municipios.getJSONObject(i);
-                    if(municipio.getString("Municipio").equals(query)) {
-                        latitud = municipio.getDouble("Latitud");
-                        longitud = municipio.getDouble("Longitud");
-                        break;
-                    }
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        if(latitud != 0 && longitud != 0)
-            return new double[]{latitud, longitud};
-        else
-            return new double[]{};
-    }*/
-
+    /**
+     * Método para obtener una lista de municipios dependiente de los caracteres que haya introducido
+     * el usuario.
+     * @param context Contexto
+     * @param query Caracteres introducidos por el usuario
+     * @return Lista de municipios que coinciden con la búsqueda. El array puede estar vacío.
+     */
     public static JSONArray buscaMunicipio(Context context, String query) {
         JSONArray salida = new JSONArray();
-        String[] bdV, u, userV;
+        String[] bdV, userV;
         List<Integer> municipiosValidos = new ArrayList<>();
         int coincidenciaPalabra, coincidencias = 0;
-        final List<String> no = Arrays.asList("de", "del", "la", "los", "el", "y", "las");
         if(Auxiliar.municipios == null || Auxiliar.municipios.length() == 0)
             Auxiliar.municipios = leeFicheroMunicipios(context);
 
         JSONObject municipio;
         try {
-            u = query.split(" ");
-            StringBuilder queryBuilder = new StringBuilder();
-            for(int i = 0; i < u.length; i++)
-                if(!no.contains(u[i]))
-                    queryBuilder.append(u[i]).append(" ");
-            query = queryBuilder.toString();
             userV = query.split(" ");
-            u = null;
             int tama = Auxiliar.municipios.length();
             for(int i = 0; i < tama; i++){
                 municipio = Auxiliar.municipios.getJSONObject(i);
-                bdV = municipio.getString("n").toLowerCase().split(" ");
+                bdV = municipio.getString("n").split(" ");
                 coincidenciaPalabra = 0;
-                for(int j = 0; j < userV.length; j++){
-                    if(!no.contains(userV[j])) {
-                        for (String bd : bdV) {
-                            if(!no.contains(bd)) {
-                                if (bd.contains(userV[j])) {
-                                    coincidenciaPalabra++;
-                                    if (coincidenciaPalabra > coincidencias) {
-                                        coincidencias = coincidenciaPalabra;
-                                        municipiosValidos = new ArrayList<>();
-                                    }
-                                    if (coincidenciaPalabra == coincidencias)
-                                        municipiosValidos.add(i);
-                                    break;
-                                }
+                for (String s : userV) {
+                    for (String bd : bdV) {
+                        if (bd.contains(s)) {
+                            coincidenciaPalabra++;
+                            if (coincidenciaPalabra > coincidencias) {
+                                coincidencias = coincidenciaPalabra;
+                                municipiosValidos = new ArrayList<>();
                             }
+                            if (coincidenciaPalabra == coincidencias)
+                                municipiosValidos.add(i);
+                            break;
                         }
                     }
                 }
@@ -1229,6 +1269,11 @@ public class Auxiliar {
         return salida;
     }
 
+    /**
+     * Método para cargar la lista de municipios en memoria.
+     * @param context Contexto
+     * @return Municipios de Castilla y León
+     */
     public static JSONArray leeFicheroMunicipios(Context context) {
         JSONArray array;
         BufferedReader bufferedReader = null;

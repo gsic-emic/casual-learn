@@ -3,7 +3,7 @@
     <string name="permiM">La aplicación necesita todos los permisos solicitados</string>
     <string name="permi">Permisos</string>
     <string name="accept">Aceptar</string>
-    <string name="exi">Salir de la aplicación</string>
+    <string name="exi">Salir</string>
     <string name="task">Tarea</string>
     <string name="next">Siguiente</string>
     <string name="cancel">Cancelar</string>
@@ -129,8 +129,8 @@
     <string name="tareaGuardada">Tarea modificada correctamente</string>
     <string name="preguntaImagenes">Tarea que solicita responder a una pregunta y realizar múltiples fotografías</string>
     <string name="descripcionFuncionamientoPalabraClave">Si quieres utilizar múltiples <i>hashtags</i>, sepáralos con comas. Nosotros nos encargarmos de poner los # necesarios</string>
-    <string name="twitSinTexto">He realizado una tarea con @CasualLearn en </string>
-    <string name="yammerSinTexto">He realizado una tarea con Casual Learn en </string>
+    <string name="twitSinTexto">He realizado una tarea con @CasualLearn en:</string>
+    <string name="yammerSinTexto">He realizado una tarea con Casual Learn en:</string>
     <string name="iconoTareaPreview">Icono</string>
     <string name="previewVisita">Visita un lugar</string>
     <string name="previewRespuestaCorta">Tarea de respuesta corta</string>
@@ -145,7 +145,7 @@
     <string name="autenticarseMasTarde">Iniciar sesión más tarde</string>
     <string name="autenticarseAhora">Iniciar sesión ahora</string>
     <string name="textoInicio">Identificándote podrás realizar tareas y las que te propongamos estarán personalizadas</string>
-    <string name="textoExplicativo">Casual Learn es una aplicación para aprender historia del arte de Castilla y León. ¡Podrás compartir tus conocimientos con personas que, como tú, están interesadas en la historia que les rodea!</string>
+    <string name="textoExplicativo">Casual Learn es una aplicación para aprender historia del arte de Castilla y León. ¡Podrás compartir tus conocimientos con personas que, como tú, están interesadas en el arte que les rodea!</string>
     <string name="textoInicioBreve">Inicia sesión para realizar tareas</string>
     <string name="autenticarse">Identificación</string>
     <string name="textoPuntua">La puntuación que proporciones servirá para personalizar las tareas que te ofrece la aplicación.</string>
@@ -188,4 +188,23 @@
     <string name="compartir_yammer">Compartir en Yammer</string>
     <string name="compartir_twitter">Compartir en Twitter</string>
     <string name="compartir_respuesta">¡Comparte la respuesta!</string>
+    <string name="necesita_camara">Cámara no encontrada</string>
+    <string name="necesita_camaraM">La aplicación necesita una cámara para poder realizar algunas tareas.</string>
+    <string name="solicitar">Solicitar</string>
+    <string name="necesidad_permisos">Se necesitan los siguientes permisos:</string>
+    <string name="ubicacion_primer"><![CDATA[<p>Se necesita conocer tu <b>ubicación en primer plano</b> para poder mostrar tu posición en el mapa.</p>]]></string>
+    <string name="ubicacion_segundo"><![CDATA[<p>Se necesita conocer tu <b>posición en segundo plano</b> para notificarte de las tareas cercanas.</p>]]></string>
+    <string name="volver">Atrás</string>
+    <string name="permiso_camara"><![CDATA[<p>Se necesita acceder a la <b>cámara</b> del dispositivo para tomar fotografías o grabar vídeos.</p>]]></string>
+    <string name="permiso_micro"><![CDATA[<p>Se necesita acceder al <b>micrófono</b> para que los vídeos tengan audio.</p>]]></string>
+    <string name="enviarWifi">Enviar puntuaciones solamente cuando esté conectado a una red Wi-Fi</string>
+    <string name="logotipo_eslogan">Logo con eslogan</string>
+    <string name="botonCentrar">Botón para centrar el mapa en la ubicación del usuario</string>
+    <string name="botonNavegar">Botón para iniciar la navegación hasta la posición de la tarea. La navegación se realiza en otra aplicación.</string>
+    <string name="botonCompartir">Botón para compartir la respuesta en las distintas redes sociales</string>
+    <string name="botonTwitter">Botón para compartir la respuesta en Twitter</string>
+    <string name="botonInstagram">Botón para compartir la respuesta en Instagram</string>
+    <string name="botonYammer">Botón para compartir la respuesta en Yammer</string>
+    <string name="tareaPregunta">La pregunta de la tarea era:</string>
+    <string name="tareaRespuesta">Mi respuesta ha sido:</string>
 </resources>

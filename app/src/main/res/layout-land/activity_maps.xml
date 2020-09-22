@@ -5,7 +5,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Maps">
+    tools:context=".Maps"
+    android:background="@color/white">
 
     <org.osmdroid.views.MapView
         android:id="@+id/map"
@@ -27,7 +28,7 @@
     <androidx.appcompat.widget.SearchView
         android:id="@+id/svMapa"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         app:layout_constraintTop_toBottomOf="@id/clIdentificateMapa"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="15dp"
@@ -64,7 +65,8 @@
         app:backgroundTint="@color/colorSecondary"
         app:layout_constraintEnd_toStartOf="@id/guiaMapaV"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:srcCompat="@drawable/ic_my_location_black_72dp" />
+        app:srcCompat="@drawable/ic_my_location_black_72dp"
+        android:contentDescription="@string/botonCentrar"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTareasMapa"

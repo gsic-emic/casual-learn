@@ -5,12 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    tools:context=".Tarea">
+    tools:context=".Tarea"
+    android:background="@color/white">
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/margen_texto"
-        android:layout_marginBottom="5dp">
+        android:layout_marginBottom="5dp" >
 
         <ImageView
             android:layout_marginTop="5dp"
@@ -28,8 +29,8 @@
 
         <ImageView
             android:id="@+id/ivInfoFotoTarea"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:srcCompat="@drawable/ic_info_black_24dp"
             app:layout_constraintStart_toStartOf="@id/ivImagenDescripcion"
             app:layout_constraintBottom_toBottomOf="@id/ivImagenDescripcion"
@@ -47,8 +48,8 @@
 
         <ImageView
             android:id="@+id/ivDenunciarPregunta"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:srcCompat="@drawable/ic_baseline_report_problem_color"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvDescripcion"
@@ -59,6 +60,7 @@
             android:id="@+id/etRespuestaTextual"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:textSize="16sp"
             android:maxLength="600"
             android:hint="@string/hintRespuesta"
