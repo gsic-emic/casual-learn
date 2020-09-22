@@ -30,13 +30,10 @@
 	</head>
 	<body>
 		<div class="d-md-flex flex-md-row cabecera" id="inicio">
-			<div class="text-center flex-fill order-md-2">
+			<div class="text-center flex-fill order-md-1">
 				<img class="responsive2" src="media/Casual_Learn_01.png" alt="Icono aplicación">
 			</div>
-			<div class="flex-fill p-3 order-md-1" style="margin: auto;">
-				<div id="videoDemo"></div>
-			</div>
-			<div class="p-3 flex-fill order-md-3" style="margin: auto;">
+			<div class="p-3 flex-fill order-md-2" style="margin: auto;">
 				<div class="subtitulo text-center">Descarga la aplicación</div>
 				<div class="row" style="margin-top: -1rem;">
 					<div class="mx-auto">
@@ -74,7 +71,7 @@
 			</div>
 		</div>
 
-		<div class="colorFondo">
+		<div class="colorfondo">
 			<div class="container">
 				<div class="d-md-flex flex-md-row py-5">
 					<div class="order-md-2">
@@ -100,51 +97,46 @@
 			</div>
 		</div>
 
-			<div class="botonFlotante" id="contenedorArriba">
-				<a href="#inicio"><img src="media/arriba.svg" alt="volverArriba"></a>
+		<div class="colorfondo">
+			<div class="container">
+				<div class="d-md-flex flex-md-row py-5">
+					<div class="order-md-2 my-auto">
+						<h1>Vídeo de ejemplo de caso de uso</h1>
+					</div>
+					<div class="order-md-1">
+						<iframe class="videoDemo mx-auto" src="https://www.youtube.com/embed/dA_teRJJPJA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+					</div>                                                                                                                                                                    
+				</div>
 			</div>
+		</div>
+
+		<div class="d-md-flex flex-md-row cabecera">
+			<div class="p-3 flex-fill order-md-2" style="margin: auto;">
+				<div class="subtitulo text-center">
+					Descarga la aplicación:
+				</div>
+				<div class="row" style="margin-top: -1rem;">
+					<div class="mx-auto">
+						<a href="https://play.google.com/store/apps/details?id=es.uva.gsic.adolfinstro" target="_blank">
+							<img src="media/google-play-badge.png" alt="Página de Google Play" class="responsive">
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="botonFlotante" id="contenedorArriba">
+			<a href="#inicio">
+				<img src="media/arriba.svg" alt="volverArriba">
+			</a>
+		</div>
+
 		<script src="https://code.jquery.com/jquery.js"></script>
 		<script src="bootstrap-4.5.2-dist/js/bootstrap.min.js"></script>
 	
 		<script>
-			//https://developers.google.com/youtube/iframe_api_reference
-			var videoDemo;
-			var tag = document.createElement('script');
-			tag.src = "https://www.youtube.com/iframe_api";
-			var firstScriptTag = document.getElementsByTagName('script')[0];
-			firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-			function onYouTubeIframeAPIReady() {
-				videoDemo = new YT.Player('videoDemo', {
-				height: 'auto',
-				width: '100%',
-				videoId: 'dA_teRJJPJA',
-				events: {
-					'onStateChange': onStateChangeMio
-				}
-				});
-			}
-
-			//var estado = 0;
-
-			function onStateChangeMio(event) {
-				switch(event.data){
-					case 1:
-						//document.getElementById("videoDemo").height = window.innerHeight * 0.75;
-						//estado = 1;
-						break;
-					default:
-						//estado = 0;
-						//document.getElementById("videoDemo").height = 100;
-				}
-			}
-
 			$(document).ready(function() {
 				$(window).scroll(function(event){
-					/*if(estado == 1){
-						estado = 0;
-						videoDemo.pauseVideo();
-						document.getElementById("videoDemo").height = 100;
-					}*/
 					if($(this).scrollTop() > 200){
 						document.getElementById("contenedorArriba").style.display = "inline";
 					}else{

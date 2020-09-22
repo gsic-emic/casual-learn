@@ -12,12 +12,6 @@
     <color name="colorSecondaryLightTranspa">#80D68848</color>
     <color name="colorSecondaryAmarillo">#a15b1c</color>
     <color name="colorSecondaryRojo">#BFDFACB4</color>
-    <!--<color name="colorSecondary100">#dfd8c8</color>
-    <color name="colorSecondary300">#dfd1b2</color>
-    <color name="colorSecondary500">#dfc386</color>a
-    <color name="colorSecondaryText">#000</color>
-    <color name="colorSecondary700">#dfb559</color>
-    <color name="colorSecondary900">#dfa72c</color>-->
     <color name="blackTransparente">#BF000000</color>
     <color name="blackTransparente25">#40000000</color>
     <color name="colorSecondary50">#f5e7c9</color>
