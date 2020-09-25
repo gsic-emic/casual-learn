@@ -15,8 +15,8 @@ android {
         applicationId "es.uva.gsic.adolfinstro"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 21
-        versionName "1.0.20"
+        versionCode 22
+        versionName "1.0.21"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
@@ -133,3 +133,8 @@ dependencies {
 dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
 }
+
+//Valorar la app dentro de esta
+//dependencies {
+//    implementation 'com.google.android.play:core:1.8.0'
+//}

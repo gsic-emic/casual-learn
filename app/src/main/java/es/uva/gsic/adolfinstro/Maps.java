@@ -514,7 +514,8 @@ public class  Maps extends AppCompatActivity implements
 
     /**
      * Método para centrar el mapa en una ubicación. El nivel de zum se ajusta a dos puntos menos que
-     * el nivel de zum máximo
+     * el nivel de zum máximo. Si el número de búsquedas es superior a 10 vez se le solicita al usuario
+     * que valore la aplicación.
      * @param latitud Latitud de la ubicación
      * @param longitud Longitud de la ubicación
      */

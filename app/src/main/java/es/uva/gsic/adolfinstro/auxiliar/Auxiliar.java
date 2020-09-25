@@ -58,7 +58,6 @@ import java.util.Date;
 import java.util.List;
 
 import es.uva.gsic.adolfinstro.Ajustes;
-import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
@@ -69,7 +68,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20200918
+ * @version 20200924
  */
 public class Auxiliar {
 
@@ -83,7 +82,6 @@ public class Auxiliar {
     public static final String recursoImagen = "recursoAsociadoImagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
-    public static final String fuentes = "fuentes";
     public static final String titulo = "comment";
     public static final String instante = "instante";
     public static final String estadoTarea = "estadoTarea";
@@ -358,7 +356,9 @@ public class Auxiliar {
                 }
             }
             //Devolvemos una de las tareas del vector escogida de manera aleatorio
-            return tarea.get((int)(Math.random()*tarea.size()));
+            //return tarea.get((int)(Math.random()*tarea.size()));
+            //Devolvemos la primera tarea que será la recomenda por Recombee
+            return tarea.get(0);
         }
         catch (Exception e){
             return null;

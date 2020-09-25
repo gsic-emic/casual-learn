@@ -20,7 +20,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * Clase que gestiona las llamadas a los ficheros para la persistencia de datos
  *
  * @author Pablo
- * @version 20200918
+ * @version 20200924
  */
 public class PersistenciaDatos {
     /** Fichero donde se almacenan las tareas recibidas desde el servidor que el usuario puede iniciar*/
@@ -378,53 +378,5 @@ public class PersistenciaDatos {
             return null;
         }
         return null;
-    }
-
-    /**
-     * Método para comprobar si un fichero tiene objetos almacenados
-     *
-     * @param app Aplicación
-     * @param fichero Nombre del fichero
-     * @return Verdadero si el fichero tiene objetos
-     */
-    public static boolean tieneObjetos(Application app, String fichero){
-        return leeFichero(app, fichero).length() > 0;
-    }
-
-    /**
-     * Creación del JSON de una tarea
-     * @param idTarea identificador de la tarea
-     * @param tipo Tipo de tarea
-     * @param estadoTarea Estado en el que va a estar la tarea
-     * @return Objeto preparado para ser insertado en el fichero
-     */
-    public static JSONObject generaJSON(String idTarea, String tipo, EstadoTarea estadoTarea) {
-        try {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(Auxiliar.id, idTarea);
-            jsonObject.put(Auxiliar.tipoRespuesta, tipo);
-            jsonObject.put(Auxiliar.estadoTarea, estadoTarea.getValue());
-            return jsonObject;
-        }catch (Exception w){
-            return null;
-        }
-    }
-
-    public static JSONArray tareasPosicion(Application app, String fichero, double latitud, double longitud){
-        JSONArray tareas = new JSONArray();
-        JSONArray todas = leeFichero(app, fichero);
-        JSONObject tarea;
-        for(int i = 0; i < todas.length(); i++){
-            try {
-                tarea = todas.getJSONObject(i);
-                if((tarea.getDouble(Auxiliar.latitud) == latitud) &&
-                        (tarea.getDouble(Auxiliar.longitud) == longitud)){
-                    tareas.put(tarea);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return tareas;
     }
 }
