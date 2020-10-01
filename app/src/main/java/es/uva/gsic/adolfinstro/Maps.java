@@ -240,13 +240,19 @@ public class  Maps extends AppCompatActivity implements
                         editor.commit();
                         editor.putInt(Ajustes.INTERVALO_pref, 4);
                         editor.commit();
-                        Login.firebaseAuth.signOut();
-                        Login.googleSignInClient.signOut().addOnCompleteListener(Maps.this, new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                vuelveLogin();
-                            }
-                        });
+                        editor.putBoolean(Ajustes.WIFI_pref, false);
+                        editor.commit();
+                        try {
+                            Login.firebaseAuth.signOut();
+                            Login.googleSignInClient.signOut().addOnCompleteListener(Maps.this, new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    vuelveLogin();
+                                }
+                            });
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
                     }else{
                         Toast.makeText(app, context.getResources().getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
                     }
@@ -267,6 +273,7 @@ public class  Maps extends AppCompatActivity implements
                 dialogoCerrarSesionActivo = false;
             }
         });
+        dialogoCerrarSesion.create();
 
         dialogoCerrarSesionActivo = false;
         if(savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOCERRARSESION", false)) {
@@ -710,15 +717,6 @@ public class  Maps extends AppCompatActivity implements
         map.getOverlays().add(scaleBarOverlay);
         //map.getOverlays().add(compassOverlay);
     }
-
-    /*
-    public void putItems() {
-        newMarker(42.0076, -4.52449, "Ermita de San Juan Bautista, Palencia", 8);
-        newMarker(42.0081, -4.5210, "San Marco, Palencia", 2);
-        newMarker(42.0160, -4.5275, "Parroquia Reina Inmaculada", 1);
-        newMarker(42.0094, -4.5296, "Parroquia de San Lazaro, Palencia", 5);
-        newMarker(42.0114, -4.5321, "Iglesia de San Francisco, Palencia", 12);
-    }*/
 
     /**
      * Método para mostrar la lista de tareas que contiene el marcador.
@@ -1314,6 +1312,7 @@ public class  Maps extends AppCompatActivity implements
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finishAffinity();
+        finish();
     }
 
     /**

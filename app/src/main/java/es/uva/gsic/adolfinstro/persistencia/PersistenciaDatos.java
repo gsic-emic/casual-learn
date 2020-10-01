@@ -2,6 +2,7 @@ package es.uva.gsic.adolfinstro.persistencia;
 
 import android.app.Application;
 import android.content.Context;
+import android.net.Uri;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -131,8 +132,8 @@ public class PersistenciaDatos {
                 if(PersistenciaDatos.borraFichero(app, PersistenciaDatos.ficheroPosicion))
                     if(PersistenciaDatos.borraFichero(app, PersistenciaDatos.ficheroTareasUsuario))
                         if(PersistenciaDatos.borraFichero(app, PersistenciaDatos.ficheroCompletadas))
-                            if(PersistenciaDatos.borraFichero(app,
-                                    PersistenciaDatos.ficheroPrimeraCuadricula))
+                            /*if(PersistenciaDatos.borraFichero(app,
+                                    PersistenciaDatos.ficheroPrimeraCuadricula))*/
                                 if(PersistenciaDatos.borraFichero(app,
                                         PersistenciaDatos.ficheroInstantes))
                                     if(PersistenciaDatos.borraFichero(app,
@@ -142,7 +143,10 @@ public class PersistenciaDatos {
                                             if(PersistenciaDatos.borraFichero(app,
                                                     PersistenciaDatos.ficheroTareasRechazadas))
                                                 if(PersistenciaDatos.borraFichero(app,
-                                                        PersistenciaDatos.ficheroNotificadas)) {
+                                                        PersistenciaDatos.ficheroNotificadas))
+                                                    return PersistenciaDatos.borraFichero(app,
+                                                            PersistenciaDatos.ficheroSinEnviar);
+                                                    /*{
                                                     File file = new File(app.getFilesDir(),
                                                             PersistenciaDatos.ficheroPosicionesCuadriculas);
                                                     if(file.exists()) {
@@ -160,7 +164,7 @@ public class PersistenciaDatos {
                                                     }else{
                                                         return true;
                                                     }
-                                                }
+                                                }*/
             return false;
         }catch (Exception e){
             return false;

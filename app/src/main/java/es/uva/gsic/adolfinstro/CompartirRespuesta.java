@@ -7,8 +7,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
@@ -30,6 +33,8 @@ public class CompartirRespuesta extends AppCompatActivity
     /** Texto que se le va a pasar a la pantalla de mapas */
     private String textoPuntua;
 
+    private JSONObject tarea;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +42,22 @@ public class CompartirRespuesta extends AppCompatActivity
 
         idTarea = getIntent().getExtras().getString("ID");
         textoPuntua = getIntent().getExtras().getString(Auxiliar.textoParaElMapa);
+
+        tarea = PersistenciaDatos.recuperaTarea(getApplication(),
+                PersistenciaDatos.ficheroCompletadas,
+                idTarea);
+
+        try{
+            String tipo = tarea.getString(Auxiliar.tipoRespuesta);
+            if(tipo.equals(Auxiliar.tipoSinRespuesta) ||
+                    tipo.equals(Auxiliar.tipoPreguntaCorta) ||
+                    tipo.equals(Auxiliar.tipoPreguntaLarga)){
+                Button insta = findViewById(R.id.btCompartirInsta);
+                insta.setVisibility(View.GONE);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.HASHTAG_pref);
@@ -57,23 +78,17 @@ public class CompartirRespuesta extends AppCompatActivity
             case R.id.btCompartirTwitter:
                 Auxiliar.mandaTweet(
                         this,
-                        PersistenciaDatos.recuperaTarea(getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                idTarea),
+                        tarea,
                         hashtag);
                 break;
             case R.id.btCompartirYammer:
                 Auxiliar.mandaYammer(this,
-                        PersistenciaDatos.recuperaTarea(getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                idTarea),
+                        tarea,
                         hashtag);
                 break;
             case R.id.btCompartirInsta:
                 Auxiliar.mandaInsta(this,
-                        PersistenciaDatos.recuperaTarea(getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                idTarea),
+                        tarea,
                         hashtag);
                 break;
             default:

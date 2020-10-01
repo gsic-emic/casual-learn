@@ -103,6 +103,8 @@ public class Tarea extends AppCompatActivity implements
 
     private int posicion;
 
+    private String urlLicencia;
+
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
      * gráfica sobre la que va a trabajar el cliente. Establece la conexión con la base de datos
@@ -166,7 +168,10 @@ public class Tarea extends AppCompatActivity implements
                 }
 
                 if(ivImagenDescripcion.getVisibility() == View.VISIBLE)
-                    Auxiliar.enlaceLicencia(this, (ImageView) findViewById(R.id.ivInfoFotoTarea), urlImagen);
+                    urlLicencia = Auxiliar.enlaceLicencia(
+                            this,
+                            (ImageView) findViewById(R.id.ivInfoFotoTarea),
+                            urlImagen);
 
                 tipo = tarea.getString(Auxiliar.tipoRespuesta);
                 try{
@@ -203,7 +208,7 @@ public class Tarea extends AppCompatActivity implements
                 btCamara = findViewById(R.id.btCamara);
                 btTerminar = findViewById(R.id.btTerminar);
 
-                tvDescripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+                tvDescripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto), false));
                 tvDescripcion.setMovementMethod(LinkMovementMethod.getInstance());
 
                 recyclerView = findViewById(R.id.rvRealizaTarea);
@@ -294,7 +299,15 @@ public class Tarea extends AppCompatActivity implements
                 e.printStackTrace();
             }
         }
+
+        try {
+            version = this.getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
     }
+
+    String version;
 
     private void mensajeError(){
         AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
@@ -406,17 +419,23 @@ public class Tarea extends AppCompatActivity implements
                     intent = new Intent(this, ImagenCompleta.class);
                     if(recursoAsociadoImagen != null)
                         intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
+                    intent.putExtra("MUESTRAC", true);
                     startActivity(intent);
                 }else{//Ya está visible la imagen de resolución baja y no hay una alta asociada
                     if(recursoAsociadoImagen300px != null){
                         intent = new Intent(this, ImagenCompleta.class);
                         intent.putExtra("IMAGENCOMPLETA", recursoAsociadoImagen);
+                        intent.putExtra("MUESTRAC", true);
                         startActivity(intent);
                     }
                     else{//No hay ninguna imagen. Este mensaje no debería aparecer nunca
                         muestraSnackBar(getString(R.string.recursoMaximaResolucion));
                     }
                 }
+                break;
+            case R.id.ivInfoFotoTarea:
+                if(urlLicencia != null)
+                    Auxiliar.navegadorInterno(this, urlLicencia);
                 break;
             case R.id.btTerminar:
                 try {
@@ -452,7 +471,14 @@ public class Tarea extends AppCompatActivity implements
                     @Override
                     public void onClick(View v) {
                         boolean envia = false;
-                        String contenido = String.format("%s\n%s\n%s\n%s\n", idTarea, Login.firebaseAuth.getUid(), Build.MANUFACTURER, Build.MODEL);
+                        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                                getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                        String contenido;
+                        try {
+                            contenido = String.format("%s\n%s\n%s\n%s\n%s\n", idTarea, idUsuario.getString(Auxiliar.uid), Build.MANUFACTURER, Build.MODEL, version);
+                        } catch (JSONException e) {
+                            contenido = String.format("%s\n%s\n%s\n%s\n", idTarea, Build.MANUFACTURER, Build.MODEL, version);
+                        }
                         String textoEdit = editText.getText().toString();
                         if(cb1.isChecked() || cb2.isChecked() || cb3.isChecked()){//Alguno de los checkbox está activado, no tiene porque tener texto
                             envia = true;
@@ -474,7 +500,7 @@ public class Tarea extends AppCompatActivity implements
                         }
                         if(envia) {
                             Intent mail = new Intent(Intent.ACTION_SEND);
-                            mail.setType("*/*");
+                            mail.setType("message/rfc822");
                             String[] direcciones = {getString(R.string.emailCasualLearn)};
                             mail.putExtra(Intent.EXTRA_EMAIL, direcciones);
                             mail.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.errorTarea));

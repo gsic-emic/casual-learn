@@ -3,6 +3,7 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.github.chrisbanes.photoview.PhotoView;
@@ -23,6 +24,8 @@ public class ImagenCompleta extends AppCompatActivity {
      * la memoria interna
      * @param savedInstanceState Bundle
      */
+    String urlLicencia;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,9 +42,13 @@ public class ImagenCompleta extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
-        Auxiliar.enlaceLicencia(this,
-                (ImageView) findViewById(R.id.ivInfoFotoCompleta),
-                Objects.requireNonNull(getIntent().getExtras()).getString("IMAGENCOMPLETA"));
+
+        if(Objects.requireNonNull(getIntent().getExtras()).getBoolean("MUESTRAC")) {
+            urlLicencia = Auxiliar.enlaceLicencia(
+                    this,
+                    (ImageView) findViewById(R.id.ivInfoFotoCompleta),
+                    Objects.requireNonNull(getIntent().getExtras()).getString("IMAGENCOMPLETA"));
+        }
     }
 
     /**
@@ -61,5 +68,12 @@ public class ImagenCompleta extends AppCompatActivity {
     public  void onBackPressed(){
         Picasso.get().cancelTag(Auxiliar.cargaImagenDetalles);
         finish();
+    }
+
+    public void boton(View view) {
+        if(view.getId() == R.id.ivInfoFotoCompleta){
+            if(urlLicencia != null)
+                Auxiliar.navegadorInterno(this, urlLicencia);
+        }
     }
 }

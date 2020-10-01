@@ -95,6 +95,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
     /** Instancia de la posición */
     private Location location;
 
+    /** URL de la licencia */
+    private String urlLicencia;
+
     /**
      * Se crea la vista de la interfaz de usuario.
      *
@@ -189,7 +192,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 }
 
                 if (imageView.getVisibility() == View.VISIBLE) {
-                    Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivInfoFotoPreview), urlImagen);
+                    urlLicencia = Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivLicenciaPreview), urlImagen);
                 }
 
                 btAceptar = findViewById(R.id.botonAceptarPreview);
@@ -224,7 +227,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 titulo.setText(tarea.getString(Auxiliar.titulo));
 
                 TextView descripcion = findViewById(R.id.textoPreview);
-                descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+                descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto), false));
                 descripcion.setMovementMethod(LinkMovementMethod.getInstance());
 
                 Marker marker = new Marker(map);
@@ -507,63 +510,52 @@ public class Preview extends AppCompatActivity implements LocationListener {
     public void boton(View view) {
         try {
             Intent intent;
-            /*Para mostrar la información de donde se han obtenido los datos
-            if(view.getId() == R.id.tituloPreview){
-                JSONArray fuentes = tarea.getJSONArray(Auxiliar.fuentes);
-                String textoFuentes = "";
-                for(int i = 0; i < fuentes.length(); i++){
-                    textoFuentes = textoFuentes.concat(fuentes.getString(i) + "\n\n");
-                }
-                Dialog dialogo = new Dialog(this);
-                dialogo.setContentView(R.layout.dialogo_desarrolladores);
-                dialogo.setCancelable(true);
-                TextView textView = dialogo.findViewById(R.id.tvTituloDesarrolladores);
-                textView.setText(getString(R.string.fuentes_de_info));
-                textView = dialogo.findViewById(R.id.tvEspacioDesarrolladores);
-                textView.setText(textoFuentes);
-                textView.setTextSize(12);
-                dialogo.show();
-            }else{*/
-            if (Auxiliar.tareaRegistrada(getApplication(), tarea.getString(Auxiliar.id))) {
-                //Toast.makeText(context, getString(R.string.tareaRegistrada), Toast.LENGTH_LONG).show();
-                pintaSnackBar(getString(R.string.tareaRegistrada));
-            } else {
-                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                if (idUsuario == null) {
-                    snackBarLogin(R.id.clPreview);
-                } else {
-                    switch (view.getId()) {
-                        case R.id.botonAceptarPreview:
-                            intent = new Intent(context, Tarea.class);
-                            intent.putExtra(
-                                    Auxiliar.id,
-                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                            startActivity(intent);
-                            break;
-                        case R.id.botonAhoraNoPreview:
-                            intent = new Intent();
-                            intent.setAction(Auxiliar.ahora_no);
-                            intent.putExtra(
-                                    Auxiliar.id,
-                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                            sendBroadcast(intent);
-                            finish();
-                            break;
-                        case R.id.botonRechazarPreview:
-                            intent = new Intent();
-                            intent.setAction(Auxiliar.nunca_mas);
-                            intent.putExtra(
-                                    Auxiliar.id,
-                                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                            sendBroadcast(intent);
-                            finish();
-                            break;
-                        default:
-                            break;
+            //Para mostrar la información de donde se han obtenido los datos
+            int idBoton = view.getId();
+            switch (idBoton){
+                case R.id.ivWikipediaPreview:
+                    Auxiliar.navegadorInterno(this, getString(R.string.enlaceWiki)+(tarea.getString(Auxiliar.titulo).replace(' ', '_')));
+                    break;
+                case R.id.ivLicenciaPreview:
+                    if(urlLicencia != null)
+                        Auxiliar.navegadorInterno(this, urlLicencia);
+                    break;
+                default:
+                    JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                    if (idUsuario == null) {
+                        snackBarLogin(R.id.clPreview);
+                    } else {
+                        switch (idBoton) {
+                            case R.id.botonAceptarPreview:
+                                intent = new Intent(context, Tarea.class);
+                                intent.putExtra(
+                                        Auxiliar.id,
+                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                                startActivity(intent);
+                                break;
+                            case R.id.botonAhoraNoPreview:
+                                intent = new Intent();
+                                intent.setAction(Auxiliar.ahora_no);
+                                intent.putExtra(
+                                        Auxiliar.id,
+                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                                sendBroadcast(intent);
+                                finish();
+                                break;
+                            case R.id.botonRechazarPreview:
+                                intent = new Intent();
+                                intent.setAction(Auxiliar.nunca_mas);
+                                intent.putExtra(
+                                        Auxiliar.id,
+                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                                sendBroadcast(intent);
+                                finish();
+                                break;
+                            default:
+                                break;
+                        }
                     }
-                }
             }
-            //}
         }catch (Exception e){
             e.printStackTrace();
         }
