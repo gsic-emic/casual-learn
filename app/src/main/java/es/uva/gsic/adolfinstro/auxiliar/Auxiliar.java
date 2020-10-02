@@ -30,6 +30,7 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -56,9 +57,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import es.uva.gsic.adolfinstro.Ajustes;
-import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
@@ -69,7 +70,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20200918
+ * @version 20200924
  */
 public class Auxiliar {
 
@@ -83,7 +84,6 @@ public class Auxiliar {
     public static final String recursoImagen = "recursoAsociadoImagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
-    public static final String fuentes = "fuentes";
     public static final String titulo = "comment";
     public static final String instante = "instante";
     public static final String estadoTarea = "estadoTarea";
@@ -358,7 +358,9 @@ public class Auxiliar {
                 }
             }
             //Devolvemos una de las tareas del vector escogida de manera aleatorio
-            return tarea.get((int)(Math.random()*tarea.size()));
+            //return tarea.get((int)(Math.random()*tarea.size()));
+            //Devolvemos la primera tarea que será la recomenda por Recombee
+            return tarea.get(0);
         }
         catch (Exception e){
             return null;
@@ -560,7 +562,7 @@ public class Auxiliar {
      * @param hashtag Etiquetas con la que se envía el tweet
      */
     public static void mandaTweet(Context context, JSONObject tarea, String hashtag){
-        final int maxMulti = 3;
+        final int maxMulti = 4;
         try {
             //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
             context.getPackageManager().getPackageInfo("com.twitter.android",
@@ -588,7 +590,7 @@ public class Auxiliar {
             }
 
             ArrayList<Uri> uris = new ArrayList<>();
-            uris.add(
+            /*uris.add(
                     uriTexto(
                             context,
                             context.getResources().getDrawable(R.drawable.ic_por_defecto_insta),
@@ -597,7 +599,7 @@ public class Auxiliar {
                                     tarea,
                                     textoUsuario,
                                     hashtag,
-                                    false)));
+                                    false)));*/
 
             switch (tarea.getString(Auxiliar.tipoRespuesta)){
                 case Auxiliar.tipoPreguntaCorta:
@@ -605,10 +607,10 @@ public class Auxiliar {
                 case Auxiliar.tipoSinRespuesta:
                     intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, true));
+                            contenidoT(context, tarea, hashtag, true));
                     intent.setType("text/plain");
-                    intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
-                    intent.setType("image/*");
+                    //intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+                    //intent.setType("image/*");
                     break;
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoImagen:
@@ -620,7 +622,7 @@ public class Auxiliar {
                     //else
                         //intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, true));
+                            contenidoT(context, tarea, hashtag, true));
                     intent.setType("text/plain");
                     if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
                         if(!listaURI.isEmpty()){
@@ -763,12 +765,12 @@ public class Auxiliar {
      * @param hashtag Lista de etiquetas que el usuario ha configurado en los ajustes de la aplicación.
      */
     public static void mandaInsta(Context context, JSONObject tarea, String hashtag){
-        final int maxMulti = 9;
+        final int maxMulti = 10;
         try {
             context.getPackageManager().getPackageInfo(
                     "com.instagram.android", PackageManager.GET_ACTIVITIES);
 
-            Intent intent;
+            Intent intent = null;
             List<String> listaURI = new ArrayList<>();
             String textoUsuario = null;
             JSONArray respuestas;
@@ -790,7 +792,7 @@ public class Auxiliar {
             }
 
             ArrayList<Uri> uris = new ArrayList<>();
-            uris.add(
+            /*uris.add(
                     uriTexto(
                             context,
                             context.getResources().getDrawable(R.drawable.ic_por_defecto_insta),
@@ -799,15 +801,18 @@ public class Auxiliar {
                                     tarea,
                                     textoUsuario,
                                     hashtag,
-                                    false)));
+                                    false)));*/
 
             switch (tarea.getString(Auxiliar.tipoRespuesta)){
                 case Auxiliar.tipoPreguntaCorta:
                 case Auxiliar.tipoPreguntaLarga:
                 case Auxiliar.tipoSinRespuesta:
-                    intent = new Intent(Intent.ACTION_SEND);
+                    /*intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
-                    intent.setType("image/*");
+                    intent.setType("image/*");*/
+                    Toast.makeText(context,
+                            context.getString(R.string.errorInstagram),
+                            Toast.LENGTH_LONG).show();
                     break;
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoImagen:
@@ -941,6 +946,81 @@ public class Auxiliar {
         }
     }
 
+    private static String contenidoT(Context context,
+                                     JSONObject tarea,
+                                     String hashtag,
+                                     boolean recorta){
+        String texto = null;
+
+        String[] femenina = {"catedral", "necrópolis", "torre", "casona-torre", "concatedral", "casa-fuerte", "casa-torre", "carcel", "mansión", "cruz", "estación"};
+
+        String[] femeninas = {"catedrales", "escuelas", "murallas", "casonas", "ruinas", "casas", "fachadas", "salinas", "facultad"};
+
+        String[] masculinos = {"puentes", "reales", "restos"};
+
+        String[] hashtags = hashtag.split(",");
+        int tama = 0;
+        for(int i = 0; i < hashtags.length; i++){
+            hashtags[i] = String.format("#%s", hashtags[i].replace(" ", ""));
+            tama += hashtags[i].length();
+        }
+
+        try{
+            String[] lugar = tarea.getString(Auxiliar.titulo).split(" ");
+            String primera = lugar[0].toLowerCase();
+            if(lugar.length == 1 || primera.equals("el") || primera.equals("los") || primera.equals("ie")){
+                texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTexto), lugar[0]);
+            }else{
+                String caracter = lugar[0].substring(lugar[0].length() - 1);
+                if(caracter.equals("o")){
+                    texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoM), tarea.getString(Auxiliar.titulo));
+                }else{
+                    if(caracter.equals("a")){
+                        texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoF), tarea.getString(Auxiliar.titulo));
+                    }else{
+                        texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoM), tarea.getString(Auxiliar.titulo));
+                        boolean encontrado = false;
+                        for(String a : femeninas){
+                            if(a.equals(primera)){
+                                texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoFs), tarea.getString(Auxiliar.titulo));
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                        if(!encontrado){
+                            for(String a : femenina){
+                                if(a.equals(primera)){
+                                    texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoF), tarea.getString(Auxiliar.titulo));
+                                    encontrado = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!encontrado){
+                            for(String a : masculinos){
+                                if(a.equals(primera)){
+                                    texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoMs), tarea.getString(Auxiliar.titulo));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
+                texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
+            }
+
+            for (String string : hashtags) {
+                texto = String.format("%s %s", texto, string);
+            }
+
+            return texto;
+        }catch (Exception e){
+            return null;
+        }
+    }
+
     /**
      * Método para formar el contenido textual de la respuesta en la red social
      * @param context Contexto
@@ -956,6 +1036,8 @@ public class Auxiliar {
                                          boolean recorta){
         String texto = null;
 
+        String[] femeninas = {"catedral", "calle"};
+
         String[] hashtags = hashtag.split(",");
         int tama = 0;
         for(int i = 0; i < hashtags.length; i++){
@@ -964,8 +1046,8 @@ public class Auxiliar {
         }
 
         try {
-            texto = tarea.getString(Auxiliar.titulo);
-            if(textoUsuario != null){
+            //texto = tarea.getString(Auxiliar.titulo);
+            if(textoUsuario != null && !textoUsuario.equals("")){
                 texto = String.format("%s\n%s", texto, textoUsuario);
                 if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
                     texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
@@ -1119,21 +1201,20 @@ public class Auxiliar {
      * @param url Url que se carga en el navegador
      */
     public static void navegadorInterno(final Context contexto, final String url){
-        Dialog dialogo = new Dialog(contexto);
+        final Dialog dialogo = new Dialog(contexto);
         dialogo.setContentView(R.layout.popweb);
         dialogo.setCancelable(true);
-        WebView wv = dialogo.findViewById(R.id.wbNavegador);
-        WebSettings webSettings = wv.getSettings();
+        WebView webView = dialogo.findViewById(R.id.wbNavegador);
+        WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webSettings.setUserAgentString("Android");
-        wv.setWebViewClient(new ClienteWeb() {
+        webView.setWebViewClient(new ClienteWeb() {
             @Override
             public void navegadorExterno() {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 contexto.startActivity(intent);
             }
         });
-        wv.loadUrl(url);
+        webView.loadUrl(url);
         dialogo.show();
     }
 
@@ -1142,10 +1223,13 @@ public class Auxiliar {
      * el navegador interno.
      * @param contexto Contexto
      * @param texto Texto con el contenido a mostrar (se elimina el código html)
+     * @param fuera Indica si se desea iniciar en el navegador interno (false) o el externo (true)
      * @return Objeto que se puede pasar a un TextView con los enlaces subrayados. NECESITA QUE EL
      * TEXTVIEW SE LE INDIQUE TEXTVIEW.setMovementMethod(LinkMovementMethod.getInstance());
      */
-    public static SpannableStringBuilder creaEnlaces(final Context contexto, String texto){
+    public static SpannableStringBuilder creaEnlaces(final Context contexto,
+                                                     String texto,
+                                                     final boolean fuera){
         CharSequence charSequence = Html.fromHtml(texto);
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(charSequence);
         URLSpan[] urlSpans = spannableStringBuilder.getSpans(0,
@@ -1158,7 +1242,14 @@ public class Auxiliar {
             ClickableSpan clickableSpan = new ClickableSpan() {
                 @Override
                 public void onClick(@NonNull View widget) {
-                    Auxiliar.navegadorInterno(contexto, urlSpan.getURL());
+                    if(fuera){
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+                        intent.setData(Uri.parse(urlSpan.getURL()));
+                        contexto.startActivity(intent);
+                    }
+                    else
+                        Auxiliar.navegadorInterno(contexto, urlSpan.getURL());
                 }
             };
             spannableStringBuilder.removeSpan(urlSpan);
@@ -1173,22 +1264,27 @@ public class Auxiliar {
      * @param ivInfoFotoPreview Identificador del botón de información
      * @param urlImagen URL de la imagen
      */
-    public static void enlaceLicencia(final Context context,
+    public static String enlaceLicencia(final Context context,
                                       ImageView ivInfoFotoPreview,
                                       String urlImagen) {
         if(urlImagen != null && urlImagen.contains("wikimedia")){
-            final Uri url = Uri.parse(urlImagen.replace("Special:FilePath/", "File:")
-                    .replace("?width=300", "").concat("#Licensing"));
+            /*final Uri url = Uri.parse(urlImagen.replace("Special:FilePath/", "File:")
+                    .replace("?width=300", "").concat(context.getString(R.string.ultimaParteLicencia)));*/
             ivInfoFotoPreview.setVisibility(View.VISIBLE);
-            ivInfoFotoPreview.setOnClickListener(new View.OnClickListener() {
+            return urlImagen.replace("Special:FilePath/", "File:")
+                    .replace("?width=300", "").concat(context.getString(R.string.ultimaParteLicencia));
+            /*ivInfoFotoPreview.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, url);
+                    /*Intent intent = new Intent(Intent.ACTION_VIEW, url);
                     intent.addCategory(Intent.CATEGORY_BROWSABLE);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
+                    Auxiliar.navegadorInterno(context, url);
                 }
-            });
+            });*/
+        }else{
+            return null;
         }
     }
 

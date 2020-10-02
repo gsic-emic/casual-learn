@@ -34,26 +34,52 @@
             android:contentDescription="@string/thumbnail" />
 
         <ImageView
-            android:id="@+id/ivInfoFotoPreview"
+            android:id="@+id/ivLicenciaPreview"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:srcCompat="@drawable/ic_info_black_24dp"
+            app:srcCompat="@drawable/ic_baseline_copyright_24"
             app:layout_constraintStart_toStartOf="@id/imagenPreview"
             app:layout_constraintBottom_toBottomOf="@id/imagenPreview"
             android:visibility="gone"
-            android:contentDescription="@string/infoImagen" />
+            android:contentDescription="@string/licenciaImagen"
+            android:onClick="boton"/>
+
+        <ImageView
+            android:id="@+id/ivWikipediaPreview"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:srcCompat="@drawable/ic_wikipedia_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/tituloPreview"
+            app:layout_constraintTop_toTopOf="@id/tituloPreview"
+            android:contentDescription="@string/licenciaImagen"
+            android:layout_marginStart="5dp"
+            android:onClick="boton"/>
 
         <TextView
             android:id="@+id/tituloPreview"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:minHeight="48dp"
             android:textSize="@dimen/tama_titulo"
             android:textStyle="bold"
-            android:textAlignment="center"
+            android:textAlignment="gravity"
+            android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/imagenPreview"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivWikipediaPreview"
+            app:layout_constraintEnd_toStartOf="@id/ivWikipediaPreview2"
             android:layout_marginTop="5dp"
-            android:layout_marginHorizontal="@dimen/margen_texto" />
+            android:layout_marginHorizontal="5dp" />
+
+        <ImageView
+            android:id="@+id/ivWikipediaPreview2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tituloPreview"
+            android:contentDescription="@string/licenciaImagen"
+            android:layout_marginEnd="5dp"
+            android:visibility="invisible"/>
 
         <org.osmdroid.views.MapView
             android:id="@+id/mapPreview"

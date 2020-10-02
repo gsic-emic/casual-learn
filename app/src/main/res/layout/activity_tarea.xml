@@ -31,11 +31,12 @@
             android:id="@+id/ivInfoFotoTarea"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:srcCompat="@drawable/ic_info_black_24dp"
+            app:srcCompat="@drawable/ic_baseline_copyright_24"
             app:layout_constraintStart_toStartOf="@id/ivImagenDescripcion"
             app:layout_constraintBottom_toBottomOf="@id/ivImagenDescripcion"
             android:visibility="gone"
-            android:contentDescription="@string/infoImagen" />
+            android:onClick="boton"
+            android:contentDescription="@string/licenciaImagen" />
 
         <TextView
             android:id="@+id/tvDescripcion"

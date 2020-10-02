@@ -128,7 +128,7 @@ public class Completadas extends AppCompatActivity implements
         try {
             titulo.setText(tarea.getString(Auxiliar.titulo));
 
-            enunciado.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto)));
+            enunciado.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto), false));
             enunciado.setMovementMethod(LinkMovementMethod.getInstance());
 
             try {
@@ -595,6 +595,7 @@ public class Completadas extends AppCompatActivity implements
         }else {//Se salta a la siguiente actividad para ver la imágen en pantalla completa
             Intent intent = new Intent(this, ImagenCompleta.class);
             intent.putExtra("IMAGENCOMPLETA", listaURI.get(position));
+            intent.putExtra("MUESTRAC", false);
             posicion = position;
             startActivity(intent);
         }

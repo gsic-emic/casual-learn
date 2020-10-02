@@ -54,7 +54,7 @@ public class Acerca extends AppCompatActivity {
 
         TextView proyectos = findViewById(R.id.tvFondosEuropeos);
         String texto = getString(R.string.proyectosSistema);
-        proyectos.setText(Auxiliar.creaEnlaces(this, texto));
+        proyectos.setText(Auxiliar.creaEnlaces(this, texto, true));
         proyectos.setMovementMethod(LinkMovementMethod.getInstance());
 
         if(savedInstanceState == null){
@@ -118,28 +118,36 @@ public class Acerca extends AppCompatActivity {
                 dialogoDesarrolladores.show();
                 break;
             case R.id.ivJunta:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlJunta));
+                intent.setData(Uri.parse(getString(R.string.urlJunta)));
+                startActivity(intent);
                 break;
             case R.id.ivDbPiedia:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlDbpedia));
+                intent.setData(Uri.parse(getString(R.string.urlDbpedia)));
+                startActivity(intent);
                 break;
             case R.id.ivWikidata:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlWikidata));
+                intent.setData(Uri.parse(getString(R.string.urlWikidata)));
+                startActivity(intent);
                 break;
             case R.id.tvOpenStreepMap:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlopenStreetMap));
+                intent.setData(Uri.parse(getString(R.string.urlopenStreetMap)));
+                startActivity(intent);
                 break;
             case R.id.tvOsmdroid:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlOsmdroid));
+                intent.setData(Uri.parse(getString(R.string.urlOsmdroid)));
+                startActivity(intent);
                 break;
             case R.id.tvPhotoView:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlPhotoView));
+                intent.setData(Uri.parse(getString(R.string.urlPhotoView)));
+                startActivity(intent);
                 break;
             case R.id.tvPicasso:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlPicasso));
+                intent.setData(Uri.parse(getString(R.string.urlPicasso)));
+                startActivity(intent);
                 break;
             case R.id.tvLicencia:
-                Auxiliar.navegadorInterno(this, getString(R.string.urlLicencia));
+                intent.setData(Uri.parse(getString(R.string.urlLicencia)));
+                startActivity(intent);
                 break;
             default:
                 break;

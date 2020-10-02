@@ -129,8 +129,10 @@
     <string name="tareaGuardada">Tarea modificada correctamente</string>
     <string name="preguntaImagenes">Tarea que solicita responder a una pregunta y realizar múltiples fotografías</string>
     <string name="descripcionFuncionamientoPalabraClave">Si quieres utilizar múltiples <i>hashtags</i>, sepáralos con comas. Nosotros nos encargarmos de poner los # necesarios</string>
-    <string name="twitSinTexto">He realizado una tarea con @CasualLearn en:</string>
-    <string name="yammerSinTexto">He realizado una tarea con Casual Learn en:</string>
+    <string name="twitSinTexto">He realizado una tarea con @CasualLearn cerca de</string>
+    <string name="twitSinTextoM">He realizado una tarea con @CasualLearn cerca de el</string>
+    <string name="twitSinTextoF">He realizado una tarea con @CasualLearn cerca de la</string>
+    <string name="yammerSinTexto">He realizado una tarea con Casual Learn cerca de </string>
     <string name="iconoTareaPreview">Icono</string>
     <string name="previewVisita">Visita un lugar</string>
     <string name="previewRespuestaCorta">Tarea de respuesta corta</string>
@@ -207,4 +209,12 @@
     <string name="botonYammer">Botón para compartir la respuesta en Yammer</string>
     <string name="tareaPregunta">La pregunta de la tarea era:</string>
     <string name="tareaRespuesta">Mi respuesta ha sido:</string>
+    <string name="ultimaParteLicencia">\?uselang=es#Licencia</string>
+    <string name="licenciaImagen">Licencia de la imagen</string>
+    <string name="enlaceWiki">https://es.wikipedia.org/wiki/</string>
+    <string name="noAhora">Ahora no</string>
+    <string name="cerrar">Cerrar</string>
+    <string name="errorInstagram">Solo se puede compartir en Instagram en las tareas que tengan fotografías o vídeos</string>
+    <string name="twitSinTextoFs">He realizado una tarea con @CasualLearn cerca de las</string>
+    <string name="twitSinTextoMs">He realizado una tarea con @CasualLearn cerca de los</string>
 </resources>

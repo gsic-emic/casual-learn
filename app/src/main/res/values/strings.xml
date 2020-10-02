@@ -157,8 +157,12 @@
     <string name="tareaGuardada">Task successfully modified</string>
     <string name="preguntaImagenes">Ask and multiple photos</string>
     <string name="descripcionFuncionamientoPalabraClave">If you want multiples hashtags, split them with commas. We will take care of add # necessary</string>
-    <string name="twitSinTexto">I just did a task with @CasualLearn in:</string>
-    <string name="yammerSinTexto">I just did a task with Casual Learn in:</string>
+    <string name="twitSinTexto">I just did a task with @CasualLearn near</string>
+    <string name="twitSinTextoM">I just did a task with @CasualLearn near</string>
+    <string name="twitSinTextoF">I just did a task with @CasualLearn near</string>
+    <string name="twitSinTextoMs">I just did a task with @CasualLearn near</string>
+    <string name="twitSinTextoFs">I just did a task with @CasualLearn near</string>
+    <string name="yammerSinTexto">I just did a task with Casual Learn near </string>
     <string name="iconoTareaPreview">Icon</string>
     <string name="previewVisita">Visit a place</string>
     <string name="previewRespuestaCorta">Short text task</string>
@@ -236,4 +240,10 @@
     <string name="botonYammer">Button to share the answer in Yammer</string>
     <string name="tareaPregunta">The question of the task was:</string>
     <string name="tareaRespuesta">My answer has been:</string>
+    <string name="ultimaParteLicencia">#Licensing</string>
+    <string name="licenciaImagen">Image license</string>
+    <string name="enlaceWiki">https://en.wikipedia.org/wiki/</string>
+    <string name="noAhora">Not now</string>
+    <string name="cerrar">Close</string>
+    <string name="errorInstagram">You can only use Instagram in task with photos o videos</string>
 </resources>

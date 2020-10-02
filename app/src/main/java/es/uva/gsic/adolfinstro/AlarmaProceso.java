@@ -526,7 +526,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
-                        .setSmallIcon(R.drawable.ic_walk_white)
+                        //.setSmallIcon(R.drawable.ic_walk_white)
+                        .setSmallIcon(R.drawable.casual_learn_icono)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))
