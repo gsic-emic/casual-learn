@@ -99,7 +99,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20200911
+ * @version 20201005
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -788,6 +788,10 @@ public class  Maps extends AppCompatActivity implements
                 startActivity(intent);
                 tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                 tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
+                JSONObject idUser = PersistenciaDatos.recuperaTarea(
+                        getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(idUser != null)
+                    tarea.put(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
                 PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea, Context.MODE_PRIVATE);
             }else{
                 //Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();

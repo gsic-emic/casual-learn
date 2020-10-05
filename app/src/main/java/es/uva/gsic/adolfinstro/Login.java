@@ -1,12 +1,12 @@
 package es.uva.gsic.adolfinstro;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,6 +30,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +41,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase que permite a los usuarios identificarse frente al sistema.
  *
  * @author Pablo
- * @version 20200911
+ * @version 20201005
  */
 public class Login extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
 
@@ -223,9 +224,10 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
 
     public void updateUI(FirebaseUser firebaseUser, boolean registro){
         if(firebaseUser != null){
-            firebaseAnalytics.setUserId(firebaseUser.getUid());
+            String idUser = firebaseUser.getUid();
+            firebaseAnalytics.setUserId(idUser);
             Bundle bundle = new Bundle();
-            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
+            bundle.putString(Auxiliar.uid, idUser);
             if(registro)
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
@@ -233,11 +235,54 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
             try {
                 JSONObject usuario = new JSONObject();
                 usuario.put(Auxiliar.id, Auxiliar.id);
-                usuario.put(Auxiliar.uid, firebaseUser.getUid());
+                usuario.put(Auxiliar.uid, idUser);
                 PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
             }catch (JSONException e){
                 e.printStackTrace();
             }
+            //
+            //
+            //
+            //Comprobación del marcado con el idUser de las tareas de los ficheros de notificadas, pospuestas, rechazadas y completadas:
+            String[] ficheros = {
+                    PersistenciaDatos.ficheroNotificadas,
+                    PersistenciaDatos.ficheroTareasPospuestas,
+                    PersistenciaDatos.ficheroTareasRechazadas,
+                    PersistenciaDatos.ficheroCompletadas,
+                    PersistenciaDatos.ficheroDenunciadas
+            };
+            JSONArray tareas;
+            JSONArray nuevasTareas = new JSONArray();
+            JSONObject tarea;
+            for(String fichero : ficheros){
+                tareas = PersistenciaDatos.leeFichero(getApplication(), fichero);
+                try {
+                    for (int i = 0; i < tareas.length(); i++) {
+                        tarea = tareas.getJSONObject(i);
+                        if(tarea.has(Auxiliar.idUsuario)) {
+                            //El fichero está actualizado
+                            nuevasTareas = tareas;
+                            break;
+                        }
+                        else{
+                            tarea.put(Auxiliar.idUsuario, idUser);
+                            nuevasTareas.put(tarea);
+                        }
+                    }
+                    if(tareas.length() > 0)
+                        PersistenciaDatos.guardaFichero(
+                            getApplication(),
+                            fichero,
+                            nuevasTareas,
+                            Context.MODE_PRIVATE);
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+            //Eliminar en unas versiones. Comienza en la 1.20
+            //
+            //
+            //
             saltaMapa(firebaseUser.getDisplayName());
         }
     }
@@ -260,12 +305,9 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key){
-            case Ajustes.LISTABLANCA_pref:
-                if(sharedPreferences.getBoolean(key, true))
-                    Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
-                break;
-            default:
+        if (Ajustes.LISTABLANCA_pref.equals(key)) {
+            if (sharedPreferences.getBoolean(key, true))
+                Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
         }
     }
 

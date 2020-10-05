@@ -2,7 +2,6 @@ package es.uva.gsic.adolfinstro.persistencia;
 
 import android.app.Application;
 import android.content.Context;
-import android.net.Uri;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-import es.uva.gsic.adolfinstro.EstadoTarea;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 
 /**
@@ -26,7 +24,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 public class PersistenciaDatos {
     /** Fichero donde se almacenan las tareas recibidas desde el servidor que el usuario puede iniciar*/
     public static final String ficheroTareasUsuario = "tareasUsuario";
-    /** Fichero donde se encuentras las tareas notificadas al alumno */
+    /** Fichero donde se encuentras las tareas notificadas al ususario */
     public static final String ficheroNotificadas = "notificadas";
     /** Fichero con las tareas rechazadas */
     public static final String ficheroTareasRechazadas = "rechazadas";
@@ -48,6 +46,8 @@ public class PersistenciaDatos {
     public static final String ficheroPrimeraCuadricula = "primeraCuadricula";
     public static final String ficheroPosicionesCuadriculas = "posicionesCuadriculas";
 
+    public static final Object bloqueo = new Object();
+
 
     /**
      * Método para obtener el contenido de un fichero que se sabe que está estructurado en forma de JSON
@@ -56,26 +56,28 @@ public class PersistenciaDatos {
      * @return JSONArray con el contenido del fichero o un JSONArray inicializado pero vacío si el
      *      fichero estaba vacío o se ha producido algún error.
      */
-    public static synchronized JSONArray leeFichero(Application app, String fichero){
-        JSONArray array;
-        File f = new File(app.getFilesDir(), fichero);
-        if (f.exists()) { //Lectura del fichero existente
-            try {
-                InputStreamReader inputStreamReader = new InputStreamReader(app.openFileInput(fichero));
-                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                StringBuffer stringBuffer = new StringBuffer();
-                String inter;
-                while ((inter = bufferedReader.readLine()) != null) {
-                    stringBuffer.append(inter);
+    public static JSONArray leeFichero(Application app, String fichero){
+            JSONArray array;
+            File f = new File(app.getFilesDir(), fichero);
+            if (f.exists()) { //Lectura del fichero existente
+                try {
+                    synchronized (PersistenciaDatos.bloqueo) {
+                        InputStreamReader inputStreamReader = new InputStreamReader(app.openFileInput(fichero));
+                        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                        StringBuffer stringBuffer = new StringBuffer();
+                        String inter;
+                        while ((inter = bufferedReader.readLine()) != null) {
+                            stringBuffer.append(inter);
+                        }
+                        array = new JSONArray(stringBuffer.toString());
+                    }
+                } catch (IOException | JSONException e) { //Si se produce un error se va a devolver el array inicializado
+                    array = new JSONArray();
                 }
-                array = new JSONArray(stringBuffer.toString());
-            } catch (IOException | JSONException e){ //Si se produce un error se va a devolver el array inicializado
+            } else {
                 array = new JSONArray();
             }
-        } else {
-            array = new JSONArray();
-        }
-        return array;
+            return array;
     }
 
     /**
@@ -88,11 +90,13 @@ public class PersistenciaDatos {
      * @return Verdadero si el método ha finalizado de una manera esperada o falso si se ha ocasionado
      *      una excepción
      */
-    public static synchronized boolean guardaFichero(Application app, String fichero, JSONArray array, int modo){
+    public static boolean guardaFichero(Application app, String fichero, JSONArray array, int modo){
         try{
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(app.openFileOutput(fichero, modo));
-            outputStreamWriter.write(array.toString());
-            outputStreamWriter.close();
+            synchronized (PersistenciaDatos.bloqueo) {
+                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(app.openFileOutput(fichero, modo));
+                outputStreamWriter.write(array.toString());
+                outputStreamWriter.close();
+            }
         } catch (IOException e){
             return false;
         }
@@ -107,15 +111,14 @@ public class PersistenciaDatos {
      * @param fichero Nombre del fichero que se desea eliminar
      * @return True si se ha eliminado (o no existía) o false si no se ha conseguido eliminar
      */
-    public static synchronized boolean borraFichero(Application app, String fichero){
+    public static boolean borraFichero(Application app, String fichero){
         try{
             File file = new File(app.getFilesDir(), fichero);
-            app.deleteFile(fichero);
-            //Por seguridad, compruebo de nuevo si el fichero existe
-            if(file.exists())
-                return file.delete();
-            else
-                return true;
+            synchronized (PersistenciaDatos.bloqueo) {
+                app.deleteFile(fichero);
+                //Por seguridad, compruebo de nuevo si el fichero existe
+            }
+            return !file.exists();
         }catch (Exception e){
             return false;
         }
@@ -130,41 +133,13 @@ public class PersistenciaDatos {
         try {
             if (PersistenciaDatos.borraFichero(app, PersistenciaDatos.ficheroUsuario))
                 if(PersistenciaDatos.borraFichero(app, PersistenciaDatos.ficheroPosicion))
-                    if(PersistenciaDatos.borraFichero(app, PersistenciaDatos.ficheroTareasUsuario))
-                        if(PersistenciaDatos.borraFichero(app, PersistenciaDatos.ficheroCompletadas))
-                            /*if(PersistenciaDatos.borraFichero(app,
-                                    PersistenciaDatos.ficheroPrimeraCuadricula))*/
-                                if(PersistenciaDatos.borraFichero(app,
-                                        PersistenciaDatos.ficheroInstantes))
-                                    if(PersistenciaDatos.borraFichero(app,
-                                            PersistenciaDatos.ficheroDenunciadas))
-                                        if(PersistenciaDatos.borraFichero(app,
-                                                PersistenciaDatos.ficheroTareasPospuestas))
-                                            if(PersistenciaDatos.borraFichero(app,
-                                                    PersistenciaDatos.ficheroTareasRechazadas))
-                                                if(PersistenciaDatos.borraFichero(app,
-                                                        PersistenciaDatos.ficheroNotificadas))
-                                                    return PersistenciaDatos.borraFichero(app,
-                                                            PersistenciaDatos.ficheroSinEnviar);
-                                                    /*{
-                                                    File file = new File(app.getFilesDir(),
-                                                            PersistenciaDatos.ficheroPosicionesCuadriculas);
-                                                    if(file.exists()) {
-                                                        JSONArray cuadriculas =
-                                                                PersistenciaDatos.leeFichero(app,
-                                                                        PersistenciaDatos.ficheroPosicionesCuadriculas);
-                                                        JSONObject cuadricula;
-                                                        for (int i = 0; i < cuadriculas.length(); i++) {
-                                                            cuadricula = cuadriculas.getJSONObject(i);
-                                                            PersistenciaDatos.borraFichero(app,
-                                                                    cuadricula.getString(Auxiliar.id));
-                                                        }
-                                                        return PersistenciaDatos.borraFichero(app,
-                                                                PersistenciaDatos.ficheroPosicionesCuadriculas);
-                                                    }else{
-                                                        return true;
-                                                    }
-                                                }*/
+                    if(PersistenciaDatos.borraFichero(app,
+                            PersistenciaDatos.ficheroInstantes))
+                        if(PersistenciaDatos.borraFichero(app,
+                                PersistenciaDatos.ficheroDenunciadas))
+                            return PersistenciaDatos.borraFichero(app,
+                                    PersistenciaDatos.ficheroSinEnviar);
+
             return false;
         }catch (Exception e){
             return false;
@@ -243,7 +218,11 @@ public class PersistenciaDatos {
                                                             String tipo,
                                                             int modo){
         try {
-            JSONObject tarea = obtenTarea(app, fichero, jsonObject.getString(Auxiliar.id));
+            JSONObject tarea = obtenTarea(
+                    app,
+                    fichero,
+                    jsonObject.getString(Auxiliar.id),
+                    jsonObject.getString(Auxiliar.idUsuario));
             JSONArray vectorRespuestas = null;
             try{
                 vectorRespuestas = tarea.getJSONArray(Auxiliar.respuestas);
@@ -302,6 +281,50 @@ public class PersistenciaDatos {
     }
 
     /**
+     * Método para reemplazar una tarea que exista dentro de un fichero por otra. Si la tarea no
+     * existe en el fichero se almacena sin sustituir nada
+     *
+     * @param app Application
+     * @param fichero Nombre del fichero
+     * @param jsonObject Tarea con la que se va a reemplazar la existente en el fichero
+     * @param idUsuario Identificador del usuario
+     * @return Devolverá true si se ha conseguido almacenar el JSON en el fichero
+     */
+    public static synchronized boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject, String idUsuario){
+        try {
+            int modo = Context.MODE_PRIVATE;
+            JSONArray array = leeFichero(app, fichero);
+            String id = jsonObject.getString(Auxiliar.id);
+            JSONObject base;
+            boolean encontrado = false;
+            int i;
+            for (i = 0; i < array.length(); i++) {
+                base = array.getJSONObject(i);
+                if(idUsuario != null) {
+                    if (base.getString(Auxiliar.id).equals(id)
+                            && base.getString(Auxiliar.idUsuario).equals(idUsuario)) {
+                        encontrado = true;
+                        break;
+                    }
+                }else{
+                    if (base.getString(Auxiliar.id).equals(id)
+                            && !base.has(Auxiliar.idUsuario)) {
+                        encontrado = true;
+                        break;
+                    }
+                }
+            }
+            if(encontrado){
+                array.remove(i);
+            }
+            array.put(jsonObject);
+            return guardaFichero(app, fichero, array, modo);
+        }catch (Exception e){
+            return false;
+        }
+    }
+
+    /**
      * Método que se puede comprobar para determinar si una tarea existe en el fichero
      * @param app Aplicación
      * @param fichero Nombre del fichero
@@ -315,6 +338,31 @@ public class PersistenciaDatos {
             for (int i = 0; i < jsonArray.length(); i++) {
                 jsonObject = jsonArray.getJSONObject(i);
                 if (jsonObject.get(Auxiliar.id).equals(idTarea)) {
+                    return true;
+                }
+            }
+        }catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Método que se puede comprobar para determinar si una tarea existe en el fichero
+     * @param app Aplicación
+     * @param fichero Nombre del fichero
+     * @param idTarea Identificador de la tarea
+     * @param idUser Identificador único del usuario
+     * @return True si el identificador está presente en la ase de datos
+     */
+    public static Boolean existeTarea(Application app, String fichero, String idTarea, String idUser){
+        try {
+            JSONArray jsonArray = leeFichero(app, fichero);
+            JSONObject jsonObject;
+            for (int i = 0; i < jsonArray.length(); i++) {
+                jsonObject = jsonArray.getJSONObject(i);
+                if (jsonObject.get(Auxiliar.id).equals(idTarea)
+                        && jsonObject.get(Auxiliar.idUsuario).equals(idUser)) {
                     return true;
                 }
             }
@@ -359,6 +407,48 @@ public class PersistenciaDatos {
     }
 
     /**
+     * Método para recuparar un JSONObject de un fichero. Modifia el fichero ya que elmina el JSONObject
+     * del JSONArray y sobrescribe el fichero
+     *
+     * @param app Aplicación
+     * @param fichero Nombre del fichero
+     * @param idTarea Identificador de la tarea
+     * @return JSONObject que corresponde con el identificador y el fichero
+     * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
+     */
+    public static synchronized JSONObject obtenTarea(Application app,
+                                                     String fichero,
+                                                     String idTarea,
+                                                     String idUser)
+            throws Exception {
+        JSONArray jsonArray = leeFichero(app, fichero);
+        JSONObject jsonObject = null;
+        boolean encontrado = false;
+        int i;
+        for (i = 0; i < jsonArray.length(); i++) {
+            jsonObject = jsonArray.getJSONObject(i);
+            if(idUser != null) {
+                if (jsonObject.get(Auxiliar.id).equals(idTarea) && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
+                    encontrado = true;
+                    break;
+                }
+            }else{
+                if (jsonObject.get(Auxiliar.id).equals(idTarea) && !jsonObject.has(Auxiliar.idUsuario)) {
+                    encontrado = true;
+                    break;
+                }
+            }
+        }
+        if(encontrado){
+            jsonArray.remove(i);
+            guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
+            return jsonObject;
+        }else{
+            return null;
+        }
+    }
+
+    /**
      * Método utilizado para recupar un JSONObject del fichero. Esta operación no modfica el registro.
      *
      * @param app Aplicación
@@ -382,5 +472,62 @@ public class PersistenciaDatos {
             return null;
         }
         return null;
+    }
+
+    /**
+     * Método utilizado para recupar un JSONObject del fichero. Esta operación no modfica el registro.
+     *
+     * @param app Aplicación
+     * @param fichero Nombre del fichero
+     * @param idTarea Identificador de la tarea
+     * @return JSONObject si el identificador se correspondía con alguno de los que están en el fichero
+     * o null si no existía
+     */
+    public static JSONObject recuperaTarea(Application app, String fichero, String idTarea, String idUser) {
+        JSONArray jsonArray = leeFichero(app, fichero);
+        JSONObject jsonObject;
+        try{
+            for (int i = 0; i < jsonArray.length(); i++) {
+                jsonObject = jsonArray.getJSONObject(i);
+                if(idUser != null) {
+                    if (jsonObject.get(Auxiliar.id).equals(idTarea)
+                            && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
+                        return jsonObject;
+                    }
+                } else{ //El usuario no se ha identificado aún
+                    if (!jsonObject.has(Auxiliar.idUsuario)
+                            && jsonObject.get(Auxiliar.id).equals(idTarea))
+                        return jsonObject;
+                }
+            }
+        }
+        catch (Exception e){
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * Método para obtener las tareas de un usuario que están almacenadas en un fichero
+     *
+     * @param app Aplicación
+     * @param fichero Fichero donde están almacenadas las tareas
+     * @param idUsuario Identificador único del usuario
+     * @return Lista de tareas del usuario. Puede estar vacío.
+     */
+    public static JSONArray leeTareasUsuario(Application app, String fichero, String idUsuario){
+        JSONArray tareas = leeFichero(app, fichero);
+        JSONArray tareasUsuario = new JSONArray();
+        JSONObject tarea;
+        try {
+            for (int i = 0; i < tareas.length(); i++) {
+                tarea = tareas.getJSONObject(i);
+                if(tarea.getString(Auxiliar.idUsuario).equals(idUsuario))
+                    tareasUsuario.put(tarea);
+            }
+            return tareasUsuario;
+        }catch (Exception e){
+            return tareasUsuario;
+        }
     }
 }

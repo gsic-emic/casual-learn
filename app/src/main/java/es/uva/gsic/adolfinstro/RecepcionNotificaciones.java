@@ -2,6 +2,8 @@ package es.uva.gsic.adolfinstro;
 
 import android.app.Application;
 import android.app.NotificationManager;
+import android.app.backup.BackupAgent;
+import android.app.backup.BackupManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +20,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase que se encarga de recibir las notificaciones destinadas a la aplicación.
  *
  * @author Pablo
- * @version 20200914
+ * @version 20201005
  */
 public class RecepcionNotificaciones extends BroadcastReceiver {
 
@@ -55,6 +57,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                             PersistenciaDatos.ficheroTareasRechazadas,
                             tarea,
                             Context.MODE_PRIVATE);
+                    new BackupManager(context).dataChanged();
                     tareaFirebase((Application) context.getApplicationContext(), "tareaRechazada", idTarea);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -71,6 +74,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                             PersistenciaDatos.ficheroTareasPospuestas,
                             tarea,
                             Context.MODE_PRIVATE);
+                    new BackupManager(context).dataChanged();
                     tareaFirebase((Application) context.getApplicationContext(), "tareaPospuesta", idTarea);
                 } catch (Exception e){
                     e.printStackTrace();

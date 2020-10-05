@@ -58,7 +58,7 @@ import static java.util.Objects.requireNonNull;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20200911
+ * @version 20201005
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -105,6 +105,8 @@ public class Tarea extends AppCompatActivity implements
 
     private String urlLicencia;
 
+    private String idUsuario;
+
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
      * gráfica sobre la que va a trabajar el cliente. Establece la conexión con la base de datos
@@ -119,8 +121,18 @@ public class Tarea extends AppCompatActivity implements
 
         requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
+        try{
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id).getString(Auxiliar.uid);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         idTarea = getIntent().getExtras().getString(Auxiliar.id);
-        if(!PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea))
+        if(!PersistenciaDatos.existeTarea(
+                getApplication(),
+                PersistenciaDatos.ficheroNotificadas,
+                idTarea,
+                idUsuario))
             mensajeError();
         else {
             try {
@@ -132,7 +144,11 @@ public class Tarea extends AppCompatActivity implements
                 // Instancia donde se colocará la imagen descriptiva de la tarea
                 ImageView ivImagenDescripcion = findViewById(R.id.ivImagenDescripcion);
 
-                JSONObject tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+                JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroNotificadas,
+                        idTarea,
+                        idUsuario);
                 try {
                     recursoAsociadoImagen300px = tarea.getString(Auxiliar.recursoImagenBaja);
                     if(recursoAsociadoImagen300px.equals("") || recursoAsociadoImagen300px.equals("?width=300"))
@@ -337,7 +353,8 @@ public class Tarea extends AppCompatActivity implements
                         JSONObject respuesta = PersistenciaDatos.obtenTarea(
                                 getApplication(),
                                 PersistenciaDatos.ficheroNotificadas,
-                                idTarea);
+                                idTarea,
+                                idUsuario);
                         respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                         respuesta.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
                         respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
@@ -471,14 +488,13 @@ public class Tarea extends AppCompatActivity implements
                     @Override
                     public void onClick(View v) {
                         boolean envia = false;
-                        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                                getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+
                         String contenido;
-                        try {
-                            contenido = String.format("%s\n%s\n%s\n%s\n%s\n", idTarea, idUsuario.getString(Auxiliar.uid), Build.MANUFACTURER, Build.MODEL, version);
-                        } catch (JSONException e) {
+                        if(idUsuario != null)
+                            contenido = String.format("%s\n%s\n%s\n%s\n%s\n", idTarea, idUsuario, Build.MANUFACTURER, Build.MODEL, version);
+                        else
                             contenido = String.format("%s\n%s\n%s\n%s\n", idTarea, Build.MANUFACTURER, Build.MODEL, version);
-                        }
+
                         String textoEdit = editText.getText().toString();
                         if(cb1.isChecked() || cb2.isChecked() || cb3.isChecked()){//Alguno de los checkbox está activado, no tiene porque tener texto
                             envia = true;
@@ -530,9 +546,10 @@ public class Tarea extends AppCompatActivity implements
     private void guardaRespuesta(String respuestaTextual) throws Exception {
         JSONObject json;
         json = PersistenciaDatos.obtenTarea(
-                    getApplication(),
-                    PersistenciaDatos.ficheroNotificadas,
-                    idTarea);
+                getApplication(),
+                PersistenciaDatos.ficheroNotificadas,
+                idTarea,
+                idUsuario);
         json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
         json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
         json.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
@@ -564,16 +581,10 @@ public class Tarea extends AppCompatActivity implements
         intent.setAction(Auxiliar.nunca_mas);
         intent.putExtra(Auxiliar.id, idTarea);
         sendBroadcast(intent);
-        try {
-            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-            Bundle bundle = new Bundle();
-            bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-            bundle.putString("idUsuario", idUsuario.getString(Auxiliar.uid));
-            Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
-        }catch (JSONException e){
-            e.printStackTrace();
-        }
+        Bundle bundle = new Bundle();
+        bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+        bundle.putString("idUsuario", idUsuario);
+        Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
     }
 
     /**
@@ -696,7 +707,8 @@ public class Tarea extends AppCompatActivity implements
                             respuesta = PersistenciaDatos.obtenTarea(
                                     getApplication(),
                                     PersistenciaDatos.ficheroNotificadas,
-                                    idTarea);
+                                    idTarea,
+                                    idUsuario);
                             respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                             respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                             PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas,
@@ -734,7 +746,11 @@ public class Tarea extends AppCompatActivity implements
             case 2://imagen multiple || preguntaImágenes
                 switch (resultCode){
                     case RESULT_OK:
-                        respuesta = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+                        respuesta = PersistenciaDatos.recuperaTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroNotificadas,
+                                idTarea,
+                                idUsuario);
                         if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
                                 respuesta, photoURI.toString(), Auxiliar.uri,
                                 Context.MODE_PRIVATE))
@@ -759,7 +775,11 @@ public class Tarea extends AppCompatActivity implements
                 switch (resultCode){
                     case RESULT_OK:
                         try {
-                            respuesta = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+                            respuesta = PersistenciaDatos.obtenTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNotificadas,
+                                    idTarea,
+                                    idUsuario);
                             respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                             respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                             PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, respuesta, Context.MODE_PRIVATE);
@@ -837,7 +857,8 @@ public class Tarea extends AppCompatActivity implements
                     tarea = PersistenciaDatos.recuperaTarea(
                             getApplication(),
                             PersistenciaDatos.ficheroNotificadas,
-                            idTarea);
+                            idTarea,
+                            idUsuario);
                     assert tarea != null;
                     tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
@@ -981,12 +1002,14 @@ public class Tarea extends AppCompatActivity implements
             JSONObject tarea = PersistenciaDatos.obtenTarea(
                     getApplication(),
                     PersistenciaDatos.ficheroNotificadas,
-                    idTarea);
+                    idTarea,
+                    idUsuario);
             if(tarea == null){
                 tarea = PersistenciaDatos.obtenTarea(
                         getApplication(),
                         PersistenciaDatos.ficheroCompletadas,
-                        idTarea);
+                        idTarea,
+                        idUsuario);
             }
             assert tarea != null;
             JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
@@ -1060,9 +1083,7 @@ public class Tarea extends AppCompatActivity implements
         try {
             Bundle bundle = new Bundle();
             bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-            bundle.putString("idUsuario", idUsuario.getString(Auxiliar.uid));
+            bundle.putString("idUsuario", idUsuario);
             Login.firebaseAnalytics.logEvent("tareaCompletada", bundle);
         }catch (Exception e){
             e.printStackTrace();

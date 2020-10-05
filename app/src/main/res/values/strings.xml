@@ -246,4 +246,6 @@
     <string name="noAhora">Not now</string>
     <string name="cerrar">Close</string>
     <string name="errorInstagram">You can only use Instagram in task with photos o videos</string>
+    <string name="infoWikipedia">Wikipedia Information</string>
+    <string name="icono_tarea_completada">Task complete</string>
 </resources>

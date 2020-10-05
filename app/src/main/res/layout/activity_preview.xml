@@ -52,7 +52,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/tituloPreview"
             app:layout_constraintTop_toTopOf="@id/tituloPreview"
-            android:contentDescription="@string/licenciaImagen"
+            android:contentDescription="@string/infoWikipedia"
             android:layout_marginStart="5dp"
             android:onClick="boton"/>
 
@@ -67,19 +67,20 @@
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/imagenPreview"
             app:layout_constraintStart_toEndOf="@id/ivWikipediaPreview"
-            app:layout_constraintEnd_toStartOf="@id/ivWikipediaPreview2"
+            app:layout_constraintEnd_toStartOf="@id/ivCompletadaPrevie"
             android:layout_marginTop="5dp"
             android:layout_marginHorizontal="5dp" />
 
         <ImageView
-            android:id="@+id/ivWikipediaPreview2"
+            android:id="@+id/ivCompletadaPrevie"
             android:layout_width="48dp"
             android:layout_height="48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tituloPreview"
-            android:contentDescription="@string/licenciaImagen"
+            app:srcCompat="@drawable/ic_check_no_completada"
+            android:contentDescription="@string/icono_tarea_completada"
             android:layout_marginEnd="5dp"
-            android:visibility="invisible"/>
+            android:visibility="visible"/>
 
         <org.osmdroid.views.MapView
             android:id="@+id/mapPreview"

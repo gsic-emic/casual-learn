@@ -217,4 +217,6 @@
     <string name="errorInstagram">Solo se puede compartir en Instagram en las tareas que tengan fotografías o vídeos</string>
     <string name="twitSinTextoFs">He realizado una tarea con @CasualLearn cerca de las</string>
     <string name="twitSinTextoMs">He realizado una tarea con @CasualLearn cerca de los</string>
+    <string name="infoWikipedia">Información de la Wikipedia</string>
+    <string name="icono_tarea_completada">Tarea completada</string>
 </resources>

@@ -68,7 +68,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20200918
+ * @version 20201005
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -98,6 +98,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
     /** URL de la licencia */
     private String urlLicencia;
 
+    /** Objeto para almacenar el identificador del usuario */
+    private String idUsuario;
+
+    /** Objeto para saber si una tarea se ha completado */
+    private boolean completada;
+
     /**
      * Se crea la vista de la interfaz de usuario.
      *
@@ -120,12 +126,48 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
         ImageView imageView = findViewById(R.id.imagenPreview);
         String idTarea = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id);
+        try{
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroUsuario,
+                    Auxiliar.id
+            ).getString(Auxiliar.uid);
+        }catch (Exception e){
+            idUsuario = null;
+        }
         try {
-            tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroNotificadas, idTarea);
+            tarea = PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroNotificadas,
+                    idTarea,
+                    idUsuario);
             tarea.put(Auxiliar.fechaInicio, Auxiliar.horaFechaActual());
-            PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea);
+            PersistenciaDatos.reemplazaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroNotificadas,
+                    tarea,
+                    idUsuario);
         }catch (Exception e){
             tarea = null;
+        }
+
+        //Compruebo si la tarea ya ha sido completada
+        JSONObject tareaCompletada;
+        try{
+            tareaCompletada = PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroCompletadas,
+                    idTarea,
+                    idUsuario);
+        } catch (Exception e){
+            tareaCompletada = null;
+        }
+
+        completada = tareaCompletada != null;
+
+        if(completada){
+            ImageView icono = findViewById(R.id.ivCompletadaPrevie);
+            icono.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_completada));
         }
 
         if(tarea != null) {
@@ -259,8 +301,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 }
 
                 //Identifiación usuario. Si existe el fichero con el identificador no muestro la barra
-                JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                        getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
                 if (idUsuario == null) {
                     snackBarLogin(R.id.clIdentificatePreview);
                 }
@@ -362,9 +402,10 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     public void updateUI(FirebaseUser firebaseUser, boolean registro){
         if(firebaseUser != null){
-            Login.firebaseAnalytics.setUserId(firebaseUser.getUid());
+            idUsuario = firebaseUser.getUid();
+            Login.firebaseAnalytics.setUserId(idUsuario);
             Bundle bundle = new Bundle();
-            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
+            bundle.putString(Auxiliar.uid, idUsuario);
             if(registro)
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
@@ -372,10 +413,20 @@ public class Preview extends AppCompatActivity implements LocationListener {
             try {
                 JSONObject usuario = new JSONObject();
                 usuario.put(Auxiliar.id, Auxiliar.id);
-                usuario.put(Auxiliar.uid, firebaseUser.getUid());
+                usuario.put(Auxiliar.uid, idUsuario);
                 PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
             }catch (JSONException e){
                 e.printStackTrace();
+            }
+            try{
+                tarea.put(Auxiliar.fechaInicio, Auxiliar.horaFechaActual());
+                PersistenciaDatos.reemplazaJSON(
+                        getApplication(),
+                        PersistenciaDatos.ficheroNotificadas,
+                        tarea,
+                        idUsuario);
+            }catch (Exception e){
+                tarea = null;
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             permisos = new ArrayList<>();
@@ -388,7 +439,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
             }
             //Comprobación para saber si el usuario se ha identificado
-            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
             if(idUsuario != null) {
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                     if(!(ActivityCompat.checkSelfPermission(
@@ -411,18 +461,20 @@ public class Preview extends AppCompatActivity implements LocationListener {
      *                 paramostrar la información de la distancia que falta a la tarea
      */
     private void botonesVisibles(boolean visibles){
-        if(visibles) {
-            btRechazar.setVisibility(View.VISIBLE);
-            btPosponer.setVisibility(View.VISIBLE);
-            btAceptar.setVisibility(View.VISIBLE);
-            explicacionDistancia.setVisibility(View.GONE);
-            textoDistancia.setVisibility(View.GONE);
-        }else{
-            btRechazar.setVisibility(View.GONE);
-            btPosponer.setVisibility(View.GONE);
-            btAceptar.setVisibility(View.GONE);
-            explicacionDistancia.setVisibility(View.VISIBLE);
-            textoDistancia.setVisibility(View.VISIBLE);
+        if(!completada) {
+            if (visibles) {
+                btRechazar.setVisibility(View.VISIBLE);
+                btPosponer.setVisibility(View.VISIBLE);
+                btAceptar.setVisibility(View.VISIBLE);
+                explicacionDistancia.setVisibility(View.GONE);
+                textoDistancia.setVisibility(View.GONE);
+            } else {
+                btRechazar.setVisibility(View.GONE);
+                btPosponer.setVisibility(View.GONE);
+                btAceptar.setVisibility(View.GONE);
+                explicacionDistancia.setVisibility(View.VISIBLE);
+                textoDistancia.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -447,7 +499,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
             switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
                         .getExtras()).getString(Auxiliar.previa))){
                 case Auxiliar.notificacion:
-                    JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+
                     if(idUsuario != null) {
                         Intent intent = new Intent();
                         intent.setAction(Auxiliar.ahora_no);
@@ -462,13 +514,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     intent2.putExtra(Auxiliar.textoParaElMapa, getString(R.string.tareaPospuesta));
                     context.startActivity(intent2);
                     finish();
-                    //Auxiliar.returnMain(this);
                     break;
                 case Auxiliar.mapa:
                     PersistenciaDatos.obtenTarea(
                             getApplication(),
                             PersistenciaDatos.ficheroNotificadas,
-                            tarea.getString(Auxiliar.id));
+                            tarea.getString(Auxiliar.id),
+                            idUsuario);
                     finish();
                     break;
                 case Auxiliar.tareasPospuestas:
@@ -478,7 +530,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             PersistenciaDatos.obtenTarea(
                                     getApplication(),
                                     PersistenciaDatos.ficheroNotificadas,
-                                    tarea.getString(Auxiliar.id)),
+                                    tarea.getString(Auxiliar.id),
+                                    idUsuario),
                             Context.MODE_PRIVATE);
                     finish();
                     break;
@@ -489,7 +542,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             PersistenciaDatos.obtenTarea(
                                     getApplication(),
                                     PersistenciaDatos.ficheroNotificadas,
-                                    tarea.getString(Auxiliar.id)),
+                                    tarea.getString(Auxiliar.id),
+                                    idUsuario),
                             Context.MODE_PRIVATE);
                     finish();
                     break;
@@ -497,7 +551,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     break;
             }
         }catch (Exception e){
-            //Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
             pintaSnackBar(getString(R.string.errorOpera));
         }
     }
@@ -521,7 +574,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                         Auxiliar.navegadorInterno(this, urlLicencia);
                     break;
                 default:
-                    JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
                     if (idUsuario == null) {
                         snackBarLogin(R.id.clPreview);
                     } else {
@@ -555,6 +607,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                                 break;
                         }
                     }
+
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -614,7 +667,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
             }
 
-            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
             if(idUsuario != null) {
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                     if(!(ActivityCompat.checkSelfPermission(
