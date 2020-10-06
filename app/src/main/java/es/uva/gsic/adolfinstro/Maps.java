@@ -38,7 +38,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import androidx.appcompat.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -99,7 +98,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20201005
+ * @version 20201006
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -152,11 +151,6 @@ public class  Maps extends AppCompatActivity implements
     private AlertDialog.Builder dialogoSalirApp;
     /** Boolean que determian si el dialogo de salir de la aplicación está activo */
     Boolean dialogoSalirAppActivo = false;
-
-    /** Díalogo de cierre de sesión*/
-    private AlertDialog.Builder dialogoCerrarSesion;
-    /** Boolean pa determinar si el dialogo de cierre de sesión está activo */
-    Boolean dialogoCerrarSesionActivo = false;
 
     /** Guía de la vista vertical */
     Guideline guiaMapaH;
@@ -225,61 +219,6 @@ public class  Maps extends AppCompatActivity implements
 
 
         final Application app = getApplication();
-        dialogoCerrarSesion = new AlertDialog.Builder(this);
-        dialogoCerrarSesion.setTitle(getString(R.string.cerrarSesion));
-        dialogoCerrarSesion.setMessage(getString(R.string.cerrarSesionMensaje));
-        dialogoCerrarSesion.setPositiveButton(getString(R.string.cerrarSesion), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    if(PersistenciaDatos.borraTodosFicheros(app)) {
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putBoolean(Ajustes.NO_MOLESTAR_pref, false);
-                        editor.commit();
-                        editor.putString(Ajustes.HASHTAG_pref, getString(R.string.hashtag));
-                        editor.commit();
-                        editor.putInt(Ajustes.INTERVALO_pref, 4);
-                        editor.commit();
-                        editor.putBoolean(Ajustes.WIFI_pref, false);
-                        editor.commit();
-                        try {
-                            Login.firebaseAuth.signOut();
-                            Login.googleSignInClient.signOut().addOnCompleteListener(Maps.this, new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    vuelveLogin();
-                                }
-                            });
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }else{
-                        Toast.makeText(app, context.getResources().getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
-                    }
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        });
-        dialogoCerrarSesion.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialogoCerrarSesionActivo = false;
-            }
-        });
-        dialogoCerrarSesion.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                dialogoCerrarSesionActivo = false;
-            }
-        });
-        dialogoCerrarSesion.create();
-
-        dialogoCerrarSesionActivo = false;
-        if(savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOCERRARSESION", false)) {
-            dialogoCerrarSesionActivo = true;
-            dialogoCerrarSesion.show();
-        }
 
         //Se decide si se muestra el mapa
         if (noMolestar) {
@@ -893,6 +832,7 @@ public class  Maps extends AppCompatActivity implements
                 contenedor.setAdapter(adaptadorListaMapa);
             }
         }
+        invalidateOptionsMenu();
     }
 
     private int numeroCuadriculasPendientes = 0;
@@ -1177,7 +1117,6 @@ public class  Maps extends AppCompatActivity implements
         bundle.putDouble("LATITUDE", latitudeOrigen);
         bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putBoolean("DIALOGOSALIR", dialogoSalirAppActivo);
-        bundle.putBoolean("DIALOGOCERRARSESION", dialogoCerrarSesionActivo);
         super.onSaveInstanceState(bundle);
     }
 
@@ -1251,6 +1190,8 @@ public class  Maps extends AppCompatActivity implements
         MenuItem menuItem = menu.findItem(R.id.cerrarSesion);
         if(idUsuario == null) {//Si el usuario no se ha identificado se cambia la etiqueta a mostrar
             menuItem.setTitle(getString(R.string.iniciarSesion));
+        }else{
+            menuItem.setVisible(false);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -1297,10 +1238,6 @@ public class  Maps extends AppCompatActivity implements
                             .requestEmail().build();
                     Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
                     startActivityForResult(Login.googleSignInClient.getSignInIntent(), Login.requestAuth + 1);
-                }
-                else {
-                    dialogoCerrarSesionActivo = true;
-                    dialogoCerrarSesion.show();
                 }
                 return true;
             default:

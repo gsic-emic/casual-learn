@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
  * Clase para controlar la pantalla de ajustes de la aplicación
  *
  * @author pablo
- * @version 20200917
+ * @version 20201006
  */
 public class Ajustes extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -29,6 +29,8 @@ public class Ajustes extends AppCompatActivity
     public static final String HASHTAG_pref = "hashtag";
     /**Clave para identificar la opción del envío solo mediante Wi-Fi*/
     public static final String WIFI_pref = "opcionWifi";
+    /**Clave para el cierre de sesión*/
+    public static final String CIERRE_pref = "cierreSesion";
 
     public static SharedPreferences sharedPreferences;
     private boolean reiniciaMapa = false;

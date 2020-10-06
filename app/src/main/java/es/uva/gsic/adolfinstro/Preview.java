@@ -420,14 +420,38 @@ public class Preview extends AppCompatActivity implements LocationListener {
             }
             try{
                 tarea.put(Auxiliar.fechaInicio, Auxiliar.horaFechaActual());
+                tarea.put(Auxiliar.idUsuario, idUsuario);
                 PersistenciaDatos.reemplazaJSON(
                         getApplication(),
                         PersistenciaDatos.ficheroNotificadas,
                         tarea,
-                        idUsuario);
+                        null);
             }catch (Exception e){
                 tarea = null;
             }
+
+
+            //Compruebo si la tarea ya ha sido completada
+            JSONObject tareaCompletada;
+            try{
+                tareaCompletada = PersistenciaDatos.recuperaTarea(
+                        getApplication(),
+                        PersistenciaDatos.ficheroCompletadas,
+                        tarea.getString(Auxiliar.id),
+                        idUsuario);
+            } catch (Exception e){
+                tareaCompletada = null;
+            }
+
+            completada = tareaCompletada != null;
+
+            if(completada){
+                ImageView icono = findViewById(R.id.ivCompletadaPrevie);
+                icono.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_completada));
+                botonesVisibles(false);
+            }
+
+
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             permisos = new ArrayList<>();
             String textoPermisos = getString(R.string.necesidad_permisos);
@@ -475,6 +499,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 explicacionDistancia.setVisibility(View.VISIBLE);
                 textoDistancia.setVisibility(View.VISIBLE);
             }
+        }else{
+            btRechazar.setVisibility(View.GONE);
+            btPosponer.setVisibility(View.GONE);
+            btAceptar.setVisibility(View.GONE);
+            explicacionDistancia.setVisibility(View.GONE);
+            textoDistancia.setVisibility(View.GONE);
         }
     }
 

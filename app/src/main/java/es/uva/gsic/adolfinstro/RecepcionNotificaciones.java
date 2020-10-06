@@ -2,7 +2,6 @@ package es.uva.gsic.adolfinstro;
 
 import android.app.Application;
 import android.app.NotificationManager;
-import android.app.backup.BackupAgent;
 import android.app.backup.BackupManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,12 +16,17 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
- * Clase que se encarga de recibir las notificaciones destinadas a la aplicación.
+ * Clase que se encarga de recibir las notificaciones destinadas a la aplicación. Con ella se
+ * gestina cuando el usuario pospone una tarea o la rechaza. También está encargada de activar
+ * el servicio en segundo plano cuando el dispositivo se reinicia.
  *
  * @author Pablo
- * @version 20201005
+ * @version 20201006
  */
 public class RecepcionNotificaciones extends BroadcastReceiver {
+
+    /** Objeto donde se almacena el identificador único del usuario*/
+    private String idUsuario;
 
     /**
      * Método que actua dependiendo de la acción que lo inicie. Para las notificaciones internas de
@@ -44,13 +48,24 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
         }catch (Exception ef){
             //Saltará en los reincios, pero es lo esperado
         }
+        try{
+            idUsuario = Objects.requireNonNull(PersistenciaDatos.recuperaTarea(
+                    (Application) context.getApplicationContext(),
+                    PersistenciaDatos.ficheroUsuario,
+                    Auxiliar.id)).getString(Auxiliar.uid);
+        }catch (Exception e){
+            idUsuario = null;
+        }
         assert accion != null;
         switch (accion) {
             case Auxiliar.nunca_mas:
                 //Sacamos la tarea del fichero de tareas pendientes para pasarla a la lista negra
                 try{
-                    JSONObject tarea = PersistenciaDatos.obtenTarea((Application) context.getApplicationContext(),
-                            PersistenciaDatos.ficheroNotificadas, idTarea);
+                    JSONObject tarea = PersistenciaDatos.obtenTarea(
+                            (Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            idTarea,
+                            idUsuario);
                     assert tarea != null;
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
@@ -58,7 +73,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                             tarea,
                             Context.MODE_PRIVATE);
                     new BackupManager(context).dataChanged();
-                    tareaFirebase((Application) context.getApplicationContext(), "tareaRechazada", idTarea);
+                    tareaFirebase("tareaRechazada", idTarea);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -68,24 +83,21 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                     JSONObject tarea = PersistenciaDatos.obtenTarea(
                             (Application) context.getApplicationContext(),
                             PersistenciaDatos.ficheroNotificadas,
-                            idTarea);
+                            idTarea,
+                            idUsuario);
+                    assert tarea != null;
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
                             PersistenciaDatos.ficheroTareasPospuestas,
                             tarea,
                             Context.MODE_PRIVATE);
                     new BackupManager(context).dataChanged();
-                    tareaFirebase((Application) context.getApplicationContext(), "tareaPospuesta", idTarea);
+                    tareaFirebase("tareaPospuesta", idTarea);
                 } catch (Exception e){
                     e.printStackTrace();
                 }
                 break;
             case Intent.ACTION_BOOT_COMPLETED:
-                /*Intent servicioPermanente = new Intent(context, Proceso.class);
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                    context.startForegroundService(servicioPermanente);
-                else
-                    context.startService(servicioPermanente);*/
                 new AlarmaProceso().activaAlarmaProceso(context);
                 break;
             default:
@@ -96,19 +108,16 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
 
     /**
      * Método para registrar cuando una tarea es pospuesta o rechazada
-     * @param app Aplicación
      * @param evento Llave donde se indica si la tarea se ha rechazada o pospuesto
      * @param idTarea Identificador de la tarea
      */
-    private void tareaFirebase(Application app, String evento, String idTarea){
+    private void tareaFirebase(String evento, String idTarea){
         Bundle bundle;
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if(idUsuario != null) {
             try {
                 bundle = new Bundle();
                 bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-                bundle.putString("idUsuario", idUsuario.getString(Auxiliar.uid));
+                bundle.putString("idUsuario", idUsuario);
                 Login.firebaseAnalytics.logEvent(evento, bundle);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -137,8 +137,10 @@ public class PersistenciaDatos {
                             PersistenciaDatos.ficheroInstantes))
                         if(PersistenciaDatos.borraFichero(app,
                                 PersistenciaDatos.ficheroDenunciadas))
-                            return PersistenciaDatos.borraFichero(app,
-                                    PersistenciaDatos.ficheroSinEnviar);
+                            if(PersistenciaDatos.borraFichero(app,
+                                    PersistenciaDatos.ficheroTareasUsuario))
+                                return PersistenciaDatos.borraFichero(app,
+                                        PersistenciaDatos.ficheroSinEnviar);
 
             return false;
         }catch (Exception e){

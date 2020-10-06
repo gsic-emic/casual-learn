@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro.auxiliar;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
@@ -36,9 +37,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+import androidx.preference.PreferenceManager;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +62,7 @@ import java.util.Date;
 import java.util.List;
 
 import es.uva.gsic.adolfinstro.Ajustes;
+import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
@@ -68,7 +73,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201002
+ * @version 20201006
  */
 public class Auxiliar {
 
@@ -1425,5 +1430,37 @@ public class Auxiliar {
         }
 
         return array;
+    }
+
+    public static boolean cerrarSesion(final Context context, Application app, Object actividad){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        try {
+            if(PersistenciaDatos.borraTodosFicheros(app)) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean(Ajustes.NO_MOLESTAR_pref, false);
+                editor.commit();
+                editor.putString(Ajustes.HASHTAG_pref, app.getString(R.string.hashtag));
+                editor.commit();
+                editor.putInt(Ajustes.INTERVALO_pref, 4);
+                editor.commit();
+                editor.putBoolean(Ajustes.WIFI_pref, false);
+                editor.commit();
+                try {
+                    Login.firebaseAuth.signOut();
+                    Login.googleSignInClient.signOut().addOnCompleteListener((Activity) actividad, new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                        }
+                    });
+                    return true;
+                }catch (Exception e){
+                    return false;
+                }
+            }else{
+                return false;
+            }
+        }catch (Exception e){
+            return false;
+        }
     }
 }

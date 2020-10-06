@@ -20,12 +20,11 @@
             app:adjustable="true" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="listaBlancaCategoria">
-        <CheckBoxPreference
-            app:key="listaBlanca"
-            app:title="@string/tituloListaBlancaPref"
-            app:summary="@string/descripcionListaBlancaPref"
-            app:defaultValue="true" />
+        android:key="datosCategoria">
+        <SwitchPreference
+            app:key="opcionWifi"
+            app:title="@string/enviarWifi"
+            app:defaultValue="false" />
     </PreferenceCategory>
     <PreferenceCategory>
         <EditTextPreference
@@ -36,11 +35,19 @@
             app:dialogMessage="@string/descripcionFuncionamientoPalabraClave"/>
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="datosCategoria">
-        <SwitchPreference
-            app:key="opcionWifi"
-            app:title="@string/enviarWifi"
-            app:defaultValue="false" />
+        android:key="listaBlancaCategoria">
+        <CheckBoxPreference
+            app:key="listaBlanca"
+            app:title="@string/tituloListaBlancaPref"
+            app:summary="@string/descripcionListaBlancaPref"
+            app:defaultValue="true" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="cierreCategoria">
+        <Preference
+            android:key="cierreSesion"
+            android:title="@string/cerrarSesion"
+            android:summary="@string/cerrarSesionMensajeAjustes" />
     </PreferenceCategory>
 
 </PreferenceScreen>

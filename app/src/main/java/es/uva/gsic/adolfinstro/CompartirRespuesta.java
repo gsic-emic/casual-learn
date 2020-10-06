@@ -50,7 +50,9 @@ public class CompartirRespuesta extends AppCompatActivity
                     PersistenciaDatos.ficheroCompletadas,
                     idTarea,
                     PersistenciaDatos.recuperaTarea(
-                            getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id)
+                            getApplication(),
+                            PersistenciaDatos.ficheroUsuario,
+                            Auxiliar.id)
                             .getString(Auxiliar.uid));
             String tipo = tarea.getString(Auxiliar.tipoRespuesta);
             if(tipo.equals(Auxiliar.tipoSinRespuesta) ||
