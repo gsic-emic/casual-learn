@@ -3,11 +3,11 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
+import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RatingBar;
@@ -22,7 +22,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase para gestionar la puntuación de las tareas
  *
  * @author Pablo
- * @version 20200917
+ * @version 20201005
  */
 public class Puntuacion extends AppCompatActivity {
 
@@ -95,7 +95,9 @@ public class Puntuacion extends AppCompatActivity {
     @Override
     public void onBackPressed(){
         super.onBackPressed();
+        BackupManager backupManager = new BackupManager(this);
         Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
+        backupManager.dataChanged();
         pantallaCompartir(getString(R.string.puntuaCompletada));
     }
 
@@ -105,6 +107,7 @@ public class Puntuacion extends AppCompatActivity {
      */
     public void boton(View view) {
         if (view.getId() == R.id.btEnviarPuntuacion) {
+            BackupManager backupManager = new BackupManager(this);
             if (puntuacion > 0) {
                 //SE GUARDA LA PUNTUACIÓN
                 JSONObject json = null;
@@ -112,7 +115,10 @@ public class Puntuacion extends AppCompatActivity {
                     json = PersistenciaDatos.obtenTarea(
                             getApplication(),
                             PersistenciaDatos.ficheroCompletadas,
-                            idTarea);
+                            idTarea,
+                            PersistenciaDatos.recuperaTarea(
+                                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id)
+                                    .getString(Auxiliar.uid));
                     json.put(Auxiliar.rating, puntuacion);
                     json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     PersistenciaDatos.guardaJSON(getApplication(),
@@ -128,9 +134,11 @@ public class Puntuacion extends AppCompatActivity {
                     pantallaCompartir(null);
                 }
                 Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
+                backupManager.dataChanged();
                 pantallaCompartir(getString(R.string.gracias));
             } else {
                 Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
+                backupManager.dataChanged();
                 pantallaCompartir(getString(R.string.puntuaCompletada));
             }
         }

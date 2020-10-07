@@ -246,4 +246,9 @@
     <string name="noAhora">Not now</string>
     <string name="cerrar">Close</string>
     <string name="errorInstagram">You can only use Instagram in task with photos o videos</string>
+    <string name="infoWikipedia">Wikipedia Information</string>
+    <string name="icono_tarea_completada">Task complete</string>
+    <string name="cerrarSesionMensajeAjustes">If you log out Casual Learn will not be able to notify new tasks.</string>
+    <string name="unaTareaMas">One more task...</string>
+    <string name="tareaDenunciadaAntes">The task has been previously reported</string>
 </resources>

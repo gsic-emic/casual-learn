@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro.auxiliar;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
@@ -30,16 +31,18 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+import androidx.preference.PreferenceManager;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,9 +60,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import es.uva.gsic.adolfinstro.Ajustes;
+import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
 import es.uva.gsic.adolfinstro.Puntuacion;
@@ -70,7 +73,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20200924
+ * @version 20201006
  */
 public class Auxiliar {
 
@@ -142,6 +145,7 @@ public class Auxiliar {
     public static final String ficheroOrigen = "ficheroOrigen";
     public static final String textoParaElMapa = "textoParaElMapa";
     public static final String uid = "uid";
+    public static final String idUsuario = "idUsuario";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
@@ -314,7 +318,8 @@ public class Auxiliar {
      */
     public static JSONObject tareaMasCercana(Application app,
                                              double latitudUsuario,
-                                             double longitudUsuario){
+                                             double longitudUsuario,
+                                             String idUsuario){
         //Inicializo la lista de tareas a la misma distancia
         List<JSONObject> tarea = new ArrayList<>();
         //Creo la referencia al objeto JSONObject para que no se esté creando y destruyendo en cada
@@ -329,11 +334,12 @@ public class Auxiliar {
             JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareasUsuario);
             for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
                 tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id)) &&
+                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id), idUsuario) &&
                         !PersistenciaDatos.existeTarea(
                                 app,
                                 PersistenciaDatos.ficheroNotificadas,
-                                tareaEvaluada.getString(Auxiliar.id))) {
+                                tareaEvaluada.getString(Auxiliar.id),
+                                idUsuario)) {
                     if (!tarea.isEmpty()) {
                         distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
                                 tareaEvaluada.getDouble(Auxiliar.longitud),
@@ -373,11 +379,11 @@ public class Auxiliar {
      * @param idTarea Identificador de la tarea
      * @return Verdadero si el usuario ya ha interactuado con la tarea
      */
-    public static boolean tareaRegistrada(Application app, String idTarea){
-        return PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasPospuestas, idTarea) ||
-                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasRechazadas, idTarea) ||
-                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea) ||
-                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroDenunciadas, idTarea);
+    public static boolean tareaRegistrada(Application app, String idTarea, @NonNull String idUser){
+        return PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasPospuestas, idTarea, idUser) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasRechazadas, idTarea, idUser) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea, idUser) ||
+                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroDenunciadas, idTarea, idUser);
     }
 
     /**
@@ -946,6 +952,14 @@ public class Auxiliar {
         }
     }
 
+    /**
+     * Método para crear el texto a compartir en Twitter
+     * @param context Contexto
+     * @param tarea Tarea completa. Contiene todos los datos necesarios.
+     * @param hashtag Lista de etiquetas del usuario. Están separadas con comas
+     * @param recorta Indica si debe recortar o no el mensaje.
+     * @return Frase que se le pasará a la aplicación deseada
+     */
     private static String contenidoT(Context context,
                                      JSONObject tarea,
                                      String hashtag,
@@ -1115,13 +1129,23 @@ public class Auxiliar {
 
     public static void enviaResultados(Application app, Context contexto, String idTarea){
         JSONObject jsonObject = new JSONObject();
-        JSONObject tarea = PersistenciaDatos.
-                recuperaTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea);
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                app, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        String idUsuario;
+        try {
+            idUsuario = PersistenciaDatos.recuperaTarea(app,
+                    PersistenciaDatos.ficheroUsuario,
+                    Auxiliar.id)
+                    .getString(Auxiliar.uid);
+        }catch (JSONException e) {
+            idUsuario = null;
+        }
+        JSONObject tarea = PersistenciaDatos.recuperaTarea(
+                app,
+                PersistenciaDatos.ficheroCompletadas,
+                idTarea,
+                idUsuario);
         try {
             jsonObject.put("idTarea", idTarea);
-            jsonObject.put("idUsuario", idUsuario.getString(Auxiliar.uid));
+            jsonObject.put("idUsuario", idUsuario);
             jsonObject.put("instanteInicio", tarea.getString(Auxiliar.fechaInicio));
             jsonObject.put("instanteFin", tarea.getString(Auxiliar.fechaFinalizacion));
             jsonObject.put("instanteModificacion",
@@ -1179,6 +1203,17 @@ public class Auxiliar {
             else
                 return 1;
         }
+    }
+
+    /**
+     * Método para saber si la aplicación puede compartir algún dato a través de Internet
+     * @param contexto Contexto
+     * @param enviaWifi Preferencia del usuario
+     * @return Verdadero si puede enviar, falso si no puede.
+     */
+    public static boolean puedoEnviar(Context contexto, Boolean enviaWifi){
+        int conectividad = tipoConectividad(contexto);
+        return conectividad != -1 && (conectividad != 1 || !enviaWifi);
     }
 
 
@@ -1395,5 +1430,37 @@ public class Auxiliar {
         }
 
         return array;
+    }
+
+    public static boolean cerrarSesion(final Context context, Application app, Object actividad){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        try {
+            if(PersistenciaDatos.borraTodosFicheros(app)) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean(Ajustes.NO_MOLESTAR_pref, false);
+                editor.commit();
+                editor.putString(Ajustes.HASHTAG_pref, app.getString(R.string.hashtag));
+                editor.commit();
+                editor.putInt(Ajustes.INTERVALO_pref, 4);
+                editor.commit();
+                editor.putBoolean(Ajustes.WIFI_pref, false);
+                editor.commit();
+                try {
+                    Login.firebaseAuth.signOut();
+                    Login.googleSignInClient.signOut().addOnCompleteListener((Activity) actividad, new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                        }
+                    });
+                    return true;
+                }catch (Exception e){
+                    return false;
+                }
+            }else{
+                return false;
+            }
+        }catch (Exception e){
+            return false;
+        }
     }
 }

@@ -49,7 +49,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * modificar la respuesta dada o complementarla.
  *
  * @author Pablo García Zarza
- * @version 20200918
+ * @version 20201005
  */
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
@@ -89,6 +89,8 @@ public class Completadas extends AppCompatActivity implements
 
     private boolean enviaWifi;
 
+    private String idUsuario;
+
     /**
      * Método de creación de la actividad. Pinta la interfaz gráfica y establece las referencias
      * para la lógica de la aplicación.
@@ -104,8 +106,19 @@ public class Completadas extends AppCompatActivity implements
 
         //Se recupera la tarea de la base de datos. La tarea permanence en el fichero de completadas por
         //si el usuario se sale sin guardar
-        tarea = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroCompletadas,
-                getIntent().getExtras().getString(Auxiliar.id));
+        try {
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id)
+                    .getString(Auxiliar.uid);
+            tarea = PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroCompletadas,
+                    getIntent().getExtras().getString(Auxiliar.id),
+                    idUsuario);
+        } catch (JSONException e) {
+            idUsuario = null;
+            tarea = null;
+        }
 
         //Referencias a objetos
         TextView titulo = findViewById(R.id.tituloCompletada);
@@ -441,7 +454,8 @@ public class Completadas extends AppCompatActivity implements
             PersistenciaDatos.reemplazaJSON(
                     getApplication(),
                     PersistenciaDatos.ficheroCompletadas,
-                    tarea);
+                    tarea,
+                    idUsuario);
         }catch (JSONException e){
             e.printStackTrace();
         }

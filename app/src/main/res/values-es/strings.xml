@@ -166,7 +166,8 @@
     <string name="continuar">Continuar</string>
     <string name="cerrarSesion">Cerrar sesión</string>
     <string name="iniciarSesion">Iniciar sesión</string>
-    <string name="cerrarSesionMensaje">¿Quieres cerrar sesión? Si cierras sesión perderás todas las respuestas guardadas en este dispositivo.</string>
+    <string name="cerrarSesionMensajeAjustes">Si cierra la sesión Casual Learn no le podrá notificar de nuevas tareas.</string>
+    <string name="cerrarSesionMensaje">¿De verdad quieres cerrar sesión?</string>
     <string name="entiendo">Lo entiendo</string>
     <string name="volverRecordar">Recordar más tarde</string>
     <string name="volverSolicitar">Volver a solicitar</string>
@@ -217,4 +218,8 @@
     <string name="errorInstagram">Solo se puede compartir en Instagram en las tareas que tengan fotografías o vídeos</string>
     <string name="twitSinTextoFs">He realizado una tarea con @CasualLearn cerca de las</string>
     <string name="twitSinTextoMs">He realizado una tarea con @CasualLearn cerca de los</string>
+    <string name="infoWikipedia">Información de la Wikipedia</string>
+    <string name="icono_tarea_completada">Tarea completada</string>
+    <string name="unaTareaMas">Una tarea más...</string>
+    <string name="tareaDenunciadaAntes">La tarea ha sido denunciada con anterioridad</string>
 </resources>

@@ -29,7 +29,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase que presenta al usuario los distintos tipos de listas de la aplicación.
  *
  * @author Pablo
- * @version 20200914
+ * @version 20201005
  */
 public class ListaTareas extends AppCompatActivity
         implements AdaptadorLista.ItemClickListener, AdaptadorLista.ItemLongClickLister{
@@ -43,6 +43,8 @@ public class ListaTareas extends AppCompatActivity
     private RecyclerView contenedor;
 
     private int posicionPulsada;
+
+    private String idUsuario;
 
     /**
      * Método para crear la vista del usuario. Se obtiene la lista de tareas de la petición y se
@@ -75,6 +77,14 @@ public class ListaTareas extends AppCompatActivity
                 break;
         }
 
+        try{
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id)
+                    .getString(Auxiliar.uid);
+        }catch (Exception e){
+            idUsuario = null;
+        }
+
         if(savedInstanceState != null)
             posicionPulsada = savedInstanceState.getInt("PULSACION");
         else
@@ -86,42 +96,46 @@ public class ListaTareas extends AppCompatActivity
      * Si no existen tarea se le notifica al usuario mediante un mensaje
      */
     private void cargaTareas(){
-        //Lista de tareas
-        JSONArray arrayTareas = PersistenciaDatos.leeFichero(getApplication(), peticion);
+        if(idUsuario != null){
+            JSONArray arrayTareas = PersistenciaDatos.leeTareasUsuario(getApplication(), peticion, idUsuario);
+            if(arrayTareas.length() > 0) {
+                sinTareas.setVisibility(View.GONE);
+                contenedor.setVisibility(View.VISIBLE);
+                contenedor.setHasFixedSize(true);
 
-        if(arrayTareas.length() > 0) {
-            sinTareas.setVisibility(View.GONE);
-            contenedor.setVisibility(View.VISIBLE);
-            contenedor.setHasFixedSize(true);
-
-            RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-            contenedor.setLayoutManager(layoutManager);
-            JSONObject jsonObject;
-            List<TareasLista> tareas = new ArrayList<>();
-            try {
-                for (int i = 0; i < arrayTareas.length(); i++) {
-                    jsonObject = arrayTareas.getJSONObject(i);
-                    float puntuacion;
-                    try{
-                        puntuacion = jsonObject.getInt(Auxiliar.rating);
-                    }catch (Exception e){
-                        puntuacion = -1;
+                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+                contenedor.setLayoutManager(layoutManager);
+                JSONObject jsonObject;
+                List<TareasLista> tareas = new ArrayList<>();
+                try {
+                    for (int i = 0; i < arrayTareas.length(); i++) {
+                        jsonObject = arrayTareas.getJSONObject(i);
+                        float puntuacion;
+                        try{
+                            puntuacion = jsonObject.getInt(Auxiliar.rating);
+                        }catch (Exception e){
+                            puntuacion = -1;
+                        }
+                        tareas.add(new TareasLista(
+                                jsonObject.getString(Auxiliar.id),
+                                jsonObject.getString(Auxiliar.titulo),
+                                Auxiliar.ultimaParte(jsonObject.getString(Auxiliar.tipoRespuesta)),
+                                jsonObject.getString(Auxiliar.fechaUltimaModificacion),
+                                puntuacion));
                     }
-                    tareas.add(new TareasLista(
-                            jsonObject.getString(Auxiliar.id),
-                            jsonObject.getString(Auxiliar.titulo),
-                            Auxiliar.ultimaParte(jsonObject.getString(Auxiliar.tipoRespuesta)),
-                            jsonObject.getString(Auxiliar.fechaUltimaModificacion),
-                            puntuacion));
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
-            adapter = new AdaptadorLista(this, tareas);
-            adapter.setClickListener(this);
-            adapter.setLongClickLister(this);
-            contenedor.setAdapter(adapter);
+                adapter = new AdaptadorLista(this, tareas);
+                adapter.setClickListener(this);
+                adapter.setLongClickLister(this);
+                contenedor.setAdapter(adapter);
+            }else{
+                //Mensaje si no se extrae ninguna tarea
+                contenedor.setVisibility(View.GONE);
+                sinTareas.setVisibility(View.VISIBLE);
+            }
         }else{
             //Mensaje si no se extrae ninguna tarea
             contenedor.setVisibility(View.GONE);
@@ -138,9 +152,17 @@ public class ListaTareas extends AppCompatActivity
             case PersistenciaDatos.ficheroTareasRechazadas:
                 try {
                     if(peticion.equals(PersistenciaDatos.ficheroTareasPospuestas))
-                        jTarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasPospuestas, idTarea);
+                        jTarea = PersistenciaDatos.obtenTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroTareasPospuestas,
+                                idTarea,
+                                idUsuario);
                     else
-                        jTarea = PersistenciaDatos.obtenTarea(getApplication(), PersistenciaDatos.ficheroTareasRechazadas, idTarea);
+                        jTarea = PersistenciaDatos.obtenTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroTareasRechazadas,
+                                idTarea,
+                                idUsuario);
                     Intent intent = new Intent(this, Preview.class);
                     intent.putExtra(Auxiliar.id, idTarea);
                     if(peticion.equals(PersistenciaDatos.ficheroTareasPospuestas)){
@@ -149,10 +171,13 @@ public class ListaTareas extends AppCompatActivity
                         intent.putExtra(Auxiliar.previa, Auxiliar.tareasRechazadas);
                     }
                     startActivity(intent);
-                    //jTarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                    PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, jTarea, Context.MODE_PRIVATE);
+                    PersistenciaDatos.guardaJSON(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            jTarea,
+                            Context.MODE_PRIVATE);
                 }catch (Exception e){
-                    //
+                    e.printStackTrace();
                 }
                 break;
             case PersistenciaDatos.ficheroCompletadas:

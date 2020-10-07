@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -21,7 +22,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * soporta la aplicación.
  *
  * @author Pablo
- * @version 20200909
+ * @version 20201005
  */
 public class CompartirRespuesta extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
@@ -43,11 +44,16 @@ public class CompartirRespuesta extends AppCompatActivity
         idTarea = getIntent().getExtras().getString("ID");
         textoPuntua = getIntent().getExtras().getString(Auxiliar.textoParaElMapa);
 
-        tarea = PersistenciaDatos.recuperaTarea(getApplication(),
-                PersistenciaDatos.ficheroCompletadas,
-                idTarea);
-
-        try{
+        try {
+            tarea = PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroCompletadas,
+                    idTarea,
+                    PersistenciaDatos.recuperaTarea(
+                            getApplication(),
+                            PersistenciaDatos.ficheroUsuario,
+                            Auxiliar.id)
+                            .getString(Auxiliar.uid));
             String tipo = tarea.getString(Auxiliar.tipoRespuesta);
             if(tipo.equals(Auxiliar.tipoSinRespuesta) ||
                     tipo.equals(Auxiliar.tipoPreguntaCorta) ||
@@ -56,7 +62,13 @@ public class CompartirRespuesta extends AppCompatActivity
                 insta.setVisibility(View.GONE);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Button insta = findViewById(R.id.btCompartirInsta);
+            insta.setVisibility(View.GONE);
+            insta = findViewById(R.id.btCompartirTwitter);
+            insta.setVisibility(View.GONE);
+            insta = findViewById(R.id.btCompartirYammer);
+            insta.setVisibility(View.GONE);
+            Toast.makeText(this, getString(R.string.tituErrorBBDD), Toast.LENGTH_LONG).show();
         }
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);

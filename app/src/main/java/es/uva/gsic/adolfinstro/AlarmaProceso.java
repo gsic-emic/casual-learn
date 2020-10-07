@@ -45,7 +45,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20200918
+ * @version 20201005
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */
@@ -317,6 +317,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 "&sur=" + (location.getLatitude() - 0.00325) +
                 "&oeste=" + (location.getLongitude() - 0.00325)
                 +((idUsuario == null)?"":"&id=" + idUsuario);
+        final String finalIdUsuario = idUsuario;
         JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url,
                 null, new Response.Listener<JSONArray>() {
             @Override
@@ -329,16 +330,19 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         jsonObject = response.getJSONObject(i);
                         if(Auxiliar.tareaRegistrada(
                                 application,
-                                jsonObject.getString(Auxiliar.id))){
+                                jsonObject.getString(Auxiliar.id),
+                                finalIdUsuario)){
                             if(PersistenciaDatos.existeTarea(
                                     application,
                                     PersistenciaDatos.ficheroNotificadas,
-                                    jsonObject.getString(Auxiliar.id))){
+                                    jsonObject.getString(Auxiliar.id),
+                                    finalIdUsuario)){
                                 try {
                                     PersistenciaDatos.obtenTarea(
                                             application,
                                             PersistenciaDatos.ficheroNotificadas,
-                                            jsonObject.getString(Auxiliar.id));
+                                            jsonObject.getString(Auxiliar.id),
+                                            finalIdUsuario);
                                     guarda = true;
                                 } catch (Exception e) {
                                     guarda = false;
@@ -459,7 +463,16 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                     double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
                     if (distanciaAndada <= maxAndado) {//Se comprueba si el usuario está caminando
                         //Comprobación de la ubucación actual a las tareas almacenadas
-                        JSONObject tarea = Auxiliar.tareaMasCercana(application, latitud, longitud);
+                        JSONObject tarea = null;
+                        try {
+                            tarea = Auxiliar.tareaMasCercana(
+                                    application,
+                                    latitud,
+                                    longitud,
+                                    idUsuario.getString(Auxiliar.uid));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                         //Se obtiene la distancia más baja a la tarea
                         if (tarea != null) {
                             double distancia;
@@ -505,6 +518,10 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
                 jsonObject.put(Auxiliar.origen, PersistenciaDatos.ficheroTareasUsuario);
                 jsonObject.put(Auxiliar.fechaNotificiacion, Auxiliar.horaFechaActual());
+                JSONObject idUser = PersistenciaDatos.recuperaTarea(
+                        application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(idUser != null)
+                    jsonObject.put(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
                 if(!PersistenciaDatos.guardaJSON(
                         application,
                         PersistenciaDatos.ficheroNotificadas,
