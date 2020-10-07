@@ -529,7 +529,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
             switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
                         .getExtras()).getString(Auxiliar.previa))){
                 case Auxiliar.notificacion:
-
                     if(idUsuario != null) {
                         Intent intent = new Intent();
                         intent.setAction(Auxiliar.ahora_no);

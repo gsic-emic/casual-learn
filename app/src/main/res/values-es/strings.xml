@@ -221,4 +221,5 @@
     <string name="infoWikipedia">Información de la Wikipedia</string>
     <string name="icono_tarea_completada">Tarea completada</string>
     <string name="unaTareaMas">Una tarea más...</string>
+    <string name="tareaDenunciadaAntes">La tarea ha sido denunciada con anterioridad</string>
 </resources>

@@ -720,18 +720,81 @@ public class  Maps extends AppCompatActivity implements
                 JSONObject tarea = adaptadorListaMapa.getTarea(posicion);
                 tarea.put(Auxiliar.origen, tarea.getString(Auxiliar.ficheroOrigen));
                 Intent intent = new Intent(this, Preview.class);
-                intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
-                intent.putExtra(Auxiliar.id, tarea.getString(Auxiliar.id));
+                String idUsuario;
+                String idTarea = tarea.getString(Auxiliar.id);
+                intent.putExtra(Auxiliar.id, idTarea);
                 intent.putExtra(Auxiliar.posUsuarioLat, miPosicion.getLatitude());
                 intent.putExtra(Auxiliar.posUsuarioLon, miPosicion.getLongitude());
-                startActivity(intent);
-                tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
-                JSONObject idUser = PersistenciaDatos.recuperaTarea(
-                        getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                if(idUser != null)
-                    tarea.put(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
-                PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, tarea, Context.MODE_PRIVATE);
+                try{
+                    idUsuario = PersistenciaDatos.recuperaTarea(
+                            getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id)
+                            .getString(Auxiliar.uid);
+                }catch (Exception e){
+                    idUsuario = null;
+                }
+                if(idUsuario == null){
+                    intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
+                    tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
+                    PersistenciaDatos.guardaJSON(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNotificadas,
+                            tarea,
+                            Context.MODE_PRIVATE);
+                    startActivity(intent);
+                } else{ //La tarea puede estar en el fichero de rechazadas, pospuestas o denunciadas ya que el usuario está identificado
+                    String[] ficheros = {
+                            PersistenciaDatos.ficheroTareasPospuestas,
+                            PersistenciaDatos.ficheroTareasRechazadas,
+                            PersistenciaDatos.ficheroDenunciadas};
+                    JSONObject tareaAnterior = null;
+                    String fichero = null;
+                    for(String f : ficheros){
+                        tareaAnterior = PersistenciaDatos.obtenTarea(
+                                getApplication(),
+                                f,
+                                idTarea,
+                                idUsuario);
+                        if(tareaAnterior != null){
+                            fichero = f;
+                            break;
+                        }
+                    }
+                    if(tareaAnterior != null){//Se ha encontrado la tarea en uno de los ficheros
+                        if(fichero.equals(ficheros[2])){
+                            PersistenciaDatos.guardaJSON(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroTareasRechazadas,
+                                    tarea,
+                                    Context.MODE_PRIVATE);
+                            pintaSnackBar(getString(R.string.tareaDenunciadaAntes));
+                        }else{
+                            if(fichero.equals(ficheros[0]))
+                                intent.putExtra(Auxiliar.previa, Auxiliar.tareasPospuestas);
+                            else
+                                intent.putExtra(Auxiliar.previa, Auxiliar.tareasRechazadas);
+                            PersistenciaDatos.guardaJSON(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNotificadas,
+                                    tareaAnterior,
+                                    Context.MODE_PRIVATE);
+                            startActivity(intent);
+                        }
+                    }else{
+                        intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
+                        tarea.put(Auxiliar.idUsuario, idUsuario);
+                        tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                        tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
+                        PersistenciaDatos.guardaJSON(
+                                getApplication(),
+                                PersistenciaDatos.ficheroNotificadas,
+                                tarea,
+                                Context.MODE_PRIVATE);
+                        startActivity(intent);
+                    }
+                }
+
+
             }else{
                 //Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                 if(myLocationNewOverlay != null){
