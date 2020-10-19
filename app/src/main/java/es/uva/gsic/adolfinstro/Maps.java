@@ -25,9 +25,11 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.text.Html;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -130,8 +132,6 @@ public class  Maps extends AppCompatActivity implements
     /** Contexto */
     private Context context;
 
-    /** Nivel de zum mínimo permitido */
-    private final double nivelMin = 6.5;
     /** Nivel de zum máximo permitido */
     private final double nivelMax = 19.5;
 
@@ -280,6 +280,8 @@ public class  Maps extends AppCompatActivity implements
             //RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(map);
             //rotationGestureOverlay.setEnabled(true);
             //map.getOverlays().add(rotationGestureOverlay);
+            // Nivel de zum mínimo permitido
+            double nivelMin = 6.5;
             map.setMinZoomLevel(nivelMin);
             map.setMaxZoomLevel(nivelMax);
 
@@ -572,6 +574,12 @@ public class  Maps extends AppCompatActivity implements
     public void checkPermissions() {
         permisos = new ArrayList<>();
         String textoPermisos = getString(R.string.necesidad_permisos);
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED)) {
+            permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
+        }
         //Compruebo permisos de localización en primer y segundo plano
         if(!(ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION)

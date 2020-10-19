@@ -12,12 +12,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.05" />
+        app:layout_constraintGuide_percent="0.01" />
+
+    <Button
+        android:id="@+id/btCompartirTeams"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/guiaCompartir"
+        app:layout_constraintStart_toStartOf="parent"
+        android:padding="15dp"
+        android:drawableStart="@drawable/ic_microsoft_teams"
+        android:text="@string/compartir_teams"
+        android:layout_margin="20dp"
+        android:onClick="boton"
+        android:contentDescription="@string/botonInstagram" />
+
     <Button
         android:id="@+id/btCompartirInsta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/guiaCompartir"
+        app:layout_constraintTop_toBottomOf="@id/btCompartirTeams"
         app:layout_constraintStart_toStartOf="parent"
         android:padding="15dp"
         android:drawableStart="@drawable/ic_instagram_color"

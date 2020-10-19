@@ -157,12 +157,8 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
      */
     @Override
     public void onClick(View v){
-        switch (v.getId()){
-            case R.id.btGoogle:
-                //Se lanza la actividad de identificación de Google y se espera al resultado
-                lanzaGoogle();
-                break;
-            default:
+        if (v.getId() == R.id.btGoogle) {//Se lanza la actividad de identificación de Google y se espera al resultado
+            lanzaGoogle();
         }
     }
 
@@ -240,7 +236,7 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
             }catch (JSONException e){
                 e.printStackTrace();
             }
-            //
+            //TODO Eliminar en las próximas versiones
             //
             //
             //Comprobación del marcado con el idUser de las tareas de los ficheros de notificadas, pospuestas, rechazadas y completadas:

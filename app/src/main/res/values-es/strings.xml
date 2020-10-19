@@ -166,7 +166,7 @@
     <string name="continuar">Continuar</string>
     <string name="cerrarSesion">Cerrar sesión</string>
     <string name="iniciarSesion">Iniciar sesión</string>
-    <string name="cerrarSesionMensajeAjustes">Si cierra la sesión Casual Learn no le podrá notificar de nuevas tareas.</string>
+    <string name="cerrarSesionMensajeAjustes">Si cierra la sesión Casual Learn no le podrá notificar nuevas tareas.</string>
     <string name="cerrarSesionMensaje">¿De verdad quieres cerrar sesión?</string>
     <string name="entiendo">Lo entiendo</string>
     <string name="volverRecordar">Recordar más tarde</string>
@@ -220,6 +220,11 @@
     <string name="twitSinTextoMs">He realizado una tarea con @CasualLearn cerca de los</string>
     <string name="infoWikipedia">Información de la Wikipedia</string>
     <string name="icono_tarea_completada">Tarea completada</string>
-    <string name="unaTareaMas">Una tarea más...</string>
+    <string name="unaTareaMas">Una tarea más…</string>
     <string name="tareaDenunciadaAntes">La tarea ha sido denunciada con anterioridad</string>
+    <string name="permiso_almacenamiento"><![CDATA[<p>La aplicación necesita <b>permisos de escritura</b> para ser capaz de almacenar los mapas y así solo se tengan que descargar una vez.</p>]]></string>
+    <string name="botonTeams">Botón para comapartir la respuesta en Microsoft Teams</string>
+    <string name="instalaTeams">Debes instalar el cliente oficial de Microsoft Teams para poder comparitr la respuesta</string>
+    <string name="compartir_teams">Compartir en Teams</string>
+    <string name="tu_respuesta">Tu respuesta</string>
 </resources>

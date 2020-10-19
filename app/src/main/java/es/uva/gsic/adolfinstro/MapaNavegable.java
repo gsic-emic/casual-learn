@@ -124,12 +124,18 @@ public class MapaNavegable extends AppCompatActivity {
 
     public void checkPermissions(){
         permisos = new ArrayList<>();
-        String textoPermisos = String.format(
-                "%s%s", getString(R.string.necesidad_permisos), getString(R.string.ubicacion_primer));
+        String textoPermisos = getString(R.string.necesidad_permisos);
+        if(!(ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED)) {
+            permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
+        }
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+            textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
         }
 
         if(permisos.isEmpty()) {
