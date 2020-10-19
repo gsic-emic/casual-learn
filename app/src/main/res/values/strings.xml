@@ -228,7 +228,7 @@
     <string name="ubicacion_primer"><![CDATA[<p>The app needs to know your <b>foreground location</b> in order to show your position on the map.</p>]]></string>
     <string name="ubicacion_segundo"><![CDATA[<p>The app needs to know your <b>position in the background</b> to notify you of nearby tasks.</p>]]></string>
     <string name="volver">Back</string>
-    <string name="permiso_camara"><![CDATA[The app needs to access the device\'s <p>camera</b> to take photos or record videos.</p>]]></string>
+    <string name="permiso_camara"><![CDATA[<p>The app needs to access the device\'s <b>camera</b> to take photos or record videos.</p>]]></string>
     <string name="permiso_micro"><![CDATA[<p>The app needs access to the <b>microphone</b>. With this permission the videos can have audio.</p>]]></string>
     <string name="enviarWifi">Send scores only when the device has Wi-Fi connectivity</string>
     <string name="logotipo_eslogan">Logo Slogan</string>
@@ -249,6 +249,11 @@
     <string name="infoWikipedia">Wikipedia Information</string>
     <string name="icono_tarea_completada">Task complete</string>
     <string name="cerrarSesionMensajeAjustes">If you log out Casual Learn will not be able to notify new tasks.</string>
-    <string name="unaTareaMas">One more task...</string>
+    <string name="unaTareaMas">One more task…</string>
     <string name="tareaDenunciadaAntes">The task has been previously reported</string>
+    <string name="permiso_almacenamiento" ><![CDATA[<p>The app needs <b>write permissions</b> to be able to store images and videos.</p>]]></string>
+    <string name="botonTeams">Button to share the answer in Microsoft Teams</string>
+    <string name="instalaTeams">You should install the official Microsoft Teams client to share your answer</string>
+    <string name="compartir_teams">Share on Teams</string>
+    <string name="tu_respuesta">Your answare</string>
 </resources>

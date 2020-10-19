@@ -19,13 +19,14 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * @version 20200612
  */
 public class ImagenCompleta extends AppCompatActivity {
+
+    String urlLicencia;
+
     /**
      * Método de carga inicial de los objetos. Se inicia la descarga de la fotografía o la carga de
      * la memoria interna
      * @param savedInstanceState Bundle
      */
-    String urlLicencia;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

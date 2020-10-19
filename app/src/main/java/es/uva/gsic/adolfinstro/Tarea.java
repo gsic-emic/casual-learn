@@ -2,6 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.text.InputFilter;
@@ -37,7 +39,6 @@ import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -58,7 +59,7 @@ import static java.util.Objects.requireNonNull;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20201005
+ * @version 20201007
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -389,6 +390,11 @@ public class Tarea extends AppCompatActivity implements
                     permisos.add(Manifest.permission.CAMERA);
                     textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_camara));
                 }
+                /*if(!(ActivityCompat.checkSelfPermission(
+                        this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
+                    permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                    textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
+                }*/
                 if(tipo.equals(Auxiliar.tipoVideo) && !(ActivityCompat.checkSelfPermission(
                         this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.RECORD_AUDIO);
@@ -632,7 +638,7 @@ public class Tarea extends AppCompatActivity implements
             }
             if(photoFile != null){
                 photoURI = FileProvider.getUriForFile(context, getString(R.string.fileProvider), photoFile);
-
+                //photoURI = Uri.fromFile(photoFile);
                 takePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePicture, tipo);//Los requestCode solo pueden ser de 16 bits
             }

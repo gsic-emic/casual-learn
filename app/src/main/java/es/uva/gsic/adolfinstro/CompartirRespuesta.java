@@ -22,7 +22,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * soporta la aplicación.
  *
  * @author Pablo
- * @version 20201005
+ * @version 20201007
  */
 public class CompartirRespuesta extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
@@ -94,12 +94,20 @@ public class CompartirRespuesta extends AppCompatActivity
                         hashtag);
                 break;
             case R.id.btCompartirYammer:
-                Auxiliar.mandaYammer(this,
+                Auxiliar.mandaYammer(
+                        this,
                         tarea,
                         hashtag);
                 break;
             case R.id.btCompartirInsta:
-                Auxiliar.mandaInsta(this,
+                Auxiliar.mandaInsta(
+                        this,
+                        tarea,
+                        hashtag);
+                break;
+            case R.id.btCompartirTeams:
+                Auxiliar.mandaTeams(
+                        this,
                         tarea,
                         hashtag);
                 break;

@@ -168,6 +168,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
         if(completada){
             ImageView icono = findViewById(R.id.ivCompletadaPrevie);
             icono.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_completada));
+            Button bt = findViewById(R.id.btIrACompletada);
+            bt.setVisibility(View.VISIBLE);
         }
 
         if(tarea != null) {
@@ -455,6 +457,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             permisos = new ArrayList<>();
             String textoPermisos = getString(R.string.necesidad_permisos);
+            if(!(ActivityCompat.checkSelfPermission(
+                    context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED)) {
+                permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
+            }
             //Compruebo permisos de localización en primer y segundo plano
             if(!(ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -601,6 +609,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 case R.id.ivLicenciaPreview:
                     if(urlLicencia != null)
                         Auxiliar.navegadorInterno(this, urlLicencia);
+                    break;
+                case R.id.btIrACompletada:
+                    intent = new Intent(context, Completadas.class);
+                    intent.putExtra(
+                            Auxiliar.id,
+                            Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                    startActivity(intent);
                     break;
                 default:
                     if (idUsuario == null) {

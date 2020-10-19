@@ -6,6 +6,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.backup.BackupManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -25,6 +26,7 @@ import android.widget.VideoView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -102,13 +104,13 @@ public class Completadas extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_completadas);
         //Se activa la flecha para volver a la actividad anterior
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         //Se recupera la tarea de la base de datos. La tarea permanence en el fichero de completadas por
         //si el usuario se sale sin guardar
         try {
-            idUsuario = PersistenciaDatos.recuperaTarea(
-                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id)
+            idUsuario = Objects.requireNonNull(PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id))
                     .getString(Auxiliar.uid);
             tarea = PersistenciaDatos.recuperaTarea(
                     getApplication(),
@@ -288,58 +290,53 @@ public class Completadas extends AppCompatActivity implements
         }
         else
             caso = item.getItemId();
-        switch (caso){
-            case R.id.editarCompletada:
-                if(editando){
-                    try {
-                        String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
-                        //Se comprueba si la respuesta está vacía
-                        if (textoUsuario.getVisibility() != View.GONE &&
-                                (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
-                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
-                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                                ) && textoUsuario.getText().toString().isEmpty()) {
-                            textoUsuario.setError(getString(R.string.respuestaVacia));
-                        } else {
-                            //Se comprueba si se tiene algún recurso multimedia
-                            if((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                    || tipoRespuesta.equals(Auxiliar.tipoImagen)
-                                    || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
-                                    || tipoRespuesta.equals(Auxiliar.tipoVideo)
+        if (caso == R.id.editarCompletada) {
+            if (editando) {
+                try {
+                    String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
+                    //Se comprueba si la respuesta está vacía
+                    if (textoUsuario.getVisibility() != View.GONE &&
+                            (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
                                     || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                                ) && (listaURI.size() == 0))
-                            {
-                                muestraSnack(getString(R.string.agregarContenido));
-                                //Toast.makeText(this, getString(R.string.agregarContenido), Toast.LENGTH_SHORT).show();
-                            }else {
-                                editando = false;
-                                if(item!=null)
-                                    item.setIcon(R.drawable.ic_edit_black_24dp);
-                                bloqueaYGuarda();
-                                btCompartir.show();
-                            }
+                            ) && textoUsuario.getText().toString().isEmpty()) {
+                        textoUsuario.setError(getString(R.string.respuestaVacia));
+                    } else {
+                        //Se comprueba si se tiene algún recurso multimedia
+                        if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
+                                || tipoRespuesta.equals(Auxiliar.tipoImagen)
+                                || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
+                                || tipoRespuesta.equals(Auxiliar.tipoVideo)
+                                || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                        ) && (listaURI.size() == 0)) {
+                            muestraSnack(getString(R.string.agregarContenido));
+                        } else {
+                            editando = false;
+                            if (item != null)
+                                item.setIcon(R.drawable.ic_edit_black_24dp);
+                            bloqueaYGuarda();
+                            btCompartir.show();
                         }
-                    }catch (JSONException e){
-                        e.printStackTrace();
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                else{
-                    editando = true;
-                    if(item!=null)
-                        item.setIcon(R.drawable.ic_save_white_24dp);
-                    desbloqueaCampos();
-                    muestraOculta(false);
-                    btCompartir.hide();
-                }
-                return true;
+            } else {
+                editando = true;
+                if (item != null)
+                    item.setIcon(R.drawable.ic_save_white_24dp);
+                desbloqueaCampos();
+                muestraOculta(false);
+                btCompartir.hide();
+            }
+            return true;
             /*case R.id.publicarCompletada:
                 //Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
                 Auxiliar.mandaTweet(this, tarea, hashtag);
                 return true;*/
-            default:
-                return super.onOptionsItemSelected(item);
         }
+        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -456,6 +453,8 @@ public class Completadas extends AppCompatActivity implements
                     PersistenciaDatos.ficheroCompletadas,
                     tarea,
                     idUsuario);
+            BackupManager backupManager = new BackupManager(this);
+            backupManager.dataChanged();
         }catch (JSONException e){
             e.printStackTrace();
         }
@@ -715,54 +714,50 @@ public class Completadas extends AppCompatActivity implements
     @Override
     public void onActivityResult(int codigo, int resultado, Intent datos) {
         super.onActivityResult(codigo, resultado, datos);
-        switch (codigo) {
-            case 5000://IMAGEN o VIDEO
-                if(resultado == -1){
-                    try {//-1 si que tiene contenido; //0 no tiene contenido
-                        String tipo = tarea.getString(Auxiliar.tipoRespuesta);
-                        File copia;
-                        if(tipo.equals(Auxiliar.tipoVideo))
-                            copia = Auxiliar.createFile(3, this);
-                        else
-                            copia = Auxiliar.createFile(0, this);
+        if (codigo == 5000) {//IMAGEN o VIDEO
+            if (resultado == -1) {
+                try {//-1 si que tiene contenido; //0 no tiene contenido
+                    String tipo = tarea.getString(Auxiliar.tipoRespuesta);
+                    File copia;
+                    if (tipo.equals(Auxiliar.tipoVideo))
+                        copia = Auxiliar.createFile(3, this);
+                    else
+                        copia = Auxiliar.createFile(0, this);
 
-                        Uri uri = FileProvider.getUriForFile(this,
-                                getString(R.string.fileProvider), copia);
-                        uriGuardadas.add(uri);
-                        copiar(getContentResolver().openInputStream(Objects.requireNonNull(datos.getData())),
-                                new FileOutputStream(copia));
-                        listaURI.add(uri.toString());
-                        JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
-                        JSONObject nuevaRespuesta = new JSONObject();
-                        nuevaRespuesta.put(Auxiliar.posicionRespuesta, respuestas.length());
-                        nuevaRespuesta.put(Auxiliar.respuestaRespuesta, uri.toString());
-                        nuevaRespuesta.put(Auxiliar.tipoRespuesta, Auxiliar.uri);
-                        respuestas.put(nuevaRespuesta);
-                        tarea.put(Auxiliar.respuestas, respuestas);
-                        imagenesCamaras.add(new ImagenesCamara(uri, View.VISIBLE));
-                        if(recyclerView.getVisibility() == View.GONE)
-                            recyclerView.setVisibility(View.VISIBLE);
-                        if(tipo.equals(Auxiliar.tipoVideo)){
-                            adaptadorVideosCompletados = new AdaptadorVideosCompletados(
-                                    this, imagenesCamaras);
-                            adaptadorVideosCompletados.setClickListenerVideo(this);
-                            recyclerView.invalidate();
-                            recyclerView.setAdapter(adaptadorVideosCompletados);
-                        }else{
-                            adaptadorImagenesCompletadas = new AdaptadorImagenesCompletadas(
-                                    this, imagenesCamaras);
-                            adaptadorImagenesCompletadas.setClickListener(this);
-                            recyclerView.invalidate();
-                            recyclerView.setAdapter(adaptadorImagenesCompletadas);
-                        }
-                        recyclerView.scrollToPosition(imagenesCamaras.size() - 1);
-                    }catch (JSONException | IOException e){
-                        e.printStackTrace();
+                    Uri uri = FileProvider.getUriForFile(this,
+                            getString(R.string.fileProvider), copia);
+                    uriGuardadas.add(uri);
+                    copiar(getContentResolver().openInputStream(Objects.requireNonNull(datos.getData())),
+                            new FileOutputStream(copia));
+                    listaURI.add(uri.toString());
+                    JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+                    JSONObject nuevaRespuesta = new JSONObject();
+                    nuevaRespuesta.put(Auxiliar.posicionRespuesta, respuestas.length());
+                    nuevaRespuesta.put(Auxiliar.respuestaRespuesta, uri.toString());
+                    nuevaRespuesta.put(Auxiliar.tipoRespuesta, Auxiliar.uri);
+                    respuestas.put(nuevaRespuesta);
+                    tarea.put(Auxiliar.respuestas, respuestas);
+                    imagenesCamaras.add(new ImagenesCamara(uri, View.VISIBLE));
+                    if (recyclerView.getVisibility() == View.GONE)
+                        recyclerView.setVisibility(View.VISIBLE);
+                    if (tipo.equals(Auxiliar.tipoVideo)) {
+                        adaptadorVideosCompletados = new AdaptadorVideosCompletados(
+                                this, imagenesCamaras);
+                        adaptadorVideosCompletados.setClickListenerVideo(this);
+                        recyclerView.invalidate();
+                        recyclerView.setAdapter(adaptadorVideosCompletados);
+                    } else {
+                        adaptadorImagenesCompletadas = new AdaptadorImagenesCompletadas(
+                                this, imagenesCamaras);
+                        adaptadorImagenesCompletadas.setClickListener(this);
+                        recyclerView.invalidate();
+                        recyclerView.setAdapter(adaptadorImagenesCompletadas);
                     }
+                    recyclerView.scrollToPosition(imagenesCamaras.size() - 1);
+                } catch (JSONException | IOException e) {
+                    e.printStackTrace();
                 }
-                break;
-            default:
-                break;
+            }
         }
     }
 
@@ -788,7 +783,7 @@ public class Completadas extends AppCompatActivity implements
      * @param b Bundle donde se almacena el estado
      */
     @Override
-    public void onSaveInstanceState(Bundle b) {
+    public void onSaveInstanceState(@NotNull Bundle b) {
         super.onSaveInstanceState(b);
         b.putBoolean("EDITANDO", editando);
         b.putInt("POSICION", posicion);
@@ -816,17 +811,44 @@ public class Completadas extends AppCompatActivity implements
                 Auxiliar.mandaInsta(this, tarea, hashtag);
                 muestraOculta(false);
                 break;
+            case R.id.btCompartirCompletadaTeams:
+                Auxiliar.mandaTeams(this, tarea, hashtag);
+                muestraOculta(false);
+                break;
             default:
                 break;
         }
     }
 
     private void muestraOculta(boolean mostrar){
-        Integer[] lista = {
-                R.id.btCompartirCompletadaTwitter,
-                R.id.btCompartirCompletadaYammer,
-                R.id.btCompartirCompletadaInstagram
-        };
+        Integer[] lista;
+        try {
+           String tipo = tarea.getString(Auxiliar.tipoRespuesta);
+            if(tipo.equals(Auxiliar.tipoSinRespuesta) ||
+                    tipo.equals(Auxiliar.tipoPreguntaCorta) ||
+                    tipo.equals(Auxiliar.tipoPreguntaLarga)) {
+                lista = new Integer[]{
+                        R.id.btCompartirCompletadaTwitter,
+                        R.id.btCompartirCompletadaYammer,
+                        R.id.btCompartirCompletadaTeams
+                };
+            }else{
+                lista = new Integer[]{
+                        R.id.btCompartirCompletadaTwitter,
+                        R.id.btCompartirCompletadaYammer,
+                        R.id.btCompartirCompletadaInstagram,
+                        R.id.btCompartirCompletadaTeams
+                };
+            }
+        } catch (JSONException e) {
+            lista = new Integer[]{
+                    R.id.btCompartirCompletadaTwitter,
+                    R.id.btCompartirCompletadaYammer,
+                    R.id.btCompartirCompletadaInstagram,
+                    R.id.btCompartirCompletadaTeams
+            };
+        }
+
         for(int i : lista) {
             if (mostrar)
                 ((FloatingActionButton) findViewById(i)).show();

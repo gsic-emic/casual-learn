@@ -86,8 +86,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rvImagenesAlumno"
-            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletada"
-            android:layout_marginTop="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:paddingVertical="10dp"
             android:visibility="visible" />
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -103,7 +103,7 @@
             android:id="@+id/btCompartirCompletada"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="15dp"
             android:layout_marginEnd="15dp"
             app:fabSize="auto"
             android:onClick="boton"
@@ -157,6 +157,21 @@
             app:srcCompat="@drawable/ic_instagram"
             android:visibility="gone"
             android:contentDescription="@string/botonInstagram"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btCompartirCompletadaTeams"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/colorSecondary"
+            app:layout_constraintStart_toStartOf="@id/btCompartirCompletada"
+            app:layout_constraintEnd_toEndOf="@id/btCompartirCompletada"
+            app:layout_constraintBottom_toTopOf="@id/btCompartirCompletadaInstagram"
+            app:srcCompat="@drawable/ic_microsoft_teams"
+            android:visibility="gone"
+            android:contentDescription="@string/botonTeams"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

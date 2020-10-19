@@ -73,11 +73,12 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201006
+ * @version 20201007
  */
 public class Auxiliar {
 
     public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    //public static final String direccionIP = "http://192.168.1.222:10001/app/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
@@ -171,6 +172,18 @@ public class Auxiliar {
             case 2:
                 mediaFile = File.createTempFile("JPG_"+timeStamp,".jpg",
                         context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
+                /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+                    ContentResolver contentResolver = context.getContentResolver();
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timeStamp + ".jpg");
+                    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
+                    contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+                    Uri uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+                    mediaFile = new File(uri.getPath() + "/"+timeStamp+".jpg");
+                }else{
+                    String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+                    mediaFile = new File(imagesDir, timeStamp + ".jpg");
+                }*/
                 break;
             case 3:
                 mediaFile = File.createTempFile("VID_"+timeStamp, ".mp4",
@@ -316,10 +329,11 @@ public class Auxiliar {
      * @param longitudUsuario Longitud de la posición del usuario
      * @return JSONObject con la tarea a realizar o null
      */
-    public static JSONObject tareaMasCercana(Application app,
-                                             double latitudUsuario,
-                                             double longitudUsuario,
-                                             String idUsuario){
+    public static JSONObject tareaMasCercana(
+            Application app,
+            double latitudUsuario,
+            double longitudUsuario,
+            String idUsuario){
         //Inicializo la lista de tareas a la misma distancia
         List<JSONObject> tarea = new ArrayList<>();
         //Creo la referencia al objeto JSONObject para que no se esté creando y destruyendo en cada
@@ -331,17 +345,24 @@ public class Auxiliar {
         double distanciaMin = 10000;
         try{
             //Se obtienen las tareas del fichero
-            JSONArray vectorTareas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroTareasUsuario);
-            for(int i = 0; i < vectorTareas.length(); i++){//Se recorren todas las tareas del fichero
+            JSONArray vectorTareas = PersistenciaDatos.leeFichero(
+                    app,
+                    PersistenciaDatos.ficheroTareasUsuario);
+            //Se recorren todas las tareas del fichero. Es necesario para saber cuál es la tarea más cercana
+            for(int i = 0; i < vectorTareas.length(); i++){
                 tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tareaRegistrada(app, tareaEvaluada.getString(Auxiliar.id), idUsuario) &&
-                        !PersistenciaDatos.existeTarea(
-                                app,
-                                PersistenciaDatos.ficheroNotificadas,
-                                tareaEvaluada.getString(Auxiliar.id),
-                                idUsuario)) {
+                if(!tareaRegistrada(
+                        app,
+                        tareaEvaluada.getString(Auxiliar.id),
+                        idUsuario
+                ) && !PersistenciaDatos.existeTarea(
+                        app,
+                        PersistenciaDatos.ficheroNotificadas,
+                        tareaEvaluada.getString(Auxiliar.id),
+                        idUsuario)) {
                     if (!tarea.isEmpty()) {
-                        distancia = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                        distancia = calculaDistanciaDosPuntos(
+                                tareaEvaluada.getDouble(Auxiliar.latitud),
                                 tareaEvaluada.getDouble(Auxiliar.longitud),
                                 latitudUsuario,
                                 longitudUsuario);
@@ -356,7 +377,8 @@ public class Auxiliar {
                         }
                     } else {//Solo se va entrar aquí con la primera tarea
                         tarea.add(tareaEvaluada);
-                        distanciaMin = calculaDistanciaDosPuntos(tareaEvaluada.getDouble(Auxiliar.latitud),
+                        distanciaMin = calculaDistanciaDosPuntos(
+                                tareaEvaluada.getDouble(Auxiliar.latitud),
                                 tareaEvaluada.getDouble(Auxiliar.longitud),
                                 latitudUsuario,
                                 longitudUsuario);
@@ -366,7 +388,10 @@ public class Auxiliar {
             //Devolvemos una de las tareas del vector escogida de manera aleatorio
             //return tarea.get((int)(Math.random()*tarea.size()));
             //Devolvemos la primera tarea que será la recomenda por Recombee
-            return tarea.get(0);
+            if(tarea.size() > 0)
+                return tarea.get(0);
+            else
+                return null;
         }
         catch (Exception e){
             return null;
@@ -380,10 +405,27 @@ public class Auxiliar {
      * @return Verdadero si el usuario ya ha interactuado con la tarea
      */
     public static boolean tareaRegistrada(Application app, String idTarea, @NonNull String idUser){
-        return PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasPospuestas, idTarea, idUser) ||
-                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroTareasRechazadas, idTarea, idUser) ||
-                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroCompletadas, idTarea, idUser) ||
-                PersistenciaDatos.existeTarea(app, PersistenciaDatos.ficheroDenunciadas, idTarea, idUser);
+        return PersistenciaDatos.existeTarea(
+                app,
+                PersistenciaDatos.ficheroTareasPospuestas,
+                idTarea,
+                idUser
+        ) || PersistenciaDatos.existeTarea(
+                app,
+                PersistenciaDatos.ficheroTareasRechazadas,
+                idTarea,
+                idUser
+        ) || PersistenciaDatos.existeTarea(
+                app,
+                PersistenciaDatos.ficheroCompletadas,
+                idTarea,
+                idUser
+        ) || PersistenciaDatos.existeTarea(
+                app,
+                PersistenciaDatos.ficheroDenunciadas,
+                idTarea,
+                idUser
+        );
     }
 
     /**
@@ -555,12 +597,6 @@ public class Auxiliar {
                 Math.min(long1, long2));
     }
 
-    /*public static void publicaGaleria(Context contexto, Uri uri) {
-        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        intent.setData(uri);
-        contexto.sendBroadcast(intent);
-    }*/
-
     /**
      * Envía el contenido a la app de Twitter para que el usuario pueda compartirlo
      * @param context Contexto
@@ -595,18 +631,6 @@ public class Auxiliar {
                 }
             }
 
-            ArrayList<Uri> uris = new ArrayList<>();
-            /*uris.add(
-                    uriTexto(
-                            context,
-                            context.getResources().getDrawable(R.drawable.ic_por_defecto_insta),
-                            contenidoTexto(
-                                    context,
-                                    tarea,
-                                    textoUsuario,
-                                    hashtag,
-                                    false)));*/
-
             switch (tarea.getString(Auxiliar.tipoRespuesta)){
                 case Auxiliar.tipoPreguntaCorta:
                 case Auxiliar.tipoPreguntaLarga:
@@ -623,6 +647,7 @@ public class Auxiliar {
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagenes:
                 case Auxiliar.tipoVideo:
+                    ArrayList<Uri> uris = new ArrayList<>();
                     //if(listaURI.size() > 0)
                         intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
                     //else
@@ -721,9 +746,6 @@ public class Auxiliar {
                 case Auxiliar.tipoImagen:
                 case Auxiliar.tipoImagenMultiple:
                 case Auxiliar.tipoPreguntaImagenes:
-                    //if(listaURI.size() > 0)
-                    //intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    //else
                     intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_TEXT,
                             contenidoTexto(context, tarea, textoUsuario, hashtag, false));
@@ -756,6 +778,99 @@ public class Auxiliar {
         } catch (PackageManager.NameNotFoundException e) {
             Toast.makeText(context,
                     context.getString(R.string.instalaYammer),
+                    Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void mandaTeams(Context context, JSONObject tarea, String hashtag){
+        try {
+            final int maxMulti = 10;
+            context.getPackageManager().getPackageInfo(
+                    "com.microsoft.teams", PackageManager.GET_ACTIVITIES);
+
+            Intent intent;
+            List<String> listaURI = new ArrayList<>();
+            String textoUsuario = null;
+            JSONArray respuestas;
+            ArrayList<Uri> uris = new ArrayList<>();
+            try {
+                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+            } catch (Exception e) {
+                respuestas = new JSONArray();
+            }
+            JSONObject respuesta;
+            for (int i = 0; i < respuestas.length(); i++) {
+                respuesta = respuestas.getJSONObject(i);
+                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
+                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
+                    }
+                } else {//URI de video o fotos
+                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
+                }
+            }
+            switch (tarea.getString(Auxiliar.tipoRespuesta)) {
+                case Auxiliar.tipoPreguntaCorta:
+                case Auxiliar.tipoPreguntaLarga:
+                case Auxiliar.tipoSinRespuesta:
+                    intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
+                    intent.setType("text/plain");
+                    break;
+                case Auxiliar.tipoPreguntaImagen:
+                case Auxiliar.tipoImagen:
+                case Auxiliar.tipoImagenMultiple:
+                case Auxiliar.tipoPreguntaImagenes:
+                case Auxiliar.tipoVideo:
+                    if(listaURI.size() > 0)
+                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                    else
+                        intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_TEXT,
+                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
+                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
+                        if(!listaURI.isEmpty()){
+                            int i = 0;
+                            for(String s : listaURI){
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("*/*");
+                        }
+                    }else{
+                        if(!listaURI.isEmpty()){
+                            int i = 0;
+                            for(String s : listaURI){
+                                if(i < maxMulti) {
+                                    uris.add(Uri.parse(s));
+                                    ++i;
+                                } else
+                                    break;
+                            }
+                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            intent.setType("image/jpeg");
+                        }
+                    }
+                    break;
+                default:
+                    intent = null;
+                    break;
+            }
+
+            if (intent != null) {
+                intent.setPackage("com.microsoft.teams");
+                context.startActivity(intent);
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Toast.makeText(context,
+                    context.getString(R.string.instalaTeams),
                     Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -960,15 +1075,18 @@ public class Auxiliar {
      * @param recorta Indica si debe recortar o no el mensaje.
      * @return Frase que se le pasará a la aplicación deseada
      */
-    private static String contenidoT(Context context,
-                                     JSONObject tarea,
-                                     String hashtag,
-                                     boolean recorta){
+    private static String contenidoT(
+            Context context,
+            JSONObject tarea,
+            String hashtag,
+            boolean recorta){
         String texto = null;
 
-        String[] femenina = {"catedral", "necrópolis", "torre", "casona-torre", "concatedral", "casa-fuerte", "casa-torre", "carcel", "mansión", "cruz", "estación"};
+        String[] femenina = {"catedral", "necrópolis", "torre", "casona-torre", "concatedral",
+                "casa-fuerte", "casa-torre", "carcel", "mansión", "cruz", "estación"};
 
-        String[] femeninas = {"catedrales", "escuelas", "murallas", "casonas", "ruinas", "casas", "fachadas", "salinas", "facultad"};
+        String[] femeninas = {"catedrales", "escuelas", "murallas", "casonas", "ruinas", "casas",
+                "fachadas", "salinas", "facultad"};
 
         String[] masculinos = {"puentes", "reales", "restos"};
 
@@ -982,21 +1100,30 @@ public class Auxiliar {
         try{
             String[] lugar = tarea.getString(Auxiliar.titulo).split(" ");
             String primera = lugar[0].toLowerCase();
-            if(lugar.length == 1 || primera.equals("el") || primera.equals("los") || primera.equals("ie")){
+            if(lugar.length == 1 || primera.equals("el") || primera.equals("los")
+                    || primera.equals("ie")){
                 texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTexto), lugar[0]);
             }else{
                 String caracter = lugar[0].substring(lugar[0].length() - 1);
                 if(caracter.equals("o")){
-                    texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoM), tarea.getString(Auxiliar.titulo));
+                    texto = String.format("%s %s",
+                            context.getResources().getString(R.string.twitSinTextoM),
+                            tarea.getString(Auxiliar.titulo));
                 }else{
                     if(caracter.equals("a")){
-                        texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoF), tarea.getString(Auxiliar.titulo));
+                        texto = String.format("%s %s",
+                                context.getResources().getString(R.string.twitSinTextoF),
+                                tarea.getString(Auxiliar.titulo));
                     }else{
-                        texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoM), tarea.getString(Auxiliar.titulo));
+                        texto = String.format("%s %s",
+                                context.getResources().getString(R.string.twitSinTextoM),
+                                tarea.getString(Auxiliar.titulo));
                         boolean encontrado = false;
                         for(String a : femeninas){
                             if(a.equals(primera)){
-                                texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoFs), tarea.getString(Auxiliar.titulo));
+                                texto = String.format("%s %s",
+                                        context.getResources().getString(R.string.twitSinTextoFs),
+                                        tarea.getString(Auxiliar.titulo));
                                 encontrado = true;
                                 break;
                             }
@@ -1004,7 +1131,9 @@ public class Auxiliar {
                         if(!encontrado){
                             for(String a : femenina){
                                 if(a.equals(primera)){
-                                    texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoF), tarea.getString(Auxiliar.titulo));
+                                    texto = String.format("%s %s",
+                                            context.getResources().getString(R.string.twitSinTextoF),
+                                            tarea.getString(Auxiliar.titulo));
                                     encontrado = true;
                                     break;
                                 }
@@ -1013,7 +1142,9 @@ public class Auxiliar {
                         if(!encontrado){
                             for(String a : masculinos){
                                 if(a.equals(primera)){
-                                    texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTextoMs), tarea.getString(Auxiliar.titulo));
+                                    texto = String.format("%s %s",
+                                            context.getResources().getString(R.string.twitSinTextoMs),
+                                            tarea.getString(Auxiliar.titulo));
                                     break;
                                 }
                             }
@@ -1071,7 +1202,9 @@ public class Auxiliar {
                             context.getString(R.string.yammerSinTexto),
                             tarea.getString(Auxiliar.titulo),
                             context.getString(R.string.tareaPregunta),
-                            tarea.getString(Auxiliar.recursoAsociadoTexto),
+                            tarea.getString(Auxiliar.recursoAsociadoTexto)
+                                    .replaceAll("</a>", "")
+                                    .replaceAll("<a.*?>",""),
                             context.getString(R.string.tareaRespuesta),
                             textoUsuario);
                 }
@@ -1110,7 +1243,8 @@ public class Auxiliar {
                                        Boolean enviaWifi){
 
         int tipoConectividad = tipoConectividad(appContext);
-        //Si no está conectado o está conectado pero solo lo quiere enviar por WiFi guardo el envío para después
+        //Si no está conectado o está conectado pero solo lo quiere enviar por WiFi guardo el
+        // envío para después
         if (tipoConectividad == -1 || (tipoConectividad == 1 && enviaWifi)) {
             try {
                 JSONObject jsonObject = new JSONObject();
@@ -1206,19 +1340,6 @@ public class Auxiliar {
     }
 
     /**
-     * Método para saber si la aplicación puede compartir algún dato a través de Internet
-     * @param contexto Contexto
-     * @param enviaWifi Preferencia del usuario
-     * @return Verdadero si puede enviar, falso si no puede.
-     */
-    public static boolean puedoEnviar(Context contexto, Boolean enviaWifi){
-        int conectividad = tipoConectividad(contexto);
-        return conectividad != -1 && (conectividad != 1 || !enviaWifi);
-    }
-
-
-
-    /**
      * Método para recortar el identificador de la tarea y que aún así pueda ser reconstruido
      * @return Últimas dos partes del path
      */
@@ -1262,9 +1383,10 @@ public class Auxiliar {
      * @return Objeto que se puede pasar a un TextView con los enlaces subrayados. NECESITA QUE EL
      * TEXTVIEW SE LE INDIQUE TEXTVIEW.setMovementMethod(LinkMovementMethod.getInstance());
      */
-    public static SpannableStringBuilder creaEnlaces(final Context contexto,
-                                                     String texto,
-                                                     final boolean fuera){
+    public static SpannableStringBuilder creaEnlaces(
+            final Context contexto,
+            String texto,
+            final boolean fuera){
         CharSequence charSequence = Html.fromHtml(texto);
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(charSequence);
         URLSpan[] urlSpans = spannableStringBuilder.getSpans(0,
@@ -1298,26 +1420,16 @@ public class Auxiliar {
      * @param context Contexto
      * @param ivInfoFotoPreview Identificador del botón de información
      * @param urlImagen URL de la imagen
+     * @return URL para de la licencia de la fotografía
      */
-    public static String enlaceLicencia(final Context context,
-                                      ImageView ivInfoFotoPreview,
-                                      String urlImagen) {
+    public static String enlaceLicencia(
+            final Context context,
+            ImageView ivInfoFotoPreview,
+            String urlImagen) {
         if(urlImagen != null && urlImagen.contains("wikimedia")){
-            /*final Uri url = Uri.parse(urlImagen.replace("Special:FilePath/", "File:")
-                    .replace("?width=300", "").concat(context.getString(R.string.ultimaParteLicencia)));*/
             ivInfoFotoPreview.setVisibility(View.VISIBLE);
             return urlImagen.replace("Special:FilePath/", "File:")
                     .replace("?width=300", "").concat(context.getString(R.string.ultimaParteLicencia));
-            /*ivInfoFotoPreview.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    /*Intent intent = new Intent(Intent.ACTION_VIEW, url);
-                    intent.addCategory(Intent.CATEGORY_BROWSABLE);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(intent);
-                    Auxiliar.navegadorInterno(context, url);
-                }
-            });*/
         }else{
             return null;
         }
@@ -1409,7 +1521,8 @@ public class Auxiliar {
         JSONArray array;
         BufferedReader bufferedReader = null;
         try {
-            InputStreamReader inputStreamReader = new InputStreamReader(context.getResources().openRawResource(R.raw.municipios_castilla_y_leon));
+            InputStreamReader inputStreamReader = new InputStreamReader(
+                    context.getResources().openRawResource(R.raw.municipios_castilla_y_leon));
             bufferedReader = new BufferedReader(inputStreamReader);
             StringBuffer stringBuffer = new StringBuffer();
             String inter;
@@ -1432,7 +1545,19 @@ public class Auxiliar {
         return array;
     }
 
-    public static boolean cerrarSesion(final Context context, Application app, Object actividad){
+    /**
+     * Método para cerrar la sesión. Borrará los ficheros de identificación del usuario pero dejará
+     * las tareas con las que ha interaccionado por si se vuelve a identificar en este dispositivo
+     * @param context Contexto
+     * @param app Aplicación
+     * @param actividad Actividad
+     * @return Verdaadero si se ha consegido realizar correctamente todas las operaciones para el
+     * cierre de sesión
+     */
+    public static boolean cerrarSesion(
+            final Context context,
+            Application app,
+            Object actividad){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         try {
             if(PersistenciaDatos.borraTodosFicheros(app)) {
@@ -1447,7 +1572,9 @@ public class Auxiliar {
                 editor.commit();
                 try {
                     Login.firebaseAuth.signOut();
-                    Login.googleSignInClient.signOut().addOnCompleteListener((Activity) actividad, new OnCompleteListener<Void>() {
+                    Login.googleSignInClient.signOut().addOnCompleteListener(
+                            (Activity) actividad,
+                            new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                         }
