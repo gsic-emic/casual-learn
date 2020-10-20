@@ -45,7 +45,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20201005
+ * @version 20201020
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */
@@ -201,47 +201,66 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
      * Método para obtener la posción del usuario.
      */
     private void posicionamiento() {
-        locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-        JSONObject idUsuario = PersistenciaDatos.
-                recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-        if (
-                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED
-                &&
-                ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
-                        != PackageManager.PERMISSION_GRANTED
-        ) {
-            cancelaAlarmaProceso(context);
-        }else {
-            if (idUsuario != null) { //Compruebo la posición únicamente si el usuario está identificado
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                        0, 0, locationListener = new LocationListener() {
-                            @Override
-                            public void onLocationChanged(Location location) {
-                                //Fundamental eliminar la actualización antes de continuar para que
-                                // no entre más de una vez en la comprobación
-                                locationManager.removeUpdates(locationListener);
-                                compruebaTareas(location);
-                            }
+        JSONObject instante = PersistenciaDatos.recuperaTarea(
+                application,
+                PersistenciaDatos.ficheroInstantes,
+                idInstanteNotAuto);
+        boolean comprueba;
+        try {
+            long instanteUltimaNotif = instante.getLong(Auxiliar.instante);
+            comprueba = (new Date().getTime()) >= (
+                    instanteUltimaNotif
+                    + ((Auxiliar.intervaloMinutos(intervalo) > 0)?
+                            Auxiliar.intervaloMinutos(intervalo)*60*1000:
+                            300000)
+                    - 120000);/*Resto dos minutos de las comprobaciones para que recupera del servidor si
+                                el instante de comprobación es en la siguiente iteracción*/
+        }catch (Exception e){
+            comprueba = false;
+        }
 
-                            @Override
-                            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-                            }
-
-                            @Override
-                            public void onProviderEnabled(String provider) {
-
-                            }
-
-                            @Override
-                            public void onProviderDisabled(String provider) {
-
-                            }
-                        });
-            }
-            else //Si el usuario no está identificado cancelo la alarma
+        if(instante == null || comprueba) {
+            locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            JSONObject idUsuario = PersistenciaDatos.
+                    recuperaTarea(application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if (
+                    ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                            != PackageManager.PERMISSION_GRANTED
+                            &&
+                            ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                    != PackageManager.PERMISSION_GRANTED
+            ) {
                 cancelaAlarmaProceso(context);
+            } else {
+                if (idUsuario != null) { //Compruebo la posición únicamente si el usuario está identificado
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                            0, 0, locationListener = new LocationListener() {
+                                @Override
+                                public void onLocationChanged(Location location) {
+                                    //Fundamental eliminar la actualización antes de continuar para que
+                                    // no entre más de una vez en la comprobación
+                                    locationManager.removeUpdates(locationListener);
+                                    compruebaTareas(location);
+                                }
+
+                                @Override
+                                public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                                }
+
+                                @Override
+                                public void onProviderEnabled(String provider) {
+
+                                }
+
+                                @Override
+                                public void onProviderDisabled(String provider) {
+
+                                }
+                            });
+                } else //Si el usuario no está identificado cancelo la alarma
+                    cancelaAlarmaProceso(context);
+            }
         }
     }
 
@@ -453,7 +472,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         boolean comprueba = (new Date().getTime()) >= instanteUltimaNotif + (
                 (Auxiliar.intervaloMinutos(intervalo) > 0)?
                         Auxiliar.intervaloMinutos(intervalo)*60*1000:
-                        20000);
+                        300000);
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
                 application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if(idUsuario != null) {
