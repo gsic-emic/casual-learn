@@ -100,7 +100,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20201006
+ * @version 20201026
  */
 public class  Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -520,18 +520,22 @@ public class  Maps extends AppCompatActivity implements
 
     public void updateUI(FirebaseUser firebaseUser, boolean registro){
         if(firebaseUser != null){
-            Login.firebaseAnalytics.setUserId(firebaseUser.getUid());
+            String idUsuario = firebaseUser.getUid();
+            Login.firebaseAnalytics.setUserId(idUsuario);
             Bundle bundle = new Bundle();
-            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
+            bundle.putString(Auxiliar.uid, idUsuario);
             if(registro)
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
-                JSONObject usuario = new JSONObject();
-                usuario.put(Auxiliar.id, Auxiliar.id);
-                usuario.put(Auxiliar.uid, firebaseUser.getUid());
-                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                JSONObject jsonObject = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(jsonObject == null || !jsonObject.getString(Auxiliar.uid).equals(idUsuario)) {
+                    JSONObject usuario = new JSONObject();
+                    usuario.put(Auxiliar.id, Auxiliar.id);
+                    usuario.put(Auxiliar.uid, firebaseUser.getUid());
+                    PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                }
             }catch (JSONException e){
                 e.printStackTrace();
             }

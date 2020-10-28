@@ -2,15 +2,14 @@ package es.uva.gsic.adolfinstro;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.text.InputFilter;
@@ -31,6 +30,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,7 +59,7 @@ import static java.util.Objects.requireNonNull;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20201007
+ * @version 20201028
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -104,9 +104,14 @@ public class Tarea extends AppCompatActivity implements
 
     private int posicion;
 
+    /** URL de la licencia de la imagen si la tuviera */
     private String urlLicencia;
 
+    /** Identificador del usuario */
     private String idUsuario;
+
+    /** Indica si la tarea realizado se tiene que publicar o no */
+    private boolean publicarRespuesta;
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -315,6 +320,9 @@ public class Tarea extends AppCompatActivity implements
             }catch (Exception e){
                 e.printStackTrace();
             }
+
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            publicarRespuesta = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
         }
 
         try {
@@ -359,6 +367,7 @@ public class Tarea extends AppCompatActivity implements
                         respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                         respuesta.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
                         respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                        respuesta.put(Auxiliar.publico, publicarRespuesta);
                         PersistenciaDatos.guardaJSON(getApplication(),
                                 PersistenciaDatos.ficheroCompletadas,
                                 respuesta,
@@ -545,7 +554,7 @@ public class Tarea extends AppCompatActivity implements
 
     /**
      * Método para guardar la respuesta de texto que haya dado el usuario. Agrega esta respueta al
-     * vector de las trespuestas.
+     * vector de las respuestas.
      * @param respuestaTextual Frase o palabras dadas por el usuario.
      * @throws Exception Posibles excepciones al manipular el JSON
      */
@@ -559,6 +568,7 @@ public class Tarea extends AppCompatActivity implements
         json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
         json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
         json.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
+        json.put(Auxiliar.publico, publicarRespuesta);
         PersistenciaDatos.guardaJSON(
                 getApplication(),
                 PersistenciaDatos.ficheroCompletadas,
@@ -868,6 +878,7 @@ public class Tarea extends AppCompatActivity implements
                     assert tarea != null;
                     tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    tarea.put(Auxiliar.publico, publicarRespuesta);
                     PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, tarea, Context.MODE_PRIVATE);
                     if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
                             PersistenciaDatos.ficheroCompletadas,
@@ -880,7 +891,7 @@ public class Tarea extends AppCompatActivity implements
                     mensajeError();
                 }
                 if(respuestaEsperada!=null){
-                    if (respuesta.contains(respuestaEsperada)) {
+                    if (respuesta.toLowerCase().contains(respuestaEsperada.toLowerCase())) {
                         mensajeRespuestaEsperada(this,true);
                     } else {
                         mensajeRespuestaEsperada(this,false);

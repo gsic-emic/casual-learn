@@ -41,7 +41,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase que permite a los usuarios identificarse frente al sistema.
  *
  * @author Pablo
- * @version 20201005
+ * @version 20201026
  */
 public class Login extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
 
@@ -229,10 +229,13 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
             else
                 firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
-                JSONObject usuario = new JSONObject();
-                usuario.put(Auxiliar.id, Auxiliar.id);
-                usuario.put(Auxiliar.uid, idUser);
-                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                JSONObject jsonObject = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(jsonObject == null || !jsonObject.getString(Auxiliar.uid).equals(idUser)) {
+                    JSONObject usuario = new JSONObject();
+                    usuario.put(Auxiliar.id, Auxiliar.id);
+                    usuario.put(Auxiliar.uid, idUser);
+                    PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                }
             }catch (JSONException e){
                 e.printStackTrace();
             }
