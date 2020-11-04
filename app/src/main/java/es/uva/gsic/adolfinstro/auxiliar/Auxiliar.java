@@ -40,6 +40,7 @@ import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.Request;
+import com.android.volley.Response;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -73,12 +74,14 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201007
+ * @version 20201028
  */
 public class Auxiliar {
 
-    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    //public static final String direccionIP = "http://192.168.1.222:10001/app/";
+    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
+    public static final String rutaPortafolio = direccionIP + "portafolio/";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
@@ -147,6 +150,11 @@ public class Auxiliar {
     public static final String textoParaElMapa = "textoParaElMapa";
     public static final String uid = "uid";
     public static final String idUsuario = "idUsuario";
+    public static final String idPortafolio = "idPorta";
+    public static final String idToken = "idToken";
+    public static final String publico = "publico";
+    public static final String retardado = "retardado";
+
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
@@ -156,6 +164,13 @@ public class Auxiliar {
     public static int incr = 0;
 
     public static JSONArray municipios = null;
+    private static final String idTarea = "idTarea";
+    private static final String instanteInicio = "instanteInicio";
+    private static final String instanteFin = "instanteFin";
+    private static final String instanteModificacion = "instanteModificacion";
+    private static final String respuestaTextual = "respuestaTextual";
+    private static final String numeroMedia = "numeroMedia";
+    private static final String puntuacion = "puntuacion";
 
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
@@ -1152,13 +1167,29 @@ public class Auxiliar {
                     }
                 }
             }
+            String link = "";
+            if(tarea.has(Auxiliar.idToken) && tarea.has(Auxiliar.publico)) {
+                if (tarea.getBoolean(Auxiliar.publico)) {
+                    String idUsuario = PersistenciaDatos.recuperaTarea(
+                            (Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroUsuario,
+                            Auxiliar.id)
+                            .getString(Auxiliar.idPortafolio);
+                    if (!idUsuario.equals(""))
+                        link = Auxiliar.rutaPortafolio + idUsuario + "/" + tarea.getString(Auxiliar.idToken);
+                }
+            }
+            if(!link.equals(""))
+                tama += 23;
             if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
-                texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
+                texto = texto.substring(0, 279 - (hashtags.length + tama + 5)) + "...";
             }
 
             for (String string : hashtags) {
                 texto = String.format("%s %s", texto, string);
             }
+
+            texto = String.format("%s %s", texto, link);
 
             return texto;
         }catch (Exception e){
@@ -1261,30 +1292,32 @@ public class Auxiliar {
         }
     }
 
-    public static void enviaResultados(Application app, Context contexto, String idTarea){
+    public static void enviaResultados(final Application app, Context contexto, String idTarea){
         JSONObject jsonObject = new JSONObject();
         String idUsuario;
         try {
-            idUsuario = PersistenciaDatos.recuperaTarea(app,
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    app,
                     PersistenciaDatos.ficheroUsuario,
-                    Auxiliar.id)
-                    .getString(Auxiliar.uid);
+                    Auxiliar.id
+            ).getString(Auxiliar.uid);
         }catch (JSONException e) {
             idUsuario = null;
         }
-        JSONObject tarea = PersistenciaDatos.recuperaTarea(
+        final JSONObject tarea = PersistenciaDatos.recuperaTarea(
                 app,
                 PersistenciaDatos.ficheroCompletadas,
                 idTarea,
                 idUsuario);
         try {
-            jsonObject.put("idTarea", idTarea);
-            jsonObject.put("idUsuario", idUsuario);
-            jsonObject.put("instanteInicio", tarea.getString(Auxiliar.fechaInicio));
-            jsonObject.put("instanteFin", tarea.getString(Auxiliar.fechaFinalizacion));
-            jsonObject.put("instanteModificacion",
+            jsonObject.put(Auxiliar.idTarea, idTarea);
+            jsonObject.put(Auxiliar.idUsuario, idUsuario);
+            jsonObject.put(Auxiliar.instanteInicio, tarea.getString(Auxiliar.fechaInicio));
+            jsonObject.put(Auxiliar.instanteFin, tarea.getString(Auxiliar.fechaFinalizacion));
+            jsonObject.put(Auxiliar.instanteModificacion,
                     tarea.getString(Auxiliar.fechaUltimaModificacion));
             jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
+            jsonObject.put(Auxiliar.publico, tarea.getBoolean(Auxiliar.publico));
 
             int numeroMedia = 0;
             if (tarea.has(Auxiliar.respuestas)) {
@@ -1293,29 +1326,59 @@ public class Auxiliar {
                 for (int i = 0; i < respuestas.length(); i++) {
                     respuesta = respuestas.getJSONObject(i);
                     if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                        jsonObject.put("respuestaTextual",
+                        jsonObject.put(Auxiliar.respuestaTextual,
                                 respuesta.getString(Auxiliar.respuestaRespuesta));
                     } else {
                         ++numeroMedia;
                     }
                 }
                 if (numeroMedia > 0)
-                    jsonObject.put("numeroMedia", numeroMedia);
+                    jsonObject.put(Auxiliar.numeroMedia, numeroMedia);
             }
             if (tarea.has(Auxiliar.rating))
-                jsonObject.put("puntuacion", tarea.getDouble(Auxiliar.rating));
+                jsonObject.put(Auxiliar.puntuacion, tarea.getDouble(Auxiliar.rating));
         } catch (Exception e) {
             jsonObject = null;
         }
 
-        if (jsonObject != null) {
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
-                    Auxiliar.direccionIP + "tareasCompletadas",
-                    jsonObject,
-                    null,
-                    null
-            );
-            ColaConexiones.getInstance(contexto).getRequestQueue().add(jsonObjectRequest);
+        try {
+            if (jsonObject != null) {
+                final String finalIdUsuario = idUsuario;
+                JsonObjectRequest jsonObjectRequest;
+                if (tarea.has(Auxiliar.idToken)) {//Actualización
+                    jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,
+                            Auxiliar.rutaTareasCompletadas + "/" + tarea.getString(Auxiliar.idToken),
+                            jsonObject,
+                            null,
+                            null);
+                } else {//Creación
+                    jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
+                            Auxiliar.rutaTareasCompletadas,
+                            jsonObject,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    if (response.has(Auxiliar.idToken)) {
+                                        try {
+                                            tarea.put(Auxiliar.idToken, response.getString(Auxiliar.idToken));
+                                            PersistenciaDatos.reemplazaJSON(
+                                                    app,
+                                                    PersistenciaDatos.ficheroCompletadas,
+                                                    tarea,
+                                                    finalIdUsuario);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            },
+                            null
+                    );
+                }
+                ColaConexiones.getInstance(contexto).getRequestQueue().add(jsonObjectRequest);
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
         }
     }
 
@@ -1428,8 +1491,11 @@ public class Auxiliar {
             String urlImagen) {
         if(urlImagen != null && urlImagen.contains("wikimedia")){
             ivInfoFotoPreview.setVisibility(View.VISIBLE);
-            return urlImagen.replace("Special:FilePath/", "File:")
-                    .replace("?width=300", "").concat(context.getString(R.string.ultimaParteLicencia));
+            return urlImagen
+                    .replace("Special:FilePath/", "File:")
+                    .replace("?widh=300px", "")
+                    .replace("?width=300", "")
+                    .concat(context.getString(R.string.ultimaParteLicencia));
         }else{
             return null;
         }

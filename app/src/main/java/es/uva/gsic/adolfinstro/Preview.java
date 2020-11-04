@@ -68,7 +68,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20201005
+ * @version 20201026
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -413,10 +413,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
             else
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
-                JSONObject usuario = new JSONObject();
-                usuario.put(Auxiliar.id, Auxiliar.id);
-                usuario.put(Auxiliar.uid, idUsuario);
-                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                JSONObject jsonObject = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(jsonObject == null || !jsonObject.getString(Auxiliar.uid).equals(idUsuario)) {
+                    JSONObject usuario = new JSONObject();
+                    usuario.put(Auxiliar.id, Auxiliar.id);
+                    usuario.put(Auxiliar.uid, idUsuario);
+                    PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                }
             }catch (JSONException e){
                 e.printStackTrace();
             }

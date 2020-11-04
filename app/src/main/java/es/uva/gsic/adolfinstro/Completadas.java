@@ -7,6 +7,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.backup.BackupManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -21,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -51,7 +55,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * modificar la respuesta dada o complementarla.
  *
  * @author Pablo García Zarza
- * @version 20201005
+ * @version 20201028
  */
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
@@ -92,6 +96,8 @@ public class Completadas extends AppCompatActivity implements
     private boolean enviaWifi;
 
     private String idUsuario;
+
+    private boolean publicarGeneral;
 
     /**
      * Método de creación de la actividad. Pinta la interfaz gráfica y establece las referencias
@@ -218,11 +224,6 @@ public class Completadas extends AppCompatActivity implements
             e.printStackTrace();
         }
 
-        /*if(savedInstanceState != null) {
-            editando = savedInstanceState.getBoolean("EDITANDO");
-            onOptionsItemSelected((MenuItem) findViewById(R.id.editarCompletada));
-        }*/
-
         if(savedInstanceState != null) {
             if(savedInstanceState.getInt("COMPARTIENDO") == View.VISIBLE)
                 muestraOculta(true);
@@ -234,6 +235,7 @@ public class Completadas extends AppCompatActivity implements
 
         hashtag = sharedPreferences.getString(Ajustes.HASHTAG_pref, getString(R.string.hashtag));
         enviaWifi = sharedPreferences.getBoolean(Ajustes.WIFI_pref, false);
+        publicarGeneral = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
     }
 
     /**
@@ -274,6 +276,39 @@ public class Completadas extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    private boolean publico;
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu){
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        MenuItem checkCompartir = menu.findItem(R.id.tareaPublicaSelector);
+        MenuItem copiarAlPorta = menu.findItem(R.id.copiarToken);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean publicoG = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+
+        if(idUsuario == null || !publicoG || !idUsuario.has(Auxiliar.idPortafolio)) {//Si el usuario no se ha identificado se cambia la etiqueta a mostrar
+            checkCompartir.setVisible(false);
+            copiarAlPorta.setVisible(false);
+            publico = false;
+        }else{
+            try {
+                if(tarea.has(Auxiliar.publico) && tarea.getBoolean(Auxiliar.publico) && tarea.has(Auxiliar.idToken)){
+                    checkCompartir.setVisible(true);
+                    publico = true;
+                    checkCompartir.setTitle(R.string.remove_answer);
+                    copiarAlPorta.setVisible(true);
+                }else{
+                    checkCompartir.setVisible(true);
+                    publico = false;
+                    checkCompartir.setTitle(R.string.public_answer);
+                    copiarAlPorta.setVisible(false);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     /**
      * Método para controlar la pulsación de los items del menú
      *
@@ -290,51 +325,78 @@ public class Completadas extends AppCompatActivity implements
         }
         else
             caso = item.getItemId();
-        if (caso == R.id.editarCompletada) {
-            if (editando) {
-                try {
-                    String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
-                    //Se comprueba si la respuesta está vacía
-                    if (textoUsuario.getVisibility() != View.GONE &&
-                            (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
-                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
-                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                            ) && textoUsuario.getText().toString().isEmpty()) {
-                        textoUsuario.setError(getString(R.string.respuestaVacia));
-                    } else {
-                        //Se comprueba si se tiene algún recurso multimedia
-                        if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                || tipoRespuesta.equals(Auxiliar.tipoImagen)
-                                || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
-                                || tipoRespuesta.equals(Auxiliar.tipoVideo)
-                                || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                        ) && (listaURI.size() == 0)) {
-                            muestraSnack(getString(R.string.agregarContenido));
+        switch (caso) {
+            case R.id.editarCompletada:
+                if (editando) {
+                    try {
+                        String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
+                        //Se comprueba si la respuesta está vacía
+                        if (textoUsuario.getVisibility() != View.GONE &&
+                                (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                                ) && textoUsuario.getText().toString().isEmpty()) {
+                            textoUsuario.setError(getString(R.string.respuestaVacia));
                         } else {
-                            editando = false;
-                            if (item != null)
-                                item.setIcon(R.drawable.ic_edit_black_24dp);
-                            bloqueaYGuarda();
-                            btCompartir.show();
+                            //Se comprueba si se tiene algún recurso multimedia
+                            if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
+                                    || tipoRespuesta.equals(Auxiliar.tipoImagen)
+                                    || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
+                                    || tipoRespuesta.equals(Auxiliar.tipoVideo)
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                            ) && (listaURI.size() == 0)) {
+                                muestraSnack(getString(R.string.agregarContenido));
+                            } else {
+                                editando = false;
+                                if (item != null)
+                                    item.setIcon(R.drawable.ic_edit_black_24dp);
+                                bloqueaYGuarda();
+                                btCompartir.show();
+                            }
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                } else {
+                    editando = true;
+                    if (item != null)
+                        item.setIcon(R.drawable.ic_save_white_24dp);
+                    desbloqueaCampos();
+                    muestraOculta(false);
+                    btCompartir.hide();
+                }
+                return true;
+            case R.id.tareaPublicaSelector:
+                try {
+                    publico = !publico;
+                    tarea.put(Auxiliar.publico, publico);
+                    bloqueaYGuarda();
+                    invalidateOptionsMenu();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            } else {
-                editando = true;
-                if (item != null)
-                    item.setIcon(R.drawable.ic_save_white_24dp);
-                desbloqueaCampos();
-                muestraOculta(false);
-                btCompartir.hide();
-            }
-            return true;
-            /*case R.id.publicarCompletada:
-                //Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
-                Auxiliar.mandaTweet(this, tarea, hashtag);
-                return true;*/
+                return true;
+            case R.id.copiarToken:
+                try{
+                    if(tarea.has(Auxiliar.idToken)) {
+                        String tokenTarea = tarea.getString(Auxiliar.idToken);
+                        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        String idUsuario = PersistenciaDatos.recuperaTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroUsuario,
+                                Auxiliar.id)
+                                .getString(Auxiliar.idPortafolio);
+                        String url = Auxiliar.rutaPortafolio + idUsuario + "/" + tokenTarea;
+                        clipboardManager.setPrimaryClip(ClipData.newPlainText(Auxiliar.idToken, url));
+                        Toast.makeText(this, R.string.copiado_al_porta, Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(this, R.string.idToken_noDisponible, Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e){
+                    Toast.makeText(this, R.string.errorCopiaPortapapeles, Toast.LENGTH_SHORT).show();
+                }
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -448,6 +510,10 @@ public class Completadas extends AppCompatActivity implements
         }
         try {
             tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+
+            if(!tarea.has(Auxiliar.publico))
+                tarea.put(Auxiliar.publico, publicarGeneral);
+
             PersistenciaDatos.reemplazaJSON(
                     getApplication(),
                     PersistenciaDatos.ficheroCompletadas,
@@ -464,6 +530,7 @@ public class Completadas extends AppCompatActivity implements
             bundle.putString("user", Login.firebaseAuth.getUid());
             bundle.putString("idTarea", tarea.getString(Auxiliar.id));
             Login.firebaseAnalytics.logEvent("tareaModificada", bundle);
+            invalidateOptionsMenu();
         }catch (Exception e){
             e.printStackTrace();
         }
