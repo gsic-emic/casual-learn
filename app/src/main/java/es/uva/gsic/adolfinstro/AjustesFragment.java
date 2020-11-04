@@ -37,7 +37,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * intervalo.
  *
  * @author pablo
- * @version 20201026
+ * @version 20201029
  */
 public class AjustesFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {
@@ -45,7 +45,7 @@ public class AjustesFragment extends PreferenceFragmentCompat
     private PreferenceCategory preferenceCategory;
     private SeekBarPreference seekBarPreference;
     private Preference compartirPorta;
-    private SwitchPreference compartirProtafolio;
+    private SwitchPreference preferenciaRetardo;
     private JSONObject idUsuario;
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -63,10 +63,11 @@ public class AjustesFragment extends PreferenceFragmentCompat
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         preferenceCategory = findPreference("categoriaPreferencias");
         compartirPorta = findPreference(Ajustes.IDPORTAFOLIO_pref);
-        compartirProtafolio = findPreference(Ajustes.PORTAFOLIO_pref);
+        SwitchPreference compartirProtafolio = findPreference(Ajustes.PORTAFOLIO_pref);
         SwitchPreference noMolestar = findPreference(Ajustes.NO_MOLESTAR_pref);
         final EditTextPreference hashtag = findPreference(Ajustes.HASHTAG_pref);
         SwitchPreference datos = findPreference(Ajustes.WIFI_pref);
+        preferenciaRetardo = findPreference(Ajustes.RETARDOPORTA_pref);
         if(idUsuario != null) {
             compartirProtafolio.setEnabled(true);
             noMolestar.setEnabled(true);
@@ -74,6 +75,7 @@ public class AjustesFragment extends PreferenceFragmentCompat
             datos.setEnabled(true);
             seekBarPreference.setEnabled(true);
             compartirPorta.setEnabled(sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false));
+            preferenciaRetardo.setEnabled(compartirPorta.isEnabled());
             compartirPorta.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -96,6 +98,7 @@ public class AjustesFragment extends PreferenceFragmentCompat
             noMolestar.setEnabled(false);
             hashtag.setEnabled(false);
             datos.setEnabled(false);
+            preferenciaRetardo.setEnabled(false);
             seekBarPreference.setEnabled(false);
         }
         onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
@@ -176,35 +179,66 @@ public class AjustesFragment extends PreferenceFragmentCompat
                     seekBarPreference.setEnabled(!sharedPreferences.getBoolean(key, false));
                 break;
             case Ajustes.PORTAFOLIO_pref:
-                final boolean publico = sharedPreferences.getBoolean(key, false);
+            case Ajustes.RETARDOPORTA_pref:
+                final boolean publico = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+                final boolean retardado = sharedPreferences.getBoolean(Ajustes.RETARDOPORTA_pref, true);
                 final Context context = getContext();
                 try {
                     JSONObject infoUsuario = new JSONObject();
-                    infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
+                    JsonObjectRequest jsonObjectRequest;
                     infoUsuario.put(Auxiliar.publico, publico);
-                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                            Request.Method.POST,
-                            Auxiliar.direccionIP + "portafolio",
-                            infoUsuario,
-                            new Response.Listener<JSONObject>() {
-                                @Override
-                                public void onResponse(JSONObject docUsuario) {
-                                    if (docUsuario != null) {
-                                        try {
-                                            idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
-                                            PersistenciaDatos.reemplazaJSON(
-                                                    (Application) context.getApplicationContext(),
-                                                    PersistenciaDatos.ficheroUsuario,
-                                                    idUsuario);
-                                            compartirPorta.setEnabled(publico);
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
+                    infoUsuario.put(Auxiliar.retardado, retardado);
+                    if(idUsuario.has(Auxiliar.idPortafolio)){//Es una actualización
+                        jsonObjectRequest = new JsonObjectRequest(
+                                Request.Method.PUT,
+                                Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),
+                                infoUsuario,
+                                new Response.Listener<JSONObject>() {
+                                    @Override
+                                    public void onResponse(JSONObject response) {
+                                        compartirPorta.setEnabled(publico);
+                                        preferenciaRetardo.setEnabled(publico);
+                                    }
+                                },
+                                new Response.ErrorListener() {
+                                    @Override
+                                    public void onErrorResponse(VolleyError error) {
+                                        idUsuario.remove(Auxiliar.idPortafolio);
+                                        PersistenciaDatos.reemplazaJSON(
+                                                (Application) context.getApplicationContext(),
+                                                PersistenciaDatos.ficheroUsuario,
+                                                idUsuario);
+                                        Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
                                     }
                                 }
-                            },
-                            null
-                    );
+                        );
+                    }else {//Es una creación
+                        infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
+                        jsonObjectRequest = new JsonObjectRequest(
+                                Request.Method.POST,
+                                Auxiliar.direccionIP + "portafolio",
+                                infoUsuario,
+                                new Response.Listener<JSONObject>() {
+                                    @Override
+                                    public void onResponse(JSONObject docUsuario) {
+                                        if (docUsuario != null) {
+                                            try {
+                                                idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
+                                                PersistenciaDatos.reemplazaJSON(
+                                                        (Application) context.getApplicationContext(),
+                                                        PersistenciaDatos.ficheroUsuario,
+                                                        idUsuario);
+                                                compartirPorta.setEnabled(publico);
+                                                preferenciaRetardo.setEnabled(publico);
+                                            } catch (JSONException e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+                                },
+                                null
+                        );
+                    }
 
                     ColaConexiones.getInstance(context).getRequestQueue().add(jsonObjectRequest);
                 }catch (JSONException e){

@@ -276,26 +276,30 @@ public class Completadas extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    private boolean publico;
     @Override
     public boolean onPrepareOptionsMenu(Menu menu){
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         MenuItem checkCompartir = menu.findItem(R.id.tareaPublicaSelector);
         MenuItem copiarAlPorta = menu.findItem(R.id.copiarToken);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean publico = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+        boolean publicoG = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
 
-        if(idUsuario == null || !publico || !idUsuario.has(Auxiliar.idPortafolio)) {//Si el usuario no se ha identificado se cambia la etiqueta a mostrar
+        if(idUsuario == null || !publicoG || !idUsuario.has(Auxiliar.idPortafolio)) {//Si el usuario no se ha identificado se cambia la etiqueta a mostrar
             checkCompartir.setVisible(false);
             copiarAlPorta.setVisible(false);
+            publico = false;
         }else{
             try {
                 if(tarea.has(Auxiliar.publico) && tarea.getBoolean(Auxiliar.publico) && tarea.has(Auxiliar.idToken)){
                     checkCompartir.setVisible(true);
-                    checkCompartir.setChecked(true);
+                    publico = true;
+                    checkCompartir.setTitle(R.string.remove_answer);
                     copiarAlPorta.setVisible(true);
                 }else{
                     checkCompartir.setVisible(true);
-                    checkCompartir.setChecked(false);
+                    publico = false;
+                    checkCompartir.setTitle(R.string.public_answer);
                     copiarAlPorta.setVisible(false);
                 }
             } catch (JSONException e) {
@@ -365,9 +369,8 @@ public class Completadas extends AppCompatActivity implements
                 return true;
             case R.id.tareaPublicaSelector:
                 try {
-                    boolean publico = !item.isChecked();
+                    publico = !publico;
                     tarea.put(Auxiliar.publico, publico);
-                    item.setChecked(publico);
                     bloqueaYGuarda();
                     invalidateOptionsMenu();
                 } catch (JSONException e) {

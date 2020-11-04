@@ -6,13 +6,11 @@
         android:title="@string/editar"
         app:showAsAction="always" />
     <item android:id="@+id/copiarToken"
-        android:icon="@drawable/ic_clipboard"
+        android:icon="@drawable/ic_copiar"
         android:title="@string/copiar_portapapeles"
         app:showAsAction="ifRoom"
         android:visible="true"/>
     <item android:id="@+id/tareaPublicaSelector"
-        android:checkable="true"
         android:title="@string/public_answer"
         app:showAsAction="never"/>
-
 </menu>

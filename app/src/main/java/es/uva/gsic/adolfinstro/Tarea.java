@@ -498,6 +498,8 @@ public class Tarea extends AppCompatActivity implements
                 final CheckBox cb1 = dialogo.findViewById(R.id.cbNoEntiendoTarea);
                 final CheckBox cb2 = dialogo.findViewById(R.id.cbTareaFallos);
                 final CheckBox cb3 = dialogo.findViewById(R.id.cbNoPuedoRealizar);
+                final CheckBox cb4 = dialogo.findViewById(R.id.cbTareaErronea);
+                final CheckBox cb5 = dialogo.findViewById(R.id.cbTareaNoPertinente);
                 final EditText editText = dialogo.findViewById(R.id.etDenuncia);
                 botonEnviar.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -511,20 +513,38 @@ public class Tarea extends AppCompatActivity implements
                             contenido = String.format("%s\n%s\n%s\n%s\n", idTarea, Build.MANUFACTURER, Build.MODEL, version);
 
                         String textoEdit = editText.getText().toString();
-                        if(cb1.isChecked() || cb2.isChecked() || cb3.isChecked()){//Alguno de los checkbox está activado, no tiene porque tener texto
+                        String cb = "";
+                        if(cb1.isChecked() || cb2.isChecked() || cb3.isChecked() || cb4.isChecked() || cb5.isChecked()){//Alguno de los checkbox está activado, no tiene porque tener texto
                             envia = true;
-                            if(cb1.isChecked())
+                            if(cb1.isChecked()) {
                                 contenido = contenido.concat(String.format("%s\n", getString(R.string.noEntiendo)));
-                            if(cb2.isChecked())
+                                cb  = cb.concat("1");
+                            }
+                            if(cb2.isChecked()) {
                                 contenido = contenido.concat(String.format("%s\n", getString(R.string.tareaConFallos)));
-                            if(cb3.isChecked())
+                                cb  = cb.concat("2");
+                            }
+                            if(cb3.isChecked()) {
                                 contenido = contenido.concat(String.format("%s\n", getString(R.string.noSePuedeRealizar)));
-                            if(!textoEdit.isEmpty() || !textoEdit.equals(""))
+                                cb  = cb.concat("3");
+                            }
+                            if(cb4.isChecked()) {
+                                contenido = contenido.concat(String.format("%s\n", getString(R.string.tarea_erronea)));
+                                cb  = cb.concat("4");
+                            }
+                            if(cb5.isChecked()) {
+                                contenido = contenido.concat(String.format("%s\n", getString(R.string.tarea_no_pertinente)));
+                                cb  = cb.concat("5");
+                            }
+                            if(!textoEdit.isEmpty() || !textoEdit.equals("")) {
                                 contenido = contenido.concat(String.format("%s\n", textoEdit));
+                                cb = cb.concat(String.format(" %s", textoEdit.substring(0, (Math.min(textoEdit.length(), 19)))));
+                            }
                         }else {//Necesita texto
                             if(!textoEdit.isEmpty() || !textoEdit.equals("")) {
                                 envia = true;
                                 contenido = contenido.concat(String.format("%s\n", textoEdit));
+                                cb = cb.concat(String.format(" %s", textoEdit.substring(0, (Math.min(textoEdit.length(), 19)))));
                             }
                             else
                                 editText.setError(getString(R.string.errorTextoDenuncia));
@@ -543,7 +563,7 @@ public class Tarea extends AppCompatActivity implements
                                 dialogo.cancel();
                                 muestraSnackBar(getString(R.string.noEmail));
                             }
-                            enviaDenunciaFirebase();
+                            enviaDenunciaFirebase(cb);
                         }
                     }
                 });
@@ -592,7 +612,7 @@ public class Tarea extends AppCompatActivity implements
      * Método para envíar una denuncia de la tarea. Esta denuncia se recogerá mediante un evento de
      * FIREBASE
      */
-    public void enviaDenunciaFirebase(){
+    public void enviaDenunciaFirebase(String cb){
         Intent intent = new Intent();
         intent.setAction(Auxiliar.nunca_mas);
         intent.putExtra(Auxiliar.id, idTarea);
@@ -600,6 +620,7 @@ public class Tarea extends AppCompatActivity implements
         Bundle bundle = new Bundle();
         bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
         bundle.putString("idUsuario", idUsuario);
+        bundle.putString("motivo", cb);
         Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
     }
 

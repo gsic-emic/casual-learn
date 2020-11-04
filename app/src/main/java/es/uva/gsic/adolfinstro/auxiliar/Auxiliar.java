@@ -79,7 +79,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://192.168.1.222:10001/app/";
+    public static final String direccionIP = "http://10.0.104.17:10001/app/";
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
 
@@ -153,6 +153,8 @@ public class Auxiliar {
     public static final String idPortafolio = "idPorta";
     public static final String idToken = "idToken";
     public static final String publico = "publico";
+    public static final String retardado = "retardado";
+
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
@@ -166,6 +168,9 @@ public class Auxiliar {
     private static final String instanteInicio = "instanteInicio";
     private static final String instanteFin = "instanteFin";
     private static final String instanteModificacion = "instanteModificacion";
+    private static final String respuestaTextual = "respuestaTextual";
+    private static final String numeroMedia = "numeroMedia";
+    private static final String puntuacion = "puntuacion";
 
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
@@ -1313,8 +1318,6 @@ public class Auxiliar {
                     tarea.getString(Auxiliar.fechaUltimaModificacion));
             jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
             jsonObject.put(Auxiliar.publico, tarea.getBoolean(Auxiliar.publico));
-            /*jsonObject.put(Auxiliar.titulo, tarea.getString(Auxiliar.titulo));
-            jsonObject.put(Auxiliar.recursoAsociadoTexto, tarea.getString(Auxiliar.recursoAsociadoTexto));*/
 
             int numeroMedia = 0;
             if (tarea.has(Auxiliar.respuestas)) {
@@ -1323,46 +1326,59 @@ public class Auxiliar {
                 for (int i = 0; i < respuestas.length(); i++) {
                     respuesta = respuestas.getJSONObject(i);
                     if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                        jsonObject.put("respuestaTextual",
+                        jsonObject.put(Auxiliar.respuestaTextual,
                                 respuesta.getString(Auxiliar.respuestaRespuesta));
                     } else {
                         ++numeroMedia;
                     }
                 }
                 if (numeroMedia > 0)
-                    jsonObject.put("numeroMedia", numeroMedia);
+                    jsonObject.put(Auxiliar.numeroMedia, numeroMedia);
             }
             if (tarea.has(Auxiliar.rating))
-                jsonObject.put("puntuacion", tarea.getDouble(Auxiliar.rating));
+                jsonObject.put(Auxiliar.puntuacion, tarea.getDouble(Auxiliar.rating));
         } catch (Exception e) {
             jsonObject = null;
         }
 
-        if (jsonObject != null) {
-            final String finalIdUsuario = idUsuario;
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
-                    Auxiliar.rutaTareasCompletadas,
-                    jsonObject,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            if(response.has(Auxiliar.idToken)){
-                                try {
-                                    tarea.put(Auxiliar.idToken, response.getString(Auxiliar.idToken));
-                                    PersistenciaDatos.reemplazaJSON(
-                                            app,
-                                            PersistenciaDatos.ficheroCompletadas,
-                                            tarea,
-                                            finalIdUsuario);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+        try {
+            if (jsonObject != null) {
+                final String finalIdUsuario = idUsuario;
+                JsonObjectRequest jsonObjectRequest;
+                if (tarea.has(Auxiliar.idToken)) {//Actualización
+                    jsonObjectRequest = new JsonObjectRequest(Request.Method.PUT,
+                            Auxiliar.rutaTareasCompletadas + "/" + tarea.getString(Auxiliar.idToken),
+                            jsonObject,
+                            null,
+                            null);
+                } else {//Creación
+                    jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
+                            Auxiliar.rutaTareasCompletadas,
+                            jsonObject,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    if (response.has(Auxiliar.idToken)) {
+                                        try {
+                                            tarea.put(Auxiliar.idToken, response.getString(Auxiliar.idToken));
+                                            PersistenciaDatos.reemplazaJSON(
+                                                    app,
+                                                    PersistenciaDatos.ficheroCompletadas,
+                                                    tarea,
+                                                    finalIdUsuario);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    },
-                    null
-            );
-            ColaConexiones.getInstance(contexto).getRequestQueue().add(jsonObjectRequest);
+                            },
+                            null
+                    );
+                }
+                ColaConexiones.getInstance(contexto).getRequestQueue().add(jsonObjectRequest);
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
         }
     }
 

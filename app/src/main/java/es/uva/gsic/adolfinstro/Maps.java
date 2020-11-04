@@ -39,6 +39,8 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import androidx.appcompat.widget.SearchView;
+
+import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -112,7 +114,9 @@ public class  Maps extends AppCompatActivity implements
     /** Instancia del texto informativo en el que el usuario todavía no ha pulsado ningún marcador */
     private TextView sinPulsarTarea;
     /** Objeto donde se expone toda la lista de tareas del marcador */
-    private RecyclerView contenedor, contenedorBusqMapa;
+    private RecyclerView contenedor;
+    /** Objeto sobre el que se carga la lista de municipios que indique el usuario*/
+    private RecyclerView contenedorBusqMapa;
 
     /** Objeto que almacenará, entre otras cosas, la última posición conocida del usuario*/
     private MyLocationNewOverlay myLocationNewOverlay;
@@ -168,6 +172,9 @@ public class  Maps extends AppCompatActivity implements
 
     /** Lista de permisos que la aplicación necesita solicitar al usuario*/
     private List<String> permisos;
+
+    /** Objeto para la búsqueda de municipios */
+    SearchView searchView;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -345,7 +352,7 @@ public class  Maps extends AppCompatActivity implements
             });
 
 
-            final SearchView searchView = findViewById(R.id.svMapa);
+            searchView = findViewById(R.id.svMapa);
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
@@ -1517,11 +1524,18 @@ public class  Maps extends AppCompatActivity implements
 
     @Override
     public void onItemClickDialogo(View view, int position) {
+        searchView.setIconified(true);
+
         if(contenedorBusqMapa != null && contenedorBusqMapa.getVisibility() == View.VISIBLE){
             ocultaContenedorBusqMapa();
         }
 
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if(this.getCurrentFocus() != null && inputMethodManager.isActive(this.getCurrentFocus()))
+            inputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
         centraMapa(adaptadorListaCoincidencia.getLatitud(position),
                 adaptadorListaCoincidencia.getLongitud(position));
+        if(!searchView.isIconified())
+            searchView.setIconified(true);
     }
 }

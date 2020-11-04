@@ -36,6 +36,8 @@ public class Ajustes extends AppCompatActivity
     /** Clave para compartir el identificador del portafolio */
     public static final String IDPORTAFOLIO_pref = "idPortafolio";
 
+    public static final String RETARDOPORTA_pref = "portaRetardado";
+
     public static SharedPreferences sharedPreferences;
     private boolean reiniciaMapa = false;
     private boolean estadoAnterior;

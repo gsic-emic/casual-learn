@@ -28,6 +28,12 @@
             android:title="@string/titulo_id_protafolio"
             android:summary="@string/compartir_id_portafolio"
             android:enabled="false"/>
+        <SwitchPreference
+            app:key="portaRetardado"
+            app:title="@string/retardo_publicacion"
+            app:summary="@string/retardo_publicacion_explica"
+            android:defaultValue="true"
+            android:enabled="false"/>
         <EditTextPreference
             app:key="hashtag"
             app:title="@string/palabraClave"
