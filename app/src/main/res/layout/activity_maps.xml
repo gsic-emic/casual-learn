@@ -68,32 +68,57 @@
         android:contentDescription="@string/botonCentrar"/>
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvTareasMapa"
-        android:layout_width="0dp"
+    <ScrollView
+        android:id="@+id/svPunto"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guiaMapa"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:visibility="gone"
-        android:scrollbars="horizontal"
-        android:scrollbarSize="10dp"/>
-
-    <TextView
-        android:id="@+id/tvTareasMapa"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/guiaMapa"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:visibility="visible"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:padding="15dp"
-        android:textSize="16sp"
-        android:text="@string/pulsaMarker"/>
+        android:fillViewport="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guiaMapa"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/fondo_punto_mapa">
+
+            <TextView
+                android:id="@+id/tvPuntoTitulo"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:paddingHorizontal="@dimen/margen_texto"
+                android:paddingVertical="10dp"
+                android:textSize="20sp"
+                android:textAlignment="center" />
+
+            <TextView
+                android:id="@+id/tvPuntoTexto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/margen_texto" />
+
+            <TextView
+                android:id="@+id/tvPuntoDistancia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingVertical="10dp"
+                android:paddingHorizontal="@dimen/margen_texto"
+                android:textAlignment="textEnd"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTareasMapa"
+                android:layout_marginHorizontal="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:visibility="gone"
+                android:scrollbars="horizontal"
+                android:scrollbarSize="10dp"/>
+        </LinearLayout>
+
+    </ScrollView>
 
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

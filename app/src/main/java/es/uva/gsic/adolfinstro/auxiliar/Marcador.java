@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * en el mapa.
  *
  * @author Pablo
- * @version 20200914
+ * @version 20201105
  */
 public class Marcador {
     /** Título del marcador*/

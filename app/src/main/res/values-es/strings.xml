@@ -99,7 +99,8 @@
     <string name="dia">día</string>
     <string name="dias">días</string>
     <string name="pulsaMarker">Pulsa en un marcador para ver sus tareas</string>
-    <string name="agrupacionTareas">Zona con varias tareas cercanas</string>
+    <!--<string name="agrupacionTareas">Zona con varias tareas cercanas</string>-->
+    <string name="agrupacionPuntos">Grupo de puntos de interés</string>
     <string name="tareaRegistrada">La tarea está completada, reportada, pospuesta o rechazada</string>
     <string name="hola">"Hola "</string>
     <string name="errorAutentica">Fallo de autenticación</string>
@@ -244,4 +245,5 @@
     <string name="errorCambioEstado">Error al cambiar el estado del portafolio</string>
     <string name="tarea_erronea">La tarea es errónea</string>
     <string name="tarea_no_pertinente">La tarea no es pertinente</string>
+    <string name="distancia">Distancia:</string>
 </resources>

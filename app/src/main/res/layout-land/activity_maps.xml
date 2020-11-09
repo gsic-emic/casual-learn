@@ -40,11 +40,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/openstreetmap_contributors"
-        android:background="#dce1e8"
-        android:textColor="@android:color/black"
+        android:background="@color/colorPrimaryLight68"
         app:layout_constraintBottom_toBottomOf="@id/map"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginStart="3dp"
         android:textSize="12sp"/>
 
     <androidx.constraintlayout.widget.Guideline
@@ -68,7 +66,65 @@
         app:srcCompat="@drawable/ic_my_location_black_72dp"
         android:contentDescription="@string/botonCentrar"/>
 
-    <androidx.recyclerview.widget.RecyclerView
+    <ScrollView
+        android:id="@+id/svPunto"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        android:fillViewport="true"
+        android:background="@drawable/fondo_punto_mapa_h"
+        app:layout_constraintStart_toStartOf="@id/guiaMapaV"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/clIdentificateMapa"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvPuntoTitulo"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:paddingHorizontal="@dimen/margen_texto"
+            android:paddingVertical="10dp"
+            android:textSize="20sp"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:id="@+id/tvPuntoTexto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/margen_texto" />
+        <TextView
+            android:id="@+id/tvPuntoDistancia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="10dp"
+            android:paddingHorizontal="@dimen/margen_texto"
+            android:textAlignment="textEnd" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:text="Decargando tareas del punto..."
+            android:textAlignment="gravity"
+            android:gravity="center_horizontal"
+            android:paddingVertical="10dp"
+            android:visibility="gone"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTareasMapa"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:visibility="gone"
+            android:layout_marginHorizontal="15dp"
+            android:scrollbars="horizontal"
+            android:scrollbarSize="10dp"/>
+    </LinearLayout>
+    </ScrollView>
+
+    <!--<androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvTareasMapa"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -79,22 +135,7 @@
         android:visibility="gone"
         android:scrollbars="vertical"
         android:scrollbarSize="5dp"
-        android:verticalScrollbarPosition="defaultPosition"/>
-
-    <TextView
-        android:id="@+id/tvTareasMapa"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintStart_toEndOf="@id/guiaMapaV"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/clIdentificateMapa"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:visibility="visible"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:padding="15dp"
-        android:textSize="14sp"
-        android:text="@string/pulsaMarker"/>
+        android:verticalScrollbarPosition="defaultPosition"/>-->
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="0dp"

@@ -106,7 +106,8 @@
     <string name="dia">day</string>
     <string name="dias">days</string>
     <string name="pulsaMarker">"Click on a marker to see the types of tasks "</string>
-    <string name="agrupacionTareas">Area with tasks nearby</string>
+    <!--<string name="agrupacionTareas">Area with tasks nearby</string>-->
+    <string name="agrupacionPuntos">Group of interest points</string>
     <string name="tareaRegistrada">The task has been completed, reported, postponed or rejected</string>
     <string name="hola">"Hi "</string>
     <string name="errorAutentica">Authentication failure</string>
@@ -273,4 +274,5 @@
     <string name="errorCambioEstado">Error to change the portfolio\'s status</string>
     <string name="tarea_erronea">The task is worng</string>
     <string name="tarea_no_pertinente">The task is not appropriate</string>
+    <string name="distancia">Distance:</string>
 </resources>

@@ -35,6 +35,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
@@ -330,90 +331,101 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         }catch (Exception e){
             e.printStackTrace();
         }
-        //TODO pasar la query a un objeto JSONArray
-        String url = Auxiliar.direccionIP +
-                "tareas?norte=" + (location.getLatitude() + 0.00325) +
-                "&este=" + (location.getLongitude() + 0.00325) +
-                "&sur=" + (location.getLatitude() - 0.00325) +
-                "&oeste=" + (location.getLongitude() - 0.00325)
-                +((idUsuario == null)?"":"&id=" + idUsuario);
+        //Pasar la query a un objeto JSONArray -> NO SE PUEDE EN UN GET
         final String finalIdUsuario = idUsuario;
-        JsonArrayRequest jsonObjectRequest =
-            new JsonArrayRequest(
-                Request.Method.GET,
-                url,
-                null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        JSONArray nuevasTaras = new JSONArray();
-                        JSONObject jsonObject;
-                        boolean guarda;
-                        for(int i = 0; i < response.length(); i++){
-                            try {
-                                jsonObject = response.getJSONObject(i);
-                                if(Auxiliar.tareaRegistrada(
-                                        application,
-                                        jsonObject.getString(Auxiliar.id),
-                                        finalIdUsuario)){
-                                    if(PersistenciaDatos.existeTarea(
-                                            application,
-                                            PersistenciaDatos.ficheroNotificadas,
-                                            jsonObject.getString(Auxiliar.id),
-                                            finalIdUsuario)){
-                                        try {
-                                            PersistenciaDatos.obtenTarea(
-                                                    application,
-                                                    PersistenciaDatos.ficheroNotificadas,
-                                                    jsonObject.getString(Auxiliar.id),
-                                                    finalIdUsuario);
-                                            guarda = true;
-                                        } catch (Exception e) {
-                                            guarda = false;
-                                        }
-                                    } else {
-                                        guarda = false;
-                                    }
-                                }else{
-                                    guarda = true;
-                                }
-                                if(guarda)
-                                    nuevasTaras.put(jsonObject);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        PersistenciaDatos.guardaFichero(
-                                application,
-                                PersistenciaDatos.ficheroTareasUsuario,
-                                nuevasTaras,
-                                Context.MODE_PRIVATE);
-                        try {
-                            jsonObject = new JSONObject();
-                            jsonObject.put(Auxiliar.id, idInstanteGET);
-                            jsonObject.put(Auxiliar.latitud, location.getLatitude());
-                            jsonObject.put(Auxiliar.longitud, location.getLongitude());
-                            jsonObject.put(Auxiliar.instante, new Date().getTime());
-                            PersistenciaDatos.reemplazaJSON(
-                                    application,
-                                    PersistenciaDatos.ficheroInstantes,
-                                    jsonObject);
-                        }catch (JSONException e){
-                            e.printStackTrace();
-                        }
-                        tareasActualizadas = true;
-                        compruebaLocalizacion(location);
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        compruebaLocalizacion(location);
-                    }
-                }
-            );
+        String url;
+        if(idUsuario != null) {
+            List<String> keys = new ArrayList<>();
+            List<Object> objects = new ArrayList<>();
+            keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionPersonalizadas);
+            keys.add(Auxiliar.norte); objects.add(location.getLatitude() + 0.00325);
+            keys.add(Auxiliar.este); objects.add(location.getLongitude() + 0.00325);
+            keys.add(Auxiliar.sur); objects.add(location.getLatitude() - 0.00325);
+            keys.add(Auxiliar.oeste); objects.add(location.getLongitude() - 0.00325);
+            keys.add(Auxiliar.id); objects.add(idUsuario);
+            url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
+        } else {
+            url = null;
+        }
 
-        ColaConexiones.getInstance(application).getRequestQueue().add(jsonObjectRequest);
+        if(url != null) {
+            JsonArrayRequest jsonObjectRequest =
+                    new JsonArrayRequest(
+                            Request.Method.GET,
+                            url,
+                            null,
+                            new Response.Listener<JSONArray>() {
+                                @Override
+                                public void onResponse(JSONArray response) {
+                                    JSONArray nuevasTaras = new JSONArray();
+                                    JSONObject jsonObject;
+                                    boolean guarda;
+                                    for (int i = 0; i < response.length(); i++) {
+                                        try {
+                                            jsonObject = response.getJSONObject(i);
+                                            if (Auxiliar.tareaRegistrada(
+                                                    application,
+                                                    jsonObject.getString(Auxiliar.id),
+                                                    finalIdUsuario)) {
+                                                if (PersistenciaDatos.existeTarea(
+                                                        application,
+                                                        PersistenciaDatos.ficheroNotificadas,
+                                                        jsonObject.getString(Auxiliar.id),
+                                                        finalIdUsuario)) {
+                                                    try {
+                                                        PersistenciaDatos.obtenTarea(
+                                                                application,
+                                                                PersistenciaDatos.ficheroNotificadas,
+                                                                jsonObject.getString(Auxiliar.id),
+                                                                finalIdUsuario);
+                                                        guarda = true;
+                                                    } catch (Exception e) {
+                                                        guarda = false;
+                                                    }
+                                                } else {
+                                                    guarda = false;
+                                                }
+                                            } else {
+                                                guarda = true;
+                                            }
+                                            if (guarda)
+                                                nuevasTaras.put(jsonObject);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    PersistenciaDatos.guardaFichero(
+                                            application,
+                                            PersistenciaDatos.ficheroTareasUsuario,
+                                            nuevasTaras,
+                                            Context.MODE_PRIVATE);
+                                    try {
+                                        jsonObject = new JSONObject();
+                                        jsonObject.put(Auxiliar.id, idInstanteGET);
+                                        jsonObject.put(Auxiliar.latitud, location.getLatitude());
+                                        jsonObject.put(Auxiliar.longitud, location.getLongitude());
+                                        jsonObject.put(Auxiliar.instante, new Date().getTime());
+                                        PersistenciaDatos.reemplazaJSON(
+                                                application,
+                                                PersistenciaDatos.ficheroInstantes,
+                                                jsonObject);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    tareasActualizadas = true;
+                                    compruebaLocalizacion(location);
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    compruebaLocalizacion(location);
+                                }
+                            }
+                    );
+
+            ColaConexiones.getInstance(application).getRequestQueue().add(jsonObjectRequest);
+        }
     }
 
     /**

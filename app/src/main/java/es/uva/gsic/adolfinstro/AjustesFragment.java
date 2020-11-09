@@ -188,7 +188,7 @@ public class AjustesFragment extends PreferenceFragmentCompat
                     JsonObjectRequest jsonObjectRequest;
                     infoUsuario.put(Auxiliar.publico, publico);
                     infoUsuario.put(Auxiliar.retardado, retardado);
-                    if(idUsuario.has(Auxiliar.idPortafolio)){//Es una actualización
+                    if(idUsuario != null && idUsuario.has(Auxiliar.idPortafolio)){//Es una actualización
                         jsonObjectRequest = new JsonObjectRequest(
                                 Request.Method.PUT,
                                 Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),

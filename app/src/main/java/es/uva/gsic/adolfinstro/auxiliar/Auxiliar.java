@@ -60,7 +60,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Login;
@@ -79,8 +81,10 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    public static final String direccionIP = "http://192.168.1.222:10001/app/";
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
+    public static String rutaTareas = direccionIP + "tareas";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
 
     public static final String id = "id";
@@ -100,6 +104,8 @@ public class Auxiliar {
     public static final String fechaUltimaModificacion = "fechaUltimaModificacion";
     public static final String fechaFinalizacion = "fechaFinalizacion";
     public static final String origen = "origen";
+    public static final String contexto = "contexto";
+
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
@@ -154,6 +160,22 @@ public class Auxiliar {
     public static final String idToken = "idToken";
     public static final String publico = "publico";
     public static final String retardado = "retardado";
+
+    public static final String peticionPuntos = "puntosInteres";
+    public static final String peticionTareas = "tareasContexto";
+    public static final String peticionPersonalizadas = "tareasPersonalizadas";
+    public static final String norte = "norte";
+    public static final String sur = "sur";
+    public static final String este = "este";
+    public static final String oeste = "oeste";
+    public static final String contextos = "contextos";
+
+    public static final String caducidad = "caducidad";
+    public static final String label = "label";
+    public static final String comment = "comment";
+    public static final String ficheroZona = "ficheroZona";
+
+
 
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
@@ -1655,5 +1677,20 @@ public class Auxiliar {
         }catch (Exception e){
             return false;
         }
+    }
+
+    public static String creaQuery(String ruta, List<String> key, List<Object> objects){
+        String salida = String.format("%s?", ruta);
+        int tama;
+        if((tama = key.size()) == objects.size()) {
+            for (int i = 0; i < tama; i++) {
+                if (i == tama - 1)
+                    salida = String.format("%s%s=%s", salida, key.get(i), objects.get(i).toString());
+                else
+                    salida = String.format("%s%s=%s&", salida, key.get(i), objects.get(i).toString());
+            }
+        } else
+            salida = null;
+        return salida;
     }
 }
