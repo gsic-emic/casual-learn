@@ -60,9 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import es.uva.gsic.adolfinstro.Ajustes;
 import es.uva.gsic.adolfinstro.Login;
@@ -81,8 +79,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
-    public static final String direccionIP = "http://192.168.1.222:10001/app/";
+    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    //public static final String direccionIP = "http://192.168.1.222:10001/app/";
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
@@ -105,6 +103,8 @@ public class Auxiliar {
     public static final String fechaFinalizacion = "fechaFinalizacion";
     public static final String origen = "origen";
     public static final String contexto = "contexto";
+    public static final String nTareas = "nTareas";
+    public static final String enlaceWiki = "enlaceWiki";
 
 
     public static final String posUsuarioLat = "posUsuarioLat";
@@ -123,8 +123,8 @@ public class Auxiliar {
     public static final String tipoImagen = "fotografia";
     public static final String tipoImagenMultiple = "multiplesFotografias";
     public static final String tipoVideo = "video";
-    public static final String tipoPreguntaCorta = "texto";
-    public static final String tipoPreguntaLarga = "preguntaLarga";
+    public static final String tipoPreguntaCorta = "textoCorto";
+    public static final String tipoPreguntaLarga = "texto";
     public static final String tipoPreguntaImagen = "fotografiaYTexto";
     public static final String tipoPreguntaImagenes = "multiplesFotografiasYTexto";
 

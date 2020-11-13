@@ -19,6 +19,8 @@ public class Marcador {
     private JSONArray tareasMarcador;
     /** Número de tareas que están en el interior del marcador */
     private int numeroTareas;
+    /** Número de puntos de interés */
+    private int puntosMarcador;
 
     /**
      * Constructor de la subclase. Establece los valores iniciales e inicia la lista.
@@ -28,6 +30,8 @@ public class Marcador {
         latitud = 0;
         longitud = 0;
         tareasMarcador = new JSONArray();
+        puntosMarcador = 0;
+        numeroTareas = 0;
     }
 
     /**
@@ -76,9 +80,9 @@ public class Marcador {
      * Método para agregar una nueva tarea al marcador
      * @param tarea Tarea que se desea agregar
      */
-    public void agregaTareaAlMarcador(JSONObject tarea){
+    public void agregaTareaAlMarcador(JSONObject tarea, int nTareas){
         tareasMarcador.put(tarea);
-        incrementaTareas();
+        incrementaTareas(nTareas);
     }
 
     /**
@@ -92,8 +96,9 @@ public class Marcador {
     /**
      * Método para incrementar el número de tareas del marcador
      */
-    private void incrementaTareas(){
-        ++numeroTareas;
+    private void incrementaTareas(int nTareas){
+        numeroTareas += nTareas;
+        ++puntosMarcador;
     }
 
     /**
@@ -102,5 +107,9 @@ public class Marcador {
      */
     public int getNumeroTareas() {
         return numeroTareas;
+    }
+
+    public int getNumeroPuntos(){
+        return puntosMarcador;
     }
 }

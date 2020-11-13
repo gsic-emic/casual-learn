@@ -85,17 +85,57 @@
             android:layout_height="wrap_content"
             android:background="@drawable/fondo_punto_mapa">
 
-            <TextView
-                android:id="@+id/tvPuntoTitulo"
-                android:layout_height="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:paddingHorizontal="@dimen/margen_texto"
-                android:paddingVertical="10dp"
-                android:textSize="20sp"
-                android:textAlignment="center" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="10dp">
+
+                <ImageView
+                    android:id="@+id/ivWikipediaMapa"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:srcCompat="@drawable/wiki_logo"
+                    android:contentDescription="@string/infoWikipedia"
+                    android:layout_marginStart="5dp"
+                    android:onClick="boton"
+                    android:visibility="invisible"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/tvPuntoTitulo"/>
+
+                <TextView
+                    android:id="@+id/tvPuntoTitulo"
+                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:paddingHorizontal="5dp"
+                    android:textSize="20sp"
+                    android:textAlignment="center"
+                    app:layout_constraintStart_toEndOf="@id/ivWikipediaMapa"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/ivSpeaker"/>
+
+                <ImageView
+                    android:id="@+id/ivSpeaker"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:srcCompat="@drawable/ic_speaker"
+                    android:layout_marginEnd="5dp"
+                    android:onClick="boton"
+                    android:layout_gravity="center"
+                    app:layout_constraintStart_toEndOf="@id/tvPuntoTitulo"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:contentDescription="@string/speaker" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
                 android:id="@+id/tvPuntoTexto"
+                android:text="La fachada barroca de la Universidad de Valladolid (España) fue construida"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/margen_texto" />
