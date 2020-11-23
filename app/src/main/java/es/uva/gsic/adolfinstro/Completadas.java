@@ -2,6 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.method.LinkMovementMethod;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -63,7 +65,7 @@ public class Completadas extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo {
 
     /** EditText donde se incluye la respuesta textual del usuario */
-    private EditText textoUsuario;
+    private EditText etTextoUsuario;
     /** Puntuación que el usuario tiene asignado a la tarea*/
     private RatingBar ratingBar;
     /** Contenedor donde se colocará las imágenes o vídeos de la tarea realiacidos por el usuario */
@@ -88,6 +90,9 @@ public class Completadas extends AppCompatActivity implements
     private AdaptadorVideosCompletados adaptadorVideosCompletados;
     /** Posicion al que se desplaza el scroll */
     private int posicion = 0;
+    /** TextView donde se incluye la respuesta textual del usuario */
+    private TextView tvTextoUsuario;
+
 
     private FloatingActionButton btCompartir;
 
@@ -132,7 +137,9 @@ public class Completadas extends AppCompatActivity implements
         TextView titulo = findViewById(R.id.tituloCompletada);
         TextView enunciado = findViewById(R.id.tvDescripcionCompletada);
         ratingBar = findViewById(R.id.rbPuntuacionCompletada);
-        textoUsuario = findViewById(R.id.etRespuestaTextualCompletada);
+        etTextoUsuario = findViewById(R.id.etRespuestaTextualCompletada);
+        tvTextoUsuario = findViewById(R.id.tvTextoUsuario);
+        tvTextoUsuario.setMovementMethod(new ScrollingMovementMethod());
         btCompartir = findViewById(R.id.btCompartirCompletada);
 
         btAgregar = findViewById(R.id.btAgregarCompletada);
@@ -166,8 +173,9 @@ public class Completadas extends AppCompatActivity implements
                     respuesta = respuestas.getJSONObject(i);
                     if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
                         if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
-                            textoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
-                            textoUsuario.setVisibility(View.VISIBLE);
+                            tvTextoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
+                            etTextoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
+                            tvTextoUsuario.setVisibility(View.VISIBLE);
                         }
                     } else {//URI de video o fotos
                         listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
@@ -331,13 +339,13 @@ public class Completadas extends AppCompatActivity implements
                     try {
                         String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
                         //Se comprueba si la respuesta está vacía
-                        if (textoUsuario.getVisibility() != View.GONE &&
+                        if (etTextoUsuario.getVisibility() != View.GONE &&
                                 (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                                ) && textoUsuario.getText().toString().isEmpty()) {
-                            textoUsuario.setError(getString(R.string.respuestaVacia));
+                                ) && etTextoUsuario.getText().toString().isEmpty()) {
+                            etTextoUsuario.setError(getString(R.string.respuestaVacia));
                         } else {
                             //Se comprueba si se tiene algún recurso multimedia
                             if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
@@ -420,7 +428,7 @@ public class Completadas extends AppCompatActivity implements
             for (i = 0; i < respuestas.length(); i++) {
                 respuesta = respuestas.getJSONObject(i);
                 if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                    respuesta.put(Auxiliar.respuestaRespuesta, textoUsuario.getText().toString());
+                    respuesta.put(Auxiliar.respuestaRespuesta, etTextoUsuario.getText().toString());
                     respuestas.put(i, respuesta);
                     teniaRespuesta = true;
                     break;
@@ -429,21 +437,24 @@ public class Completadas extends AppCompatActivity implements
             if (!teniaRespuesta) {
                 respuesta = new JSONObject();
                 respuesta.put(Auxiliar.tipoRespuesta, Auxiliar.texto);
-                respuesta.put(Auxiliar.respuestaRespuesta, textoUsuario.getText().toString());
+                respuesta.put(Auxiliar.respuestaRespuesta, etTextoUsuario.getText().toString());
                 respuestas.put(respuesta);
             }
             tarea.put(Auxiliar.respuestas, respuestas);
         }catch (Exception e){
             e.printStackTrace();
         }
-        if(textoUsuario.getText().toString().isEmpty()){
-            textoUsuario.setVisibility(View.GONE);
-            textoUsuario.setEnabled(false);
-            textoUsuario.setInputType(InputType.TYPE_NULL);
+        if(etTextoUsuario.getText().toString().isEmpty()){
+            etTextoUsuario.setVisibility(View.GONE);
+            etTextoUsuario.setEnabled(false);
+            etTextoUsuario.setInputType(InputType.TYPE_NULL);
         }
-        if(textoUsuario.getVisibility() != View.GONE){
-            textoUsuario.setEnabled(false);
-            textoUsuario.setInputType(InputType.TYPE_NULL);
+        if(etTextoUsuario.getVisibility() != View.GONE){
+            etTextoUsuario.setEnabled(false);
+            etTextoUsuario.setInputType(InputType.TYPE_NULL);
+            tvTextoUsuario.setText(etTextoUsuario.getText());
+            etTextoUsuario.setVisibility(View.GONE);
+            tvTextoUsuario.setVisibility(View.VISIBLE);
         }
         try {
             double puntuacionAnterior;
@@ -551,12 +562,13 @@ public class Completadas extends AppCompatActivity implements
      * modificaciones que considere.
      */
     private void desbloqueaCampos(){
-        if(textoUsuario.getVisibility() == View.GONE){
-            textoUsuario.setVisibility(View.VISIBLE);
-        }
+        if(tvTextoUsuario.getVisibility() != View.GONE)
+            tvTextoUsuario.setVisibility(View.GONE);
 
-        textoUsuario.setEnabled(true);
-        textoUsuario.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        etTextoUsuario.setVisibility(View.VISIBLE);
+
+        etTextoUsuario.setEnabled(true);
+        etTextoUsuario.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 
         ratingBar.setIsIndicator(false);
 
@@ -923,8 +935,8 @@ public class Completadas extends AppCompatActivity implements
                 ((FloatingActionButton) findViewById(i)).hide();
         }
         if (mostrar)
-            btCompartir.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_close_24));
+            btCompartir.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_baseline_close_24, null));
         else
-            btCompartir.setImageDrawable(getResources().getDrawable(R.drawable.ic_share_white));
+            btCompartir.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_share_white, null));
     }
 }

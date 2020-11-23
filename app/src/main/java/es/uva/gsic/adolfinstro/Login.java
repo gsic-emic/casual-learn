@@ -41,17 +41,17 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase que permite a los usuarios identificarse frente al sistema.
  *
  * @author Pablo
- * @version 20201026
+ * @version 20201123
  */
-public class Login extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener{
+public class Login extends AppCompatActivity implements
+        SharedPreferences.OnSharedPreferenceChangeListener,
+        View.OnClickListener {
 
     /** Código con el que se lanza la actividad de identificación del usuario con cuenta Google */
     public static final int requestAuth = 1010;
 
     /** Instancia para auntenticación con la cuenta Google */
     public static GoogleSignInClient googleSignInClient;
-
-    private SharedPreferences sharedPreferences;
 
     /** Análisis comportamiento usuario */
     public static FirebaseAnalytics firebaseAnalytics;
@@ -73,7 +73,7 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
         firebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
         //Aquí irá la comprobación de si el usuario ya se ha autenticado previamente
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         setContentView(R.layout.activity_login);
@@ -239,6 +239,29 @@ public class Login extends AppCompatActivity implements SharedPreferences.OnShar
             }catch (JSONException e){
                 e.printStackTrace();
             }
+
+            JSONArray ficheroPrimeraApertura = PersistenciaDatos.leeFichero(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraApertura);
+            if(ficheroPrimeraApertura.length() == 0) {//El fichero no existe
+                try {
+                    JSONObject primeraApertura = new JSONObject();
+                    primeraApertura.put(Auxiliar.id, PersistenciaDatos.ficheroPrimeraApertura);
+                    primeraApertura.put(Auxiliar.instante, System.currentTimeMillis() + 604800000);//Una semana más tarde
+                    primeraApertura.put(Auxiliar.tareas, 0);
+                    primeraApertura.put(Auxiliar.busquedasMunicipio, 0);
+
+                    ficheroPrimeraApertura.put(primeraApertura);
+                    PersistenciaDatos.guardaFichero(
+                            getApplication(),
+                            PersistenciaDatos.ficheroPrimeraApertura,
+                            ficheroPrimeraApertura,
+                            Context.MODE_PRIVATE);
+                } catch (JSONException e){
+                    e.printStackTrace();
+                }
+            }
+
             //TODO Eliminar en las próximas versiones
             //
             //

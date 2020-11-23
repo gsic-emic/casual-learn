@@ -47,6 +47,8 @@ public class PersistenciaDatos {
     public static final String ficheroPosicionesCuadriculas = "posicionesCuadriculas";
 
     public static final Object bloqueo = new Object();
+    public static final String ficheroNuevasCuadriculas = "ficheroNuevasCuadriculas";
+    public static String ficheroPrimeraApertura = "primeraApertura";
 
 
     /**
@@ -180,7 +182,7 @@ public class PersistenciaDatos {
      * @param modo Modo de estritura del fichero
      * @return Devolverá true si el fichero se ha almacenado correctamente
      */
-    public static synchronized boolean creaFichero(Application app, String fichero, JSONObject jsonObject, int modo){
+    public static boolean creaFichero(Application app, String fichero, JSONObject jsonObject, int modo){
         JSONArray array = new JSONArray();
         array.put(jsonObject);
         return guardaFichero(app, fichero, array, modo);
@@ -194,10 +196,12 @@ public class PersistenciaDatos {
      * @param modo Modo en el que se va a realizar la escritura del fichero (Context.MODE_PRIVATE -> sobrescritura)
      * @return Verdadero si la operación se ha realizado correctamente
      */
-    public static synchronized boolean guardaJSON(Application app, String fichero, JSONObject jsonObject, int modo){
-        JSONArray array = leeFichero(app, fichero);
-        array.put(jsonObject);
-        return guardaFichero(app, fichero, array, modo);
+    public static boolean guardaJSON(Application app, String fichero, JSONObject jsonObject, int modo){
+        synchronized (PersistenciaDatos.bloqueo) {
+            JSONArray array = leeFichero(app, fichero);
+            array.put(jsonObject);
+            return guardaFichero(app, fichero, array, modo);
+        }
     }
 
     /**
@@ -213,37 +217,37 @@ public class PersistenciaDatos {
      * @param modo Modo de escritura con el que se va a guardar el fichero (Context.MODE_PRIVATE -> sobrescritura)
      * @return True si todas las operaciones se han llevado a cabo de manera correcta
      */
-    public static synchronized boolean guardaTareaRespuesta(Application app,
+    public static boolean guardaTareaRespuesta(Application app,
                                                             String fichero,
                                                             JSONObject jsonObject,
                                                             String respuesta,
                                                             String tipo,
                                                             int modo){
-        try {
-            JSONObject tarea = obtenTarea(
-                    app,
-                    fichero,
-                    jsonObject.getString(Auxiliar.id),
-                    jsonObject.getString(Auxiliar.idUsuario));
-            JSONArray vectorRespuestas = null;
-            try{
-                vectorRespuestas = tarea.getJSONArray(Auxiliar.respuestas);
-            }catch (Exception e){
-                vectorRespuestas = new JSONArray();
+        synchronized (PersistenciaDatos.bloqueo) {
+            try {
+                JSONObject tarea = obtenTarea(
+                        app,
+                        fichero,
+                        jsonObject.getString(Auxiliar.id),
+                        jsonObject.getString(Auxiliar.idUsuario));
+                JSONArray vectorRespuestas = null;
+                try {
+                    vectorRespuestas = tarea.getJSONArray(Auxiliar.respuestas);
+                } catch (Exception e) {
+                    vectorRespuestas = new JSONArray();
+                }
+                JSONObject nuevaRespuesta = new JSONObject();
+                nuevaRespuesta.put(Auxiliar.posicionRespuesta, vectorRespuestas.length());
+                nuevaRespuesta.put(Auxiliar.respuestaRespuesta, respuesta);
+                nuevaRespuesta.put(Auxiliar.tipoRespuesta, tipo);
+                vectorRespuestas.put(nuevaRespuesta);
+                tarea.put(Auxiliar.respuestas, vectorRespuestas);
+                JSONArray array = leeFichero(app, fichero);
+                array.put(tarea);
+                return guardaFichero(app, fichero, array, modo);
+            } catch (Exception e) {
+                return false;
             }
-            JSONObject nuevaRespuesta = new JSONObject();
-            nuevaRespuesta.put(Auxiliar.posicionRespuesta, vectorRespuestas.length());
-            nuevaRespuesta.put(Auxiliar.respuestaRespuesta, respuesta);
-            nuevaRespuesta.put(Auxiliar.tipoRespuesta, tipo);
-            vectorRespuestas.put(nuevaRespuesta);
-            nuevaRespuesta = null;
-            tarea.put(Auxiliar.respuestas, vectorRespuestas);
-            vectorRespuestas = null;
-            JSONArray array = leeFichero(app, fichero);
-            array.put(tarea); tarea = null;
-            return guardaFichero(app, fichero, array, modo);
-        } catch (Exception e){
-            return false;
         }
     }
 
@@ -257,28 +261,30 @@ public class PersistenciaDatos {
      *                   String con el identificador ("id")
      * @return Devolverá true si se ha conseguido almacenar el JSON en el fichero
      */
-    public static synchronized boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject){
-        try {
-            int modo = Context.MODE_PRIVATE;
-            JSONArray array = leeFichero(app, fichero);
-            String id = jsonObject.getString(Auxiliar.id);
-            JSONObject base;
-            boolean encontrado = false;
-            int i;
-            for (i = 0; i < array.length(); i++) {
-                base = array.getJSONObject(i);
-                if(base.getString(Auxiliar.id).equals(id)){
-                    encontrado = true;
-                    break;
+    public static boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject){
+        synchronized (PersistenciaDatos.bloqueo) {
+            try {
+                int modo = Context.MODE_PRIVATE;
+                JSONArray array = leeFichero(app, fichero);
+                String id = jsonObject.getString(Auxiliar.id);
+                JSONObject base;
+                boolean encontrado = false;
+                int i;
+                for (i = 0; i < array.length(); i++) {
+                    base = array.getJSONObject(i);
+                    if (base.getString(Auxiliar.id).equals(id)) {
+                        encontrado = true;
+                        break;
+                    }
                 }
+                if (encontrado) {
+                    array.remove(i);
+                }
+                array.put(jsonObject);
+                return guardaFichero(app, fichero, array, modo);
+            } catch (Exception e) {
+                return false;
             }
-            if(encontrado){
-                array.remove(i);
-            }
-            array.put(jsonObject);
-            return guardaFichero(app, fichero, array, modo);
-        }catch (Exception e){
-            return false;
         }
     }
 
@@ -292,37 +298,39 @@ public class PersistenciaDatos {
      * @param idUsuario Identificador del usuario
      * @return Devolverá true si se ha conseguido almacenar el JSON en el fichero
      */
-    public static synchronized boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject, String idUsuario){
-        try {
-            int modo = Context.MODE_PRIVATE;
-            JSONArray array = leeFichero(app, fichero);
-            String id = jsonObject.getString(Auxiliar.id);
-            JSONObject base;
-            boolean encontrado = false;
-            int i;
-            for (i = 0; i < array.length(); i++) {
-                base = array.getJSONObject(i);
-                if(idUsuario != null) {
-                    if (base.getString(Auxiliar.id).equals(id)
-                            && base.getString(Auxiliar.idUsuario).equals(idUsuario)) {
-                        encontrado = true;
-                        break;
-                    }
-                }else{
-                    if (base.getString(Auxiliar.id).equals(id)
-                            && !base.has(Auxiliar.idUsuario)) {
-                        encontrado = true;
-                        break;
+    public static boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject, String idUsuario){
+        synchronized (PersistenciaDatos.bloqueo) {
+            try {
+                int modo = Context.MODE_PRIVATE;
+                JSONArray array = leeFichero(app, fichero);
+                String id = jsonObject.getString(Auxiliar.id);
+                JSONObject base;
+                boolean encontrado = false;
+                int i;
+                for (i = 0; i < array.length(); i++) {
+                    base = array.getJSONObject(i);
+                    if (idUsuario != null) {
+                        if (base.getString(Auxiliar.id).equals(id)
+                                && base.getString(Auxiliar.idUsuario).equals(idUsuario)) {
+                            encontrado = true;
+                            break;
+                        }
+                    } else {
+                        if (base.getString(Auxiliar.id).equals(id)
+                                && !base.has(Auxiliar.idUsuario)) {
+                            encontrado = true;
+                            break;
+                        }
                     }
                 }
+                if (encontrado) {
+                    array.remove(i);
+                }
+                array.put(jsonObject);
+                return guardaFichero(app, fichero, array, modo);
+            } catch (Exception e) {
+                return false;
             }
-            if(encontrado){
-                array.remove(i);
-            }
-            array.put(jsonObject);
-            return guardaFichero(app, fichero, array, modo);
-        }catch (Exception e){
-            return false;
         }
     }
 
@@ -384,32 +392,34 @@ public class PersistenciaDatos {
      * @return JSONObject que corresponde con el identificador y el fichero
      * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
      */
-    public static synchronized JSONObject obtenTarea(Application app,
+    public static JSONObject obtenTarea(Application app,
                                                      String fichero,
                                                      String idTarea)
             throws Exception {
-        JSONArray jsonArray = leeFichero(app, fichero);
-        JSONObject jsonObject = null;
-        boolean encontrado = false;
-        int i;
-        for (i = 0; i < jsonArray.length(); i++) {
-            jsonObject = jsonArray.getJSONObject(i);
-            if (jsonObject.get(Auxiliar.id).equals(idTarea)) {
-                encontrado = true;
-                break;
+        synchronized (PersistenciaDatos.bloqueo) {
+            JSONArray jsonArray = leeFichero(app, fichero);
+            JSONObject jsonObject = null;
+            boolean encontrado = false;
+            int i;
+            for (i = 0; i < jsonArray.length(); i++) {
+                jsonObject = jsonArray.getJSONObject(i);
+                if (jsonObject.get(Auxiliar.id).equals(idTarea)) {
+                    encontrado = true;
+                    break;
+                }
             }
-        }
-        if(encontrado){
-            jsonArray.remove(i);
-            guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
-            return jsonObject;
-        }else{
-            return null;
+            if (encontrado) {
+                jsonArray.remove(i);
+                guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
+                return jsonObject;
+            } else {
+                return null;
+            }
         }
     }
 
     /**
-     * Método para recuparar un JSONObject de un fichero. Modifia el fichero ya que elmina el JSONObject
+     * Método para recuparar un JSONObject de un fichero. Modifica el fichero ya que elmina el JSONObject
      * del JSONArray y sobrescribe el fichero
      *
      * @param app Aplicación
@@ -418,35 +428,37 @@ public class PersistenciaDatos {
      * @return JSONObject que corresponde con el identificador y el fichero
      * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
      */
-    public static synchronized JSONObject obtenTarea(Application app,
+    public static JSONObject obtenTarea(Application app,
                                                      String fichero,
                                                      String idTarea,
                                                      String idUser)
             throws Exception {
-        JSONArray jsonArray = leeFichero(app, fichero);
-        JSONObject jsonObject = null;
-        boolean encontrado = false;
-        int i;
-        for (i = 0; i < jsonArray.length(); i++) {
-            jsonObject = jsonArray.getJSONObject(i);
-            if(idUser != null) {
-                if (jsonObject.get(Auxiliar.id).equals(idTarea) && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
-                    encontrado = true;
-                    break;
-                }
-            }else{
-                if (jsonObject.get(Auxiliar.id).equals(idTarea) && !jsonObject.has(Auxiliar.idUsuario)) {
-                    encontrado = true;
-                    break;
+        synchronized (PersistenciaDatos.bloqueo) {
+            JSONArray jsonArray = leeFichero(app, fichero);
+            JSONObject jsonObject = null;
+            boolean encontrado = false;
+            int i;
+            for (i = 0; i < jsonArray.length(); i++) {
+                jsonObject = jsonArray.getJSONObject(i);
+                if (idUser != null) {
+                    if (jsonObject.get(Auxiliar.id).equals(idTarea) && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
+                        encontrado = true;
+                        break;
+                    }
+                } else {
+                    if (jsonObject.get(Auxiliar.id).equals(idTarea) && !jsonObject.has(Auxiliar.idUsuario)) {
+                        encontrado = true;
+                        break;
+                    }
                 }
             }
-        }
-        if(encontrado){
-            jsonArray.remove(i);
-            guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
-            return jsonObject;
-        }else{
-            return null;
+            if (encontrado) {
+                jsonArray.remove(i);
+                guardaFichero(app, fichero, jsonArray, Context.MODE_PRIVATE);
+                return jsonObject;
+            } else {
+                return null;
+            }
         }
     }
 

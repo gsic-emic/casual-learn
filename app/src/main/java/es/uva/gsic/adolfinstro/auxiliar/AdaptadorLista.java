@@ -9,6 +9,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -75,6 +76,7 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
     private LayoutInflater layoutInflater;
     private static ItemClickListener itemClickListener;
     private static ItemLongClickLister itemLongClickLister;
+    private Context context;
 
     /**
      * Constructor de la clase
@@ -83,6 +85,7 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
      */
     public AdaptadorLista(Context c, List<TareasLista> l){
         lista = l;
+        context = c;
         layoutInflater = LayoutInflater.from(c);
     }
 
@@ -107,7 +110,8 @@ public class AdaptadorLista extends RecyclerView.Adapter<AdaptadorLista.ViewHold
     @Override
     public void onBindViewHolder(@NonNull AdaptadorLista.ViewHolder holder, int position) {
         holder.tvTitulo.setText(lista.get(position).getTitulo());
-        holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()));
+        holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
+        //holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()));
         holder.tvFecha.setText(lista.get(position).getFecha());
         float puntuacion = lista.get(position).getPuntuacion();
         if(puntuacion >= 0){

@@ -53,6 +53,22 @@
             android:autofillHints="no"
             android:layout_marginHorizontal="@dimen/margen_texto"/>
 
+        <TextView
+            android:id="@+id/tvTextoUsuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margen_texto"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvDescripcionCompletada"
+            android:layout_marginBottom="20dp"
+            android:maxLines="5"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_secundario"
+            android:padding="5dp"
+            android:scrollbars="vertical"
+            android:visibility="gone"/>
+
         <Button style="@style/botonPrimario"
             android:id="@+id/btAgregarCompletada"
             android:layout_width="wrap_content"

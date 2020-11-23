@@ -27,12 +27,20 @@
             android:onClick="boton"
             android:adjustViewBounds="true"/>
 
-        <ImageView
-            android:id="@+id/ivInfoFotoTarea"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:srcCompat="@drawable/ic_baseline_copyright_24"
+        <TextView
+            android:id="@+id/tvInfoFotoTarea"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:maxHeight="100dp"
+            android:gravity="center_vertical"
+            android:drawableStart="@drawable/ic_baseline_copyright_24"
+            android:textColor="@color/white"
+            android:drawablePadding="5dp"
+            android:textSize="12sp"
+            android:background="@color/blackTransparente25"
             app:layout_constraintStart_toStartOf="@id/ivImagenDescripcion"
+            app:layout_constraintEnd_toEndOf="@id/ivImagenDescripcion"
             app:layout_constraintBottom_toBottomOf="@id/ivImagenDescripcion"
             android:visibility="gone"
             android:onClick="boton"

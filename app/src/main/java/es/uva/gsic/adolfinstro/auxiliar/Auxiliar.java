@@ -28,9 +28,9 @@ import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.view.View;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -74,13 +74,14 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201028
+ * @version 20201119
  */
 public class Auxiliar {
 
-    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
+    public static String rutaTareas = direccionIP + "tareas";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
 
     public static final String id = "id";
@@ -100,6 +101,12 @@ public class Auxiliar {
     public static final String fechaUltimaModificacion = "fechaUltimaModificacion";
     public static final String fechaFinalizacion = "fechaFinalizacion";
     public static final String origen = "origen";
+    public static final String contexto = "contexto";
+    public static final String nTareas = "nTareas";
+    public static final String enlaceWiki = "enlaceWiki";
+    public static final String textoLicencia = "textoLicencia";
+    public static final String busquedasMunicipio = "busquedaMunicipio";
+
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
@@ -117,8 +124,8 @@ public class Auxiliar {
     public static final String tipoImagen = "fotografia";
     public static final String tipoImagenMultiple = "multiplesFotografias";
     public static final String tipoVideo = "video";
-    public static final String tipoPreguntaCorta = "texto";
-    public static final String tipoPreguntaLarga = "preguntaLarga";
+    public static final String tipoPreguntaCorta = "textoCorto";
+    public static final String tipoPreguntaLarga = "texto";
     public static final String tipoPreguntaImagen = "fotografiaYTexto";
     public static final String tipoPreguntaImagenes = "multiplesFotografiasYTexto";
 
@@ -154,6 +161,22 @@ public class Auxiliar {
     public static final String idToken = "idToken";
     public static final String publico = "publico";
     public static final String retardado = "retardado";
+
+    public static final String peticionPuntos = "puntosInteres";
+    public static final String peticionTareas = "tareasContexto";
+    public static final String peticionPersonalizadas = "tareasPersonalizadas";
+    public static final String norte = "norte";
+    public static final String sur = "sur";
+    public static final String este = "este";
+    public static final String oeste = "oeste";
+    public static final String contextos = "contextos";
+
+    public static final String caducidad = "caducidad";
+    public static final String label = "label";
+    public static final String comment = "comment";
+    public static final String ficheroZona = "ficheroZona";
+
+
 
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
@@ -1223,6 +1246,7 @@ public class Auxiliar {
 
         try {
             //texto = tarea.getString(Auxiliar.titulo);
+            texto = "";
             if(textoUsuario != null && !textoUsuario.equals("")){
                 texto = String.format("%s\n%s", texto, textoUsuario);
                 if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
@@ -1233,9 +1257,7 @@ public class Auxiliar {
                             context.getString(R.string.yammerSinTexto),
                             tarea.getString(Auxiliar.titulo),
                             context.getString(R.string.tareaPregunta),
-                            tarea.getString(Auxiliar.recursoAsociadoTexto)
-                                    .replaceAll("</a>", "")
-                                    .replaceAll("<a.*?>",""),
+                            Auxiliar.quitaEnlaces(tarea.getString(Auxiliar.recursoAsociadoTexto)),
                             context.getString(R.string.tareaRespuesta),
                             textoUsuario);
                 }
@@ -1424,8 +1446,8 @@ public class Auxiliar {
         dialogo.setContentView(R.layout.popweb);
         dialogo.setCancelable(true);
         WebView webView = dialogo.findViewById(R.id.wbNavegador);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+        //WebSettings webSettings = webView.getSettings();
+        //webSettings.setJavaScriptEnabled(true);
         webView.setWebViewClient(new ClienteWeb() {
             @Override
             public void navegadorExterno() {
@@ -1491,6 +1513,22 @@ public class Auxiliar {
             String urlImagen) {
         if(urlImagen != null && urlImagen.contains("wikimedia")){
             ivInfoFotoPreview.setVisibility(View.VISIBLE);
+            return urlImagen
+                    .replace("Special:FilePath/", "File:")
+                    .replace("?widh=300px", "")
+                    .replace("?width=300", "")
+                    .concat(context.getString(R.string.ultimaParteLicencia));
+        }else{
+            return null;
+        }
+    }
+
+    public static String enlaceLicencia(
+            final Context context,
+            TextView textView,
+            String urlImagen) {
+        if(urlImagen != null && urlImagen.contains("wikimedia")){
+            textView.setVisibility(View.VISIBLE);
             return urlImagen
                     .replace("Special:FilePath/", "File:")
                     .replace("?widh=300px", "")
@@ -1655,5 +1693,26 @@ public class Auxiliar {
         }catch (Exception e){
             return false;
         }
+    }
+
+    public static String creaQuery(String ruta, List<String> key, List<Object> objects){
+        String salida = String.format("%s?", ruta);
+        int tama;
+        if((tama = key.size()) == objects.size()) {
+            for (int i = 0; i < tama; i++) {
+                if (i == tama - 1)
+                    salida = String.format("%s%s=%s", salida, key.get(i), objects.get(i).toString());
+                else
+                    salida = String.format("%s%s=%s&", salida, key.get(i), objects.get(i).toString());
+            }
+        } else
+            salida = null;
+        return salida;
+    }
+
+    public static String quitaEnlaces(String string) {
+        return string
+                .replaceAll("</a>", "")
+                .replaceAll("<a.*?>","");
     }
 }

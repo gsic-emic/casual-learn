@@ -99,7 +99,8 @@
     <string name="dia">día</string>
     <string name="dias">días</string>
     <string name="pulsaMarker">Pulsa en un marcador para ver sus tareas</string>
-    <string name="agrupacionTareas">Zona con varias tareas cercanas</string>
+    <!--<string name="agrupacionTareas">Zona con varias tareas cercanas</string>-->
+    <string name="agrupacionPuntos">Grupo de puntos de interés</string>
     <string name="tareaRegistrada">La tarea está completada, reportada, pospuesta o rechazada</string>
     <string name="hola">"Hola "</string>
     <string name="errorAutentica">Fallo de autenticación</string>
@@ -167,7 +168,7 @@
     <string name="cerrarSesion">Cerrar sesión</string>
     <string name="iniciarSesion">Iniciar sesión</string>
     <string name="cerrarSesionMensajeAjustes">Si cierra la sesión Casual Learn no le podrá notificar nuevas tareas.</string>
-    <string name="cerrarSesionMensaje">¿De verdad quieres cerrar sesión?</string>
+    <string name="cerrarSesionMensaje">¿De verdad quieres cerrar la sesión?</string>
     <string name="entiendo">Lo entiendo</string>
     <string name="volverRecordar">Recordar más tarde</string>
     <string name="volverSolicitar">Volver a solicitar</string>
@@ -244,4 +245,8 @@
     <string name="errorCambioEstado">Error al cambiar el estado del portafolio</string>
     <string name="tarea_erronea">La tarea es errónea</string>
     <string name="tarea_no_pertinente">La tarea no es pertinente</string>
+    <string name="distancia">Distancia:</string>
+    <string name="speaker">Altavóz</string>
+    <string name="puntoSinTexto">El punto de interés aún no dispone de descripción…</string>
+    <string name="aun_no_disponible">La opción aún no está disponible. Vuelva a intentarlo en unos minutos.</string>
 </resources>
