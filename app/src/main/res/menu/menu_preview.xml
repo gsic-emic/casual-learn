@@ -2,7 +2,7 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/iPreview"
-        android:icon="@drawable/ic_11_tareas"
+        android:icon="@drawable/ic_marcador_uno"
         android:title="@string/iconoTareaPreview"
         android:contentDescription="@string/iconoTareaPreview"
         app:showAsAction="always" />

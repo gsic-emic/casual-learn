@@ -5,12 +5,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.app.Application;
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,25 +24,32 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.text.Html;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import androidx.appcompat.widget.SearchView;
-import android.widget.TextView;
 
+import androidx.appcompat.widget.SearchView;
+
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
@@ -52,6 +61,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
@@ -83,43 +95,48 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
+import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaPuntos;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.Bocadillo;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 import es.uva.gsic.adolfinstro.auxiliar.ListaCoincidencias;
 import es.uva.gsic.adolfinstro.auxiliar.Marcador;
+import es.uva.gsic.adolfinstro.auxiliar.PuntoSingular;
 import es.uva.gsic.adolfinstro.auxiliar.TareasMapaLista;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20201006
+ * @version 20201119
  */
-public class  Maps extends AppCompatActivity implements
+public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         AdaptadorListaMapa.ItemClickListener,
-        AdaptadorListaCoincidencia.ItemClickListenerDialogo {
+        AdaptadorListaCoincidencia.ItemClickListenerDialogo,
+        AdaptadorListaPuntos.ItemClickListenerDialogoVariosPuntos,
+        LocationListener {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
 
-    /** Instancia del texto informativo en el que el usuario todavía no ha pulsado ningún marcador */
-    private TextView sinPulsarTarea;
     /** Objeto donde se expone toda la lista de tareas del marcador */
-    private RecyclerView contenedor, contenedorBusqMapa;
+    private RecyclerView contenedor;
+    /** Objeto sobre el que se carga la lista de municipios que indique el usuario*/
+    private RecyclerView contenedorBusqMapa;
 
     /** Objeto que almacenará, entre otras cosas, la última posición conocida del usuario*/
     private MyLocationNewOverlay myLocationNewOverlay;
     /** Objeto tuilizado para centrar el mapa en un punto específico*/
     private IMapController mapController;
     /** Posición inicial del punto conocido */
-    private double latitudeOrigen , longitudeOrigen;
+    private double latitudeOrigen, longitudeOrigen;
     /** Referencia a si la opción "no Molestar" está activada o no*/
     private boolean noMolestar;
     /** Preferencias de la aplicación */
@@ -138,9 +155,6 @@ public class  Maps extends AppCompatActivity implements
     /** Clave para obtener la última posición y el zum del mapa */
     private final String idPosicionZoom = "posicionZum";
 
-    /** Animación para el despliegue de la lista de tareas */
-    private Animation animation;
-
     /** Adaptador para la lista de tareas del marcador */
     private static AdaptadorListaMapa adaptadorListaMapa;
 
@@ -152,6 +166,9 @@ public class  Maps extends AppCompatActivity implements
     /** Boolean que determian si el dialogo de salir de la aplicación está activo */
     Boolean dialogoSalirAppActivo = false;
 
+    /** Dialogo para mostrar los distintos puntos que agrupa un marcador */
+    Dialog dialogoVariosPuntos;
+
     /** Guía de la vista vertical */
     Guideline guiaMapaH;
     /** Guía de la vista apaisada*/
@@ -160,14 +177,44 @@ public class  Maps extends AppCompatActivity implements
     /** Adaptador para la lista de municipios cuando se realiza una búsqueda*/
     private AdaptadorListaCoincidencia adaptadorListaCoincidencia;
 
-    /**
-     * Layout sobre el que se pone la lista de tareas del marcador. Se adapta a la vista vertical o
-     * apaisada
-     */
-    private RecyclerView.LayoutManager layoutManager;
+    private boolean marcadorPulsado = false;
+
+    /** Objeto para indicar el nombre del punto de interés*/
+    TextView tituloPunto;
+    /** Objeto para indicar la descripción del punto de interés*/
+    TextView textoPunto;
+    /** Objeto para indicar la distancia al punto de interés */
+    TextView distanciaPunto;
+
+    /** Vista de los puntos de interés */
+    ScrollView svPunto;
+
+    /** Número de cuadrículas pendientes de obtener del servidor */
+    private int numeroCuadriculasPendientes = 0;
 
     /** Lista de permisos que la aplicación necesita solicitar al usuario*/
     private List<String> permisos;
+
+    /** Objeto para la búsqueda de municipios */
+    SearchView searchView;
+
+    /** Número de grados con los que se forma el lado de la cuadrícula */
+    private final double incremento = 0.0254;
+
+    /** Objeto que controlará la lectura de la información del punto de interés */
+    private TextToSpeech textToSpeech;
+
+    /** Texto que se va a leer sobre el punto de interés*/
+    private String textoParaAltavoz;
+
+    /** Objeto para controlar la posibilidad de ver el artículo de la wikipedia */
+    private ImageView ivWiki;
+
+    /** Objeto que controla la imagen del texto que se lee*/
+    private ImageView ivSpeaker;
+
+    /** Enlace para mostrar el artículo de la wikipedia en el navegador interno */
+    private String enlaceWiki;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -179,7 +226,8 @@ public class  Maps extends AppCompatActivity implements
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-        context = getApplicationContext(); //contexto de la aplicación
+        //context = getApplicationContext(); //contexto de la aplicación
+        context = this;
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
@@ -194,7 +242,6 @@ public class  Maps extends AppCompatActivity implements
         dialogoSalirApp.setPositiveButton(getString(R.string.salir), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                //finishAffinity();//Se cierra la app. //El proceso puede seguir activo
                 finish();
             }
         });
@@ -212,13 +259,10 @@ public class  Maps extends AppCompatActivity implements
         });
 
         dialogoSalirAppActivo = false;
-        if(savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOSALIR", false)) {
+        if (savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOSALIR", false)) {
             dialogoSalirAppActivo = true;
             dialogoSalirApp.show();
         }
-
-
-        final Application app = getApplication();
 
         //Se decide si se muestra el mapa
         if (noMolestar) {
@@ -226,23 +270,13 @@ public class  Maps extends AppCompatActivity implements
         } else {
             setContentView(R.layout.activity_maps);
             map = findViewById(R.id.map);
-            sinPulsarTarea = findViewById(R.id.tvTareasMapa);
             contenedor = findViewById(R.id.rvTareasMapa);
             contenedorBusqMapa = findViewById(R.id.rvBusquedaMapa);
 
             guiaMapaH = findViewById(R.id.guiaMapa);
             guiaMapaV = findViewById(R.id.guiaMapaV);
 
-            if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-                animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.desplaza_horizontal);
-            }
-            else {
-                layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-                animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.desplaza_vertical);
-            }
-
-            contenedor.setLayoutManager(layoutManager);
+            contenedor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
             map.setTileSource(TileSourceFactory.MAPNIK);
             //https://github.com/osmdroid/osmdroid/blob/master/osmdroid-android/src/main/java/org/osmdroid/tileprovider/tilesource/TileSourceFactory.java
@@ -265,7 +299,7 @@ public class  Maps extends AppCompatActivity implements
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
             final FloatingActionButton btCentrar = findViewById(R.id.btCentrar);
-            if(PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
+            if (PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
                 JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
                 try {
                     assert posicion != null;
@@ -274,12 +308,10 @@ public class  Maps extends AppCompatActivity implements
                 } catch (JSONException e) {
                     centraPrimeraVez();
                 }
-            }else {
+            } else {
                 centraPrimeraVez();
             }
-            //RotationGestureOverlay rotationGestureOverlay = new RotationGestureOverlay(map);
-            //rotationGestureOverlay.setEnabled(true);
-            //map.getOverlays().add(rotationGestureOverlay);
+
             // Nivel de zum mínimo permitido
             double nivelMin = 6.5;
             map.setMinZoomLevel(nivelMin);
@@ -291,20 +323,16 @@ public class  Maps extends AppCompatActivity implements
 
             map.setTilesScaledToDpi(true);
 
-            //Se agrega la brújula
-            //compassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
-            //compassOverlay.enableCompass();
-
             int ancho = displayMetrics.widthPixels;
             int alto = displayMetrics.heightPixels;
-            if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+            if (getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
                 scaleBarOverlay.drawLongitudeScale(true);
                 scaleBarOverlay.drawLatitudeScale(false);
-                scaleBarOverlay.setScaleBarOffset((int)(ancho * 0.05), (int) (alto * 0.4)); //posición en el el display
-            }else{
+                scaleBarOverlay.setScaleBarOffset((int) (ancho * 0.05), (int) (alto * 0.4)); //posición en el el display
+            } else {
                 scaleBarOverlay.drawLongitudeScale(true);
                 scaleBarOverlay.drawLatitudeScale(false);
-                scaleBarOverlay.setScaleBarOffset((int)(ancho*0.02), (int) (alto * 0.4));
+                scaleBarOverlay.setScaleBarOffset((int) (ancho * 0.02), (int) (alto * 0.4));
             }
 
             pintaItemsfijos();
@@ -312,40 +340,38 @@ public class  Maps extends AppCompatActivity implements
             map.addMapListener(new DelayedMapListener(new MapListener() {
                 @Override
                 public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
-                    if(map.getMapCenter() != null){
-                        compruebaZona();
+                    if (map != null) {
+                        compruebaZona(true);
                     }
                     return false;
                 }
 
                 @Override
                 public boolean onZoom(ZoomEvent event) {//Zoom con botones
-                    if(map.getMapCenter() != null){
-                        compruebaZona();
+                    if (map != null) {
+                        compruebaZona(true);
                     }
                     return false;
                 }
-            }, 400));
+            }, 250));
 
             //Para cerrar la lista de tareas y el bocadillo
             map.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    InfoWindow.closeAllInfoWindowsOn(map);
-                    contenedor.setBackgroundColor(getResources().getColor(R.color.transparente));
-                    contenedor.setAdapter(null);
-                    contenedor.setLayoutManager(null);
-                    contenedor.setVisibility(View.GONE);
-                    if(guiaMapaH != null)
-                        guiaMapaH.setGuidelinePercent(1f);
-                    else
-                        guiaMapaV.setGuidelinePercent(1f);
+                    ocultaInfoPuntoInteres();
                     return false;
                 }
             });
 
-
-            final SearchView searchView = findViewById(R.id.svMapa);
+            searchView = findViewById(R.id.svMapa);
+            searchView.setOnSearchClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(marcadorPulsado)
+                        ocultaInfoPuntoInteres();
+                }
+            });
             searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextSubmit(String query) {
@@ -355,11 +381,11 @@ public class  Maps extends AppCompatActivity implements
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     //Aqui debería ir la sugerencia según escriba
-                    if(newText.trim().length() > 0) {
+                    if (newText.trim().length() > 0) {
                         JSONArray municipios = Auxiliar.buscaMunicipio(
                                 context, StringUtils.stripAccents(newText.trim().toLowerCase()));
-                        if(municipios.length() > 0) {
-                            if(btCentrar.isShown())
+                        if (municipios.length() > 0) {
+                            if (btCentrar.isShown())
                                 btCentrar.hide();
                             contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
                                     context, LinearLayoutManager.VERTICAL, false));
@@ -369,41 +395,41 @@ public class  Maps extends AppCompatActivity implements
                             contenedorBusqMapa.setHasFixedSize(true);
                             List<ListaCoincidencias> lista = new ArrayList<>();
                             JSONObject lugar;
-                            try{
-                                for(int i = 0; i < municipios.length(); i++){
+                            try {
+                                for (int i = 0; i < municipios.length(); i++) {
                                     lugar = municipios.getJSONObject(i);
-                                    if(lista.isEmpty())
+                                    if (lista.isEmpty())
                                         lista.add(new ListaCoincidencias(lugar));
-                                    else{
+                                    else {
                                         ListaCoincidencias coincidencia;
                                         boolean agregado = false;
-                                        for(int j = 0; j < lista.size(); j++){
+                                        for (int j = 0; j < lista.size(); j++) {
                                             coincidencia = lista.get(j);
-                                            if(coincidencia.getPoblacion() < lugar.getInt("g")) {
+                                            if (coincidencia.getPoblacion() < lugar.getInt("g")) {
                                                 lista.add(j, new ListaCoincidencias(lugar));
                                                 agregado = true;
                                                 break;
                                             }
                                         }
-                                        if(!agregado)
+                                        if (!agregado)
                                             lista.add(new ListaCoincidencias(lugar));
                                     }
                                 }
                                 adaptadorListaCoincidencia = new AdaptadorListaCoincidencia(context, lista);
                                 adaptadorListaCoincidencia.setClickListenerDialogo(Maps.this);
                                 contenedorBusqMapa.setAdapter(adaptadorListaCoincidencia);
-                            }catch (Exception e){
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                        }else{
+                        } else {
                             ocultaContenedorBusqMapa();
-                            if(!btCentrar.isShown())
+                            if (!btCentrar.isShown())
                                 btCentrar.show();
                         }
 
-                    }else{
+                    } else {
                         ocultaContenedorBusqMapa();
-                        if(!btCentrar.isShown())
+                        if (!btCentrar.isShown())
                             btCentrar.show();
                     }
 
@@ -412,14 +438,28 @@ public class  Maps extends AppCompatActivity implements
             });
         }
 
-        try{
-            String contenido = getIntent().getExtras().getString(Auxiliar.textoParaElMapa);
-            if(!contenido.equals(""))
+        tituloPunto = findViewById(R.id.tvPuntoTitulo);
+        textoPunto = findViewById(R.id.tvPuntoTexto);
+        distanciaPunto = findViewById(R.id.tvPuntoDistancia);
+        ivWiki = findViewById(R.id.ivWikipediaMapa);
+        ivSpeaker = findViewById(R.id.ivSpeaker);
+
+        svPunto = findViewById(R.id.svPunto);
+        dialogoVariosPuntos = new Dialog(this);
+        dialogoVariosPuntos.setContentView(R.layout.dialogo_varios_puntos);
+        dialogoVariosPuntos.setCancelable(true);
+
+        try {
+            String contenido = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.textoParaElMapa);
+            if (contenido != null && !contenido.equals("")) {
                 pintaSnackBar(contenido);
+                if(!contenido.contains(getString(R.string.hola)))
+                    llamadaAPlayStore();
+            }
             else {
                 JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
                         getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                if(idUsuario == null) {
+                if (idUsuario == null) {
                     Snackbar snackbar = Snackbar.make(
                             findViewById(R.id.clIdentificateMapa),
                             R.string.textoInicioBreve,
@@ -430,7 +470,7 @@ public class  Maps extends AppCompatActivity implements
                         public void onClick(View v) {
                             JSONObject idUser = PersistenciaDatos.recuperaTarea(
                                     getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                            if(idUser == null) {
+                            if (idUser == null) {
                                 Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                                         .requestIdToken(getString(R.string.default_web_client_id))
                                         .requestEmail().build();
@@ -445,9 +485,28 @@ public class  Maps extends AppCompatActivity implements
                     snackbar.show();
                 }
             }
-        }catch (Exception e){
-            //No hay nada que mostrar
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
+
+    private void ocultaInfoPuntoInteres() {
+        InfoWindow.closeAllInfoWindowsOn(map);
+        idZona = "";
+        if(marcadorPulsado) {
+            marcadorPulsado = false;
+            compruebaZona(false);
+        }
+        if(locationManager != null)
+            locationManager.removeUpdates(Maps.this);
+        if (contenedor.getVisibility() != View.GONE)
+            contenedor.setVisibility(View.GONE);
+        if (guiaMapaH != null)
+            guiaMapaH.setGuidelinePercent(1f);
+        else
+            guiaMapaV.setGuidelinePercent(1f);
+        if (textToSpeech != null && textToSpeech.isSpeaking())
+            textToSpeech.stop();
     }
 
     /**
@@ -476,7 +535,7 @@ public class  Maps extends AppCompatActivity implements
      * Método para pintar la snackBar con el texto que se desee mostrar al usuario
      * @param texto Texto que se desea mostrar al usuarios
      */
-    private void pintaSnackBar(String texto){
+    private void pintaSnackBar(String texto) {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
         snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
@@ -499,7 +558,7 @@ public class  Maps extends AppCompatActivity implements
         }
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
+    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount) {
         try {
             AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
             Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -513,26 +572,30 @@ public class  Maps extends AppCompatActivity implements
                     }
                 }
             });
-        }catch (Exception e){
+        } catch (Exception e) {
             updateUI(null, true);
         }
     }
 
-    public void updateUI(FirebaseUser firebaseUser, boolean registro){
-        if(firebaseUser != null){
-            Login.firebaseAnalytics.setUserId(firebaseUser.getUid());
+    public void updateUI(FirebaseUser firebaseUser, boolean registro) {
+        if (firebaseUser != null) {
+            String idUsuario = firebaseUser.getUid();
+            Login.firebaseAnalytics.setUserId(idUsuario);
             Bundle bundle = new Bundle();
-            bundle.putString(Auxiliar.uid, firebaseUser.getUid());
-            if(registro)
+            bundle.putString(Auxiliar.uid, idUsuario);
+            if (registro)
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
-                JSONObject usuario = new JSONObject();
-                usuario.put(Auxiliar.id, Auxiliar.id);
-                usuario.put(Auxiliar.uid, firebaseUser.getUid());
-                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
-            }catch (JSONException e){
+                JSONObject jsonObject = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if (jsonObject == null || !jsonObject.getString(Auxiliar.uid).equals(idUsuario)) {
+                    JSONObject usuario = new JSONObject();
+                    usuario.put(Auxiliar.id, Auxiliar.id);
+                    usuario.put(Auxiliar.uid, firebaseUser.getUid());
+                    PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                }
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
@@ -574,14 +637,14 @@ public class  Maps extends AppCompatActivity implements
     public void checkPermissions() {
         permisos = new ArrayList<>();
         String textoPermisos = getString(R.string.necesidad_permisos);
-        if(!(ActivityCompat.checkSelfPermission(
+        if (!(ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 == PackageManager.PERMISSION_GRANTED)) {
             permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
         }
         //Compruebo permisos de localización en primer y segundo plano
-        if(!(ActivityCompat.checkSelfPermission(
+        if (!(ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)) {
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -589,9 +652,9 @@ public class  Maps extends AppCompatActivity implements
         }
         //Comprobación para saber si el usuario se ha identificado
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-        if(idUsuario != null) {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                if(!(ActivityCompat.checkSelfPermission(
+        if (idUsuario != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                if (!(ActivityCompat.checkSelfPermission(
                         context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
@@ -601,7 +664,7 @@ public class  Maps extends AppCompatActivity implements
 
         //Si no falta ningún servicio se activa el servicio en segundo plano (si el usuario se ha identificado).
         //Muestra la posición del usuario en el mapa
-        if(!permisos.isEmpty()){
+        if (!permisos.isEmpty()) {
             AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
             alertaExplicativa.setTitle(getString(R.string.permi));
             alertaExplicativa.setMessage(Html.fromHtml(textoPermisos));
@@ -624,10 +687,10 @@ public class  Maps extends AppCompatActivity implements
             });
             alertaExplicativa.setCancelable(false);
             alertaExplicativa.show();
-        }else{
-            if(idUsuario != null)
+        } else {
+            if (idUsuario != null)
                 lanzaServicioPosicionamiento();
-            if(myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
+            if (myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
                 activaPosicionMapa();
             }
         }
@@ -647,71 +710,145 @@ public class  Maps extends AppCompatActivity implements
         myLocationNewOverlay.enableMyLocation();
         myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
                 BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
-        //myLocationNewOverlay.enableFollowLocation(); //Se activa que se aproxime a la posición del usuario
+
         myLocationNewOverlay.setEnableAutoStop(true);
         pintaItemsfijos();
     }
-
-
 
     /**
      * Método para pintar los Overlays que siempre se desea que estén en el mapa
      */
     public void pintaItemsfijos() {
         map.getOverlays().clear();
-        if(myLocationNewOverlay != null)
+        if (myLocationNewOverlay != null)
             map.getOverlays().add(myLocationNewOverlay);
         map.getOverlays().add(scaleBarOverlay);
-        //map.getOverlays().add(compassOverlay);
     }
 
+    private String idZona = "";
+
+    private LocationManager locationManager;
+    private GeoPoint geoPuntoInteres;
+
     /**
-     * Método para mostrar la lista de tareas que contiene el marcador.
-     * @param marcador Marcador en cuyo interior está la lista de tareas
+     * Método para mostrar la lista de tareas que contiene el punto de interés.
+     * @param puntoInteres Punto de interés con toda la información
      */
-    public void pintaLista(Marcador marcador){
-        JSONArray tareas = marcador.getTareasMarcador();
-        if(tareas.length() > 0){
-            sinPulsarTarea.setVisibility(View.GONE);
-            contenedor.setLayoutManager(layoutManager);
-            contenedor.setBackgroundColor(getResources().getColor(R.color.blackTransparente25));
-            if(guiaMapaH != null)
-                guiaMapaH.setGuidelinePercent(0.8f);
-            else
-                guiaMapaV.setGuidelinePercent(0.8f);
-            contenedor.setVisibility(View.VISIBLE);
-            contenedor.setHasFixedSize(true);
+    public void muestraPuntoInteres(JSONObject puntoInteres) {
+        try {
+            //Con el siguiente if evito que se hagan dos peticiones al servidor
+            if (!idZona.equals(puntoInteres.getString(Auxiliar.ficheroZona))) {
+                idZona = puntoInteres.getString(Auxiliar.ficheroZona);
 
-            List<TareasMapaLista> tareasPunto = new ArrayList<>();
-            JSONObject jo;
-            String uriFondo;
-            for(int i = 0; i < tareas.length(); i++){
-                try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
-                    jo = tareas.getJSONObject(i);
-                    try{
-                        uriFondo = jo.getString(Auxiliar.recursoImagenBaja);
-                    }catch (Exception e){
-                        uriFondo = null;
-                    }
-                    tareasPunto.add(new TareasMapaLista(
-                            jo.getString(Auxiliar.id),
-                            jo.getString(Auxiliar.titulo),
-                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                            uriFondo,
-                            jo));
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if (puntoInteres.has(Auxiliar.enlaceWiki)) {
+                    ivWiki.setVisibility(View.VISIBLE);
+                    enlaceWiki = puntoInteres.getString(Auxiliar.enlaceWiki);
+                } else {
+                    ivWiki.setVisibility(View.INVISIBLE);
+                    enlaceWiki = null;
                 }
-            }
-            adaptadorListaMapa = new AdaptadorListaMapa(this, tareasPunto);
-            adaptadorListaMapa.setClickListener(this);
-            contenedor.setAdapter(adaptadorListaMapa);
-            contenedor.startAnimation(animation);
 
-        }else {
-            sinPulsarTarea.setVisibility(View.VISIBLE);
-            contenedor.setVisibility(View.GONE);
+                if (!puntoInteres.has(Auxiliar.caducidad)
+                        || System.currentTimeMillis() > puntoInteres.getLong(Auxiliar.caducidad)) {
+                    //Tengo que pedir al servidor las tareas
+                    peticionTareas(
+                            puntoInteres.getString(Auxiliar.contexto),
+                            enlaceWiki,
+                            puntoInteres.getString(Auxiliar.id),
+                            puntoInteres.getString(Auxiliar.ficheroZona),
+                            puntoInteres.getDouble(Auxiliar.latitud),
+                            puntoInteres.getDouble(Auxiliar.longitud)
+                    );
+
+                } else {
+                    //El fichero existe y es válido, por lo que muestro las tareas.
+                    pintaTareas(puntoInteres.getString(Auxiliar.id));
+                }
+
+                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+
+                svPunto.fullScroll(ScrollView.FOCUS_UP);
+
+                tituloPunto.setText(puntoInteres.getString(Auxiliar.label));
+                textoPunto.setText(
+                        (puntoInteres.getString(Auxiliar.comment).equals("") ?
+                                getResources().getString(R.string.puntoSinTexto) :
+                                puntoInteres.getString(Auxiliar.comment)));
+
+                textoParaAltavoz = String.format(
+                        "%s\n%s",
+                        puntoInteres.getString(Auxiliar.label),
+                        Auxiliar.quitaEnlaces(puntoInteres.getString(Auxiliar.comment)));
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
+                    geoPuntoInteres = new GeoPoint(puntoInteres.getDouble(Auxiliar.latitud), puntoInteres.getDouble(Auxiliar.longitud));
+                }
+
+                if (myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {
+                    double distanciaDospuntos = calculaDistanciaDosPuntos(
+                            myLocationNewOverlay.getMyLocation(),
+                            new GeoPoint(
+                                    puntoInteres.getDouble(Auxiliar.latitud),
+                                    puntoInteres.getDouble(Auxiliar.longitud)
+                            ));
+                    if(distanciaDospuntos < 1)
+                        distanciaPunto.setText(
+                                String.format(
+                                        Locale.getDefault(),
+                                        "%s %.0fm",
+                                        getString(R.string.distancia), distanciaDospuntos*1000));
+                    else
+                        distanciaPunto.setText(
+                                String.format(
+                                        Locale.getDefault(),
+                                        "%s %.3fkm",
+                                        getString(R.string.distancia), distanciaDospuntos));
+                }
+                else
+                    distanciaPunto.setText("");
+
+                if (guiaMapaH != null)
+                    guiaMapaH.setGuidelinePercent(0.5f);
+                else
+                    guiaMapaV.setGuidelinePercent(0.5f);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+    }
+
+
+    public void pintaTareas(String ficheroTareas) {
+        JSONArray tareas = PersistenciaDatos.leeFichero(getApplication(), ficheroTareas);
+        List<TareasMapaLista> tareasPunto = new ArrayList<>();
+        JSONObject jo;
+        String uriFondo;
+        for (int i = 0; i < tareas.length(); i++) {
+            try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
+                jo = tareas.getJSONObject(i);
+                try {
+                    uriFondo = jo.getString(Auxiliar.recursoImagenBaja);
+                } catch (Exception e) {
+                    uriFondo = null;
+                }
+                //Agrego el fichero de donde extraer la tarea
+                jo.put(Auxiliar.ficheroOrigen, ficheroTareas);
+                tareasPunto.add(new TareasMapaLista(
+                        jo.getString(Auxiliar.id),
+                        Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
+                        Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                        uriFondo,
+                        jo));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        adaptadorListaMapa = new AdaptadorListaMapa(this, tareasPunto);
+        adaptadorListaMapa.setClickListener(this);
+        contenedor.setAdapter(adaptadorListaMapa);
+        contenedor.setHasFixedSize(true);
+        contenedor.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -721,10 +858,10 @@ public class  Maps extends AppCompatActivity implements
      * @param posicion Posicón
      */
     @Override
-    public void onItemClick(View view, int posicion){
+    public void onItemClick(View view, int posicion) {
         try {
             GeoPoint miPosicion;
-            if(myLocationNewOverlay != null && (miPosicion = myLocationNewOverlay.getMyLocation()) != null) {
+            if (myLocationNewOverlay != null && (miPosicion = myLocationNewOverlay.getMyLocation()) != null) {
                 JSONObject tarea = adaptadorListaMapa.getTarea(posicion);
                 tarea.put(Auxiliar.origen, tarea.getString(Auxiliar.ficheroOrigen));
                 Intent intent = new Intent(this, Preview.class);
@@ -733,14 +870,14 @@ public class  Maps extends AppCompatActivity implements
                 intent.putExtra(Auxiliar.id, idTarea);
                 intent.putExtra(Auxiliar.posUsuarioLat, miPosicion.getLatitude());
                 intent.putExtra(Auxiliar.posUsuarioLon, miPosicion.getLongitude());
-                try{
-                    idUsuario = PersistenciaDatos.recuperaTarea(
-                            getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id)
+                try {
+                    idUsuario = Objects.requireNonNull(PersistenciaDatos.recuperaTarea(
+                            getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id))
                             .getString(Auxiliar.uid);
-                }catch (Exception e){
+                } catch (Exception e) {
                     idUsuario = null;
                 }
-                if(idUsuario == null){
+                if (idUsuario == null) {
                     intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                     tarea.put(Auxiliar.tipoRespuesta, Auxiliar.ultimaParte(tarea.getString(Auxiliar.tipoRespuesta)));
@@ -750,34 +887,34 @@ public class  Maps extends AppCompatActivity implements
                             tarea,
                             Context.MODE_PRIVATE);
                     startActivity(intent);
-                } else{ //La tarea puede estar en el fichero de rechazadas, pospuestas o denunciadas ya que el usuario está identificado
+                } else { //La tarea puede estar en el fichero de rechazadas, pospuestas o denunciadas ya que el usuario está identificado
                     String[] ficheros = {
                             PersistenciaDatos.ficheroTareasPospuestas,
                             PersistenciaDatos.ficheroTareasRechazadas,
                             PersistenciaDatos.ficheroDenunciadas};
                     JSONObject tareaAnterior = null;
                     String fichero = null;
-                    for(String f : ficheros){
+                    for (String f : ficheros) {
                         tareaAnterior = PersistenciaDatos.obtenTarea(
                                 getApplication(),
                                 f,
                                 idTarea,
                                 idUsuario);
-                        if(tareaAnterior != null){
+                        if (tareaAnterior != null) {
                             fichero = f;
                             break;
                         }
                     }
-                    if(tareaAnterior != null){//Se ha encontrado la tarea en uno de los ficheros
-                        if(fichero.equals(ficheros[2])){
+                    if (tareaAnterior != null) {//Se ha encontrado la tarea en uno de los ficheros
+                        if (fichero.equals(ficheros[2])) {
                             PersistenciaDatos.guardaJSON(
                                     getApplication(),
                                     PersistenciaDatos.ficheroTareasRechazadas,
                                     tarea,
                                     Context.MODE_PRIVATE);
                             pintaSnackBar(getString(R.string.tareaDenunciadaAntes));
-                        }else{
-                            if(fichero.equals(ficheros[0]))
+                        } else {
+                            if (fichero.equals(ficheros[0]))
                                 intent.putExtra(Auxiliar.previa, Auxiliar.tareasPospuestas);
                             else
                                 intent.putExtra(Auxiliar.previa, Auxiliar.tareasRechazadas);
@@ -788,7 +925,7 @@ public class  Maps extends AppCompatActivity implements
                                     Context.MODE_PRIVATE);
                             startActivity(intent);
                         }
-                    }else{
+                    } else {
                         intent.putExtra(Auxiliar.previa, Auxiliar.mapa);
                         tarea.put(Auxiliar.idUsuario, idUsuario);
                         tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
@@ -801,21 +938,19 @@ public class  Maps extends AppCompatActivity implements
                         startActivity(intent);
                     }
                 }
-
-
-            }else{
+            } else {
                 //Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
-                if(myLocationNewOverlay != null){
+                if (myLocationNewOverlay != null) {
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-                            && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                            && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                         pintaSnackBar(getString(R.string.activaUbicacion));
                         //checkPermissions();
                     }
-                }else
+                } else
                     pintaSnackBar(getString(R.string.recuperandoPosicion));
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -830,47 +965,47 @@ public class  Maps extends AppCompatActivity implements
     private Bitmap generaBitmapMarkerNumero(int size) {
         Paint paint = new Paint();
         Drawable drawable;
-        if(size > 60)
+        if (size > 40)
             paint.setARGB(255, 255, 255, 255);
         else
             paint.setARGB(255, 0, 0, 0);
-        if(size <= 20)
-            drawable = context.getResources().getDrawable(R.drawable.ic_marcador100);
+        if (size <= 0)
+            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_uno, null);
+        else if (size <= 10)
+            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador100, null);
+        else if (size <= 20)
+            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador300, null);
+        else if (size <= 40)
+            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador500, null);
+        else if (size <= 70)
+            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador700, null);
         else
-            if(size <= 40)
-                drawable = context.getResources().getDrawable(R.drawable.ic_marcador300);
-            else
-                if(size <= 60)
-                    drawable = context.getResources().getDrawable(R.drawable.ic_marcador500);
-                else
-                    if(size <= 80)
-                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador700);
-                    else
-                        drawable = context.getResources().getDrawable(R.drawable.ic_marcador900);
+            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador900, null);
 
-        //Drawable drawable = context.getResources().getDrawable(R.drawable.ic_marker);
         Bitmap bitmap = Bitmap.createBitmap(
                 drawable.getIntrinsicWidth(),
                 drawable.getIntrinsicHeight(),
                 Bitmap.Config.ARGB_8888);
         int dimen = drawable.getIntrinsicWidth();
-        float mitad = (float)dimen/2;
+        float mitad = (float) dimen / 2;
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
-        String texto;
-        int textSize;
-        if(size>99) {
-            texto = "99+";
-            textSize = (int) (mitad - 15);
-        } else {
-            texto = String.valueOf(size);
-            textSize = (int) (mitad + 1);
+        if (size > 0) {
+            String texto;
+            int textSize;
+            if (size > 99) {
+                texto = "99+";
+                textSize = (int) (mitad - 15);
+            } else {
+                texto = String.valueOf(size);
+                textSize = (int) (mitad + 1);
+            }
+            paint.setStyle(Paint.Style.FILL);
+            paint.setTextSize(textSize);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText(texto, mitad, mitad + (float) (textSize / 2), paint);
         }
-        paint.setStyle(Paint.Style.FILL);
-        paint.setTextSize(textSize);
-        paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(texto, mitad, mitad + (float)(textSize/2), paint);
         return bitmap;
     }
 
@@ -892,65 +1027,99 @@ public class  Maps extends AppCompatActivity implements
     @Override
     public void onResume() {
         super.onResume();
-        if(!noMolestar) {
+        if (!noMolestar) {
             checkPermissions();
+            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
             if (map != null)
                 map.onResume();
-            if(estadoContenedor != null && contenedor.getLayoutManager() != null){
-                contenedor.setVisibility(View.VISIBLE);
-                sinPulsarTarea.setVisibility(View.GONE);
-                contenedor.getLayoutManager().onRestoreInstanceState(estadoContenedor.getParcelable("CONTENEDOR"));
-                contenedor.setAdapter(adaptadorListaMapa);
+            if (!idZona.equals("") && locationManager != null) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
             }
+
+            textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int status) {
+                    if(status < 0)
+                        Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                    else{
+                        textToSpeech.setLanguage(new Locale("spa", "ESP"));
+
+                        textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                            @Override
+                            public void onStart(String utteranceId) {
+                                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_stop_24, null));
+                            }
+
+                            @Override
+                            public void onDone(String utteranceId) {
+                                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                            }
+
+                            @Override
+                            public void onError(String utteranceId) {
+                                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                            }
+                        });
+                    }
+                }
+            });
         }
         invalidateOptionsMenu();
     }
-
-    private int numeroCuadriculasPendientes = 0;
 
     /**
      * Método para comprobar si en la parte del mapa que se muestra al usuario hay tareas que representar.
      * Si no se ha descargado del servidor las tareas se solicita la descarga. Si las tareas están desfasdas se
      * solicita al servidor nuevamente la zona.
+     *
+     * @param descarga Indica si tiene que solicitar al servidor la descarga de una cuadrícula que no tenga
+     *                 en la base de datos.
      */
-    private void compruebaZona() {
-        boolean petServer = solicitarAlServidor(map.getBoundingBox());
+    private void compruebaZona(boolean descarga) {
+        if(!marcadorPulsado) {
+            BoundingBox pantallaActual = map.getBoundingBox();
 
-        try {
-            GeoPoint puntoPartida, puntoVariable;
-            //Se recupera la primera cuadrícula a comprobar
-            puntoPartida = posicionPrimeraComprobacionPantalla(
-                    map.getBoundingBox().getLatNorth(),
-                    map.getBoundingBox().getLonWest());
-            if (puntoPartida == null) {//La primera cuadrícula vendrá dada por el punto más al norte y al oeste
-                puntoPartida = establecePimeraCuadricula();
-            }
-            //Número de cuadrículas verticales y horizontales en la vista actual
-            int cuadriculasVerticales = numeroCuadriculas(puntoPartida.getLatitude(), map.getBoundingBox().getLatSouth());
-            int cuadriculasHorizontales = numeroCuadriculas(map.getBoundingBox().getLonEast(), puntoPartida.getLongitude());
-            puntoVariable = new GeoPoint(puntoPartida);
-            BoundingBox bb;
-            boolean nuevoCuadrado;
-            JSONObject jsonObject;
-            List<String> ficherosPintar = new ArrayList<>();
-            JSONArray posicionesCuadriculas = PersistenciaDatos.leeFichero(
-                    getApplication(),
-                    PersistenciaDatos.ficheroPosicionesCuadriculas);
-            //Se recorren las cuadrículas
-            synchronized ((Object)numeroCuadriculasPendientes) {
-                numeroCuadriculasPendientes = 0;
-            }
-            if(map.getBoundingBox().getDiagonalLengthInMeters()/2000 < 2) {
-                for (int i = 0; i < cuadriculasHorizontales; i++) {
-                    puntoVariable.setLongitude(puntoPartida.getLongitude() + i * incremento);
-                    for (int j = 0; j < cuadriculasVerticales; j++) {
-                        puntoVariable.setLatitude(puntoPartida.getLatitude() - j * incremento);
-                        nuevoCuadrado = true;
-                        //Se comprueba si existe la cuadrícula
-                        for (int k = 0; k < posicionesCuadriculas.length(); k++) {
-                            jsonObject = posicionesCuadriculas.getJSONObject(k);
-                            String id = jsonObject.getString(Auxiliar.id);
-                            if (petServer) {
+            boolean petServer = solicitarAlServidor(pantallaActual);
+
+            try {
+                GeoPoint puntoPartida, puntoVariable;
+                //Se recupera la primera cuadrícula a comprobar
+                puntoPartida = posicionPrimeraComprobacionPantalla(
+                        pantallaActual.getLatNorth(),
+                        pantallaActual.getLonWest());
+                if (puntoPartida == null) {//La primera cuadrícula vendrá dada por el punto más al norte y al oeste
+                    puntoPartida = establecePimeraCuadricula();
+                }
+
+                BoundingBox bb;
+                boolean nuevoCuadrado;
+                JSONObject jsonObject;
+                List<String> ficherosPintar = new ArrayList<>();
+
+                if (petServer) {
+                    //Se recorren las cuadrículas
+                    synchronized ((Object) numeroCuadriculasPendientes) {
+                        numeroCuadriculasPendientes = 0;
+                    }
+                    //Número de cuadrículas verticales y horizontales en la vista actual
+                    int cuadriculasVerticales = numeroCuadriculas(puntoPartida.getLatitude(), pantallaActual.getLatSouth());
+                    int cuadriculasHorizontales = numeroCuadriculas(pantallaActual.getLonEast(), puntoPartida.getLongitude());
+                    puntoVariable = new GeoPoint(puntoPartida);
+                    JSONArray posicionesCuadriculas = PersistenciaDatos.leeFichero(
+                            getApplication(),
+                            PersistenciaDatos.ficheroNuevasCuadriculas);
+                    for (int i = 0; i < cuadriculasHorizontales; i++) {
+                        puntoVariable.setLongitude(puntoPartida.getLongitude() + i * incremento);
+                        for (int j = 0; j < cuadriculasVerticales; j++) {
+                            puntoVariable.setLatitude(puntoPartida.getLatitude() - j * incremento);
+                            nuevoCuadrado = true;
+                            //Se comprueba si existe la cuadrícula
+                            for (int k = 0; k < posicionesCuadriculas.length(); k++) {
+                                jsonObject = posicionesCuadriculas.getJSONObject(k);
+                                String id = jsonObject.getString(Auxiliar.id);
+                                //if (petServer) {
                                 bb = new BoundingBox(
                                         jsonObject.getDouble(Auxiliar.latN),
                                         jsonObject.getDouble(Auxiliar.lonE),
@@ -959,59 +1128,61 @@ public class  Maps extends AppCompatActivity implements
                                 if (bb.contains(
                                         puntoVariable.getLatitude() - 0.00001,
                                         puntoVariable.getLongitude() + 0.00001)) {
-                                    if(!ficherosPintar.contains(id))
-                                        ficherosPintar.add(id);
-                                    if (System.currentTimeMillis() -
-                                            jsonObject.getLong(Auxiliar.fechaUltimaModificacion)
-                                            > 86400000) {//Un día
-                                        File file = new File(getFilesDir(), jsonObject.getString(Auxiliar.id));
-                                        if (file.exists()) {
-                                            //file.delete();
-                                            long instante = System.currentTimeMillis();
-                                            jsonObject.put(Auxiliar.fechaUltimaModificacion, instante);
-                                            posicionesCuadriculas.put(k, jsonObject);
+                                    if (!jsonObject.has(Auxiliar.caducidad)
+                                            || System.currentTimeMillis() > jsonObject.getLong(Auxiliar.caducidad)) {
+                                        if (descarga) {
+                                            File file = new File(getFilesDir(), jsonObject.getString(Auxiliar.id));
+                                            if (file.exists()) {
+                                            /*posicionesCuadriculas.put(k, jsonObject);
                                             PersistenciaDatos.reemplazaJSON(
                                                     getApplication(),
                                                     PersistenciaDatos.ficheroPosicionesCuadriculas,
-                                                    jsonObject);
-                                            peticionTareasServidor(bb, jsonObject.getString(Auxiliar.id));
+                                                    jsonObject);*/
+                                                peticionPuntosInteres(bb, jsonObject.getString(Auxiliar.id));
+                                                nuevoCuadrado = false;
+                                                break;
+                                            }
+                                        } else {
                                             break;
                                         }
+                                    } else {
+                                        if (!ficherosPintar.contains(id))
+                                            ficherosPintar.add(id);
                                     }
                                     nuevoCuadrado = false;
                                     break;
                                 }
+                                //}
                             }
-                        }
-                        if (petServer && nuevoCuadrado) {
-                            bb = new BoundingBox(puntoVariable.getLatitude(),
-                                    puntoVariable.getLongitude() + incremento,
-                                    puntoVariable.getLatitude() - incremento,
-                                    puntoVariable.getLongitude());
-                            JSONObject cuadricula = new JSONObject();
-                            long instante = System.currentTimeMillis();
-                            cuadricula.put(Auxiliar.latN, bb.getLatNorth());
-                            cuadricula.put(Auxiliar.latS, bb.getLatSouth());
-                            cuadricula.put(Auxiliar.lonE, bb.getLonEast());
-                            cuadricula.put(Auxiliar.lonO, bb.getLonWest());
-                            cuadricula.put(Auxiliar.id, Long.toString(instante));
-                            cuadricula.put(Auxiliar.fechaUltimaModificacion, instante);
-                            PersistenciaDatos.guardaJSON(getApplication(),
-                                    PersistenciaDatos.ficheroPosicionesCuadriculas,
-                                    cuadricula,
-                                    Context.MODE_PRIVATE);
-                            posicionesCuadriculas.put(cuadricula);
-                            //Solicitud al servidor
-                            peticionTareasServidor(bb, Long.toString(instante));
+                            if (descarga && nuevoCuadrado) {
+                                bb = new BoundingBox(puntoVariable.getLatitude(),
+                                        puntoVariable.getLongitude() + incremento,
+                                        puntoVariable.getLatitude() - incremento,
+                                        puntoVariable.getLongitude());
+                                JSONObject cuadricula = new JSONObject();
+                                long instante = System.currentTimeMillis();
+                                cuadricula.put(Auxiliar.latN, bb.getLatNorth());
+                                cuadricula.put(Auxiliar.latS, bb.getLatSouth());
+                                cuadricula.put(Auxiliar.lonE, bb.getLonEast());
+                                cuadricula.put(Auxiliar.lonO, bb.getLonWest());
+                                cuadricula.put(Auxiliar.id, Long.toString(instante));
+                                PersistenciaDatos.guardaJSON(getApplication(),
+                                        PersistenciaDatos.ficheroNuevasCuadriculas,
+                                        cuadricula,
+                                        Context.MODE_PRIVATE);
+                                posicionesCuadriculas.put(cuadricula);
+                                //Solicitud al servidor
+                                peticionPuntosInteres(bb, Long.toString(instante));
+                            }
                         }
                     }
                 }
-            }
-            pintaItemsfijos();
-            pintaZona(ficherosPintar);
+                pintaItemsfijos();
+                pintaZona(ficherosPintar, pantallaActual.getDiagonalLengthInMeters());
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -1019,31 +1190,30 @@ public class  Maps extends AppCompatActivity implements
      * Se representan los marcadores existentes en las cuadrículas que se le muestran al usuario
      * @param ficherosPintar Nombre de los ficheros donde se encuentran las tareas a representar
      */
-    private void pintaZona(List<String> ficherosPintar){
-        //Distancia a la que se van a agrupar las tareas
-        double nivelZum = 0.05 * nivelMax - 0.05 * map.getZoomLevelDouble();
+    private void pintaZona(List<String> ficherosPintar, double diagonal){
+        //Distancia a la que se van a agrupar los marcadores
         //Evito los marcadores duplicados
-        nivelZum = Math.max(nivelZum, 0.01);//10m;
+        double nivelZum = Math.max(diagonal / 20000, 0.01);//10m;
 
         JSONArray todasTareas = new JSONArray();
-        JSONObject cuadricula;
-        JSONArray tareas;
-        JSONObject tarea;
+
+        JSONObject puntoInteres;
+        JSONArray ficheroPuntosInteres;
         for(String nombreFichero : ficherosPintar){
-            cuadricula = PersistenciaDatos.recuperaTarea(getApplication(), nombreFichero, nombreFichero);
-            if(cuadricula != null){
-                try {
-                    tareas = cuadricula.getJSONArray(Auxiliar.tareas);
-                    for(int i = 0; i < tareas.length(); i++) {
-                        tarea = tareas.getJSONObject(i);
-                        tarea.put(Auxiliar.ficheroOrigen, nombreFichero);
-                        todasTareas.put(tarea);
+            ficheroPuntosInteres = PersistenciaDatos.leeFichero(getApplication(), nombreFichero);
+            try {
+                if (ficheroPuntosInteres != null) {
+                    for (int i = 0; i < ficheroPuntosInteres.length(); i++) {
+                        puntoInteres = ficheroPuntosInteres.getJSONObject(i);
+                        puntoInteres.put(Auxiliar.ficheroZona, nombreFichero);
+                        todasTareas.put(puntoInteres);
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
+            } catch (JSONException e){
+                e.printStackTrace();
             }
         }
+
         List<Marcador> listaMarcadores = new ArrayList<>();
         Marcador marcador;
         double latitud, longitud;
@@ -1051,15 +1221,15 @@ public class  Maps extends AppCompatActivity implements
         boolean anterior = false;
         try {
             while (todasTareas.length() > 0) {//Barro todas las tareas disponibles en el fichero
-                tarea = (JSONObject)todasTareas.remove(0);
-                latitud = tarea.getDouble(Auxiliar.latitud);
-                longitud = tarea.getDouble(Auxiliar.longitud);
+                puntoInteres = (JSONObject)todasTareas.remove(0);
+                latitud = puntoInteres.getDouble(Auxiliar.latitud);
+                longitud = puntoInteres.getDouble(Auxiliar.longitud);
 
                 if (listaMarcadores.isEmpty()) {
                     marcador = new Marcador();
-                    marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
-                    marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
-                    marcador.agregaTareaAlMarcador(tarea);
+                    marcador.setTitulo(puntoInteres.getString(Auxiliar.label));
+                    marcador.setPosicionMarcador(puntoInteres.getDouble(Auxiliar.latitud), puntoInteres.getDouble(Auxiliar.longitud));
+                    marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
                     listaMarcadores.add(marcador);
                 } else {
                     for (int i = 0; i < listaMarcadores.size(); i++) {
@@ -1067,7 +1237,7 @@ public class  Maps extends AppCompatActivity implements
                         marcador = listaMarcadores.get(i);
                         if (latitud == marcador.getLatitud() &&
                                 longitud == marcador.getLongitud()) { //La tarea es de la misma posición
-                            marcador.agregaTareaAlMarcador(tarea);
+                            marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
                             listaMarcadores.set(i, marcador);
                             anterior = true;
                             break;
@@ -1076,8 +1246,8 @@ public class  Maps extends AppCompatActivity implements
                                     marcador.getLatitud(), marcador.getLongitud(),
                                     latitud, longitud)
                                     <= nivelZum) { //Se agrega al marcador ya que se debe agrupar
-                                marcador.setTitulo(getString(R.string.agrupacionTareas));
-                                marcador.agregaTareaAlMarcador(tarea);
+                                marcador.setTitulo(getString(R.string.agrupacionPuntos));
+                                marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
 
                                 listaMarcadores.set(i, marcador);
                                 anterior = true;
@@ -1087,10 +1257,9 @@ public class  Maps extends AppCompatActivity implements
                     }
                     if (!anterior) {//Hay que agregar un nuevo marcador
                         marcador = new Marcador();
-                        marcador.setTitulo(getResources().getString(R.string.tareaIndividual));
-                        marcador.setPosicionMarcador(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
-                        //marcador.incrementaTareas();
-                        marcador.agregaTareaAlMarcador(tarea);
+                        marcador.setTitulo(puntoInteres.getString(Auxiliar.label));
+                        marcador.setPosicionMarcador(puntoInteres.getDouble(Auxiliar.latitud), puntoInteres.getDouble(Auxiliar.longitud));
+                        marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
                         listaMarcadores.add(marcador);
                     }
                 }
@@ -1106,11 +1275,6 @@ public class  Maps extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Se pausa el mapa tal y como indica la guía. Se almacena el punto en el que se encuentra la
-     * lista de tareas.
-     */
-    private static Bundle estadoContenedor;
     @Override
     public void onPause(){
         super.onPause();
@@ -1126,19 +1290,27 @@ public class  Maps extends AppCompatActivity implements
                 e.printStackTrace();
             }
             map.onPause();
-        }
-        if(contenedor != null && contenedor.getVisibility() == View.VISIBLE){
-            estadoContenedor = new Bundle();
-            estadoContenedor.putParcelable(
-                    "CONTENEDOR",
-                    Objects.requireNonNull(contenedor.getLayoutManager()).onSaveInstanceState());
+            if(textToSpeech != null){
+                textToSpeech.stop();
+            }
+            if(ivSpeaker != null)
+                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+            if(locationManager != null)
+                locationManager.removeUpdates(this);
         }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        /*if(locationManager != null) locationManager.removeUpdates(this);*/
+        if(locationManager != null) locationManager.removeUpdates(this);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(textToSpeech != null)
+            textToSpeech.shutdown();
     }
 
     /**
@@ -1163,6 +1335,23 @@ public class  Maps extends AppCompatActivity implements
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 finishAffinity();
                 startActivity(intent);
+                break;
+            case R.id.ivSpeaker:
+                if(textToSpeech != null) {
+                    if(textToSpeech.isSpeaking()) {
+                        textToSpeech.stop();
+                        ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                    }else{
+                        if (textoParaAltavoz != null && !textoParaAltavoz.equals("")) {
+                            HashMap<String, String> map = new HashMap<>();
+                            map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerMapa");
+                            textToSpeech.speak(textoParaAltavoz, TextToSpeech.QUEUE_FLUSH, map);
+                        }
+                    }
+                }
+                break;
+            case R.id.ivWikipediaMapa:
+                Auxiliar.navegadorInterno(this, enlaceWiki);
                 break;
             default:
                 break;
@@ -1317,17 +1506,6 @@ public class  Maps extends AppCompatActivity implements
     }
 
     /**
-     * Método para volver a la pantalla de inicio.
-     */
-    private void vuelveLogin(){
-        Intent intent = new Intent(this, Login.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finishAffinity();
-        finish();
-    }
-
-    /**
      * Método para indicar al usuario que va a salir de la aplicación
      */
     @Override
@@ -1406,9 +1584,7 @@ public class  Maps extends AppCompatActivity implements
      * @return Número de cuadrículas que se tiene que componen el mapa mostrado
      */
     public int numeroCuadriculas(double latNolonE, double latSoLonO){
-        double intermedio2 = (latNolonE-latSoLonO)/incremento;
-        double intermedio = Math.ceil(intermedio2);
-        return (int)intermedio;
+        return (int)Math.ceil((latNolonE-latSoLonO)/incremento);
     }
 
     /**
@@ -1418,55 +1594,212 @@ public class  Maps extends AppCompatActivity implements
      * @return Verdadero si se puede solictar o falso si no se debe
      */
     public boolean solicitarAlServidor(BoundingBox boundingBox){
-        return !(boundingBox.getDiagonalLengthInMeters() / 2000 > 1.5);
+        return !(boundingBox.getDiagonalLengthInMeters() / 2000 > 5);
     }
 
-    /** Número de grados con los que se forma el lado de la cuadrícula */
-    private final double incremento = 0.002;
-
     /**
-     * Método para solicitar al servidor la solicitud de las tareas de una cuadrícula
-     * @param caja Cuadrícula solicitada
-     * @param nombre Nombre del fichero donde se tiene que almacenar las tareas
+     * Método para obtener del servidor los puntos de interés de un área determinada. Almacena los
+     * resultados en un fichero con el nombre que se indique. Actualiza el valor de la fecha de caducidad
+     * de la cuadrícula
+     *
+     * @param caja Área del que se solicitan los puntos de interés
+     * @param nombre Nombre del fichero donde se van a almacenera los puntos de interés
      */
-    private void peticionTareasServidor(final BoundingBox caja, final String nombre){
-        String url = Auxiliar.direccionIP +
-                "tareas?norte=" + caja.getLatNorth() +
-                "&este=" + caja.getLonEast() +
-                "&sur=" + caja.getLatSouth() +
-                "&oeste=" + caja.getLonWest();
+    private void peticionPuntosInteres(final BoundingBox caja, final String nombre){
+        List<String> keys = new ArrayList<>();
+        List<Object> objects = new ArrayList<>();
+        keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionPuntos);
+        keys.add(Auxiliar.norte); objects.add(caja.getLatNorth());
+        keys.add(Auxiliar.este); objects.add(caja.getLonEast());
+        keys.add(Auxiliar.sur); objects.add(caja.getLatSouth());
+        keys.add(Auxiliar.oeste); objects.add(caja.getLonWest());
+
+        String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
+
         synchronized ((Object)numeroCuadriculasPendientes) {
             ++numeroCuadriculasPendientes;
         }
-        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
-            @Override
-            public void onResponse(JSONArray response) {
-                //Tengo que guardar el fichero específico de la tarea y además modificar el existente de posiciones
-                try {
-                    long instante = System.currentTimeMillis();
-                    JSONObject cuadricula = new JSONObject();
-                    cuadricula.put(Auxiliar.id, nombre);
-                    if (response.length() > 0) {
-                        cuadricula.put(Auxiliar.tareas, response);
-                        cuadricula.put(Auxiliar.fechaUltimaModificacion, instante);
-                        PersistenciaDatos.creaFichero(getApplication(), nombre, cuadricula, Context.MODE_PRIVATE);
 
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+            Request.Method.GET,
+            url,
+            null,
+            new Response.Listener<JSONArray>() {
+                @Override
+                public void onResponse(JSONArray puntosInteres) {
+                    //Tengo que guardar el fichero específico de la cuadrícula con los puntos de interés
+                    if(puntosInteres != null){
+                        JSONArray ficheroAntiguo = PersistenciaDatos.leeFichero(
+                                getApplication(),
+                                nombre);
+                        //Si el fichero está vacío no va a tener tareas relacionadas
+                        if(ficheroAntiguo == null || ficheroAntiguo.length() == 0) {
+                            JSONObject puntoInteres;
+                            for(int i = 0; i < puntosInteres.length(); i++) {
+                                try {
+                                    puntoInteres = puntosInteres.getJSONObject(i);
+                                    puntoInteres.put(Auxiliar.id, String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
+                                    puntosInteres.put(i, puntoInteres);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+                            PersistenciaDatos.guardaFichero(
+                                    getApplication(),
+                                    nombre,
+                                    puntosInteres,
+                                    Context.MODE_PRIVATE);
+                        } else {
+                            JSONArray vectorFinal = new JSONArray();
+                            JSONObject nuevoPunto, puntoAntiguo;
+                            //Me quedo con los datos del servidor más actualizados
+                            for(int i = 0; i < puntosInteres.length(); i++){
+                                try {
+                                    nuevoPunto = puntosInteres.getJSONObject(i);
+                                    for(int j = 0; j < ficheroAntiguo.length(); j++) {
+                                        puntoAntiguo = ficheroAntiguo.getJSONObject(j);
+                                        //Si hay conincidencia guardo el instante y el nombre del fichero si lo tuviera
+                                        if(nuevoPunto.getString(Auxiliar.contexto).equals(puntoAntiguo.getString(Auxiliar.contexto))){
+                                            if(puntoAntiguo.has(Auxiliar.caducidad) && puntoAntiguo.has(Auxiliar.id)) {
+                                                nuevoPunto.put(Auxiliar.caducidad, puntoAntiguo.getLong(Auxiliar.caducidad));
+                                                nuevoPunto.put(Auxiliar.id, puntoAntiguo.getString(Auxiliar.id));
+                                            }
+                                            break;
+                                        }
+                                    }
+                                    if(!nuevoPunto.has(Auxiliar.id))
+                                        nuevoPunto.put(Auxiliar.id, String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
+                                    vectorFinal.put(nuevoPunto);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            PersistenciaDatos.guardaFichero(
+                                    getApplication(),
+                                    nombre,
+                                    vectorFinal,
+                                    Context.MODE_PRIVATE);
+                        }
                     }
+
+                    try {//Actualización del fichero de cuadrículas
+                        JSONObject cuadricula = PersistenciaDatos.recuperaTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroNuevasCuadriculas,
+                                nombre);
+                        cuadricula.put(Auxiliar.caducidad,
+                                System.currentTimeMillis() + 604800000);//Caduca a la semana
+                        PersistenciaDatos.reemplazaJSON(
+                                getApplication(),
+                                PersistenciaDatos.ficheroNuevasCuadriculas,
+                                cuadricula);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                     synchronized ((Object)numeroCuadriculasPendientes) {
                         if(numeroCuadriculasPendientes > 0) {
                             --numeroCuadriculasPendientes;
                             if (numeroCuadriculasPendientes == 0)
-                                compruebaZona();
+                                compruebaZona(false);
                         }
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
+            },
+            null
+        );
 
-            }
-        }, null);
+        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonArrayRequest);
+    }
 
-        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
+    /**
+     * Método para recuperar las tareas pertenecientes a un contexto. Almacena las tareas en el fichero que
+     * se le indique y actualiza la fecha de caducidad en el fichero donde esté almacenado el punto
+     * de interés
+     *
+     * @param contexto Identificador del punto de interés
+     * @param nombreFicheroTareas Nombre que se desea poner al fichero donde se almacenan las tareas
+     * @param nombreFicheroZona Nombre del fichero donde está almacenado el punto de interés
+     */
+    private void peticionTareas(
+            final String contexto,
+            final String enlaceWikipedia,
+            final String nombreFicheroTareas,
+            final String nombreFicheroZona,
+            final double latitud,
+            final double longitud){//Seguro que necesito algo más como el id del lugar donde lo voy a colocar
+        List<String> keys = new ArrayList<>();
+        List<Object> objects = new ArrayList<>();
+        keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionTareas);
+        keys.add(Auxiliar.contextos); objects.add(contexto);
+        String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray tareas) {
+                        if(tareas != null){
+                            JSONObject tarea;
+                            JSONArray tareasG = new JSONArray();
+                            for(int i = 0; i < tareas.length(); i++){
+                                try {
+                                    tarea = tareas.getJSONObject(i);
+                                    tarea.put(Auxiliar.latitud, latitud);
+                                    tarea.put(Auxiliar.longitud, longitud);
+                                    if(enlaceWikipedia != null)
+                                        tarea.put(Auxiliar.enlaceWiki, enlaceWikipedia);
+                                    tareasG.put(tarea);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            boolean actualiza = true;
+                            if(tareas.length() > 0)
+                                actualiza = PersistenciaDatos.guardaFichero(
+                                        getApplication(),
+                                        nombreFicheroTareas,
+                                        tareasG,
+                                        Context.MODE_PRIVATE
+                                );
+                            if(actualiza){
+                                try {
+                                    JSONObject puntoInteres = PersistenciaDatos.recuperaTarea(
+                                            getApplication(),
+                                            nombreFicheroZona,
+                                            nombreFicheroTareas
+                                    );
+                                    puntoInteres.put(Auxiliar.caducidad,
+                                            System.currentTimeMillis() + 86400000);//Caduca al día
+                                    PersistenciaDatos.reemplazaJSON(
+                                            getApplication(),
+                                            nombreFicheroZona,
+                                            puntoInteres
+                                    );
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            compruebaZona(false);
+
+                            if(nombreFicheroZona.equals(idZona)){
+                                pintaTareas(nombreFicheroTareas);
+                            }
+                        }
+                    }
+                },
+                null
+        );
+
+        jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(
+                18000,
+                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonArrayRequest);
     }
 
     /**
@@ -1477,47 +1810,279 @@ public class  Maps extends AppCompatActivity implements
     void newMarker(final Marcador marcador) {
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
-        BitmapDrawable d = new BitmapDrawable(getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()));
+        BitmapDrawable d = new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()));
         marker.setIcon(d);
+
         marker.setInfoWindow(new Bocadillo(R.layout.bocadillo, map));
 
         marker.setTitle(marcador.getTitulo());
+        final GeoPoint geoPoint;
+        if(getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT)
+            geoPoint = new GeoPoint(marcador.getLatitud() - (map.getLatitudeSpanDouble()/5),
+                    marcador.getLongitud());
+        else
+            geoPoint = new GeoPoint(marcador.getLatitud(),
+                    marcador.getLongitud() + (map.getLongitudeSpanDouble()/5));
         marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                //InfoWindow.closeAllInfoWindowsOn(mapView);
-                double distancia;
+                mapController.setCenter(geoPoint);
+                marker.setIcon(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_uno, null));
+                marcadorPulsado = true;
                 String msg = getString(R.string.recuperandoPosicion);
                 try {
                     if(myLocationNewOverlay != null){
-                        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                        if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                        LocationManager lM = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                        if(!lM.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                             msg = getString(R.string.activaUbicacion);
+                            marker.setSubDescription(msg);
+                            marker.showInfoWindow();
                         }else{
-                            distancia = calculaDistanciaDosPuntos(myLocationNewOverlay.getMyLocation(), marker.getPosition());
-                            msg = String.format(Locale.getDefault(), " %.3f km", distancia);
+                            if(marcador.getNumeroPuntos() == 1) {
+                                muestraPuntoInteres(marcador.getTareasMarcador().getJSONObject(0));
+                            } else{
+                                muestraDialogo(marcador);
+                            }
                         }
                     }
                 } catch (Exception e) {
                     msg = getString(R.string.recuperandoPosicion);
+                    marker.setSubDescription(msg);
+                    marker.showInfoWindow();
                 }
-                marker.setSubDescription(msg);
-                marker.showInfoWindow();
-                pintaLista(marcador);
+
+
+                if(marcador.getNumeroPuntos() == 1) {
+                    try {
+                        muestraPuntoInteres(marcador.getTareasMarcador().getJSONObject(0));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
                 return false;
             }
         });
         map.getOverlays().add(marker);
         map.invalidate();
     }
+    private AdaptadorListaPuntos adaptadorListaPuntos;
 
+    /**
+     * Método para mostrar el diálogo con los puntos de interés agrupados en un único marcador
+     *
+     * @param marcador Marcador donde están agrupados los puntos de interés
+     */
+    public void muestraDialogo(Marcador marcador){
+        try {
+            JSONArray puntos = marcador.getTareasMarcador();
+            JSONObject punto;
+            PuntoSingular puntoSingular, puntoCompara;
+            List<PuntoSingular> lista = new ArrayList<>();
+            boolean guardado;
+            GeoPoint geoPoint = myLocationNewOverlay.getMyLocation();
+            for (int i = 0; i < puntos.length(); i++) {
+                punto = puntos.getJSONObject(i);
+                puntoSingular = new PuntoSingular(
+                        punto.getString(Auxiliar.label),
+                        calculaDistanciaDosPuntos(
+                                geoPoint,
+                                new GeoPoint(
+                                        punto.getDouble(Auxiliar.latitud),
+                                        punto.getDouble(Auxiliar.longitud)
+                                ))
+                        , punto
+                );
+                guardado = false;
+                for(int j = 0; j < lista.size(); j++){
+                    puntoCompara = lista.get(j);
+                    if(puntoSingular.getDistancia() < puntoCompara.getDistancia()){
+                        lista.add(j, puntoSingular);
+                        guardado = true;
+                        break;
+                    }
+                }
+                if(!guardado)
+                    lista.add(puntoSingular);
+            }
+            RecyclerView rvPuntosInteres = dialogoVariosPuntos.findViewById(R.id.rvPuntosInteres);
+            rvPuntosInteres.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
+            adaptadorListaPuntos = new AdaptadorListaPuntos(this, lista);
+            adaptadorListaPuntos.setClickListenerDialogo(this);
+            rvPuntosInteres.setAdapter(adaptadorListaPuntos);
+            dialogoVariosPuntos.show();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Método para controlar la pulsación sobre un item de la lista de municipios
+     *
+     * @param view Vista pulsada
+     * @param position Posición que ocupa en la lista
+     */
     @Override
     public void onItemClickDialogo(View view, int position) {
+        searchView.setIconified(true);
+        JSONObject busquedas = null;
+        try {
+            busquedas = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraApertura,
+                    PersistenciaDatos.ficheroPrimeraApertura);
+            busquedas.put(Auxiliar.busquedasMunicipio, busquedas.getInt(Auxiliar.busquedasMunicipio)+1);
+            PersistenciaDatos.guardaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraApertura,
+                    busquedas,
+                    Context.MODE_PRIVATE);
+        }catch (Exception e){
+            if(busquedas != null){
+                PersistenciaDatos.guardaJSON(
+                        getApplication(),
+                        PersistenciaDatos.ficheroPrimeraApertura,
+                        busquedas,
+                        Context.MODE_PRIVATE);
+            }
+        }
+
         if(contenedorBusqMapa != null && contenedorBusqMapa.getVisibility() == View.VISIBLE){
             ocultaContenedorBusqMapa();
         }
 
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if(this.getCurrentFocus() != null && inputMethodManager.isActive(this.getCurrentFocus()))
+            inputMethodManager.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
         centraMapa(adaptadorListaCoincidencia.getLatitud(position),
                 adaptadorListaCoincidencia.getLongitud(position));
+        if(!searchView.isIconified())
+            searchView.setIconified(true);
+
+        llamadaAPlayStore();
+    }
+
+    /**
+     * Método para controlar la pulsación sobre un item del diálogo de la agrupación de puntos de
+     * interés
+     * @param view Vista
+     * @param position Posición que ocupa en la lista
+     */
+    @Override
+    public void onItemClickDialogoVariosPuntos(View view, int position) {
+        //Se ha pulsado sobre un punto de interés de la agrupación
+        dialogoVariosPuntos.cancel();
+        JSONObject puntoInteres = adaptadorListaPuntos.getPunto(position);
+        muestraPuntoInteres(puntoInteres);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        if(!idZona.equals("")) {
+            if (distanciaPunto != null) {
+                double distanciaDospuntos = calculaDistanciaDosPuntos(
+                        new GeoPoint(location),
+                        geoPuntoInteres);
+
+                if(distanciaDospuntos < 1)
+                    distanciaPunto.setText(
+                            String.format(
+                                    Locale.getDefault(),
+                                    "%s %.0fm",
+                                    getString(R.string.distancia), distanciaDospuntos*1000));
+                else
+                    distanciaPunto.setText(
+                            String.format(
+                                    Locale.getDefault(),
+                                    "%s %.3fkm",
+                                    getString(R.string.distancia), distanciaDospuntos));
+            }
+        }else{
+            if(locationManager != null)
+                locationManager.removeUpdates(this);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
+
+    public void llamadaAPlayStore(){
+        final Activity activity = this;
+        JSONObject primeraApertura = PersistenciaDatos.recuperaTarea(
+                getApplication(),
+                PersistenciaDatos.ficheroPrimeraApertura,
+                PersistenciaDatos.ficheroPrimeraApertura);
+        if(primeraApertura != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                try {
+                    if (
+                            primeraApertura.getLong(Auxiliar.instante) > System.currentTimeMillis()
+                                    && (
+                                    primeraApertura.getInt(Auxiliar.tareas) > 2 ||
+                                            primeraApertura.getInt(Auxiliar.busquedasMunicipio) > 9
+                            )) {
+                        final ReviewManager reviewManager = ReviewManagerFactory.create(this);
+                        com.google.android.play.core.tasks.Task<ReviewInfo> peticion = reviewManager.requestReviewFlow();
+                        peticion.addOnCompleteListener(new com.google.android.play.core.tasks.OnCompleteListener<ReviewInfo>() {
+                            @Override
+                            public void onComplete(com.google.android.play.core.tasks.Task<ReviewInfo> task) {
+                                if (task.isSuccessful()) {
+                                    ReviewInfo reviewInfo = task.getResult();
+                                    com.google.android.play.core.tasks.Task<Void> flow =
+                                            reviewManager.launchReviewFlow(activity, reviewInfo);
+                                    flow.addOnCompleteListener(new com.google.android.play.core.tasks.OnCompleteListener<Void>() {
+                                        @Override
+                                        public void onComplete(com.google.android.play.core.tasks.Task<Void> peticionFlujo) {
+                                            if (peticionFlujo.isSuccessful()) {
+                                                noVolverAPreguntar();
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    noVolverAPreguntar();
+                                }
+                            }
+                        });
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                    noVolverAPreguntar();
+                }
+            } else {//No es compatible con la api de petición de revisiones online
+                noVolverAPreguntar();
+            }
+        }
+    }
+
+    private void noVolverAPreguntar(){
+        try {
+            JSONObject primeraApertura = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraApertura,
+                    PersistenciaDatos.ficheroPrimeraApertura);
+            //Al guardar el identificador con otro nombre no se volverá a solicitar al usuario. Tampoco se regenera en la pantalla de login
+            primeraApertura.put(
+                    Auxiliar.id,
+                    PersistenciaDatos.ficheroPrimeraApertura + PersistenciaDatos.ficheroPrimeraApertura);
+            PersistenciaDatos.guardaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraApertura,
+                    primeraApertura,
+                    Context.MODE_PRIVATE);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

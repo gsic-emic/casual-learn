@@ -65,6 +65,28 @@ public class Puntuacion extends AppCompatActivity {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         enviaWifi = sharedPreferences.getBoolean(Ajustes.WIFI_pref, false);
+
+        JSONObject busquedas = null;
+        try {
+            busquedas = PersistenciaDatos.obtenTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraApertura,
+                    PersistenciaDatos.ficheroPrimeraApertura);
+            busquedas.put(Auxiliar.tareas, busquedas.getInt(Auxiliar.tareas)+1);
+            PersistenciaDatos.guardaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroPrimeraApertura,
+                    busquedas,
+                    Context.MODE_PRIVATE);
+        }catch (Exception e){
+            if(busquedas != null){
+                PersistenciaDatos.guardaJSON(
+                        getApplication(),
+                        PersistenciaDatos.ficheroPrimeraApertura,
+                        busquedas,
+                        Context.MODE_PRIVATE);
+            }
+        }
     }
 
     /**

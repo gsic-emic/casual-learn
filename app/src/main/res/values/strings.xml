@@ -37,7 +37,7 @@
     <string name="camara">Camera</string>
     <string name="mapa">Map</string>
     <string name="openstreetmap_contributors">© OpenStreetMap contributors</string>
-    <string name="desactivaNoMolestar">Turn off \"don\'t disturb\" for use the map</string>
+    <string name="desactivaNoMolestar">Turn off <b>don\'t disturb</b> for use the map</string>
     <string name="registro">Sign up</string>
     <string name="emptyLoginUser">Empty username</string>
     <string name="emptyLoginPass">Empty password</string>
@@ -106,7 +106,7 @@
     <string name="dia">day</string>
     <string name="dias">days</string>
     <string name="pulsaMarker">"Click on a marker to see the types of tasks "</string>
-    <string name="agrupacionTareas">Area with tasks nearby</string>
+    <string name="agrupacionPuntos">Group of interest points</string>
     <string name="tareaRegistrada">The task has been completed, reported, postponed or rejected</string>
     <string name="hola">"Hi "</string>
     <string name="errorAutentica">Authentication failure</string>
@@ -137,12 +137,7 @@
     <string name="descripcionPalabraClave">Customize the hashtag with which the tasks will be published on Twitter</string>
     <string name="fuentesInformacion" translatable="false">Fuentes de información</string>
     <string name="pablo" translatable="false"><b>Pablo García Zarza</b>\npablogz@gsic.uva.es\n</string>
-    <string name="adolfo" translatable="false"><b>Adolfo Ruíz Calleja</b>\nadolfo@gsic.uva.es\n</string>
-    <string name="miguel" translatable="false"><b>Miguel Luis Bote Lorenzo</b>\nmigbot@tel.uva.es\n</string>
-    <string name="sergio" translatable="false"><b>Sergio Serrano Iglesias</b>\nsergio@gsic.uva.es\n</string>
-    <string name="edu" translatable="false"><b>Eduardo Gómez Sánchez</b>\nedugom@tel.uva.es\n</string>
-    <string name="asen" translatable="false"><b>Juan Ignacio Asensio Pérez</b>\njuaase@tel.uva.es\n</string>
-    <string name="guille" translatable="false"><b>Guillermo Vega Gorgojo</b>\nguiveg@tel.uva.es\n</string>
+    <string name="adolfo" translatable="false"><b>Adolfo Ruiz Calleja</b>\nadolfo@gsic.uva.es\n</string>
     <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
     <string name="urluva" translatable="false">https://www.uva.es/export/sites/uva/</string>
     <string name="urlJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>
@@ -256,4 +251,26 @@
     <string name="instalaTeams">You should install the official Microsoft Teams client to share your answer</string>
     <string name="compartir_teams">Share on Teams</string>
     <string name="tu_respuesta">Your answare</string>
+    <string name="boolean_portafolio_publico">Share answers in a portfolio</string>
+    <string name="titulo_id_protafolio">Portfolio identifier</string>
+    <string name="titulo_compartir_preferencias">Answers publication</string>
+    <string name="compartir_id_portafolio">Click to share the portfolio ID</string>
+    <string name="idporta_no_disponible">The portfolio ID is not yet available. Try again in a few minutes</string>
+    <string name="resumen_no_molestar">We will not show you any notification again until you disable this preference</string>
+    <string name="copiar_portapapeles">Copy to clipboard</string>
+    <string name="copiado_al_porta">Copied to clipboard</string>
+    <string name="public_answer">Public answer</string>
+    <string name="remove_answer">Remove answer</string>
+    <string name="errorCopiaPortapapeles">Error to copy URL to clipboard</string>
+    <string name="idToken_noDisponible">ID\'s task is not yet available in portfolio</string>
+    <string name="retardo_publicacion">Delay in posting answers</string>
+    <string name="retardo_publicacion_explica">Answers will show in the portfolio between one and three hours after completion</string>
+    <string name="errorCambioEstado">Error to change the portfolio\'s status</string>
+    <string name="tarea_erronea">The task is worng</string>
+    <string name="tarea_no_pertinente">The task is not appropriate</string>
+    <string name="distancia">Distance:</string>
+    <string name="speaker">Speaker</string>
+    <string name="puntoSinTexto">This point does not have a description yet…</string>
+    <string name="desarrolladores_nombres" translatable="false"><![CDATA[<p><b>Pablo García Zarza</b><br>pablogz@gsic.uva.es</p><p><b>Adolfo Ruiz Calleja</b><br>adolfo@gsic.uva.es</p>]]></string>
+    <string name="aun_no_disponible">This option is not enable yet. Try again in a few minutes.</string>
 </resources>

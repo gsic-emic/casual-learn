@@ -22,7 +22,7 @@
     <string name="respuestaVacia">La respuesta no puede estar vacía</string>
     <string name="respuestaG">Respuesta almacenada</string>
     <string name="noMolestar">No molestar</string>
-    <string name="intervalo">Intervalo mínimo entre cada notificación de nueva tarea</string>
+    <string name="intervalo">Intervalo mínimo entre cada nueva notificación de tarea</string>
     <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas (horas)</string>
     <string name="textoNotificacionPersistente">Buscando nuevas tareas…</string>
     <string name="Password">Contraseña</string>
@@ -34,7 +34,7 @@
     <string name="pregunta">Pregunta</string>
     <string name="camara">Cámara</string>
     <string name="mapa">Mapa</string>
-    <string name="desactivaNoMolestar">Debes desactivar la opción \"no molestar\" para utilizar el mapa</string>
+    <string name="desactivaNoMolestar">Debes desactivar la opción <b>no molestar</b> para utilizar el mapa</string>
     <string name="registro">Registro</string>
     <string name="emptyLoginUser">Introduce un nombre de usuario</string>
     <string name="emptyLoginPass">Introduce una contraseña</string>
@@ -99,7 +99,8 @@
     <string name="dia">día</string>
     <string name="dias">días</string>
     <string name="pulsaMarker">Pulsa en un marcador para ver sus tareas</string>
-    <string name="agrupacionTareas">Zona con varias tareas cercanas</string>
+    <!--<string name="agrupacionTareas">Zona con varias tareas cercanas</string>-->
+    <string name="agrupacionPuntos">Grupo de puntos de interés</string>
     <string name="tareaRegistrada">La tarea está completada, reportada, pospuesta o rechazada</string>
     <string name="hola">"Hola "</string>
     <string name="errorAutentica">Fallo de autenticación</string>
@@ -167,7 +168,7 @@
     <string name="cerrarSesion">Cerrar sesión</string>
     <string name="iniciarSesion">Iniciar sesión</string>
     <string name="cerrarSesionMensajeAjustes">Si cierra la sesión Casual Learn no le podrá notificar nuevas tareas.</string>
-    <string name="cerrarSesionMensaje">¿De verdad quieres cerrar sesión?</string>
+    <string name="cerrarSesionMensaje">¿De verdad quieres cerrar la sesión?</string>
     <string name="entiendo">Lo entiendo</string>
     <string name="volverRecordar">Recordar más tarde</string>
     <string name="volverSolicitar">Volver a solicitar</string>
@@ -227,4 +228,25 @@
     <string name="instalaTeams">Debes instalar el cliente oficial de Microsoft Teams para poder comparitr la respuesta</string>
     <string name="compartir_teams">Compartir en Teams</string>
     <string name="tu_respuesta">Tu respuesta</string>
+    <string name="boolean_portafolio_publico">Compartir respuestas en un portafolio</string>
+    <string name="titulo_id_protafolio">Identificador de tu portafolio</string>
+    <string name="titulo_compartir_preferencias">Publicación de las respuestas</string>
+    <string name="compartir_id_portafolio">Pulsa para compartir el identificador del portafolio</string>
+    <string name="idporta_no_disponible">El identificador del portafolio no está disponible. Vuelve a probar en unos minutos</string>
+    <string name="resumen_no_molestar">No te mostraremos notificaciones hasta que no deshabilites esta preferencia</string>
+    <string name="copiar_portapapeles">Copiar al portapapeles</string>
+    <string name="copiado_al_porta">Copiado al portapapeles</string>
+    <string name="public_answer">Publicar en el portafolio</string>
+    <string name="remove_answer">Eliminar del portafolio</string>
+    <string name="errorCopiaPortapapeles">Error al copiar la URL al portapapeles</string>
+    <string name="idToken_noDisponible">La URL de la tarea en el portafolio todavía no está disponible</string>
+    <string name="retardo_publicacion">Retardo en la publicación</string>
+    <string name="retardo_publicacion_explica">Las respuestas se mostrarán en el portafolios cuando pasen entre una y tres horas</string>
+    <string name="errorCambioEstado">Error al cambiar el estado del portafolio</string>
+    <string name="tarea_erronea">La tarea es errónea</string>
+    <string name="tarea_no_pertinente">La tarea no es pertinente</string>
+    <string name="distancia">Distancia:</string>
+    <string name="speaker">Altavóz</string>
+    <string name="puntoSinTexto">El punto de interés aún no dispone de descripción…</string>
+    <string name="aun_no_disponible">La opción aún no está disponible. Vuelva a intentarlo en unos minutos.</string>
 </resources>

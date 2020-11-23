@@ -2,17 +2,22 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.backup.BackupManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.method.LinkMovementMethod;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -21,6 +26,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -51,7 +57,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * modificar la respuesta dada o complementarla.
  *
  * @author Pablo García Zarza
- * @version 20201005
+ * @version 20201028
  */
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
@@ -59,7 +65,7 @@ public class Completadas extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo {
 
     /** EditText donde se incluye la respuesta textual del usuario */
-    private EditText textoUsuario;
+    private EditText etTextoUsuario;
     /** Puntuación que el usuario tiene asignado a la tarea*/
     private RatingBar ratingBar;
     /** Contenedor donde se colocará las imágenes o vídeos de la tarea realiacidos por el usuario */
@@ -84,6 +90,9 @@ public class Completadas extends AppCompatActivity implements
     private AdaptadorVideosCompletados adaptadorVideosCompletados;
     /** Posicion al que se desplaza el scroll */
     private int posicion = 0;
+    /** TextView donde se incluye la respuesta textual del usuario */
+    private TextView tvTextoUsuario;
+
 
     private FloatingActionButton btCompartir;
 
@@ -92,6 +101,8 @@ public class Completadas extends AppCompatActivity implements
     private boolean enviaWifi;
 
     private String idUsuario;
+
+    private boolean publicarGeneral;
 
     /**
      * Método de creación de la actividad. Pinta la interfaz gráfica y establece las referencias
@@ -126,7 +137,9 @@ public class Completadas extends AppCompatActivity implements
         TextView titulo = findViewById(R.id.tituloCompletada);
         TextView enunciado = findViewById(R.id.tvDescripcionCompletada);
         ratingBar = findViewById(R.id.rbPuntuacionCompletada);
-        textoUsuario = findViewById(R.id.etRespuestaTextualCompletada);
+        etTextoUsuario = findViewById(R.id.etRespuestaTextualCompletada);
+        tvTextoUsuario = findViewById(R.id.tvTextoUsuario);
+        tvTextoUsuario.setMovementMethod(new ScrollingMovementMethod());
         btCompartir = findViewById(R.id.btCompartirCompletada);
 
         btAgregar = findViewById(R.id.btAgregarCompletada);
@@ -160,8 +173,9 @@ public class Completadas extends AppCompatActivity implements
                     respuesta = respuestas.getJSONObject(i);
                     if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
                         if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
-                            textoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
-                            textoUsuario.setVisibility(View.VISIBLE);
+                            tvTextoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
+                            etTextoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
+                            tvTextoUsuario.setVisibility(View.VISIBLE);
                         }
                     } else {//URI de video o fotos
                         listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
@@ -218,11 +232,6 @@ public class Completadas extends AppCompatActivity implements
             e.printStackTrace();
         }
 
-        /*if(savedInstanceState != null) {
-            editando = savedInstanceState.getBoolean("EDITANDO");
-            onOptionsItemSelected((MenuItem) findViewById(R.id.editarCompletada));
-        }*/
-
         if(savedInstanceState != null) {
             if(savedInstanceState.getInt("COMPARTIENDO") == View.VISIBLE)
                 muestraOculta(true);
@@ -234,6 +243,7 @@ public class Completadas extends AppCompatActivity implements
 
         hashtag = sharedPreferences.getString(Ajustes.HASHTAG_pref, getString(R.string.hashtag));
         enviaWifi = sharedPreferences.getBoolean(Ajustes.WIFI_pref, false);
+        publicarGeneral = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
     }
 
     /**
@@ -274,6 +284,39 @@ public class Completadas extends AppCompatActivity implements
         return super.onCreateOptionsMenu(menu);
     }
 
+    private boolean publico;
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu){
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        MenuItem checkCompartir = menu.findItem(R.id.tareaPublicaSelector);
+        MenuItem copiarAlPorta = menu.findItem(R.id.copiarToken);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean publicoG = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+
+        if(idUsuario == null || !publicoG || !idUsuario.has(Auxiliar.idPortafolio)) {//Si el usuario no se ha identificado se cambia la etiqueta a mostrar
+            checkCompartir.setVisible(false);
+            copiarAlPorta.setVisible(false);
+            publico = false;
+        }else{
+            try {
+                if(tarea.has(Auxiliar.publico) && tarea.getBoolean(Auxiliar.publico) && tarea.has(Auxiliar.idToken)){
+                    checkCompartir.setVisible(true);
+                    publico = true;
+                    checkCompartir.setTitle(R.string.remove_answer);
+                    copiarAlPorta.setVisible(true);
+                }else{
+                    checkCompartir.setVisible(true);
+                    publico = false;
+                    checkCompartir.setTitle(R.string.public_answer);
+                    copiarAlPorta.setVisible(false);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
     /**
      * Método para controlar la pulsación de los items del menú
      *
@@ -290,51 +333,78 @@ public class Completadas extends AppCompatActivity implements
         }
         else
             caso = item.getItemId();
-        if (caso == R.id.editarCompletada) {
-            if (editando) {
-                try {
-                    String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
-                    //Se comprueba si la respuesta está vacía
-                    if (textoUsuario.getVisibility() != View.GONE &&
-                            (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
-                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
-                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                            ) && textoUsuario.getText().toString().isEmpty()) {
-                        textoUsuario.setError(getString(R.string.respuestaVacia));
-                    } else {
-                        //Se comprueba si se tiene algún recurso multimedia
-                        if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                || tipoRespuesta.equals(Auxiliar.tipoImagen)
-                                || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
-                                || tipoRespuesta.equals(Auxiliar.tipoVideo)
-                                || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                        ) && (listaURI.size() == 0)) {
-                            muestraSnack(getString(R.string.agregarContenido));
+        switch (caso) {
+            case R.id.editarCompletada:
+                if (editando) {
+                    try {
+                        String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
+                        //Se comprueba si la respuesta está vacía
+                        if (etTextoUsuario.getVisibility() != View.GONE &&
+                                (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                                ) && etTextoUsuario.getText().toString().isEmpty()) {
+                            etTextoUsuario.setError(getString(R.string.respuestaVacia));
                         } else {
-                            editando = false;
-                            if (item != null)
-                                item.setIcon(R.drawable.ic_edit_black_24dp);
-                            bloqueaYGuarda();
-                            btCompartir.show();
+                            //Se comprueba si se tiene algún recurso multimedia
+                            if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
+                                    || tipoRespuesta.equals(Auxiliar.tipoImagen)
+                                    || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
+                                    || tipoRespuesta.equals(Auxiliar.tipoVideo)
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                            ) && (listaURI.size() == 0)) {
+                                muestraSnack(getString(R.string.agregarContenido));
+                            } else {
+                                editando = false;
+                                if (item != null)
+                                    item.setIcon(R.drawable.ic_edit_black_24dp);
+                                bloqueaYGuarda();
+                                btCompartir.show();
+                            }
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                } else {
+                    editando = true;
+                    if (item != null)
+                        item.setIcon(R.drawable.ic_save_white_24dp);
+                    desbloqueaCampos();
+                    muestraOculta(false);
+                    btCompartir.hide();
+                }
+                return true;
+            case R.id.tareaPublicaSelector:
+                try {
+                    publico = !publico;
+                    tarea.put(Auxiliar.publico, publico);
+                    bloqueaYGuarda();
+                    invalidateOptionsMenu();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-            } else {
-                editando = true;
-                if (item != null)
-                    item.setIcon(R.drawable.ic_save_white_24dp);
-                desbloqueaCampos();
-                muestraOculta(false);
-                btCompartir.hide();
-            }
-            return true;
-            /*case R.id.publicarCompletada:
-                //Toast.makeText(this, Login.firebaseAuth.getUid(), Toast.LENGTH_SHORT).show();
-                Auxiliar.mandaTweet(this, tarea, hashtag);
-                return true;*/
+                return true;
+            case R.id.copiarToken:
+                try{
+                    if(tarea.has(Auxiliar.idToken)) {
+                        String tokenTarea = tarea.getString(Auxiliar.idToken);
+                        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        String idUsuario = PersistenciaDatos.recuperaTarea(
+                                getApplication(),
+                                PersistenciaDatos.ficheroUsuario,
+                                Auxiliar.id)
+                                .getString(Auxiliar.idPortafolio);
+                        String url = Auxiliar.rutaPortafolio + idUsuario + "/" + tokenTarea;
+                        clipboardManager.setPrimaryClip(ClipData.newPlainText(Auxiliar.idToken, url));
+                        Toast.makeText(this, R.string.copiado_al_porta, Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(this, R.string.idToken_noDisponible, Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e){
+                    Toast.makeText(this, R.string.errorCopiaPortapapeles, Toast.LENGTH_SHORT).show();
+                }
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -358,7 +428,7 @@ public class Completadas extends AppCompatActivity implements
             for (i = 0; i < respuestas.length(); i++) {
                 respuesta = respuestas.getJSONObject(i);
                 if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                    respuesta.put(Auxiliar.respuestaRespuesta, textoUsuario.getText().toString());
+                    respuesta.put(Auxiliar.respuestaRespuesta, etTextoUsuario.getText().toString());
                     respuestas.put(i, respuesta);
                     teniaRespuesta = true;
                     break;
@@ -367,21 +437,24 @@ public class Completadas extends AppCompatActivity implements
             if (!teniaRespuesta) {
                 respuesta = new JSONObject();
                 respuesta.put(Auxiliar.tipoRespuesta, Auxiliar.texto);
-                respuesta.put(Auxiliar.respuestaRespuesta, textoUsuario.getText().toString());
+                respuesta.put(Auxiliar.respuestaRespuesta, etTextoUsuario.getText().toString());
                 respuestas.put(respuesta);
             }
             tarea.put(Auxiliar.respuestas, respuestas);
         }catch (Exception e){
             e.printStackTrace();
         }
-        if(textoUsuario.getText().toString().isEmpty()){
-            textoUsuario.setVisibility(View.GONE);
-            textoUsuario.setEnabled(false);
-            textoUsuario.setInputType(InputType.TYPE_NULL);
+        if(etTextoUsuario.getText().toString().isEmpty()){
+            etTextoUsuario.setVisibility(View.GONE);
+            etTextoUsuario.setEnabled(false);
+            etTextoUsuario.setInputType(InputType.TYPE_NULL);
         }
-        if(textoUsuario.getVisibility() != View.GONE){
-            textoUsuario.setEnabled(false);
-            textoUsuario.setInputType(InputType.TYPE_NULL);
+        if(etTextoUsuario.getVisibility() != View.GONE){
+            etTextoUsuario.setEnabled(false);
+            etTextoUsuario.setInputType(InputType.TYPE_NULL);
+            tvTextoUsuario.setText(etTextoUsuario.getText());
+            etTextoUsuario.setVisibility(View.GONE);
+            tvTextoUsuario.setVisibility(View.VISIBLE);
         }
         try {
             double puntuacionAnterior;
@@ -448,6 +521,10 @@ public class Completadas extends AppCompatActivity implements
         }
         try {
             tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+
+            if(!tarea.has(Auxiliar.publico))
+                tarea.put(Auxiliar.publico, publicarGeneral);
+
             PersistenciaDatos.reemplazaJSON(
                     getApplication(),
                     PersistenciaDatos.ficheroCompletadas,
@@ -464,6 +541,7 @@ public class Completadas extends AppCompatActivity implements
             bundle.putString("user", Login.firebaseAuth.getUid());
             bundle.putString("idTarea", tarea.getString(Auxiliar.id));
             Login.firebaseAnalytics.logEvent("tareaModificada", bundle);
+            invalidateOptionsMenu();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -484,12 +562,13 @@ public class Completadas extends AppCompatActivity implements
      * modificaciones que considere.
      */
     private void desbloqueaCampos(){
-        if(textoUsuario.getVisibility() == View.GONE){
-            textoUsuario.setVisibility(View.VISIBLE);
-        }
+        if(tvTextoUsuario.getVisibility() != View.GONE)
+            tvTextoUsuario.setVisibility(View.GONE);
 
-        textoUsuario.setEnabled(true);
-        textoUsuario.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        etTextoUsuario.setVisibility(View.VISIBLE);
+
+        etTextoUsuario.setEnabled(true);
+        etTextoUsuario.setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 
         ratingBar.setIsIndicator(false);
 
@@ -856,8 +935,8 @@ public class Completadas extends AppCompatActivity implements
                 ((FloatingActionButton) findViewById(i)).hide();
         }
         if (mostrar)
-            btCompartir.setImageDrawable(getResources().getDrawable(R.drawable.ic_baseline_close_24));
+            btCompartir.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_baseline_close_24, null));
         else
-            btCompartir.setImageDrawable(getResources().getDrawable(R.drawable.ic_share_white));
+            btCompartir.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_share_white, null));
     }
 }

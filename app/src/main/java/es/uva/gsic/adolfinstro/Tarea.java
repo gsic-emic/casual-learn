@@ -2,15 +2,14 @@ package es.uva.gsic.adolfinstro;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.text.InputFilter;
@@ -31,6 +30,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,7 +59,7 @@ import static java.util.Objects.requireNonNull;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20201007
+ * @version 20201028
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -104,9 +104,14 @@ public class Tarea extends AppCompatActivity implements
 
     private int posicion;
 
+    /** URL de la licencia de la imagen si la tuviera */
     private String urlLicencia;
 
+    /** Identificador del usuario */
     private String idUsuario;
+
+    /** Indica si la tarea realizado se tiene que publicar o no */
+    private boolean publicarRespuesta;
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -184,11 +189,16 @@ public class Tarea extends AppCompatActivity implements
                     ivImagenDescripcion.setVisibility(View.VISIBLE);
                 }
 
-                if(ivImagenDescripcion.getVisibility() == View.VISIBLE)
+                if(ivImagenDescripcion.getVisibility() == View.VISIBLE) {
+                    TextView licenciaImagen = findViewById(R.id.tvInfoFotoTarea);
+                    if(tarea.has(Auxiliar.textoLicencia)){
+                        licenciaImagen.setText(tarea.getString(Auxiliar.textoLicencia));
+                    }
                     urlLicencia = Auxiliar.enlaceLicencia(
                             this,
-                            (ImageView) findViewById(R.id.ivInfoFotoTarea),
+                            licenciaImagen,
                             urlImagen);
+                }
 
                 tipo = tarea.getString(Auxiliar.tipoRespuesta);
                 try{
@@ -315,6 +325,9 @@ public class Tarea extends AppCompatActivity implements
             }catch (Exception e){
                 e.printStackTrace();
             }
+
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            publicarRespuesta = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
         }
 
         try {
@@ -359,6 +372,7 @@ public class Tarea extends AppCompatActivity implements
                         respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                         respuesta.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
                         respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                        respuesta.put(Auxiliar.publico, publicarRespuesta);
                         PersistenciaDatos.guardaJSON(getApplication(),
                                 PersistenciaDatos.ficheroCompletadas,
                                 respuesta,
@@ -456,7 +470,7 @@ public class Tarea extends AppCompatActivity implements
                     }
                 }
                 break;
-            case R.id.ivInfoFotoTarea:
+            case R.id.tvInfoFotoTarea:
                 if(urlLicencia != null)
                     Auxiliar.navegadorInterno(this, urlLicencia);
                 break;
@@ -489,6 +503,8 @@ public class Tarea extends AppCompatActivity implements
                 final CheckBox cb1 = dialogo.findViewById(R.id.cbNoEntiendoTarea);
                 final CheckBox cb2 = dialogo.findViewById(R.id.cbTareaFallos);
                 final CheckBox cb3 = dialogo.findViewById(R.id.cbNoPuedoRealizar);
+                final CheckBox cb4 = dialogo.findViewById(R.id.cbTareaErronea);
+                final CheckBox cb5 = dialogo.findViewById(R.id.cbTareaNoPertinente);
                 final EditText editText = dialogo.findViewById(R.id.etDenuncia);
                 botonEnviar.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -502,20 +518,38 @@ public class Tarea extends AppCompatActivity implements
                             contenido = String.format("%s\n%s\n%s\n%s\n", idTarea, Build.MANUFACTURER, Build.MODEL, version);
 
                         String textoEdit = editText.getText().toString();
-                        if(cb1.isChecked() || cb2.isChecked() || cb3.isChecked()){//Alguno de los checkbox está activado, no tiene porque tener texto
+                        String cb = "";
+                        if(cb1.isChecked() || cb2.isChecked() || cb3.isChecked() || cb4.isChecked() || cb5.isChecked()){//Alguno de los checkbox está activado, no tiene porque tener texto
                             envia = true;
-                            if(cb1.isChecked())
+                            if(cb1.isChecked()) {
                                 contenido = contenido.concat(String.format("%s\n", getString(R.string.noEntiendo)));
-                            if(cb2.isChecked())
+                                cb  = cb.concat("1");
+                            }
+                            if(cb2.isChecked()) {
                                 contenido = contenido.concat(String.format("%s\n", getString(R.string.tareaConFallos)));
-                            if(cb3.isChecked())
+                                cb  = cb.concat("2");
+                            }
+                            if(cb3.isChecked()) {
                                 contenido = contenido.concat(String.format("%s\n", getString(R.string.noSePuedeRealizar)));
-                            if(!textoEdit.isEmpty() || !textoEdit.equals(""))
+                                cb  = cb.concat("3");
+                            }
+                            if(cb4.isChecked()) {
+                                contenido = contenido.concat(String.format("%s\n", getString(R.string.tarea_erronea)));
+                                cb  = cb.concat("4");
+                            }
+                            if(cb5.isChecked()) {
+                                contenido = contenido.concat(String.format("%s\n", getString(R.string.tarea_no_pertinente)));
+                                cb  = cb.concat("5");
+                            }
+                            if(!textoEdit.isEmpty() || !textoEdit.equals("")) {
                                 contenido = contenido.concat(String.format("%s\n", textoEdit));
+                                cb = cb.concat(String.format(" %s", textoEdit.substring(0, (Math.min(textoEdit.length(), 19)))));
+                            }
                         }else {//Necesita texto
                             if(!textoEdit.isEmpty() || !textoEdit.equals("")) {
                                 envia = true;
                                 contenido = contenido.concat(String.format("%s\n", textoEdit));
+                                cb = cb.concat(String.format(" %s", textoEdit.substring(0, (Math.min(textoEdit.length(), 19)))));
                             }
                             else
                                 editText.setError(getString(R.string.errorTextoDenuncia));
@@ -534,7 +568,7 @@ public class Tarea extends AppCompatActivity implements
                                 dialogo.cancel();
                                 muestraSnackBar(getString(R.string.noEmail));
                             }
-                            enviaDenunciaFirebase();
+                            enviaDenunciaFirebase(cb);
                         }
                     }
                 });
@@ -545,7 +579,7 @@ public class Tarea extends AppCompatActivity implements
 
     /**
      * Método para guardar la respuesta de texto que haya dado el usuario. Agrega esta respueta al
-     * vector de las trespuestas.
+     * vector de las respuestas.
      * @param respuestaTextual Frase o palabras dadas por el usuario.
      * @throws Exception Posibles excepciones al manipular el JSON
      */
@@ -559,6 +593,7 @@ public class Tarea extends AppCompatActivity implements
         json.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
         json.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
         json.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
+        json.put(Auxiliar.publico, publicarRespuesta);
         PersistenciaDatos.guardaJSON(
                 getApplication(),
                 PersistenciaDatos.ficheroCompletadas,
@@ -582,7 +617,7 @@ public class Tarea extends AppCompatActivity implements
      * Método para envíar una denuncia de la tarea. Esta denuncia se recogerá mediante un evento de
      * FIREBASE
      */
-    public void enviaDenunciaFirebase(){
+    public void enviaDenunciaFirebase(String cb){
         Intent intent = new Intent();
         intent.setAction(Auxiliar.nunca_mas);
         intent.putExtra(Auxiliar.id, idTarea);
@@ -590,6 +625,7 @@ public class Tarea extends AppCompatActivity implements
         Bundle bundle = new Bundle();
         bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
         bundle.putString("idUsuario", idUsuario);
+        bundle.putString("motivo", cb);
         Login.firebaseAnalytics.logEvent("tareaDenunciada", bundle);
     }
 
@@ -868,6 +904,7 @@ public class Tarea extends AppCompatActivity implements
                     assert tarea != null;
                     tarea.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
                     tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    tarea.put(Auxiliar.publico, publicarRespuesta);
                     PersistenciaDatos.guardaJSON(getApplication(), PersistenciaDatos.ficheroCompletadas, tarea, Context.MODE_PRIVATE);
                     if (!PersistenciaDatos.guardaTareaRespuesta(getApplication(),
                             PersistenciaDatos.ficheroCompletadas,
@@ -880,7 +917,7 @@ public class Tarea extends AppCompatActivity implements
                     mensajeError();
                 }
                 if(respuestaEsperada!=null){
-                    if (respuesta.contains(respuestaEsperada)) {
+                    if (respuesta.toLowerCase().contains(respuestaEsperada.toLowerCase())) {
                         mensajeRespuestaEsperada(this,true);
                     } else {
                         mensajeRespuestaEsperada(this,false);

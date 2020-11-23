@@ -3,6 +3,7 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
@@ -42,7 +43,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * las indicaciones.
  *
  * @author Pablo
- * @version 20200911
+ * @version 20201117
  */
 public class MapaNavegable extends AppCompatActivity {
 
@@ -99,7 +100,7 @@ public class MapaNavegable extends AppCompatActivity {
 
         Marker marker = new Marker(map);
         marker.setPosition(posMarker);
-        marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
+        marker.setIcon(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_marcador_uno, null));
         marker.setInfoWindow(null);
 
         map.getOverlays().add(marker);

@@ -95,7 +95,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="@id/guiaVerticalAcerca"
             app:layout_constraintTop_toBottomOf="@id/vista1"
-            android:src="@drawable/gsicemic"
+            app:srcCompat="@drawable/gsicemic"
             android:onClick="boton"
             android:contentDescription="@string/gsic"
             android:padding="10dp" />
@@ -275,7 +275,6 @@
             app:layout_constraintTop_toBottomOf="@id/vista4"
             android:text="@string/openStreetMap"
             android:drawablePadding="4dp"
-            android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
             android:layout_marginHorizontal="@dimen/margen_texto"/>
 
@@ -311,7 +310,6 @@
             app:layout_constraintTop_toBottomOf="@id/vista5"
             android:text="@string/Osmdroid"
             android:drawablePadding="4dp"
-            android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
             android:layout_marginHorizontal="@dimen/margen_texto"/>
 
@@ -324,7 +322,6 @@
             app:layout_constraintTop_toBottomOf="@id/tvOsmdroid"
             android:drawablePadding="4dp"
             android:text="@string/PhotoView"
-            android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
             android:layout_marginHorizontal="@dimen/margen_texto"/>
 
@@ -337,7 +334,6 @@
             app:layout_constraintTop_toBottomOf="@id/tvPhotoView"
             android:drawablePadding="4dp"
             android:text="@string/Picasso"
-            android:drawableStart="@drawable/ic_punto_6dp"
             android:onClick="boton"
             android:layout_marginHorizontal="@dimen/margen_texto"/>
     </androidx.constraintlayout.widget.ConstraintLayout>

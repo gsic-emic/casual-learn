@@ -1,13 +1,6 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android" >
     <PreferenceCategory
-        android:key="noMolestarCategoria">
-        <SwitchPreference
-            app:key="noMolestar"
-            app:title="@string/noMolestar"
-            app:defaultValue="false" />
-    </PreferenceCategory>
-    <PreferenceCategory
         android:key="categoriaPreferencias"
         android:title="@string/intervalo">
         <SeekBarPreference
@@ -18,6 +11,35 @@
             app:showSeekBarValue="false"
             app:seekBarIncrement="1"
             app:adjustable="true" />
+        <SwitchPreference
+            app:key="noMolestar"
+            app:title="@string/noMolestar"
+            app:summary="@string/resumen_no_molestar"
+            app:defaultValue="false" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/titulo_compartir_preferencias">
+        <SwitchPreference
+            app:key="portafolioPublico"
+            app:title="@string/boolean_portafolio_publico"
+            app:defaultValue="false"/>
+        <Preference
+            android:key="idPortafolio"
+            android:title="@string/titulo_id_protafolio"
+            android:summary="@string/compartir_id_portafolio"
+            android:enabled="false"/>
+        <SwitchPreference
+            app:key="portaRetardado"
+            app:title="@string/retardo_publicacion"
+            app:summary="@string/retardo_publicacion_explica"
+            android:defaultValue="true"
+            android:enabled="false"/>
+        <EditTextPreference
+            app:key="hashtag"
+            app:title="@string/palabraClave"
+            app:summary="@string/descripcionPalabraClave"
+            app:defaultValue="@string/hashtag"
+            app:dialogMessage="@string/descripcionFuncionamientoPalabraClave"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="datosCategoria">
@@ -25,14 +47,6 @@
             app:key="opcionWifi"
             app:title="@string/enviarWifi"
             app:defaultValue="false" />
-    </PreferenceCategory>
-    <PreferenceCategory>
-        <EditTextPreference
-            app:key="hashtag"
-            app:title="@string/palabraClave"
-            app:summary="@string/descripcionPalabraClave"
-            app:defaultValue="@string/hashtag"
-            app:dialogMessage="@string/descripcionFuncionamientoPalabraClave"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="listaBlancaCategoria">

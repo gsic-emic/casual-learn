@@ -37,20 +37,23 @@ public class Bocadillo extends InfoWindow {
         titulo.setText(marker.getTitle());
         titulo = mView.findViewById(R.id.tvDistanciaBocadillo);
         String textoDistancia = marker.getSubDescription();
-        if(!textoDistancia.contains("km")){
-            titulo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
-            titulo.setTextSize(12);
-            titulo.setTextColor(mMapView.getContext().getResources().getColor(R.color.colorSecondary));
-            titulo.setText(textoDistancia);
-            titulo = mView.findViewById(R.id.tvInfoBocadillo);
+        if(textoDistancia == null) {
             titulo.setVisibility(View.GONE);
-        }else{
-            titulo.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_walk_20dp, 0, 0, 0);
-            titulo.setTextSize(14);
-            titulo.setTextColor(mMapView.getContext().getResources().getColor(R.color.black));
+        } else {
+            if (!textoDistancia.contains("km")) {
+                titulo.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+                titulo.setTextSize(12);
+                titulo.setTextColor(mMapView.getContext().getResources().getColor(R.color.colorSecondary));
+                //titulo = mView.findViewById(R.id.tvInfoBocadillo);
+                //titulo.setVisibility(View.GONE);
+            } else {
+                titulo.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_walk_20dp, 0, 0, 0);
+                titulo.setTextSize(14);
+                titulo.setTextColor(mMapView.getContext().getResources().getColor(R.color.black));
+                //titulo = mView.findViewById(R.id.tvInfoBocadillo);
+                //titulo.setVisibility(View.VISIBLE);
+            }
             titulo.setText(textoDistancia);
-            titulo = mView.findViewById(R.id.tvInfoBocadillo);
-            titulo.setVisibility(View.VISIBLE);
         }
     }
 

@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
@@ -18,6 +19,8 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
@@ -57,7 +60,9 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -68,7 +73,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20201005
+ * @version 20201120
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -104,6 +109,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
     /** Objeto para saber si una tarea se ha completado */
     private boolean completada;
 
+    private ImageView ivSpeaker;
+
+    private TextToSpeech textToSpeech;
+
+    private String textoParaSpeaker;
+
     /**
      * Se crea la vista de la interfaz de usuario.
      *
@@ -115,7 +126,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-        context = getApplicationContext(); //contexto de la aplicación
+        context = this; //contexto de la aplicación
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
@@ -166,10 +177,24 @@ public class Preview extends AppCompatActivity implements LocationListener {
         completada = tareaCompletada != null;
 
         if(completada){
-            ImageView icono = findViewById(R.id.ivCompletadaPrevie);
-            icono.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_completada));
             Button bt = findViewById(R.id.btIrACompletada);
             bt.setVisibility(View.VISIBLE);
+        }
+
+        if(tarea.has(Auxiliar.enlaceWiki)) {
+            ImageView imageWikiPedia = findViewById(R.id.ivWikiPreview);
+            imageWikiPedia.setVisibility(View.VISIBLE);
+            try {
+                final String enlaceWiki = tarea.getString(Auxiliar.enlaceWiki);
+                imageWikiPedia.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Auxiliar.navegadorInterno(Preview.this, enlaceWiki);
+                    }
+                });
+            } catch (Exception e) {
+                imageWikiPedia.setVisibility(View.INVISIBLE);
+            }
         }
 
         if(tarea != null) {
@@ -235,8 +260,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     e.printStackTrace();
                 }
 
+                TextView licenciaPreview = findViewById(R.id.tvLicenciaPreview);
                 if (imageView.getVisibility() == View.VISIBLE) {
-                    urlLicencia = Auxiliar.enlaceLicencia(context, (ImageView) findViewById(R.id.ivLicenciaPreview), urlImagen);
+                    if(tarea.has(Auxiliar.textoLicencia)){
+                        licenciaPreview.setText(tarea.getString(Auxiliar.textoLicencia));
+                    }
+                    urlLicencia = Auxiliar.enlaceLicencia(context, licenciaPreview, urlImagen);
                 }
 
                 btAceptar = findViewById(R.id.botonAceptarPreview);
@@ -247,7 +276,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 map = findViewById(R.id.mapPreview);
                 map.setTileSource(TileSourceFactory.MAPNIK);
                 IMapController mapController = map.getController();
-                //roadManager = new OSRMRoadManager(this);
 
                 double latitud = tarea.getDouble(Auxiliar.latitud);
                 double longitud = tarea.getDouble(Auxiliar.longitud);
@@ -267,16 +295,20 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 map.setEnabled(false);
 
 
-                TextView titulo = findViewById(R.id.tituloPreview);
-                titulo.setText(tarea.getString(Auxiliar.titulo));
+                TextView texto = findViewById(R.id.tituloPreview);
+                texto.setText(tarea.getString(Auxiliar.titulo));
 
-                TextView descripcion = findViewById(R.id.textoPreview);
-                descripcion.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto), false));
-                descripcion.setMovementMethod(LinkMovementMethod.getInstance());
+                texto = findViewById(R.id.textoPreview);
+                texto.setText(Auxiliar.creaEnlaces(this, tarea.getString(Auxiliar.recursoAsociadoTexto), false));
+                texto.setMovementMethod(LinkMovementMethod.getInstance());
+                textoParaSpeaker = String.format(
+                        "%s\n%s",
+                        tarea.getString(Auxiliar.titulo),
+                        Auxiliar.quitaEnlaces(tarea.getString(Auxiliar.recursoAsociadoTexto)));
 
                 Marker marker = new Marker(map);
                 marker.setPosition(new GeoPoint(tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud)));
-                marker.setIcon(getResources().getDrawable(R.drawable.ic_11_tareas));
+                marker.setIcon(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_marcador_uno, null));
                 //marker.setTitle(extras.getString(Auxiliar.titulo));
                 marker.setInfoWindow(null);
 
@@ -316,6 +348,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
             startActivity(intent);
             finishAffinity();
         }
+
+        ivSpeaker = findViewById(R.id.ivSpeakerPreview);
+        ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
     }
 
     private void saltaNavegacion(){
@@ -413,10 +448,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
             else
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
-                JSONObject usuario = new JSONObject();
-                usuario.put(Auxiliar.id, Auxiliar.id);
-                usuario.put(Auxiliar.uid, idUsuario);
-                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                JSONObject jsonObject = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+                if(jsonObject == null || !jsonObject.getString(Auxiliar.uid).equals(idUsuario)) {
+                    JSONObject usuario = new JSONObject();
+                    usuario.put(Auxiliar.id, Auxiliar.id);
+                    usuario.put(Auxiliar.uid, idUsuario);
+                    PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
+                }
             }catch (JSONException e){
                 e.printStackTrace();
             }
@@ -448,11 +486,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
             completada = tareaCompletada != null;
 
             if(completada){
-                ImageView icono = findViewById(R.id.ivCompletadaPrevie);
-                icono.setImageDrawable(getResources().getDrawable(R.drawable.ic_check_completada));
                 botonesVisibles(false);
             }
-
 
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             permisos = new ArrayList<>();
@@ -603,10 +638,24 @@ public class Preview extends AppCompatActivity implements LocationListener {
             //Para mostrar la información de donde se han obtenido los datos
             int idBoton = view.getId();
             switch (idBoton){
-                case R.id.ivWikipediaPreview:
-                    Auxiliar.navegadorInterno(this, getString(R.string.enlaceWiki)+(tarea.getString(Auxiliar.titulo).replace(' ', '_')));
+                case R.id.ivSpeakerPreview:
+                    if(textToSpeech != null) {
+                        if(textToSpeech.isSpeaking()) {
+                            textToSpeech.stop();
+                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                        }else{
+                            if(textoParaSpeaker != null) {
+                                HashMap<String, String> map = new HashMap<>();
+                                map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerPreview");
+                                textToSpeech.speak(
+                                        textoParaSpeaker,
+                                        TextToSpeech.QUEUE_FLUSH,
+                                        map);
+                            }
+                        }
+                    }
                     break;
-                case R.id.ivLicenciaPreview:
+                case R.id.tvLicenciaPreview:
                     if(urlLicencia != null)
                         Auxiliar.navegadorInterno(this, urlLicencia);
                     break;
@@ -666,7 +715,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         try {
             menuItem.setIcon(Auxiliar.iconoTipoTareaLista(tarea.getString(Auxiliar.tipoRespuesta)));
         }catch (Exception e){
-            menuItem.setIcon(R.drawable.ic_11_tareas);
+            menuItem.setIcon(R.drawable.ic_marcador_uno);
         }
         return super.onCreateOptionsMenu(menu);
     }
@@ -747,6 +796,41 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
         if(map != null)
             map.onResume();
+
+        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status < 0)
+                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                else{
+                    textToSpeech.setLanguage(new Locale("spa", "ESP"));
+
+                    textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                        @Override
+                        public void onStart(String utteranceId) {
+                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_stop_24, null));
+                        }
+
+                        @Override
+                        public void onDone(String utteranceId) {
+                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                        }
+
+                        @Override
+                        public void onError(String utteranceId) {
+                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        if(textToSpeech != null)
+            textToSpeech.shutdown();
     }
 
     List<String> permisos;
@@ -788,6 +872,11 @@ public class Preview extends AppCompatActivity implements LocationListener {
             map.onPause();
         if(locationManager != null)
             locationManager.removeUpdates(this);
+        if(textToSpeech != null){
+            textToSpeech.stop();
+        }
+        if(ivSpeaker != null)
+            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
     }
 
     /**
@@ -809,9 +898,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }else{
             botonesVisibles(false);
             if(distancia>=1)
-                textoDistancia.setText(String.format("%.2f km", distancia));
+                textoDistancia.setText(String.format("%.2fkm", distancia));
             else
-                textoDistancia.setText(String.format("%.2f m", distancia*1000));
+                textoDistancia.setText(String.format("%.2fm", distancia*1000));
         }
     }
 
