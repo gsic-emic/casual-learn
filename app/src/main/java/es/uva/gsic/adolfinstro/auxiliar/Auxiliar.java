@@ -28,9 +28,9 @@ import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.view.View;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -74,13 +74,12 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201028
+ * @version 20201119
  */
 public class Auxiliar {
 
-    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://10.0.104.17:10001/app/";
-    //public static final String direccionIP = "http://192.168.1.222:10001/app/";
+    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
@@ -105,6 +104,8 @@ public class Auxiliar {
     public static final String contexto = "contexto";
     public static final String nTareas = "nTareas";
     public static final String enlaceWiki = "enlaceWiki";
+    public static final String textoLicencia = "textoLicencia";
+    public static final String busquedasMunicipio = "busquedaMunicipio";
 
 
     public static final String posUsuarioLat = "posUsuarioLat";
@@ -1245,6 +1246,7 @@ public class Auxiliar {
 
         try {
             //texto = tarea.getString(Auxiliar.titulo);
+            texto = "";
             if(textoUsuario != null && !textoUsuario.equals("")){
                 texto = String.format("%s\n%s", texto, textoUsuario);
                 if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
@@ -1255,9 +1257,7 @@ public class Auxiliar {
                             context.getString(R.string.yammerSinTexto),
                             tarea.getString(Auxiliar.titulo),
                             context.getString(R.string.tareaPregunta),
-                            tarea.getString(Auxiliar.recursoAsociadoTexto)
-                                    .replaceAll("</a>", "")
-                                    .replaceAll("<a.*?>",""),
+                            Auxiliar.quitaEnlaces(tarea.getString(Auxiliar.recursoAsociadoTexto)),
                             context.getString(R.string.tareaRespuesta),
                             textoUsuario);
                 }
@@ -1446,8 +1446,8 @@ public class Auxiliar {
         dialogo.setContentView(R.layout.popweb);
         dialogo.setCancelable(true);
         WebView webView = dialogo.findViewById(R.id.wbNavegador);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setJavaScriptEnabled(true);
+        //WebSettings webSettings = webView.getSettings();
+        //webSettings.setJavaScriptEnabled(true);
         webView.setWebViewClient(new ClienteWeb() {
             @Override
             public void navegadorExterno() {
@@ -1513,6 +1513,22 @@ public class Auxiliar {
             String urlImagen) {
         if(urlImagen != null && urlImagen.contains("wikimedia")){
             ivInfoFotoPreview.setVisibility(View.VISIBLE);
+            return urlImagen
+                    .replace("Special:FilePath/", "File:")
+                    .replace("?widh=300px", "")
+                    .replace("?width=300", "")
+                    .concat(context.getString(R.string.ultimaParteLicencia));
+        }else{
+            return null;
+        }
+    }
+
+    public static String enlaceLicencia(
+            final Context context,
+            TextView textView,
+            String urlImagen) {
+        if(urlImagen != null && urlImagen.contains("wikimedia")){
+            textView.setVisibility(View.VISIBLE);
             return urlImagen
                     .replace("Special:FilePath/", "File:")
                     .replace("?widh=300px", "")
@@ -1692,5 +1708,11 @@ public class Auxiliar {
         } else
             salida = null;
         return salida;
+    }
+
+    public static String quitaEnlaces(String string) {
+        return string
+                .replaceAll("</a>", "")
+                .replaceAll("<a.*?>","");
     }
 }

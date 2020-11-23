@@ -189,11 +189,16 @@ public class Tarea extends AppCompatActivity implements
                     ivImagenDescripcion.setVisibility(View.VISIBLE);
                 }
 
-                if(ivImagenDescripcion.getVisibility() == View.VISIBLE)
+                if(ivImagenDescripcion.getVisibility() == View.VISIBLE) {
+                    TextView licenciaImagen = findViewById(R.id.tvInfoFotoTarea);
+                    if(tarea.has(Auxiliar.textoLicencia)){
+                        licenciaImagen.setText(tarea.getString(Auxiliar.textoLicencia));
+                    }
                     urlLicencia = Auxiliar.enlaceLicencia(
                             this,
-                            (ImageView) findViewById(R.id.ivInfoFotoTarea),
+                            licenciaImagen,
                             urlImagen);
+                }
 
                 tipo = tarea.getString(Auxiliar.tipoRespuesta);
                 try{
@@ -465,7 +470,7 @@ public class Tarea extends AppCompatActivity implements
                     }
                 }
                 break;
-            case R.id.ivInfoFotoTarea:
+            case R.id.tvInfoFotoTarea:
                 if(urlLicencia != null)
                     Auxiliar.navegadorInterno(this, urlLicencia);
                 break;

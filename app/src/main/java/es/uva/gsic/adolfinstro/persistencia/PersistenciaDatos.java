@@ -48,6 +48,7 @@ public class PersistenciaDatos {
 
     public static final Object bloqueo = new Object();
     public static final String ficheroNuevasCuadriculas = "ficheroNuevasCuadriculas";
+    public static String ficheroPrimeraApertura = "primeraApertura";
 
 
     /**

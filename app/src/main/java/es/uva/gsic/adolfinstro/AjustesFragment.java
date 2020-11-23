@@ -180,69 +180,74 @@ public class AjustesFragment extends PreferenceFragmentCompat
                 break;
             case Ajustes.PORTAFOLIO_pref:
             case Ajustes.RETARDOPORTA_pref:
-                final boolean publico = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
-                final boolean retardado = sharedPreferences.getBoolean(Ajustes.RETARDOPORTA_pref, true);
                 final Context context = getContext();
-                try {
-                    JSONObject infoUsuario = new JSONObject();
-                    JsonObjectRequest jsonObjectRequest;
-                    infoUsuario.put(Auxiliar.publico, publico);
-                    infoUsuario.put(Auxiliar.retardado, retardado);
-                    if(idUsuario != null && idUsuario.has(Auxiliar.idPortafolio)){//Es una actualización
-                        jsonObjectRequest = new JsonObjectRequest(
-                                Request.Method.PUT,
-                                Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),
-                                infoUsuario,
-                                new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject response) {
-                                        compartirPorta.setEnabled(publico);
-                                        preferenciaRetardo.setEnabled(publico);
-                                    }
-                                },
-                                new Response.ErrorListener() {
-                                    @Override
-                                    public void onErrorResponse(VolleyError error) {
-                                        idUsuario.remove(Auxiliar.idPortafolio);
-                                        PersistenciaDatos.reemplazaJSON(
-                                                (Application) context.getApplicationContext(),
-                                                PersistenciaDatos.ficheroUsuario,
-                                                idUsuario);
-                                        Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                        );
-                    }else {//Es una creación
-                        infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
-                        jsonObjectRequest = new JsonObjectRequest(
-                                Request.Method.POST,
-                                Auxiliar.direccionIP + "portafolio",
-                                infoUsuario,
-                                new Response.Listener<JSONObject>() {
-                                    @Override
-                                    public void onResponse(JSONObject docUsuario) {
-                                        if (docUsuario != null) {
-                                            try {
-                                                idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
-                                                PersistenciaDatos.reemplazaJSON(
-                                                        (Application) context.getApplicationContext(),
-                                                        PersistenciaDatos.ficheroUsuario,
-                                                        idUsuario);
-                                                compartirPorta.setEnabled(publico);
-                                                preferenciaRetardo.setEnabled(publico);
-                                            } catch (JSONException e) {
-                                                e.printStackTrace();
-                                            }
+                if(idUsuario == null || idUsuario.has(Auxiliar.uid)) {
+                    final boolean publico = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+                    final boolean retardado = sharedPreferences.getBoolean(Ajustes.RETARDOPORTA_pref, true);
+                    try {
+                        JSONObject infoUsuario = new JSONObject();
+                        JsonObjectRequest jsonObjectRequest;
+                        infoUsuario.put(Auxiliar.publico, publico);
+                        infoUsuario.put(Auxiliar.retardado, retardado);
+                        if (idUsuario != null && idUsuario.has(Auxiliar.idPortafolio)) {//Es una actualización
+                            jsonObjectRequest = new JsonObjectRequest(
+                                    Request.Method.PUT,
+                                    Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),
+                                    infoUsuario,
+                                    new Response.Listener<JSONObject>() {
+                                        @Override
+                                        public void onResponse(JSONObject response) {
+                                            compartirPorta.setEnabled(publico);
+                                            preferenciaRetardo.setEnabled(publico);
+                                        }
+                                    },
+                                    new Response.ErrorListener() {
+                                        @Override
+                                        public void onErrorResponse(VolleyError error) {
+                                            idUsuario.remove(Auxiliar.idPortafolio);
+                                            PersistenciaDatos.reemplazaJSON(
+                                                    (Application) context.getApplicationContext(),
+                                                    PersistenciaDatos.ficheroUsuario,
+                                                    idUsuario);
+                                            Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
                                         }
                                     }
-                                },
-                                null
-                        );
-                    }
+                            );
+                        } else {//Es una creación
+                            infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
+                            jsonObjectRequest = new JsonObjectRequest(
+                                    Request.Method.POST,
+                                    Auxiliar.direccionIP + "portafolio",
+                                    infoUsuario,
+                                    new Response.Listener<JSONObject>() {
+                                        @Override
+                                        public void onResponse(JSONObject docUsuario) {
+                                            if (docUsuario != null) {
+                                                try {
+                                                    idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
+                                                    PersistenciaDatos.reemplazaJSON(
+                                                            (Application) context.getApplicationContext(),
+                                                            PersistenciaDatos.ficheroUsuario,
+                                                            idUsuario);
+                                                    compartirPorta.setEnabled(publico);
+                                                    preferenciaRetardo.setEnabled(publico);
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                    },
+                                    null
+                            );
+                        }
 
-                    ColaConexiones.getInstance(context).getRequestQueue().add(jsonObjectRequest);
-                }catch (JSONException e){
-                    e.printStackTrace();
+                        ColaConexiones.getInstance(context).getRequestQueue().add(jsonObjectRequest);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    assert context != null;
+                    Toast.makeText(context, context.getResources().getString(R.string.aun_no_disponible), Toast.LENGTH_SHORT).show();
                 }
                 break;
             default:

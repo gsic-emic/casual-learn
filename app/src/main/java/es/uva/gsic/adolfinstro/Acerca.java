@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.TextView;
@@ -79,7 +80,7 @@ public class Acerca extends AppCompatActivity {
             }
         });
         TextView textView = dialogoDesarrolladores.findViewById(R.id.tvEspacioDesarrolladores);
-        textView.setText(desarrolladores());
+        textView.setText(Html.fromHtml(getResources().getString(R.string.desarrolladores_nombres)));
 
         dialogoDesarrolladoresActivo = false;
 
@@ -96,20 +97,12 @@ public class Acerca extends AppCompatActivity {
     public void boton(View view) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        //NECESITA LA API 24 de mínimo
-        /*CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        builder.setToolbarColor(getResources().getColor(R.color.colorPrimary));
-        builder.setSecondaryToolbarColor(getResources().getColor(R.color.colorPrimaryDark));
-        builder.enableUrlBarHiding();
-        CustomTabsIntent customTabsIntent = builder.build();*/
         switch (view.getId()){
             case R.id.imagenGsic:
-                //customTabsIntent.launchUrl(this, Uri.parse(getString(R.string.urlgsic)));
                 intent.setData(Uri.parse(getString(R.string.urlgsic)));
                 startActivity(intent);
                 break;
             case R.id.imagenUva:
-                //customTabsIntent.launchUrl(this, Uri.parse(getString(R.string.urluva)));
                 intent.setData(Uri.parse(getString(R.string.urluva)));
                 startActivity(intent);
                 break;

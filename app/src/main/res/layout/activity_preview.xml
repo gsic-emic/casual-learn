@@ -33,28 +33,36 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/thumbnail" />
 
-        <ImageView
-            android:id="@+id/ivLicenciaPreview"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:srcCompat="@drawable/ic_baseline_copyright_24"
+        <TextView
+            android:id="@+id/tvLicenciaPreview"
+            android:paddingHorizontal="5dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:maxHeight="100dp"
+            android:gravity="center_vertical"
+            android:drawableStart="@drawable/ic_baseline_copyright_24"
+            android:textColor="@color/white"
+            android:drawablePadding="5dp"
+            android:textSize="12sp"
             app:layout_constraintStart_toStartOf="@id/imagenPreview"
+            app:layout_constraintEnd_toEndOf="@id/imagenPreview"
             app:layout_constraintBottom_toBottomOf="@id/imagenPreview"
+            android:background="@color/blackTransparente25"
             android:visibility="gone"
             android:contentDescription="@string/licenciaImagen"
             android:onClick="boton"/>
 
         <ImageView
-            android:id="@+id/ivWikipediaPreview"
+            android:id="@+id/ivWikiPreview"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:srcCompat="@drawable/wiki_logo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/tituloPreview"
             app:layout_constraintTop_toTopOf="@id/tituloPreview"
-            android:contentDescription="@string/infoWikipedia"
-            android:layout_marginStart="5dp"
-            android:onClick="boton"/>
+            app:srcCompat="@drawable/wiki_logo"
+            android:contentDescription="@string/icono_tarea_completada"
+            android:layout_marginStart="5dp" />
 
         <TextView
             android:id="@+id/tituloPreview"
@@ -66,20 +74,22 @@
             android:textAlignment="gravity"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/imagenPreview"
-            app:layout_constraintStart_toEndOf="@id/ivWikipediaPreview"
-            app:layout_constraintEnd_toStartOf="@id/ivCompletadaPrevie"
+            app:layout_constraintStart_toEndOf="@id/ivWikiPreview"
+            app:layout_constraintEnd_toStartOf="@id/ivSpeakerPreview"
             android:layout_marginTop="5dp"
             android:layout_marginHorizontal="5dp" />
 
         <ImageView
-            android:id="@+id/ivCompletadaPrevie"
+            android:id="@+id/ivSpeakerPreview"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            app:srcCompat="@drawable/ic_speaker"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tituloPreview"
-            android:contentDescription="@string/icono_tarea_completada"
+            android:contentDescription="@string/speaker"
             android:layout_marginEnd="5dp"
-            android:visibility="visible"/>
+            android:visibility="visible"
+            android:onClick="boton"/>
 
         <org.osmdroid.views.MapView
             android:id="@+id/mapPreview"

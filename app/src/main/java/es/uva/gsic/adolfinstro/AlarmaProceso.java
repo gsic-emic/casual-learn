@@ -24,6 +24,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -46,7 +47,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20201020
+ * @version 20201123
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */
@@ -56,12 +57,10 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
     private NotificationManager notificationManager;
     private int intervalo;
-    private String idInstanteGET = "instanteGET";
-    private String idInstanteNotAuto = "instanteNotAuto";
+    private final String idInstanteGET = "instanteGET";
+    private final String idInstanteNotAuto = "instanteNotAuto";
 
     private final int intervaloComprobacion = 120000;
-
-    public static boolean tareasActualizadas = false;
 
     private boolean enviaWifi;
 
@@ -83,31 +82,31 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         ArrayList<String> permisos = Auxiliar.preQueryPermisos(context);
         if (permisos.size() > 0) { // Si se le han revocado permisos a la aplicación se mata el proceso
             cancelaAlarmaProceso(context);
-        }
-
-        //Se necesita un canal para API 26 y superior
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(Auxiliar.channelId,
-                    context.getString(R.string.canalTareas),
-                    NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription(context.getString(R.string.canalTareas));
-            notificationManager = context.getSystemService(NotificationManager.class);
-            assert notificationManager != null;
-            notificationManager.createNotificationChannel(channel);
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            //Se necesita un canal para API 26 y superior
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(Auxiliar.channelId,
+                        context.getString(R.string.canalTareas),
+                        NotificationManager.IMPORTANCE_HIGH);
+                channel.setDescription(context.getString(R.string.canalTareas));
                 notificationManager = context.getSystemService(NotificationManager.class);
-            else {//API 22
-                notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                assert notificationManager != null;
+                notificationManager.createNotificationChannel(channel);
+            } else {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                    notificationManager = context.getSystemService(NotificationManager.class);
+                else {//API 22
+                    notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                }
             }
-        }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
-        posicionamiento();
-        compruebaRespuestasSinEnviar(application, context);
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+            onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
+            onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
+            posicionamiento();
+            compruebaRespuestasSinEnviar(application, context);
+        }
     }
 
     /**
@@ -412,7 +411,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
-                                    tareasActualizadas = true;
+
                                     compruebaLocalizacion(location);
                                 }
                             },
@@ -424,6 +423,12 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                             }
                     );
 
+            //Aumento el tiempo para que le de tiempo al servidor de obtener las licencias de las imágenes
+            jsonObjectRequest.setRetryPolicy(
+                    new DefaultRetryPolicy(
+                            19000,
+                            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
             ColaConexiones.getInstance(application).getRequestQueue().add(jsonObjectRequest);
         }
     }
@@ -572,11 +577,9 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 NotificationCompat.Builder builder;
                 int iconoTarea;
                 if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
-                    iconoTarea = R.drawable.ic_11_tareas;
+                    iconoTarea = R.drawable.ic_marcador_uno;
                 //Elimino los enlaces
-                String textoTarea = jsonObject.getString(Auxiliar.recursoAsociadoTexto)
-                        .replaceAll("</a>", "")
-                        .replaceAll("<a.*?>","");
+                String textoTarea = Auxiliar.quitaEnlaces(jsonObject.getString(Auxiliar.recursoAsociadoTexto));
 
                 String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
 

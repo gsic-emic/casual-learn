@@ -8,6 +8,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
@@ -58,6 +60,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     private List<TareasMapaLista> lista;
     private LayoutInflater layoutInflater;
     private static ItemClickListener itemClickListenerMapa;
+    private Context context;
 
     /**
      * Constructor de la clase
@@ -67,6 +70,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     public AdaptadorListaMapa(Context context, List<TareasMapaLista> lista){
         this.lista = lista;
         layoutInflater = LayoutInflater.from(context);
+        this.context = context;
     }
 
     /**
@@ -97,11 +101,14 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                     .tag(Auxiliar.cargaImagenPreview)
                     .into(holder.ivFondo);
-            holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTareaLista(lista.get(position).getTipoTarea()));
+            holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
+            //holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTareaLista(lista.get(position).getTipoTarea()));
         }
         else {
-            holder.ivFondo.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()));
-            holder.ivTipoTarea.setImageResource(android.R.color.transparent);
+            holder.ivFondo.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
+            holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(context.getResources() , android.R.color.transparent, null));
+            //holder.ivFondo.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()));
+            //holder.ivTipoTarea.setImageResource(android.R.color.transparent);
         }
     }
 

@@ -4,9 +4,7 @@ import android.app.backup.BackupAgentHelper;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.FileBackupHelper;
-import android.content.Context;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -22,7 +20,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  */
 public class CopiaSeguridad extends BackupAgentHelper {
 
-    static final String ficheros = "FICHEROS";
+    public static final String ficheros = "FICHEROS";
 
     @Override
     public void onCreate() {
@@ -42,11 +40,9 @@ public class CopiaSeguridad extends BackupAgentHelper {
                          BackupDataOutput datos,
                          ParcelFileDescriptor nuevo)
         throws IOException{
-        Log.d("COPIA", "entro en onBackup");
         synchronized (PersistenciaDatos.bloqueo){
             super.onBackup(antiguo, datos, nuevo);
         }
-        Log.d("COPIA", "salgo onBackup");
     }
 
     @Override

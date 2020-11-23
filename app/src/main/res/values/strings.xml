@@ -106,7 +106,6 @@
     <string name="dia">day</string>
     <string name="dias">days</string>
     <string name="pulsaMarker">"Click on a marker to see the types of tasks "</string>
-    <!--<string name="agrupacionTareas">Area with tasks nearby</string>-->
     <string name="agrupacionPuntos">Group of interest points</string>
     <string name="tareaRegistrada">The task has been completed, reported, postponed or rejected</string>
     <string name="hola">"Hi "</string>
@@ -138,12 +137,7 @@
     <string name="descripcionPalabraClave">Customize the hashtag with which the tasks will be published on Twitter</string>
     <string name="fuentesInformacion" translatable="false">Fuentes de información</string>
     <string name="pablo" translatable="false"><b>Pablo García Zarza</b>\npablogz@gsic.uva.es\n</string>
-    <string name="adolfo" translatable="false"><b>Adolfo Ruíz Calleja</b>\nadolfo@gsic.uva.es\n</string>
-    <string name="miguel" translatable="false"><b>Miguel Luis Bote Lorenzo</b>\nmigbot@tel.uva.es\n</string>
-    <string name="sergio" translatable="false"><b>Sergio Serrano Iglesias</b>\nsergio@gsic.uva.es\n</string>
-    <string name="edu" translatable="false"><b>Eduardo Gómez Sánchez</b>\nedugom@tel.uva.es\n</string>
-    <string name="asen" translatable="false"><b>Juan Ignacio Asensio Pérez</b>\njuaase@tel.uva.es\n</string>
-    <string name="guille" translatable="false"><b>Guillermo Vega Gorgojo</b>\nguiveg@tel.uva.es\n</string>
+    <string name="adolfo" translatable="false"><b>Adolfo Ruiz Calleja</b>\nadolfo@gsic.uva.es\n</string>
     <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
     <string name="urluva" translatable="false">https://www.uva.es/export/sites/uva/</string>
     <string name="urlJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>
@@ -276,4 +270,7 @@
     <string name="tarea_no_pertinente">The task is not appropriate</string>
     <string name="distancia">Distance:</string>
     <string name="speaker">Speaker</string>
+    <string name="puntoSinTexto">This point does not have a description yet…</string>
+    <string name="desarrolladores_nombres" translatable="false"><![CDATA[<p><b>Pablo García Zarza</b><br>pablogz@gsic.uva.es</p><p><b>Adolfo Ruiz Calleja</b><br>adolfo@gsic.uva.es</p>]]></string>
+    <string name="aun_no_disponible">This option is not enable yet. Try again in a few minutes.</string>
 </resources>
