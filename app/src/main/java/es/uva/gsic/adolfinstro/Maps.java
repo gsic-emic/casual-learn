@@ -44,6 +44,7 @@ import android.view.ViewTreeObserver;
 import androidx.appcompat.widget.SearchView;
 
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -185,6 +186,10 @@ public class Maps extends AppCompatActivity implements
     TextView textoPunto;
     /** Objeto para indicar la distancia al punto de interés */
     TextView distanciaPunto;
+    /** Objeto para el texto reducido del punto de interés*/
+    TextView textoPuntoReducido;
+    /** Objeto para mostrar la información completa del punto de interés*/
+    Button masInfo;
 
     /** Vista de los puntos de interés */
     ScrollView svPunto;
@@ -441,6 +446,9 @@ public class Maps extends AppCompatActivity implements
         tituloPunto = findViewById(R.id.tvPuntoTitulo);
         textoPunto = findViewById(R.id.tvPuntoTexto);
         distanciaPunto = findViewById(R.id.tvPuntoDistancia);
+        textoPuntoReducido = findViewById(R.id.tvPuntoTextoReducido);
+        masInfo = findViewById(R.id.btMasInfoPunto);
+
         ivWiki = findViewById(R.id.ivWikipediaMapa);
         ivSpeaker = findViewById(R.id.ivSpeaker);
 
@@ -507,6 +515,15 @@ public class Maps extends AppCompatActivity implements
             guiaMapaV.setGuidelinePercent(1f);
         if (textToSpeech != null && textToSpeech.isSpeaking())
             textToSpeech.stop();
+        if(textoPuntoReducido.getVisibility() == View.VISIBLE){
+            ocultaReducido();
+        }
+    }
+
+    private void ocultaReducido() {
+        textoPuntoReducido.setVisibility(View.GONE);
+        masInfo.setVisibility(View.GONE);
+        textoPunto.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -648,7 +665,7 @@ public class Maps extends AppCompatActivity implements
                 context, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)) {
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-            textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+            //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
         }
         //Comprobación para saber si el usuario se ha identificado
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
@@ -658,35 +675,105 @@ public class Maps extends AppCompatActivity implements
                         context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-                    textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                    //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                 }
+        }
+        if(!permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+            if(permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+            }
+        }else{
+            permisos.remove(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
         //Si no falta ningún servicio se activa el servicio en segundo plano (si el usuario se ha identificado).
         //Muestra la posición del usuario en el mapa
         if (!permisos.isEmpty()) {
-            AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
-            alertaExplicativa.setTitle(getString(R.string.permi));
-            alertaExplicativa.setMessage(Html.fromHtml(textoPermisos));
-            alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    //Se comprueba todos los permisos que necesite la app de nuevo, por este
-                    // motivo se puede salir del for directamente
-                    ActivityCompat.requestPermissions(
-                            Maps.this,
-                            permisos.toArray(new String[permisos.size()]),
-                            requestCodePermissions);
+            final Dialog dialogoPermisos = new Dialog(context);
+            dialogoPermisos.setContentView(R.layout.dialogo_permisos_ubicacion);
+            dialogoPermisos.setCancelable(false);
+            if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
+                final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+                tituloPermisos.setVisibility(View.GONE);
+                final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+                textoPermiso.setText(Html.fromHtml(textoPermisos));
+                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                salir.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        finishAffinity();
+                    }
+                });
+                final Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                siguiente.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        tituloPermisos.setVisibility(View.VISIBLE);
+                        textoPermiso.setText(context.getString(R.string.texto_peticion_ubicacion_siempre));
+                        siguiente.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                if(dialogoPermisos.isShowing())
+                                    dialogoPermisos.cancel();
+                                permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                                ActivityCompat.requestPermissions(
+                                        Maps.this,
+                                        permisos.toArray(new String[permisos.size()]),
+                                        requestCodePermissions);
+                            }
+                        });
+                    }
+                });
+            } else{
+                TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+                if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
+                    textView.setVisibility(View.VISIBLE);
+                    Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                    salir.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            finishAffinity();
+                        }
+                    });
+                    Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                    siguiente.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if(dialogoPermisos.isShowing())
+                                dialogoPermisos.cancel();
+                            permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                            ActivityCompat.requestPermissions(
+                                    Maps.this,
+                                    permisos.toArray(new String[permisos.size()]),
+                                    requestCodePermissions);
+                        }
+                    });
+                }else {//Solo muestro el normal
+                    textView.setVisibility(View.GONE);
+                    textView = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+                    textView.setText(Html.fromHtml(textoPermisos));
+                    Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                    salir.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            finishAffinity();
+                        }
+                    });
+                    Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                    siguiente.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if(dialogoPermisos.isShowing())
+                                dialogoPermisos.cancel();
+                            ActivityCompat.requestPermissions(
+                                    Maps.this,
+                                    permisos.toArray(new String[permisos.size()]),
+                                    requestCodePermissions);
+                        }
+                    });
                 }
-            });
-            alertaExplicativa.setNegativeButton(getString(R.string.exi), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finishAffinity();
-                }
-            });
-            alertaExplicativa.setCancelable(false);
-            alertaExplicativa.show();
+            }
+            dialogoPermisos.show();
         } else {
             if (idUsuario != null)
                 lanzaServicioPosicionamiento();
@@ -774,6 +861,22 @@ public class Maps extends AppCompatActivity implements
                         (puntoInteres.getString(Auxiliar.comment).equals("") ?
                                 getResources().getString(R.string.puntoSinTexto) :
                                 puntoInteres.getString(Auxiliar.comment)));
+                int tama = textoPunto.getLineCount();
+                textoPunto.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if (textoPunto.getLineCount() > 0) {
+                            textoPunto.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                            if(textoPunto.getLineCount() > 7){
+                                textoPuntoReducido.setText(textoPunto.getText());
+                                textoPunto.setVisibility(View.GONE);
+                                textoPuntoReducido.setVisibility(View.VISIBLE);
+                                masInfo.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    }
+                });
+
 
                 textoParaAltavoz = String.format(
                         "%s\n%s",
@@ -969,8 +1072,8 @@ public class Maps extends AppCompatActivity implements
             paint.setARGB(255, 255, 255, 255);
         else
             paint.setARGB(255, 0, 0, 0);
-        if (size <= 0)
-            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_uno, null);
+        if (size < 0)
+            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_pulsado, null);
         else if (size <= 10)
             drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador100, null);
         else if (size <= 20)
@@ -982,6 +1085,10 @@ public class Maps extends AppCompatActivity implements
         else
             drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador900, null);
 
+        if (size<0)
+            size*=-1;
+
+        assert drawable != null;
         Bitmap bitmap = Bitmap.createBitmap(
                 drawable.getIntrinsicWidth(),
                 drawable.getIntrinsicHeight(),
@@ -1119,7 +1226,6 @@ public class Maps extends AppCompatActivity implements
                             for (int k = 0; k < posicionesCuadriculas.length(); k++) {
                                 jsonObject = posicionesCuadriculas.getJSONObject(k);
                                 String id = jsonObject.getString(Auxiliar.id);
-                                //if (petServer) {
                                 bb = new BoundingBox(
                                         jsonObject.getDouble(Auxiliar.latN),
                                         jsonObject.getDouble(Auxiliar.lonE),
@@ -1133,11 +1239,6 @@ public class Maps extends AppCompatActivity implements
                                         if (descarga) {
                                             File file = new File(getFilesDir(), jsonObject.getString(Auxiliar.id));
                                             if (file.exists()) {
-                                            /*posicionesCuadriculas.put(k, jsonObject);
-                                            PersistenciaDatos.reemplazaJSON(
-                                                    getApplication(),
-                                                    PersistenciaDatos.ficheroPosicionesCuadriculas,
-                                                    jsonObject);*/
                                                 peticionPuntosInteres(bb, jsonObject.getString(Auxiliar.id));
                                                 nuevoCuadrado = false;
                                                 break;
@@ -1152,7 +1253,6 @@ public class Maps extends AppCompatActivity implements
                                     nuevoCuadrado = false;
                                     break;
                                 }
-                                //}
                             }
                             if (descarga && nuevoCuadrado) {
                                 bb = new BoundingBox(puntoVariable.getLatitude(),
@@ -1352,6 +1452,9 @@ public class Maps extends AppCompatActivity implements
                 break;
             case R.id.ivWikipediaMapa:
                 Auxiliar.navegadorInterno(this, enlaceWiki);
+                break;
+            case R.id.btMasInfoPunto:
+                ocultaReducido();
                 break;
             default:
                 break;
@@ -1688,8 +1791,10 @@ public class Maps extends AppCompatActivity implements
                                 getApplication(),
                                 PersistenciaDatos.ficheroNuevasCuadriculas,
                                 nombre);
+                        /*cuadricula.put(Auxiliar.caducidad,
+                                System.currentTimeMillis() + 604800000);*///Caduca a la semana
                         cuadricula.put(Auxiliar.caducidad,
-                                System.currentTimeMillis() + 604800000);//Caduca a la semana
+                                System.currentTimeMillis() + 86400000);//Caduca al día
                         PersistenciaDatos.reemplazaJSON(
                                 getApplication(),
                                 PersistenciaDatos.ficheroNuevasCuadriculas,
@@ -1826,8 +1931,8 @@ public class Maps extends AppCompatActivity implements
         marker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
-                mapController.setCenter(geoPoint);
-                marker.setIcon(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_uno, null));
+                mapController.animateTo(geoPoint);
+                marker.setIcon(new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1)));
                 marcadorPulsado = true;
                 String msg = getString(R.string.recuperandoPosicion);
                 try {

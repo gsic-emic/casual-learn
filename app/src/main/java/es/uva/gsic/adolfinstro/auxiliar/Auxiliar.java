@@ -1335,7 +1335,13 @@ public class Auxiliar {
             jsonObject.put(Auxiliar.idTarea, idTarea);
             jsonObject.put(Auxiliar.idUsuario, idUsuario);
             jsonObject.put(Auxiliar.instanteInicio, tarea.getString(Auxiliar.fechaInicio));
-            jsonObject.put(Auxiliar.instanteFin, tarea.getString(Auxiliar.fechaFinalizacion));
+            if(tarea.has(Auxiliar.fechaFinalizacion))
+                jsonObject.put(Auxiliar.instanteFin, tarea.getString(Auxiliar.fechaFinalizacion));
+            else
+                if(tarea.has(Auxiliar.fechaUltimaModificacion))
+                    jsonObject.put(Auxiliar.instanteFin, tarea.getString(Auxiliar.fechaUltimaModificacion));
+                else
+                    jsonObject.put(Auxiliar.instanteFin, Auxiliar.horaFechaActual());
             jsonObject.put(Auxiliar.instanteModificacion,
                     tarea.getString(Auxiliar.fechaUltimaModificacion));
             jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
