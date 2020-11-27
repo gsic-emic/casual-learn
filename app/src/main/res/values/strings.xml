@@ -221,7 +221,7 @@
     <string name="solicitar">Request</string>
     <string name="necesidad_permisos">The following permissions are required:</string>
     <string name="ubicacion_primer"><![CDATA[<p>The app needs to know your <b>foreground location</b> in order to show your position on the map.</p>]]></string>
-    <string name="ubicacion_segundo"><![CDATA[<p>The app needs to know your <b>position in the background</b> to notify you of nearby tasks.</p>]]></string>
+    <!--<string name="ubicacion_segundo"><![CDATA[<p>The app needs to know your <b>position in the background</b> to notify you of nearby tasks.</p>]]></string>-->
     <string name="volver">Back</string>
     <string name="permiso_camara"><![CDATA[<p>The app needs to access the device\'s <b>camera</b> to take photos or record videos.</p>]]></string>
     <string name="permiso_micro"><![CDATA[<p>The app needs access to the <b>microphone</b>. With this permission the videos can have audio.</p>]]></string>
@@ -273,4 +273,7 @@
     <string name="puntoSinTexto">This point does not have a description yet…</string>
     <string name="desarrolladores_nombres" translatable="false"><![CDATA[<p><b>Pablo García Zarza</b><br>pablogz@gsic.uva.es</p><p><b>Adolfo Ruiz Calleja</b><br>adolfo@gsic.uva.es</p>]]></string>
     <string name="aun_no_disponible">This option is not enable yet. Try again in a few minutes.</string>
+    <string name="texto_peticion_ubicacion_siempre">In order to recommend you of nearby tasks, Casual Learn needs to know your position when the app is in the background.\n\nCasual Learn only collects your position in the background when the notification timer expires (customizable from the app settings). When it notifies a task it will stop collecting your position until the timer expires again.</string>
+    <string name="uso_posicion">Use your location</string>
+    <string name="masInfo">+info</string>
 </resources>

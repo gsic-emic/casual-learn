@@ -135,6 +135,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="@dimen/margen_texto" />
+
+        <TextView
+            android:id="@+id/tvPuntoTextoReducido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/margen_texto"
+            android:maxLines="3"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btMasInfoPunto"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="@drawable/boton_rojo"
+            android:text="@string/masInfo"
+            android:layout_gravity="end"
+            android:layout_margin="@dimen/margen_texto"
+            android:onClick="boton"
+            android:visibility="gone"/>
+
         <TextView
             android:id="@+id/tvPuntoDistancia"
             android:layout_width="match_parent"
@@ -146,7 +166,6 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:text="Decargando tareas del punto..."
             android:textAlignment="gravity"
             android:gravity="center_horizontal"
             android:paddingVertical="10dp"

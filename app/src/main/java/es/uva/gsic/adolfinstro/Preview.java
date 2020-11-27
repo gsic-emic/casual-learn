@@ -9,6 +9,7 @@ import androidx.preference.PreferenceManager;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -195,6 +196,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
             } catch (Exception e) {
                 imageWikiPedia.setVisibility(View.INVISIBLE);
             }
+        }else{
+            ImageView imageWikiPedia = findViewById(R.id.ivWikiPreview);
+            imageWikiPedia.setVisibility(View.INVISIBLE);
         }
 
         if(tarea != null) {
@@ -491,19 +495,19 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             permisos = new ArrayList<>();
-            String textoPermisos = getString(R.string.necesidad_permisos);
+            //String textoPermisos = getString(R.string.necesidad_permisos);
             if(!(ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
+                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
             }
             //Compruebo permisos de localización en primer y segundo plano
             if(!(ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
             }
             //Comprobación para saber si el usuario se ha identificado
             if(idUsuario != null) {
@@ -512,13 +516,18 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-                        textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                        //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                     }
             }
+
+            if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                permisos.remove(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+
             if(permisos.isEmpty())
                 new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
             else
-                solicitaPermisoUbicacion(textoPermisos);
+                solicitaPermisoUbicacion();
         }
     }
 
@@ -750,14 +759,14 @@ public class Preview extends AppCompatActivity implements LocationListener {
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         permisos = new ArrayList<>();
         try {
-            String textoPermisos = getString(R.string.necesidad_permisos);
+            //String textoPermisos = getString(R.string.necesidad_permisos);
 
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 botonesVisibles(false);
                 permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-                textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
+                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
             }
 
             if(idUsuario != null) {
@@ -766,14 +775,18 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-                        textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
+                        //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                     }
             }else{
                 new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
             }
 
+            if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                permisos.remove(Manifest.permission.ACCESS_FINE_LOCATION);
+            }
+
             if(!permisos.isEmpty()){
-                solicitaPermisoUbicacion(textoPermisos);
+                solicitaPermisoUbicacion();
             } else {
                 locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER, 1000, 2, this);
@@ -835,29 +848,109 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     List<String> permisos;
 
-    private void solicitaPermisoUbicacion(String textoDialogo) {
-        AlertDialog.Builder alertaExplicativa = new AlertDialog.Builder(this);
-        alertaExplicativa.setTitle(getString(R.string.permi));
-        alertaExplicativa.setMessage(Html.fromHtml(textoDialogo));
-        alertaExplicativa.setPositiveButton(getString(R.string.solicitar), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                //Se comprueba todos los permisos que necesite la app de nuevo, por este
-                // motivo se puede salir del for directamente
-                ActivityCompat.requestPermissions(
-                        Preview.this,
-                        permisos.toArray(new String[permisos.size()]),
-                        1002);
+    private void solicitaPermisoUbicacion() {
+        final Dialog dialogoPermisos = new Dialog(context);
+        dialogoPermisos.setContentView(R.layout.dialogo_permisos_ubicacion);
+        dialogoPermisos.setCancelable(false);
+
+        String textoPermisos = context.getString(R.string.necesidad_permisos);
+
+        for(String s : permisos){
+            switch (s){
+                case Manifest.permission.ACCESS_FINE_LOCATION:
+                    textoPermisos = String.format("%s%s",textoPermisos,context.getString(R.string.ubicacion_primer));
+                    break;
+                case Manifest.permission.WRITE_EXTERNAL_STORAGE:
+                    textoPermisos = String.format("%s%s",textoPermisos,context.getString(R.string.permiso_almacenamiento));
+                    break;
+                default:
+                    break;
             }
-        });
-        alertaExplicativa.setNegativeButton(getString(R.string.volver), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                onBackPressed();
+        }
+
+        if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
+            final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+            tituloPermisos.setVisibility(View.GONE);
+            final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+            textoPermiso.setText(Html.fromHtml(textoPermisos));
+            Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+            salir.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    finishAffinity();
+                }
+            });
+            final Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+            siguiente.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    tituloPermisos.setVisibility(View.VISIBLE);
+                    textoPermiso.setText(context.getString(R.string.texto_peticion_ubicacion_siempre));
+                    siguiente.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if(dialogoPermisos.isShowing())
+                                dialogoPermisos.cancel();
+                            permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                            ActivityCompat.requestPermissions(
+                                    Preview.this,
+                                    permisos.toArray(new String[permisos.size()]),
+                                    1002);
+                        }
+                    });
+                }
+            });
+        } else{
+            if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
+                TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+                textView.setVisibility(View.VISIBLE);
+                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                salir.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        finishAffinity();
+                    }
+                });
+                Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                siguiente.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(dialogoPermisos.isShowing())
+                            dialogoPermisos.cancel();
+                        permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                        ActivityCompat.requestPermissions(
+                                Preview.this,
+                                permisos.toArray(new String[permisos.size()]),
+                                1002);
+                    }
+                });
+            }else {//Solo muestro el normal
+                TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+                textView.setVisibility(View.GONE);
+                textView = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+                textView.setText(Html.fromHtml(textoPermisos));
+                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                salir.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        finishAffinity();
+                    }
+                });
+                Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                siguiente.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(dialogoPermisos.isShowing())
+                            dialogoPermisos.cancel();
+                        ActivityCompat.requestPermissions(
+                                Preview.this,
+                                permisos.toArray(new String[permisos.size()]),
+                                1002);
+                    }
+                });
             }
-        });
-        alertaExplicativa.setCancelable(false);
-        alertaExplicativa.show();
+        }
+        dialogoPermisos.show();
     }
 
     /**

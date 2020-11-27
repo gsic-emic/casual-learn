@@ -33,47 +33,12 @@
             android:visibility="visible"
             android:layout_marginHorizontal="@dimen/margen_texto"/>
 
-        <EditText
-            android:id="@+id/etRespuestaTextualCompletada"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:textSize="16sp"
-            android:maxLength="600"
-            android:hint="@string/hintRespuesta"
-            android:lines="2"
-            android:maxLines="10"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDescripcionCompletada"
-            android:layout_marginBottom="20dp"
-            android:visibility="gone"
-            android:inputType="textMultiLine"
-            android:enabled="false"
-            android:autofillHints="no"
-            android:layout_marginHorizontal="@dimen/margen_texto"/>
-
-        <TextView
-            android:id="@+id/tvTextoUsuario"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/margen_texto"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvDescripcionCompletada"
-            android:layout_marginBottom="20dp"
-            android:maxLines="5"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/boton_secundario"
-            android:padding="5dp"
-            android:scrollbars="vertical"
-            android:visibility="gone"/>
 
         <Button style="@style/botonPrimario"
             android:id="@+id/btAgregarCompletada"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/etRespuestaTextualCompletada"
+            app:layout_constraintTop_toBottomOf="@id/tvDescripcionCompletada"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="20dp"
@@ -91,6 +56,43 @@
             android:visibility="gone"
             android:layout_marginTop="5dp"
             android:layout_marginHorizontal="5dp"/>
+
+        <EditText
+            android:id="@+id/etRespuestaTextualCompletada"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="16sp"
+            android:maxLength="600"
+            android:hint="@string/hintRespuesta"
+            android:lines="2"
+            android:maxLines="10"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rvImagenesAlumno"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone"
+            android:inputType="textMultiLine"
+            android:enabled="false"
+            android:autofillHints="no"
+            android:layout_marginHorizontal="@dimen/margen_texto"/>
+
+        <TextView
+            android:id="@+id/tvTextoUsuario"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/margen_texto"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rvImagenesAlumno"
+            android:layout_marginBottom="20dp"
+            android:maxLines="5"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/boton_secundario"
+            android:padding="5dp"
+            android:scrollbars="vertical"
+            android:visibility="gone"/>
+
 
         <RatingBar android:theme="@style/barraPuntua"
             android:id="@+id/rbPuntuacionCompletada"
