@@ -148,19 +148,6 @@ public class Acerca extends AppCompatActivity {
     }
 
     /**
-     * Método para recuperar a las personas implicadas en el proyecto.
-     */
-    private String desarrolladores() {
-        List<String> nombres = new ArrayList<>();
-        String salida = "";
-        nombres.add(getString(R.string.pablo)+"\n");
-        nombres.add(getString(R.string.adolfo)+"\n");
-        for(String n : nombres)
-            salida = salida.concat(n);
-        return salida;
-    }
-
-    /**
      * Método que recoge la pulsación del botón atrás de la barra.
      * @return False ya que este método no finaliza la actividad
      */

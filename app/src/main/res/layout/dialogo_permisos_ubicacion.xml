@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:minWidth="300dp"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+    <TextView
+        android:id="@+id/tvFijoPermisos"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:padding="@dimen/margen_texto"
+        android:textAlignment="center"
+        android:text="Solicitud de permisos"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <TextView
+        android:id="@+id/tvTituloPermisos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:padding="@dimen/margen_texto"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:text="@string/uso_posicion"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/tvFijoPermisos"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvTextoPermisos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:padding="@dimen/margen_texto"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloPermisos"
+        android:textAlignment="center"
+        android:text="@string/texto_peticion_ubicacion_siempre"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/btSalirPermisos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/boton_rojo"
+        android:text="@string/salir"
+        android:layout_margin="@dimen/margen_texto"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTextoPermisos"
+        app:layout_constraintEnd_toStartOf="@id/btSiguientePermisos"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+        android:id="@+id/btSiguientePermisos"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/boton_rojo"
+        android:text="@string/next"
+        android:layout_margin="@dimen/margen_texto"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btSalirPermisos"
+        app:layout_constraintBottom_toBottomOf="@id/btSalirPermisos"
+        app:layout_constraintStart_toEndOf="@id/btSalirPermisos"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
