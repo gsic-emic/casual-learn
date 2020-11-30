@@ -145,6 +145,7 @@
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/margen_texto"
                 android:maxLines="3"
+                android:ellipsize="end"
                 android:visibility="gone"/>
 
             <Button

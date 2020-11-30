@@ -140,7 +140,8 @@
     <string name="adolfo" translatable="false"><b>Adolfo Ruiz Calleja</b>\nadolfo@gsic.uva.es\n</string>
     <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
     <string name="urluva" translatable="false">https://www.uva.es/export/sites/uva/</string>
-    <string name="urlJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>
+    <string name="urlBienesJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>
+    <string name="urlMunicipiosJunta" translatable="false">http://datosabiertos.jcyl.es/web/jcyl/set/es/sector-publico/municipios/1284278782067</string>
     <string name="urlDbpedia" translatable="false">https://wiki.dbpedia.org/</string>
     <string name="urlWikidata" translatable="false">https://www.wikidata.org/wiki/Wikidata:Main_Page</string>
     <string name="urlopenStreetMap" translatable="false">https://www.openstreetmap.org/copyright</string>
@@ -275,5 +276,8 @@
     <string name="aun_no_disponible">This option is not enable yet. Try again in a few minutes.</string>
     <string name="texto_peticion_ubicacion_siempre">In order to recommend you of nearby tasks, Casual Learn needs to know your position when the app is in the background.\n\nCasual Learn only collects your position in the background when the notification timer expires (customizable from the app settings). When it notifies a task it will stop collecting your position until the timer expires again.</string>
     <string name="uso_posicion">Use your location</string>
-    <string name="masInfo">+info</string>
+    <string name="masInfo" translatable="false">+info</string>
+    <string name="bic_jcyl" translatable="false">Bienes de Interés Cultura (BIC) de Castilla y León: Bienes Inmuebles</string>
+    <string name="municipios_jcyl" translatable="false">Registro de municipios de Castilla y León</string>
+    <string name="datos_abiertos" translatable="false">Datos abiertos de\nCastilla y León</string>
 </resources>
