@@ -579,7 +579,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
                     iconoTarea = R.drawable.ic_marcador_uno;
                 //Elimino los enlaces
-                String textoTarea = Auxiliar.quitaEnlaces(jsonObject.getString(Auxiliar.recursoAsociadoTexto));
+                String textoTarea = Auxiliar.quitaEnlaces(jsonObject.getString(Auxiliar.recursoAsociadoTexto))
+                        .replace("<br>"," ").trim();
 
                 String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
 

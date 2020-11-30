@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minWidth="300dp"
+        android:minHeight="150dp"
+        android:background="@color/white"
+        android:layout_marginBottom="10dp">
+        <TextView
+            android:id="@+id/tvTituloJunta"
+            android:text="@string/datos_abiertos"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:background="@color/colorSecondary"
+            android:textColor="@color/colorSecondaryText"
+            android:padding="@dimen/margen_texto"
+            android:textSize="20sp"
+            android:textAlignment="center"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+        <TextView
+            android:id="@+id/tvBICJunta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/bic_jcyl"
+            android:textAlignment="gravity"
+            android:gravity="center_vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTituloJunta"
+            android:padding="@dimen/margen_texto"
+            android:onClick="boton"/>
+        <TextView
+            android:id="@+id/tvMunicipiosJunta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/municipios_jcyl"
+            android:textAlignment="gravity"
+            android:gravity="center_vertical"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvBICJunta"
+            android:padding="@dimen/margen_texto"
+            android:onClick="boton"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+

@@ -28,6 +28,7 @@ import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.view.View;
+import android.view.Window;
 import android.webkit.WebView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -1449,6 +1450,7 @@ public class Auxiliar {
      */
     public static void navegadorInterno(final Context contexto, final String url){
         final Dialog dialogo = new Dialog(contexto);
+        dialogo.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogo.setContentView(R.layout.popweb);
         dialogo.setCancelable(true);
         WebView webView = dialogo.findViewById(R.id.wbNavegador);

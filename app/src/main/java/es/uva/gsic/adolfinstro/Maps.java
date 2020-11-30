@@ -43,6 +43,7 @@ import android.view.ViewTreeObserver;
 
 import androidx.appcompat.widget.SearchView;
 
+import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -454,6 +455,7 @@ public class Maps extends AppCompatActivity implements
 
         svPunto = findViewById(R.id.svPunto);
         dialogoVariosPuntos = new Dialog(this);
+        dialogoVariosPuntos.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogoVariosPuntos.setContentView(R.layout.dialogo_varios_puntos);
         dialogoVariosPuntos.setCancelable(true);
 
@@ -690,6 +692,7 @@ public class Maps extends AppCompatActivity implements
         //Muestra la posición del usuario en el mapa
         if (!permisos.isEmpty()) {
             final Dialog dialogoPermisos = new Dialog(context);
+            dialogoPermisos.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialogoPermisos.setContentView(R.layout.dialogo_permisos_ubicacion);
             dialogoPermisos.setCancelable(false);
             if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
