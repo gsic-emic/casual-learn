@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,8 +36,12 @@ public class Acerca extends AppCompatActivity {
     /** Dialogo para mostrar a los desarrolladores */
     Dialog dialogoDesarrolladores;
 
+    Dialog dialogoJuntaCyL;
+
     /** Variable para saber si se está mostrando el dialogo de desarrolladores o no */
     Boolean dialogoDesarrolladoresActivo;
+
+    Boolean dialogoJuntaCyLActivo;
 
     /**
      * Método para completar la interfaz gráfica del usuario. Se pinta la versión de la app.
@@ -71,6 +76,7 @@ public class Acerca extends AppCompatActivity {
         }
 
         dialogoDesarrolladores = new Dialog(this);
+        dialogoDesarrolladores.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogoDesarrolladores.setContentView(R.layout.dialogo_desarrolladores);
         dialogoDesarrolladores.setCancelable(true);
         dialogoDesarrolladores.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -84,9 +90,30 @@ public class Acerca extends AppCompatActivity {
 
         dialogoDesarrolladoresActivo = false;
 
-        if(savedInstanceState != null && savedInstanceState.getBoolean("DIALOGODESARROLLADORES", false)){
-            dialogoDesarrolladoresActivo = true;
-            dialogoDesarrolladores.show();
+        dialogoJuntaCyL = new Dialog(this);
+        dialogoJuntaCyL.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialogoJuntaCyL.setContentView(R.layout.dialogo_recursos_junta);
+        dialogoJuntaCyL.setCancelable(true);
+        dialogoJuntaCyL.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoJuntaCyLActivo = false;
+            }
+        });
+
+        dialogoJuntaCyLActivo = false;
+
+        if(savedInstanceState != null){
+            if(savedInstanceState.getBoolean("DIALOGODESARROLLADORES", false)) {
+                dialogoDesarrolladoresActivo = true;
+                dialogoDesarrolladores.show();
+            }
+            else{
+                if(savedInstanceState.getBoolean("DIALOGOJUNTA", false)) {
+                    dialogoJuntaCyLActivo = true;
+                    dialogoJuntaCyL.show();
+                }
+            }
         }
     }
 
@@ -111,7 +138,15 @@ public class Acerca extends AppCompatActivity {
                 dialogoDesarrolladores.show();
                 break;
             case R.id.ivJunta:
-                intent.setData(Uri.parse(getString(R.string.urlJunta)));
+                dialogoJuntaCyLActivo = true;
+                dialogoJuntaCyL.show();
+                break;
+            case R.id.tvBICJunta:
+                intent.setData(Uri.parse(getString(R.string.urlBienesJunta)));
+                startActivity(intent);
+                break;
+            case R.id.tvMunicipiosJunta:
+                intent.setData(Uri.parse(getString(R.string.urlMunicipiosJunta)));
                 startActivity(intent);
                 break;
             case R.id.ivDbPiedia:
@@ -175,5 +210,6 @@ public class Acerca extends AppCompatActivity {
         super.onSaveInstanceState(b);
         b.putString("TEXTOVERSION", version.getText().toString());
         b.putBoolean("DIALOGODESARROLLADORES", dialogoDesarrolladoresActivo);
+        b.putBoolean("DIALOGOJUNTA", dialogoJuntaCyLActivo);
     }
 }

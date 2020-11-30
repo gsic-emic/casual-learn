@@ -492,6 +492,7 @@ public class Tarea extends AppCompatActivity implements
                 break;
             case R.id.ivDenunciarPregunta:
                 final Dialog dialogo = new Dialog(this);
+                dialogo.requestWindowFeature(Window.FEATURE_NO_TITLE);
                 dialogo.setContentView(R.layout.dialogo_denuncia);
                 dialogo.setCancelable(true);
                 //https://stackoverflow.com/questions/10211338/view-inside-scrollview-doesnt-take-all-place
