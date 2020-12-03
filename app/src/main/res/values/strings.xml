@@ -280,4 +280,6 @@
     <string name="bic_jcyl" translatable="false">Bienes de Interés Cultura (BIC) de Castilla y León: Bienes Inmuebles</string>
     <string name="municipios_jcyl" translatable="false">Registro de municipios de Castilla y León</string>
     <string name="datos_abiertos" translatable="false">Datos abiertos de\nCastilla y León</string>
+    <string name="politica_privacidad">Privacy policy</string>
+    <string name="politica_url">https://casuallearnapp.gsic.uva.es/privacidad/</string>
 </resources>

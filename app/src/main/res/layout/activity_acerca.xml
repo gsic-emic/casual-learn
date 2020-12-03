@@ -33,46 +33,51 @@
 
         <TextView
             android:id="@+id/tvVersion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:textAlignment="gravity"
+            android:gravity="center_vertical|center"
+            android:textSize="13sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tvPoliticaPrivacidad"
+            app:layout_constraintTop_toBottomOf="@id/ivIcono"
+            android:paddingHorizontal="@dimen/margen_texto" />
+
+        <TextView
+            android:id="@+id/tvPoliticaPrivacidad"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:textSize="13sp"
+            android:text="@string/politica_privacidad"
+            app:layout_constraintStart_toEndOf="@id/tvVersion"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivIcono"
+            android:textAlignment="gravity"
+            android:gravity="center_vertical|center"
+            android:onClick="boton"
+            android:paddingHorizontal="@dimen/margen_texto"/>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/bPolitica"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivIcono" />
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="tvPoliticaPrivacidad, tvVersion"/>
 
         <TextView
             android:id="@+id/tvLicencia"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:textSize="12sp"
+            android:textSize="13sp"
             android:text="@string/licencia"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvVersion"
+            app:layout_constraintTop_toBottomOf="@id/bPolitica"
             android:drawableStart="@drawable/ic_license"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:onClick="boton" />
-
-        <TextView
-            android:id="@+id/tvDesarrolladoPorAcercade"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/desarrolladoPor"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:paddingHorizontal="10dp"
-            android:layout_marginVertical="10dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivWikidata"/>
-
-        <View
-            android:id="@+id/vista1"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladoPorAcercade"
-            app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/colorSecondaryDark"
-            android:layout_marginHorizontal="5dp"/>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guiaVerticalAcerca"
@@ -87,6 +92,91 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_percent="0.5" />
+
+        <TextView
+            android:id="@+id/tvFuentesInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvLicencia"
+            android:text="@string/fuentesInformacion"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingHorizontal="10dp"/>
+
+        <View
+            android:id="@+id/vista2"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintTop_toBottomOf="@id/tvFuentesInfo"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="@color/colorSecondaryDark"
+            android:layout_marginHorizontal="5dp"/>
+
+        <ImageView
+            android:id="@+id/ivJunta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/vista2"
+            app:srcCompat="@drawable/ic_jcyl_logo"
+            android:padding="10dp"
+            android:onClick="boton"
+            android:contentDescription="@string/junta_de_castilla_y_leon" />
+
+        <ImageView
+            android:id="@+id/ivDbPiedia"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guiaVerticalAcercaMedio"
+            app:layout_constraintTop_toBottomOf="@id/ivJunta"
+            app:srcCompat="@drawable/ic_dbpedia_logo"
+            android:padding="10dp"
+            android:onClick="boton"
+            android:contentDescription="@string/dbpedia" />
+
+        <ImageView
+            android:id="@+id/ivWikidata"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/guiaVerticalAcercaMedio"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivJunta"
+            app:srcCompat="@drawable/ic_wikidata_logo"
+            android:padding="10dp"
+            android:onClick="boton"
+            android:contentDescription="@string/wikidata" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/bFuentes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="ivWikidata, ivDbPiedia" />
+
+        <TextView
+            android:id="@+id/tvDesarrolladoPorAcercade"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/desarrolladoPor"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:paddingHorizontal="10dp"
+            android:layout_marginVertical="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bFuentes"/>
+
+        <View
+            android:id="@+id/vista1"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            app:layout_constraintTop_toBottomOf="@id/tvDesarrolladoPorAcercade"
+            app:layout_constraintStart_toStartOf="parent"
+            android:background="@color/colorSecondaryDark"
+            android:layout_marginHorizontal="5dp"/>
 
         <ImageView
             android:id="@+id/imagenGsic"
@@ -129,93 +219,6 @@
             android:onClick="boton"/>
 
         <TextView
-            android:id="@+id/tvFuentesInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvLicencia"
-            android:text="@string/fuentesInformacion"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:paddingHorizontal="10dp"/>
-
-        <View
-            android:id="@+id/vista2"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            app:layout_constraintTop_toBottomOf="@id/tvFuentesInfo"
-            app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/colorSecondaryDark"
-            android:layout_marginHorizontal="5dp"/>
-
-        <ImageView
-            android:id="@+id/ivJunta"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/vista2"
-            app:srcCompat="@drawable/ic_jcyl_logo"
-            android:padding="10dp"
-            android:onClick="boton"
-            android:contentDescription="@string/junta_de_castilla_y_leon" />
-
-        <ImageView
-            android:id="@+id/ivInfoFotoJunta"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            app:srcCompat="@drawable/ic_info_black_24dp"
-            app:layout_constraintStart_toStartOf="@id/ivJunta"
-            app:layout_constraintBottom_toBottomOf="@id/ivJunta"
-            android:contentDescription="@string/infoImagen"
-            android:visibility="gone"/>
-
-        <ImageView
-            android:id="@+id/ivDbPiedia"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/guiaVerticalAcercaMedio"
-            app:layout_constraintTop_toBottomOf="@id/ivJunta"
-            app:srcCompat="@drawable/ic_dbpedia_logo"
-            android:padding="10dp"
-            android:onClick="boton"
-            android:contentDescription="@string/dbpedia" />
-
-        <ImageView
-            android:id="@+id/ivInfoFotoDbPedia"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            app:srcCompat="@drawable/ic_info_black_24dp"
-            app:layout_constraintStart_toStartOf="@id/ivDbPiedia"
-            app:layout_constraintBottom_toBottomOf="@id/ivDbPiedia"
-            android:contentDescription="@string/infoImagen"
-            android:visibility="gone"/>
-
-        <ImageView
-            android:id="@+id/ivWikidata"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/guiaVerticalAcercaMedio"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivJunta"
-            app:srcCompat="@drawable/ic_wikidata_logo"
-            android:padding="10dp"
-            android:onClick="boton"
-            android:contentDescription="@string/wikidata" />
-
-        <ImageView
-            android:id="@+id/ivInfoFotoWikidata"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            app:srcCompat="@drawable/ic_info_black_24dp"
-            app:layout_constraintStart_toStartOf="@id/ivWikidata"
-            app:layout_constraintBottom_toBottomOf="@id/ivDbPiedia"
-            android:contentDescription="@string/infoImagen"
-            android:visibility="gone"/>
-
-        <TextView
             android:id="@+id/tvCreditos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -240,7 +243,6 @@
             android:id="@+id/tvFondosEuropeos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/proyectosSistema"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/vista3"
             android:paddingHorizontal="@dimen/margen_texto"/>

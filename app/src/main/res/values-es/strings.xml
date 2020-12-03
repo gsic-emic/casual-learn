@@ -251,4 +251,5 @@
     <string name="aun_no_disponible">La opción aún no está disponible. Vuelva a intentarlo en unos minutos.</string>
     <string name="texto_peticion_ubicacion_siempre">Para poder recomendarte tareas cercanas, Casual Learn necesita conocer tu posición incluso cuando se encuentre en segundo plano.\n\n\nCasual Learn solo recoge tu posición con la aplicación cerrada cuando vence el temporizador de notificaciones, configurable desde los ajustes de la aplicación. Cuando te recomiende una tarea dejará de obtener tu posición hasta que vuelva a vencer el temporizador.</string>
     <string name="uso_posicion">Posición en segundo plano</string>
+    <string name="politica_privacidad">Política de privacidad</string>
 </resources>

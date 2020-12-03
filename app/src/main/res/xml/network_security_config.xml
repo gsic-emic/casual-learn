@@ -3,6 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">openptmap.org</domain>
         <domain includeSubdomains="true">commons.wikimedia.org</domain>
+        <domain includeSubdomains="true">grijota.es</domain>
         <domain includeSubdomains="true">192.168.1.222</domain>
         <domain includeSubdomains="true">10.0.104.17</domain>
     </domain-config>
