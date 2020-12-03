@@ -847,7 +847,8 @@ public class Maps extends AppCompatActivity implements
                             puntoInteres.getString(Auxiliar.id),
                             puntoInteres.getString(Auxiliar.ficheroZona),
                             puntoInteres.getDouble(Auxiliar.latitud),
-                            puntoInteres.getDouble(Auxiliar.longitud)
+                            puntoInteres.getDouble(Auxiliar.longitud),
+                            puntoInteres.getString(Auxiliar.label)
                     );
 
                 } else {
@@ -1068,25 +1069,40 @@ public class Maps extends AppCompatActivity implements
      * @param size Número de tareas que representa el marcador en un interior
      * @return Representación gráfica del marcador
      */
-    private Bitmap generaBitmapMarkerNumero(int size) {
+    private Bitmap generaBitmapMarkerNumero(int size, boolean especial) {
         Paint paint = new Paint();
         Drawable drawable;
         if (size > 40)
             paint.setARGB(255, 255, 255, 255);
         else
             paint.setARGB(255, 0, 0, 0);
-        if (size < 0)
-            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_pulsado, null);
-        else if (size <= 10)
-            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador100, null);
-        else if (size <= 20)
-            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador300, null);
-        else if (size <= 40)
-            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador500, null);
-        else if (size <= 70)
-            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador700, null);
-        else
-            drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador900, null);
+        if(especial){
+            if (size < 0)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_pulsado_especial, null);
+            else if (size <= 10)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador100_especial, null);
+            else if (size <= 20)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador300_especial, null);
+            else if (size <= 40)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador500_especial, null);
+            else if (size <= 70)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador700_especial, null);
+            else
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador900_especial, null);
+        }else {
+            if (size < 0)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_pulsado, null);
+            else if (size <= 10)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador100, null);
+            else if (size <= 20)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador300, null);
+            else if (size <= 40)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador500, null);
+            else if (size <= 70)
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador700, null);
+            else
+                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador900, null);
+        }
 
         if (size<0)
             size*=-1;
@@ -1299,6 +1315,7 @@ public class Maps extends AppCompatActivity implements
         double nivelZum = Math.max(diagonal / 20000, 0.01);//10m;
 
         JSONArray todasTareas = new JSONArray();
+        JSONArray puntosEspeciales = new JSONArray();
 
         JSONObject puntoInteres;
         JSONArray ficheroPuntosInteres;
@@ -1309,7 +1326,11 @@ public class Maps extends AppCompatActivity implements
                     for (int i = 0; i < ficheroPuntosInteres.length(); i++) {
                         puntoInteres = ficheroPuntosInteres.getJSONObject(i);
                         puntoInteres.put(Auxiliar.ficheroZona, nombreFichero);
-                        todasTareas.put(puntoInteres);
+                        if(puntoInteres.has(Auxiliar.creadoPor) && !puntoInteres.getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores)) {
+                            puntosEspeciales.put(puntoInteres);
+                        }else{
+                            todasTareas.put(puntoInteres);
+                        }
                     }
                 }
             } catch (JSONException e){
@@ -1373,9 +1394,30 @@ public class Maps extends AppCompatActivity implements
 
         if(!listaMarcadores.isEmpty()){
             for(Marcador m : listaMarcadores){
-                newMarker(m);
+                newMarker(m, false);
             }
         }
+
+        listaMarcadores = new ArrayList<>();
+        try {
+            while (puntosEspeciales.length() > 0) {
+                puntoInteres = (JSONObject)puntosEspeciales.remove(0);
+                marcador = new Marcador();
+                marcador.setTitulo(puntoInteres.getString(Auxiliar.label));
+                marcador.setPosicionMarcador(puntoInteres.getDouble(Auxiliar.latitud), puntoInteres.getDouble(Auxiliar.longitud));
+                marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
+                listaMarcadores.add(marcador);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        if(!listaMarcadores.isEmpty()){
+            for(Marcador m : listaMarcadores){
+                newMarker(m, true);
+            }
+        }
+
     }
 
     @Override
@@ -1836,7 +1878,8 @@ public class Maps extends AppCompatActivity implements
             final String nombreFicheroTareas,
             final String nombreFicheroZona,
             final double latitud,
-            final double longitud){//Seguro que necesito algo más como el id del lugar donde lo voy a colocar
+            final double longitud,
+            final String nombre){//Seguro que necesito algo más como el id del lugar donde lo voy a colocar
         List<String> keys = new ArrayList<>();
         List<Object> objects = new ArrayList<>();
         keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionTareas);
@@ -1860,6 +1903,8 @@ public class Maps extends AppCompatActivity implements
                                     tarea.put(Auxiliar.longitud, longitud);
                                     if(enlaceWikipedia != null)
                                         tarea.put(Auxiliar.enlaceWiki, enlaceWikipedia);
+                                    if(!tarea.has(Auxiliar.comment) || tarea.getString(Auxiliar.comment).equals(""))
+                                        tarea.put(Auxiliar.comment, nombre);
                                     tareasG.put(tarea);
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -1915,10 +1960,10 @@ public class Maps extends AppCompatActivity implements
      * sobre el marcador se muestra la lista de tareas que contiene
      * @param marcador Información que representa al marcador
      */
-    void newMarker(final Marcador marcador) {
+    void newMarker(final Marcador marcador, final Boolean especial) {
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
-        BitmapDrawable d = new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()));
+        BitmapDrawable d = new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas(), especial));
         marker.setIcon(d);
 
         marker.setInfoWindow(new Bocadillo(R.layout.bocadillo, map));
@@ -1935,7 +1980,7 @@ public class Maps extends AppCompatActivity implements
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
                 mapController.animateTo(geoPoint);
-                marker.setIcon(new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1)));
+                marker.setIcon(new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1 , especial)));
                 marcadorPulsado = true;
                 String msg = getString(R.string.recuperandoPosicion);
                 try {

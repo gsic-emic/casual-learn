@@ -3,6 +3,7 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,22 +27,27 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * Clase diseñada para mostrar la información de la aplicación
  *
  * @author Pablo
- * @version 20200701
+ * @version 20201201
  */
 public class Acerca extends AppCompatActivity {
 
     /** Instancia del cuadro del textview donde se coloca la versión*/
-    TextView version;
+    private TextView version;
 
-    /** Dialogo para mostrar a los desarrolladores */
-    Dialog dialogoDesarrolladores;
+    /** Diálogo para mostrar a los desarrolladores */
+    private Dialog dialogoDesarrolladores;
 
-    Dialog dialogoJuntaCyL;
+    /** Diálogo para mostrar los recursos de la Junta*/
+    private Dialog dialogoJuntaCyL;
 
     /** Variable para saber si se está mostrando el dialogo de desarrolladores o no */
-    Boolean dialogoDesarrolladoresActivo;
+    private Boolean dialogoDesarrolladoresActivo;
 
-    Boolean dialogoJuntaCyLActivo;
+    /** Objeto para saber si se está mostrando el dialogo de recursos de la Junta */
+    private Boolean dialogoJuntaCyLActivo;
+
+    /** Objeto con el contexto */
+    private Context contexto;
 
     /**
      * Método para completar la interfaz gráfica del usuario. Se pinta la versión de la app.
@@ -56,26 +62,28 @@ public class Acerca extends AppCompatActivity {
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
+        contexto = this;
+
         version = findViewById(R.id.tvVersion);
 
         TextView proyectos = findViewById(R.id.tvFondosEuropeos);
-        String texto = getString(R.string.proyectosSistema);
-        proyectos.setText(Auxiliar.creaEnlaces(this, texto, true));
+        String texto = contexto.getResources().getString(R.string.proyectosSistema);
+        proyectos.setText(Auxiliar.creaEnlaces(contexto, texto, true));
         proyectos.setMovementMethod(LinkMovementMethod.getInstance());
 
         if(savedInstanceState == null){
             try {
-                version.setText(String.format("%s %s", getString(R.string.version),
-                        this.getPackageManager().getPackageInfo(getPackageName(), 0).versionName));
+                version.setText(String.format("%s %s", contexto.getResources().getString(R.string.version),
+                        contexto.getPackageManager().getPackageInfo(getPackageName(), 0).versionName));
             } catch (PackageManager.NameNotFoundException e) {
-                version.setText(String.format("%s %d", getString(R.string.version), 0));
+                version.setText(String.format("%s %d", contexto.getResources().getString(R.string.version), 0));
 
             }
         }else{
             version.setText(savedInstanceState.getString("TEXTOVERSION"));
         }
 
-        dialogoDesarrolladores = new Dialog(this);
+        dialogoDesarrolladores = new Dialog(contexto);
         dialogoDesarrolladores.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogoDesarrolladores.setContentView(R.layout.dialogo_desarrolladores);
         dialogoDesarrolladores.setCancelable(true);
@@ -86,11 +94,11 @@ public class Acerca extends AppCompatActivity {
             }
         });
         TextView textView = dialogoDesarrolladores.findViewById(R.id.tvEspacioDesarrolladores);
-        textView.setText(Html.fromHtml(getResources().getString(R.string.desarrolladores_nombres)));
+        textView.setText(Html.fromHtml(contexto.getResources().getString(R.string.desarrolladores_nombres)));
 
         dialogoDesarrolladoresActivo = false;
 
-        dialogoJuntaCyL = new Dialog(this);
+        dialogoJuntaCyL = new Dialog(contexto);
         dialogoJuntaCyL.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogoJuntaCyL.setContentView(R.layout.dialogo_recursos_junta);
         dialogoJuntaCyL.setCancelable(true);
@@ -126,11 +134,11 @@ public class Acerca extends AppCompatActivity {
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
         switch (view.getId()){
             case R.id.imagenGsic:
-                intent.setData(Uri.parse(getString(R.string.urlgsic)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlgsic)));
                 startActivity(intent);
                 break;
             case R.id.imagenUva:
-                intent.setData(Uri.parse(getString(R.string.urluva)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urluva)));
                 startActivity(intent);
                 break;
             case R.id.tvDesarrolladores:
@@ -142,41 +150,44 @@ public class Acerca extends AppCompatActivity {
                 dialogoJuntaCyL.show();
                 break;
             case R.id.tvBICJunta:
-                intent.setData(Uri.parse(getString(R.string.urlBienesJunta)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlBienesJunta)));
                 startActivity(intent);
                 break;
             case R.id.tvMunicipiosJunta:
-                intent.setData(Uri.parse(getString(R.string.urlMunicipiosJunta)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlMunicipiosJunta)));
                 startActivity(intent);
                 break;
             case R.id.ivDbPiedia:
-                intent.setData(Uri.parse(getString(R.string.urlDbpedia)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlDbpedia)));
                 startActivity(intent);
                 break;
             case R.id.ivWikidata:
-                intent.setData(Uri.parse(getString(R.string.urlWikidata)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlWikidata)));
                 startActivity(intent);
                 break;
             case R.id.tvOpenStreepMap:
-                intent.setData(Uri.parse(getString(R.string.urlopenStreetMap)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlopenStreetMap)));
                 startActivity(intent);
                 break;
             case R.id.tvOsmdroid:
-                intent.setData(Uri.parse(getString(R.string.urlOsmdroid)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlOsmdroid)));
                 startActivity(intent);
                 break;
             case R.id.tvPhotoView:
-                intent.setData(Uri.parse(getString(R.string.urlPhotoView)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlPhotoView)));
                 startActivity(intent);
                 break;
             case R.id.tvPicasso:
-                intent.setData(Uri.parse(getString(R.string.urlPicasso)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlPicasso)));
                 startActivity(intent);
                 break;
             case R.id.tvLicencia:
-                intent.setData(Uri.parse(getString(R.string.urlLicencia)));
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlLicencia)));
                 startActivity(intent);
                 break;
+            case R.id.tvPoliticaPrivacidad:
+                intent.setData(Uri.parse(contexto.getResources().getString(R.string.politica_url)));
+                startActivity(intent);
             default:
                 break;
         }

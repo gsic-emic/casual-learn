@@ -237,28 +237,24 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
             try {
                 try {
+
                     assert tarea != null;
                     if (tarea.has(Auxiliar.recursoImagenBaja) &&
                             !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
                             !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
                         urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
+                    } else {
+                        if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
+                            urlImagen = tarea.getString(Auxiliar.recursoImagen);
+                        }
+                    }
+                    if(urlImagen != null){
                         Picasso.get()
                                 .load(urlImagen)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                                 .tag(Auxiliar.cargaImagenPreview)
                                 .into(imageView);
                         imageView.setVisibility(View.VISIBLE);
-
-                    } else {
-                        if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
-                            urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
-                            Picasso.get()
-                                    .load(urlImagen)
-                                    .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                                    .tag(Auxiliar.cargaImagenPreview)
-                                    .into(imageView);
-                            imageView.setVisibility(View.VISIBLE);
-                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

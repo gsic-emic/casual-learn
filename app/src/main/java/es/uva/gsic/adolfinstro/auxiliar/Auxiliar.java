@@ -90,7 +90,7 @@ public class Auxiliar {
     public static final String latitud = "latitud";
     public static final String longitud = "longitud";
     public static final String recursoImagenBaja = "thumbnail";
-    public static final String recursoImagen = "recursoAsociadoImagen";
+    public static final String recursoImagen = "imagen";
     public static final String recursoAsociadoTexto = "recursoAsociadoTexto";
     public static final String respuestaEsperada = "respuestaEsperada";
     public static final String titulo = "comment";
@@ -107,6 +107,10 @@ public class Auxiliar {
     public static final String enlaceWiki = "enlaceWiki";
     public static final String textoLicencia = "textoLicencia";
     public static final String busquedasMunicipio = "busquedaMunicipio";
+    public static final String creadoPor = "creadoPor";
+    public static final String imagen = "imagen";
+
+    public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
 
 
     public static final String posUsuarioLat = "posUsuarioLat";
@@ -1535,16 +1539,25 @@ public class Auxiliar {
             final Context context,
             TextView textView,
             String urlImagen) {
-        if(urlImagen != null && urlImagen.contains("wikimedia")){
-            textView.setVisibility(View.VISIBLE);
-            return urlImagen
-                    .replace("Special:FilePath/", "File:")
-                    .replace("?widh=300px", "")
-                    .replace("?width=300", "")
-                    .concat(context.getString(R.string.ultimaParteLicencia));
-        }else{
+        if(urlImagen != null) {
+            if(urlImagen.contains("upload.wikimedia")){
+                textView.setVisibility(View.VISIBLE);
+                return "https://commons.wikimedia.org/wiki/File:"
+                        .concat(urlImagen.split("/")[urlImagen.split("/").length - 2])
+                        .concat(context.getString(R.string.ultimaParteLicencia));
+            }else{
+                if(urlImagen.contains("wikimedia")){
+                    textView.setVisibility(View.VISIBLE);
+                    return urlImagen
+                            .replace("Special:FilePath/", "File:")
+                            .replace("?widh=300px", "")
+                            .replace("?width=300", "")
+                            .concat(context.getString(R.string.ultimaParteLicencia));
+                } else
+                    return null;
+            }
+        } else
             return null;
-        }
     }
 
     /**
