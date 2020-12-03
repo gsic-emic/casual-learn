@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,6 +34,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     public static class ViewHolderMapa extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView tvTitulo;
         ImageView ivTipoTarea, ivFondo;
+        ConstraintLayout constraintLayout;
 
         /**
          * Constructor de la subclase
@@ -43,6 +45,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
             tvTitulo = itemView.findViewById(R.id.tvItemListaMapa);
             ivTipoTarea = itemView.findViewById(R.id.ivItemListaMapa);
             ivFondo = itemView.findViewById(R.id.ivFondoListaMapa);
+            constraintLayout = itemView.findViewById(R.id.clTarjetaTareasMapa);
             itemView.setOnClickListener(this);
         }
 
@@ -102,13 +105,19 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                     .tag(Auxiliar.cargaImagenPreview)
                     .into(holder.ivFondo);
             holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
-            //holder.ivTipoTarea.setImageResource(Auxiliar.iconoTipoTareaLista(lista.get(position).getTipoTarea()));
         }
         else {
             holder.ivFondo.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
             holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(context.getResources() , android.R.color.transparent, null));
-            //holder.ivFondo.setImageResource(Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()));
-            //holder.ivTipoTarea.setImageResource(android.R.color.transparent);
+        }
+        try{
+            if(!lista.get(position).getTarea().getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores)){
+                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.fondo_especial, null));
+            }else{
+                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.boton_secundario, null));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

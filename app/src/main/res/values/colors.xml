@@ -33,5 +33,7 @@
     <color name="paleta_vegetacion">#7d8e74</color>
     <color name="paleta">#dfae43</color>
     <color name="paleta_suelo">#a15b1c</color>
+    <color name="paleta_especial">#000E68</color>
+    <color name="paleta_especial_transparente">#1A000E68</color>
 
 </resources>

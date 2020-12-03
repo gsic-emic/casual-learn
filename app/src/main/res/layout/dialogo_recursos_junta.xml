@@ -25,7 +25,7 @@
             android:textAlignment="center"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
         <TextView
             android:id="@+id/tvBICJunta"
             android:layout_width="0dp"
@@ -38,7 +38,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTituloJunta"
             android:padding="@dimen/margen_texto"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            android:background="@drawable/boton_secundario"
+            android:layout_marginTop="5dp"/>
         <TextView
             android:id="@+id/tvMunicipiosJunta"
             android:layout_width="0dp"
@@ -51,7 +53,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvBICJunta"
             android:padding="@dimen/margen_texto"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            android:background="@drawable/boton_secundario"
+            android:layout_marginTop="5dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
