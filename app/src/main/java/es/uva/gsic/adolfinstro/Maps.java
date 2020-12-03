@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -222,6 +223,9 @@ public class Maps extends AppCompatActivity implements
     /** Enlace para mostrar el artículo de la wikipedia en el navegador interno */
     private String enlaceWiki;
 
+    private Dialog dialogoSegundoPlano;
+    private boolean dialogoSegundoPlanoVisible;
+
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
      * molestar para saber si se tiene que mostar el mapa o no
@@ -240,7 +244,6 @@ public class Maps extends AppCompatActivity implements
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         dialogoSalirApp = new AlertDialog.Builder(this);
         dialogoSalirApp.setTitle(getString(R.string.exitT));
@@ -438,7 +441,6 @@ public class Maps extends AppCompatActivity implements
                         if (!btCentrar.isShown())
                             btCentrar.show();
                     }
-
                     return false;
                 }
             });
@@ -458,6 +460,55 @@ public class Maps extends AppCompatActivity implements
         dialogoVariosPuntos.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogoVariosPuntos.setContentView(R.layout.dialogo_varios_puntos);
         dialogoVariosPuntos.setCancelable(true);
+
+
+        dialogoSegundoPlano = new Dialog(this);
+        dialogoSegundoPlano.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialogoSegundoPlano.setContentView(R.layout.dialogo_segundo_plano);
+        dialogoSegundoPlano.setCancelable(false);
+        dialogoSegundoPlano.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoSegundoPlanoVisible = false;
+            }
+        });
+        TextView textoSegundoPlano = dialogoSegundoPlano.findViewById(R.id.tvTextoSegundoPlano);
+        textoSegundoPlano.setText(Html.fromHtml(context.getString(R.string.texto_segundo_plano)));
+        Button vamos = dialogoSegundoPlano.findViewById(R.id.btVamosSegundoPlano);
+        vamos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogoSegundoPlano.cancel();
+                dialogoSegundoPlanoVisible = false;
+                noVuelvasAMostrarDialogoSegundoPlano();
+                boolean muestraToast = true;
+                for(Intent intent : Auxiliar.intentProblematicos()){
+                    if(getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null){
+                        muestraToast = false;
+                        startActivity(intent);
+                        break;
+                    }
+                }
+                if(muestraToast)
+                    Toast.makeText(context, context.getString(R.string.no_app_gestion), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        Button omitir = dialogoSegundoPlano.findViewById(R.id.btOmitirSegundoPlano);
+        omitir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogoSegundoPlanoVisible = false;
+                noVuelvasAMostrarDialogoSegundoPlano();
+                dialogoSegundoPlano.cancel();
+            }
+        });
+
+        dialogoSegundoPlanoVisible = false;
+        if (savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOSEGUNDOPLANO", false)) {
+            dialogoSegundoPlanoVisible = true;
+            dialogoSegundoPlano.show();
+        }
 
         try {
             String contenido = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.textoParaElMapa);
@@ -496,6 +547,28 @@ public class Maps extends AppCompatActivity implements
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void noVuelvasAMostrarDialogoSegundoPlano() {
+        try {
+            JSONArray ficheroSegundoPlano = PersistenciaDatos.leeFichero(
+                    getApplication(),
+                    PersistenciaDatos.ficheroSegundoPlano);
+            if(ficheroSegundoPlano.length() == 0) {
+                JSONObject noVuelvasMostrar = new JSONObject();
+                noVuelvasMostrar.put(Auxiliar.id, PersistenciaDatos.ficheroSegundoPlano);
+                noVuelvasMostrar.put(Auxiliar.instante, System.currentTimeMillis());
+
+                ficheroSegundoPlano.put(noVuelvasMostrar);
+                PersistenciaDatos.guardaFichero(
+                        getApplication(),
+                        PersistenciaDatos.ficheroSegundoPlano,
+                        ficheroSegundoPlano,
+                        Context.MODE_PRIVATE);
+            }
+        } catch (JSONException e){
             e.printStackTrace();
         }
     }
@@ -782,6 +855,25 @@ public class Maps extends AppCompatActivity implements
                 lanzaServicioPosicionamiento();
             if (myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
                 activaPosicionMapa();
+            }
+
+            if (idUsuario != null) {
+                JSONArray ficheroSegundoPlano = PersistenciaDatos.leeFichero(
+                        getApplication(),
+                        PersistenciaDatos.ficheroSegundoPlano);
+                if (ficheroSegundoPlano.length() == 0) {//El fichero no existe. Muestro el diálogo si es necesario
+                    boolean dispositivoConProblemas = false;
+                    for (Intent intent : Auxiliar.intentProblematicos()) {
+                        if (getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+                            dialogoSegundoPlanoVisible = true;
+                            dialogoSegundoPlano.show();
+                            dispositivoConProblemas = true;
+                            break;
+                        }
+                    }
+                    if(!dispositivoConProblemas)
+                        noVolverAPreguntar();
+                }
             }
         }
     }
@@ -1525,6 +1617,7 @@ public class Maps extends AppCompatActivity implements
         bundle.putDouble("LATITUDE", latitudeOrigen);
         bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putBoolean("DIALOGOSALIR", dialogoSalirAppActivo);
+        bundle.putBoolean("DIALOGOSEGUNDOPLANO", dialogoSegundoPlanoVisible);
         super.onSaveInstanceState(bundle);
     }
 
@@ -1557,18 +1650,10 @@ public class Maps extends AppCompatActivity implements
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key){
-            case Ajustes.NO_MOLESTAR_pref:
-                noMolestar = sharedPreferences.getBoolean(key, false);
+        if (Ajustes.NO_MOLESTAR_pref.equals(key)) {
+            noMolestar = sharedPreferences.getBoolean(key, false);
                 /*if(!noMolestar)
                     lanzaServicioPosicionamiento();*/
-                break;
-            case Ajustes.LISTABLANCA_pref:
-                if(sharedPreferences.getBoolean(key, true))
-                    Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
-                break;
-            default:
-                break;
         }
     }
 

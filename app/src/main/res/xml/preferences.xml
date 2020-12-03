@@ -48,14 +48,14 @@
             app:title="@string/enviarWifi"
             app:defaultValue="false" />
     </PreferenceCategory>
-    <PreferenceCategory
+    <!--<PreferenceCategory
         android:key="listaBlancaCategoria">
         <CheckBoxPreference
             app:key="listaBlanca"
             app:title="@string/tituloListaBlancaPref"
             app:summary="@string/descripcionListaBlancaPref"
             app:defaultValue="true" />
-    </PreferenceCategory>
+    </PreferenceCategory>-->
     <PreferenceCategory
         android:key="cierreCategoria">
         <Preference

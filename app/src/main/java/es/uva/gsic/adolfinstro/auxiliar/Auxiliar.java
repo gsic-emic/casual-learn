@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -187,7 +188,7 @@ public class Auxiliar {
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
 
-    private static final String[] listaFabricantes = {"huawei", "xiaomi", "samsung", "oneplus"};
+    //private static final String[] listaFabricantes = {"huawei", "xiaomi", "samsung", "oneplus"};
 
     public static int incr = 0;
 
@@ -278,12 +279,12 @@ public class Auxiliar {
         return permisos;
     }
 
-    /**
+    /*/**
      * Método que muestra el mensaje de la lista blanca
      * @param context contexto
      * @param sharedPreferences preferencias
      */
-    public static void dialogoAyudaListaBlanca(Context context,
+    /*public static void dialogoAyudaListaBlanca(Context context,
                                                final SharedPreferences sharedPreferences){
         List<String> fabricantesProblemas = Arrays.asList(listaFabricantes);
         if (fabricantesProblemas.contains(Build.MANUFACTURER.toLowerCase())) {
@@ -306,19 +307,19 @@ public class Auxiliar {
         else{
             actualizaListaBlanca(false, sharedPreferences);
         }
-    }
+    }*/
 
-    /**
+    /*/**
      * Método para actualizar el valor de la preferencia listaBlanca
      * @param listaBlanca valor que va a tomar la preferencia
      * @param sharedPreferences preferencias
      */
-    private static void actualizaListaBlanca(boolean listaBlanca,
+    /*private static void actualizaListaBlanca(boolean listaBlanca,
                                              SharedPreferences sharedPreferences) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(Ajustes.LISTABLANCA_pref, listaBlanca);
         editor.commit();
-    }
+    }*/
 
     /**
      * Método para puntuar una tarea una vez que se ha completado
@@ -1735,5 +1736,28 @@ public class Auxiliar {
         return string
                 .replaceAll("</a>", "")
                 .replaceAll("<a.*?>","");
+    }
+
+    //https://stackoverflow.com/questions/48166206/how-to-start-power-manager-of-all-android-manufactures-to-enable-background-and
+    public static Intent[] intentProblematicos() {
+        return new Intent[]{
+                new Intent().setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")),
+                new Intent().setComponent(new ComponentName("com.miui.powerkeeper", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity")),
+                new Intent().setComponent(new ComponentName("com.letv.android.letvsafe", "com.letv.android.letvsafe.AutobootManageActivity")),
+                new Intent().setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity")),
+                new Intent().setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity")),
+                new Intent().setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity")),
+                new Intent().setComponent(new ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity")),
+                new Intent().setComponent(new ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity")),
+                new Intent().setComponent(new ComponentName("com.coloros.safecenter", "com.coloros.safecenter.startupapp.StartupAppListActivity")),
+                new Intent().setComponent(new ComponentName("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity")),
+                new Intent().setComponent(new ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity")),
+                new Intent().setComponent(new ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager")),
+                new Intent().setComponent(new ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity")),
+                new Intent().setComponent(new ComponentName("com.samsung.android.lool", "com.samsung.android.sm.ui.battery.BatteryActivity")),
+                new Intent().setComponent(new ComponentName("com.htc.pitroad", "com.htc.pitroad.landingpage.activity.LandingPageActivity")),
+                new Intent().setComponent(new ComponentName("com.asus.mobilemanager", "com.asus.mobilemanager.MainActivity")),
+                new Intent().setComponent(new ComponentName("com.transsion.phonemanager", "com.itel.autobootmanager.activity.AutoBootMgrActivity"))
+        };
     }
 }

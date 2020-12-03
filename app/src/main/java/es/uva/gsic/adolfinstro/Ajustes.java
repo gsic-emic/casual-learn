@@ -22,8 +22,8 @@ public class Ajustes extends AppCompatActivity
     public static final String NO_MOLESTAR_pref = "noMolestar";
     /** Clave para controlar el tiempo mínimo entre notificaciones */
     public static final String INTERVALO_pref = "intervalo";
-    /** Clave para controlar el volver a mostrar el mensaje de problemas por la marca*/
-    public static final String LISTABLANCA_pref = "listaBlanca";
+    ///** Clave para controlar el volver a mostrar el mensaje de problemas por la marca*/
+    //public static final String LISTABLANCA_pref = "listaBlanca";
     /** Clave para identificar la lista de etiquetas que el usuario quiere que se publique junto a la
      * respuesta */
     public static final String HASHTAG_pref = "hashtag";
