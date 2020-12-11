@@ -11,6 +11,7 @@ import org.json.JSONObject;
 public class TareasMapaLista {
     private String id, titulo, tipoTarea, uriFondo;
     private JSONObject tarea;
+    private boolean completada;
 
     /**
      * Constructor de la tarea que luego se utilizará en la lista de tareas del marcador.
@@ -24,12 +25,14 @@ public class TareasMapaLista {
                            String titulo,
                            String tipoTarea,
                            String uriFondo,
-                           JSONObject tarea){
+                           JSONObject tarea,
+                           boolean completada){
         setId(id);
         setTitulo(titulo);
         setTipoTarea(tipoTarea);
         setUriFondo(uriFondo);
         setTarea(tarea);
+        this.completada = completada;
     }
 
     /**
@@ -110,5 +113,9 @@ public class TareasMapaLista {
      */
     private void setTarea(JSONObject tarea) {
         this.tarea = tarea;
+    }
+
+    public boolean getCompletada() {
+        return completada;
     }
 }

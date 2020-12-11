@@ -14,11 +14,10 @@ import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -188,6 +187,18 @@ public class Acerca extends AppCompatActivity {
             case R.id.tvPoliticaPrivacidad:
                 intent.setData(Uri.parse(contexto.getResources().getString(R.string.politica_url)));
                 startActivity(intent);
+                break;
+            case R.id.tvContacto:
+                intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("message/rfc822");
+                String[] direcciones = {getString(R.string.emailCasualLearn)};
+                intent.putExtra(Intent.EXTRA_EMAIL, direcciones);
+                if (intent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(intent);
+                }else{
+                    Toast.makeText(contexto, getString(R.string.noEmail), Toast.LENGTH_SHORT).show();
+                }
+                break;
             default:
                 break;
         }

@@ -37,7 +37,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * intervalo.
  *
  * @author pablo
- * @version 20201029
+ * @version 20201203
  */
 public class AjustesFragment extends PreferenceFragmentCompat
         implements SharedPreferences.OnSharedPreferenceChangeListener {

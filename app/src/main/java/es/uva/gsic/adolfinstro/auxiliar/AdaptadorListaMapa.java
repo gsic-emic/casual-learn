@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,7 +23,7 @@ import es.uva.gsic.adolfinstro.R;
 /**
  * Clase para establecer la lista de tareas que se muestra cuando un usuario pulsa en un marcador
  * @author pablo
- * @version 20200707
+ * @version 20201210
  */
 public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.ViewHolderMapa>  {
 
@@ -33,7 +32,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
      */
     public static class ViewHolderMapa extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView tvTitulo;
-        ImageView ivTipoTarea, ivFondo;
+        ImageView ivTipoTarea, ivFondo, ivCompletada;
         ConstraintLayout constraintLayout;
 
         /**
@@ -44,6 +43,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvItemListaMapa);
             ivTipoTarea = itemView.findViewById(R.id.ivItemListaMapa);
+            ivCompletada = itemView.findViewById(R.id.ivItemListaCompletada);
             ivFondo = itemView.findViewById(R.id.ivFondoListaMapa);
             constraintLayout = itemView.findViewById(R.id.clTarjetaTareasMapa);
             itemView.setOnClickListener(this);
@@ -90,7 +90,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     }
 
     /**
-     * Método para introducir la información en el layout
+     * Método para introducir la información en la tarjeta
      * @param holder Holder
      * @param position Posición
      */
@@ -104,17 +104,27 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                     .tag(Auxiliar.cargaImagenPreview)
                     .into(holder.ivFondo);
-            holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
+            holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(
+                    context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
         }
         else {
-            holder.ivFondo.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
-            holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(context.getResources() , android.R.color.transparent, null));
+            holder.ivFondo.setImageDrawable(ResourcesCompat.getDrawable(
+                    context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
+            holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(
+                    context.getResources() , android.R.color.transparent, null));
+        }
+        if(lista.get(position).getCompletada()){
+            holder.ivCompletada.setVisibility(View.VISIBLE);
+        }else{
+            holder.ivCompletada.setVisibility(View.INVISIBLE);
         }
         try{
             if(!lista.get(position).getTarea().getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores)){
-                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.fondo_especial, null));
+                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                        context.getResources(), R.drawable.fondo_especial, null));
             }else{
-                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.boton_secundario, null));
+                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                        context.getResources(), R.drawable.boton_secundario, null));
             }
         }catch (Exception e){
             e.printStackTrace();

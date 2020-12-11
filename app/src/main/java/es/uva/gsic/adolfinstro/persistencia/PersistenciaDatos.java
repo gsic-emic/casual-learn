@@ -44,11 +44,11 @@ public class PersistenciaDatos {
     public static final String ficheroSinEnviar = "respuestas";
 
     public static final String ficheroPrimeraCuadricula = "primeraCuadricula";
-    public static final String ficheroPosicionesCuadriculas = "posicionesCuadriculas";
 
     public static final Object bloqueo = new Object();
     public static final String ficheroNuevasCuadriculas = "ficheroNuevasCuadriculas";
-    public static String ficheroPrimeraApertura = "primeraApertura";
+    public static final String ficheroPrimeraApertura = "primeraApertura";
+    public static final String ficheroSegundoPlano = "enSegundoPlano";
 
 
     /**

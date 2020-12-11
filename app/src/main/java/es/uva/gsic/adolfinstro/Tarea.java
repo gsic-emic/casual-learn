@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -30,7 +29,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -59,7 +57,7 @@ import static java.util.Objects.requireNonNull;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20201028
+ * @version 20201211
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -314,8 +312,6 @@ public class Tarea extends AppCompatActivity implements
                 estadoBtCamara = true;
                 estadoBtCancelar = true;
 
-                //checkPermissions();
-
                 tarea.put(Auxiliar.estadoTarea, EstadoTarea.NO_COMPLETADA.getValue());
                 tarea.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
                 PersistenciaDatos.reemplazaJSON(
@@ -326,8 +322,7 @@ public class Tarea extends AppCompatActivity implements
                 e.printStackTrace();
             }
 
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            publicarRespuesta = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+            publicarRespuesta = true;
         }
 
         try {
@@ -404,11 +399,6 @@ public class Tarea extends AppCompatActivity implements
                     permisos.add(Manifest.permission.CAMERA);
                     textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_camara));
                 }
-                /*if(!(ActivityCompat.checkSelfPermission(
-                        this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)) {
-                    permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                    textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
-                }*/
                 if(tipo.equals(Auxiliar.tipoVideo) && !(ActivityCompat.checkSelfPermission(
                         this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.RECORD_AUDIO);
@@ -675,7 +665,6 @@ public class Tarea extends AppCompatActivity implements
             }
             if(photoFile != null){
                 photoURI = FileProvider.getUriForFile(context, getString(R.string.fileProvider), photoFile);
-                //photoURI = Uri.fromFile(photoFile);
                 takePicture.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePicture, tipo);//Los requestCode solo pueden ser de 16 bits
             }
@@ -769,9 +758,7 @@ public class Tarea extends AppCompatActivity implements
                                 actualizaContenedorImagenes(-1);
                                 muestraSnackBar(getString(R.string.imagenG));
                             }
-                            //Auxiliar.publicaGaleria(this, photoURI);
                             activaBtTerminar();
-                            //Auxiliar.puntuaTarea(this, idTarea);
                         }catch (Exception e){
                             mensajeError();
                             if(respuesta != null)
@@ -992,7 +979,6 @@ public class Tarea extends AppCompatActivity implements
     @Override
     protected void onRestoreInstanceState(@NotNull Bundle bundle){
         super.onRestoreInstanceState(bundle);
-        //restantes = bundle.getInt("RESTANTES");
         estadoBtCamara = bundle.getBoolean("ESTADOCAMARA");
         estadoBtCancelar = bundle.getBoolean("ESTADOCANCELAR");
         estadoBtTerminar = bundle.getBoolean("ESTADOTERMINAR");

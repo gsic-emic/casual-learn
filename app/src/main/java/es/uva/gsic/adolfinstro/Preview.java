@@ -1,7 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -11,7 +10,6 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -74,7 +72,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20201120
+ * @version 20201203
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -755,14 +753,11 @@ public class Preview extends AppCompatActivity implements LocationListener {
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         permisos = new ArrayList<>();
         try {
-            //String textoPermisos = getString(R.string.necesidad_permisos);
-
             if (ActivityCompat.checkSelfPermission(
                     this,
                     Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 botonesVisibles(false);
                 permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
             }
 
             if(idUsuario != null) {
@@ -771,7 +766,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-                        //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                     }
             }else{
                 new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
