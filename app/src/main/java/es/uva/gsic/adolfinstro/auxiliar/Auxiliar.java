@@ -6,7 +6,6 @@ import android.app.Application;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -36,7 +35,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
@@ -59,7 +57,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -76,7 +73,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201119
+ * @version 20201203
  */
 public class Auxiliar {
 
@@ -278,48 +275,6 @@ public class Auxiliar {
                 permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
         return permisos;
     }
-
-    /*/**
-     * Método que muestra el mensaje de la lista blanca
-     * @param context contexto
-     * @param sharedPreferences preferencias
-     */
-    /*public static void dialogoAyudaListaBlanca(Context context,
-                                               final SharedPreferences sharedPreferences){
-        List<String> fabricantesProblemas = Arrays.asList(listaFabricantes);
-        if (fabricantesProblemas.contains(Build.MANUFACTURER.toLowerCase())) {
-            AlertDialog.Builder brandBuilder = new AlertDialog.Builder(context);
-            brandBuilder.setTitle(context.getString(R.string.tituloErrorMarca) + Build.MANUFACTURER.toLowerCase())
-                    .setMessage(context.getString(R.string.mensajeSolucionMarca))
-                    .setPositiveButton(context.getString(R.string.entiendo), new Dialog.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            actualizaListaBlanca(false, sharedPreferences);
-                        }
-                    })
-                    .setNegativeButton(context.getString(R.string.volverRecordar), new Dialog.OnClickListener(){
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) { }
-                    })
-                    .setCancelable(false);
-            brandBuilder.show();
-        }
-        else{
-            actualizaListaBlanca(false, sharedPreferences);
-        }
-    }*/
-
-    /*/**
-     * Método para actualizar el valor de la preferencia listaBlanca
-     * @param listaBlanca valor que va a tomar la preferencia
-     * @param sharedPreferences preferencias
-     */
-    /*private static void actualizaListaBlanca(boolean listaBlanca,
-                                             SharedPreferences sharedPreferences) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(Ajustes.LISTABLANCA_pref, listaBlanca);
-        editor.commit();
-    }*/
 
     /**
      * Método para puntuar una tarea una vez que se ha completado
@@ -957,24 +912,11 @@ public class Auxiliar {
             }
 
             ArrayList<Uri> uris = new ArrayList<>();
-            /*uris.add(
-                    uriTexto(
-                            context,
-                            context.getResources().getDrawable(R.drawable.ic_por_defecto_insta),
-                            contenidoTexto(
-                                    context,
-                                    tarea,
-                                    textoUsuario,
-                                    hashtag,
-                                    false)));*/
 
             switch (tarea.getString(Auxiliar.tipoRespuesta)){
                 case Auxiliar.tipoPreguntaCorta:
                 case Auxiliar.tipoPreguntaLarga:
                 case Auxiliar.tipoSinRespuesta:
-                    /*intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
-                    intent.setType("image/*");*/
                     Toast.makeText(context,
                             context.getString(R.string.errorInstagram),
                             Toast.LENGTH_LONG).show();
@@ -1320,6 +1262,12 @@ public class Auxiliar {
         }
     }
 
+    /**
+     * Método para enviar las respuestas de los usuarios al servidor
+     * @param app Aplicación
+     * @param contexto Contexto
+     * @param idTarea Identificador de la tarea
+     */
     public static void enviaResultados(final Application app, Context contexto, String idTarea){
         JSONObject jsonObject = new JSONObject();
         String idUsuario;
@@ -1536,6 +1484,13 @@ public class Auxiliar {
         }
     }
 
+    /**
+     * Método para intentar enlazar la imagen con la licencia
+     * @param context Contexto
+     * @param textView TextView con el texto
+     * @param urlImagen URL de la imagen donde está su licencia
+     * @return Enlace de la licencia o null si no se ha conseguido crear
+     */
     public static String enlaceLicencia(
             final Context context,
             TextView textView,
@@ -1717,6 +1672,14 @@ public class Auxiliar {
         }
     }
 
+    /**
+     * Método para obtener la URL con la query que se va a realizar para la comunicación con el
+     * servidor
+     * @param ruta Dirección del servidor con la ruta hasta el recurso donde se va a realizar la query
+     * @param key Lista de objetos clave
+     * @param objects Lista de objetos valor
+     * @return URL con query entendible por el servidor
+     */
     public static String creaQuery(String ruta, List<String> key, List<Object> objects){
         String salida = String.format("%s?", ruta);
         int tama;
@@ -1732,13 +1695,24 @@ public class Auxiliar {
         return salida;
     }
 
+    /**
+     * Método para eliminar los enlaces de un String. Para que el usuario no los vea en las notificaciones
+     * por ejemplo
+     * @param string Texto con enlaces
+     * @return Texto sin enlaces
+     */
     public static String quitaEnlaces(String string) {
         return string
                 .replaceAll("</a>", "")
                 .replaceAll("<a.*?>","");
     }
 
-    //https://stackoverflow.com/questions/48166206/how-to-start-power-manager-of-all-android-manufactures-to-enable-background-and
+    /**
+     * Método para obtener la lista de fabricantes que pueden tener problemas con el servicio en segundo plano.
+     * Basado en:
+     *     https://stackoverflow.com/questions/48166206/how-to-start-power-manager-of-all-android-manufactures-to-enable-background-and
+     * @return Intents para saltar a la aplicación de gestión de energía del fabricante del dispositivo
+     */
     public static Intent[] intentProblematicos() {
         return new Intent[]{
                 new Intent().setComponent(new ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")),

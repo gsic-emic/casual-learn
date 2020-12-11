@@ -1,21 +1,16 @@
 package es.uva.gsic.adolfinstro;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
-import android.view.Window;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -44,7 +39,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * Clase que permite a los usuarios identificarse frente al sistema.
  *
  * @author Pablo
- * @version 20201123
+ * @version 20201211
  */
 public class Login extends AppCompatActivity implements
         View.OnClickListener {

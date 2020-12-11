@@ -93,7 +93,6 @@ public class Completadas extends AppCompatActivity implements
     /** TextView donde se incluye la respuesta textual del usuario */
     private TextView tvTextoUsuario;
 
-
     private FloatingActionButton btCompartir;
 
     private String hashtag;
