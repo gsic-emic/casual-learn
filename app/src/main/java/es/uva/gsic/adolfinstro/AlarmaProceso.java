@@ -614,12 +614,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         Auxiliar.incr + 999,
                         intentBoton,
                         PendingIntent.FLAG_UPDATE_CURRENT);
-                //builder.addAction(R.drawable.ic_thumb_down_black_24dp, getString(R.string.ahoraNo), ahoraNoPending);
                 builder.setDeleteIntent(ahoraNoPending);
-
-                /*intentBoton.setAction("NUNCA_MAS");
-                PendingIntent nuncaMasP = PendingIntent.getBroadcast(context, incr + 1000, intentBoton, PendingIntent.FLAG_UPDATE_CURRENT);
-                builder.addAction(R.drawable.ic_delete_black_24dp, getString(R.string.nuncaMas), nuncaMasP);*/
                 notificationManager.notify(Auxiliar.incr, builder.build()); //Notificación lanzada
 
                 long instanteUltimaNotif = new Date().getTime(); //Actualizamos el instante
@@ -631,9 +626,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
             }catch (Exception e){
                 e.printStackTrace();
             }
-            //db.grupoTareasDao().insertTarea(tarea);//Guardo en la base de datos
         }catch (JSONException je){
-            //Si alguno de los campos que siempre deberían existir no existen
+            je.printStackTrace();
         }
     }
 

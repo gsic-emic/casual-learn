@@ -1,0 +1,157 @@
+h1, h4 {
+    text-align: center;
+}
+
+h6 {
+    padding-right: 1%;
+    padding-top: 1%;
+    text-align: right;
+}
+
+p {
+    padding-left: 5%;
+    padding-right: 5%;
+    font-size: large;
+    text-align: justify;
+}
+
+nav {
+    background-color: #666b6e;
+}
+
+nav > span {
+    color: white;
+    font-size: 1.5em;
+}
+
+nav > div > ul > li {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.5em;
+    font-size: 1em;
+    color: white;
+    text-align: right;
+}
+
+.textoEstadisticas {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+    padding-top: 0.5em;
+    font-size: 1em;
+    text-align: right;
+    color: white;
+}
+
+
+p > a:link, p > a:visited, p > a:hover, p > a:active {
+    color: #a15b1c;
+    text-decoration: underline;
+}
+
+.contenedorFotosCabecera {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.contenedorDosFotos {
+    position: relative;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.contenedorFotoSuper {
+    position: absolute;
+    left: 0%;
+    bottom: 0%;
+    margin-top: -24px;/*Alto logo*/
+}
+
+.textoLicencia {
+    padding-left: 24px;
+    padding-right: 4px;
+    color: #ffffffda;
+    background: #00000040;
+    font-size: small;
+}
+.mapaTarea {
+    width: 100%;
+    height: 20vh;
+    min-height: 100px;
+    max-height: 250px;
+    margin-top: 2em;
+    margin-bottom: 1em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.contenedorDatos {
+    margin-top: 2em;
+    margin-bottom: 1em;
+}
+
+.respuestaUsuario {
+    border: 0.15em solid #a15b1c;
+    /*margin: 0.5em;*/
+    width: 96%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.color {
+    background-color: #f2e6c6a8;
+    padding-top: 0.5em;
+    padding-bottom: 2em;
+}
+
+.sinColor {
+    padding-top: 0.5em;
+    padding-bottom: 2em;
+}
+
+.masInfo {
+    padding-right: 1em;
+    padding-top: 0.4em;
+    text-align: right;
+}
+
+.masInfo > a:link, .masInfo > a:visited, .masInfo > a:hover, .masInfo > a:active {
+    text-decoration: underline;
+    color: black;
+}
+
+/*https://stackoverflow.com/questions/32355009/changing-pagination-colour-bootstrap*/
+.pagination > li > a
+{
+    background-color: white;
+    color: #a15b1c;
+}
+
+.pagination > li > a:focus,
+.pagination > li > a:hover,
+.pagination > li > span:focus,
+.pagination > li > span:hover
+{
+    color: #a15b1c;
+    background-color: #fff;
+    border-color: #a15b1c;
+}
+
+.pagination > .active > a
+{
+    color: white;
+    background-color: #a15b1c !Important;
+    border: solid 1px #a15b1c !Important;
+}
+
+/*.pagination > .active > a:hover
+{
+    background-color: #5A4181 !Important;
+    border: solid 1px #5A4181;
+}*/
+
+body {
+    font-family: 'Roboto', 'sans-serif';
+}

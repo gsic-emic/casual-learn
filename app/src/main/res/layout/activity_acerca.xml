@@ -67,6 +67,22 @@
             app:constraint_referenced_ids="tvPoliticaPrivacidad, tvVersion"/>
 
         <TextView
+            android:id="@+id/tvContacto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:textSize="13sp"
+            android:text="@string/frase_contacto"
+            app:layout_constraintStart_toStartOf="parent"
+            android:textAlignment="gravity"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bPolitica"
+            android:drawableStart="@drawable/ic_email"
+            android:drawablePadding="5dp"
+            android:gravity="center"
+            android:onClick="boton" />
+
+        <TextView
             android:id="@+id/tvLicencia"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
@@ -74,8 +90,10 @@
             android:text="@string/licencia"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/bPolitica"
+            app:layout_constraintTop_toBottomOf="@id/tvContacto"
             android:drawableStart="@drawable/ic_license"
+            android:drawablePadding="5dp"
+            android:textAlignment="gravity"
             android:gravity="center_vertical"
             android:onClick="boton" />
 

@@ -105,7 +105,7 @@
     <string name="hola">"Hola "</string>
     <string name="errorAutentica">Fallo de autenticación</string>
     <string name="datosUsuario">Datos del usuario</string>
-    <string name="textoOpcional">Texto opcional</string>
+    <string name="textoOpcional">Si lo deseas, puedes apuntar aquí tus notas</string>
     <string name="editar">Editar</string>
     <string name="publicar">Publicar</string>
     <string name="tareaRealizar">Realiza la tarea</string>
@@ -252,4 +252,11 @@
     <string name="texto_peticion_ubicacion_siempre">Para poder recomendarte tareas cercanas, Casual Learn necesita conocer tu posición incluso cuando se encuentre en segundo plano.\n\n\nCasual Learn solo recoge tu posición con la aplicación cerrada cuando vence el temporizador de notificaciones, configurable desde los ajustes de la aplicación. Cuando te recomiende una tarea dejará de obtener tu posición hasta que vuelva a vencer el temporizador.</string>
     <string name="uso_posicion">Posición en segundo plano</string>
     <string name="politica_privacidad">Política de privacidad</string>
+    <string name="frase_contacto">Puedes contactar con nosotros a través de\ncasuallearnapp@gsic.uva.es</string>
+    <string name="solicitud_permisos">Solicitud de permisos</string>
+    <string name="ejecucion_segundo_plano">Ejecución en segundo plano</string>
+    <string name="omitir">Omitir</string>
+    <string name="vamos">Vamos</string>
+    <string name="texto_segundo_plano"><![CDATA[Casual Learn se tiene que ejecutar en segundo plano para poder notificarte de tareas cercanas. Hemos detectado que tu móvil puede bloquear este comportamiento. Si lo deseas, te podemos ayudar a intentar llevarte hasta la aplicación que gestina este tipo de cosas. Es necesario que permitas a Casual Learn <b>ejecutarse en segundo plano</b> e <b>iniciarse automáticamente</b> (para que la aplicación vuelva a funcionar cuando enciendas el móvil).<br><br>Si no realizas estos cambios, Casual Learn no podrá avisarte de tareas cercanas. Aún así, podrás seguir utilizando el resto de la aplicación con normalidad.]]></string>
+    <string name="no_app_gestion">No hemos encontra la aplicación de gestión…</string>
 </resources>

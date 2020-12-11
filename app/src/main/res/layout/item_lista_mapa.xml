@@ -37,6 +37,13 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.7" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/glListaMapaV2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3" />
+
     <ImageView
         android:id="@+id/ivItemListaMapa"
         android:layout_width="0dp"
@@ -46,6 +53,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/glListaMapaH1"
         android:contentDescription="@string/tipoDeTarea" />
+
+    <ImageView
+        android:id="@+id/ivItemListaCompletada"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/glListaMapaV2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/glListaMapaH1"
+        android:contentDescription="@string/tareaCompletada"
+        app:srcCompat="@drawable/ic_completada"/>
 
     <TextView
         android:id="@+id/tvItemListaMapa"

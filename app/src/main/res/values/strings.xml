@@ -281,5 +281,12 @@
     <string name="municipios_jcyl" translatable="false">Registro de municipios de Castilla y León</string>
     <string name="datos_abiertos" translatable="false">Datos abiertos de\nCastilla y León</string>
     <string name="politica_privacidad">Privacy policy</string>
-    <string name="politica_url">https://casuallearnapp.gsic.uva.es/privacidad/</string>
+    <string name="politica_url" translatable="false">https://casuallearnapp.gsic.uva.es/privacidad/</string>
+    <string name="frase_contacto">You can contact us through\ncasuallearnapp@gsic.uva.es</string>
+    <string name="solicitud_permisos">Request permissions</string>
+    <string name="ejecucion_segundo_plano">Running in the background</string>
+    <string name="omitir">Skip</string>
+    <string name="vamos">Go</string>
+    <string name="texto_segundo_plano"><![CDATA[Casual Learn has to run in the background in order to notify nearby tasks. We have detected that your phone can block this feature. If you wish, we can help you to find the app that manages this things. You need to allow Casual Learn to <b>run in the background</b> and <b>start automatically</b> (so the app works again when you turn on your device).<br><br>If you don\'t make this changes, Casual Learn won\'t be able to notify new tasks. Even so, you can continue using the app normally.]]></string>
+    <string name="no_app_gestion">We have not found the management app…</string>
 </resources>

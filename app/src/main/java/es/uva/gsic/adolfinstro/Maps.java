@@ -117,7 +117,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20201119
+ * @version 20201211
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -179,6 +179,7 @@ public class Maps extends AppCompatActivity implements
     /** Adaptador para la lista de municipios cuando se realiza una búsqueda*/
     private AdaptadorListaCoincidencia adaptadorListaCoincidencia;
 
+    /** Objeto con el que se indica si hay un marcador pulsado */
     private boolean marcadorPulsado = false;
 
     /** Objeto para indicar el nombre del punto de interés*/
@@ -222,6 +223,11 @@ public class Maps extends AppCompatActivity implements
     /** Enlace para mostrar el artículo de la wikipedia en el navegador interno */
     private String enlaceWiki;
 
+    /** Diálogo para mostrar a los usuarios los posibles problemas que puede tener su dispositivo */
+    private Dialog dialogoSegundoPlano;
+    /** Objeto para saber si el diálogo sobre la gestión de energía está activo */
+    private boolean dialogoSegundoPlanoVisible;
+
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
      * molestar para saber si se tiene que mostar el mapa o no
@@ -232,7 +238,7 @@ public class Maps extends AppCompatActivity implements
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-        //context = getApplicationContext(); //contexto de la aplicación
+
         context = this;
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
@@ -240,7 +246,6 @@ public class Maps extends AppCompatActivity implements
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
-        onSharedPreferenceChanged(sharedPreferences, Ajustes.LISTABLANCA_pref);
 
         dialogoSalirApp = new AlertDialog.Builder(this);
         dialogoSalirApp.setTitle(getString(R.string.exitT));
@@ -285,22 +290,8 @@ public class Maps extends AppCompatActivity implements
             contenedor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
             map.setTileSource(TileSourceFactory.MAPNIK);
-            //https://github.com/osmdroid/osmdroid/blob/master/osmdroid-android/src/main/java/org/osmdroid/tileprovider/tilesource/TileSourceFactory.java
-            /*final OnlineTileSourceBase WIKIMEDIA = new XYTileSource("Wikimedia",
-                    1, 19, 256, ".png", new String[] {
-                    "https://maps.wikimedia.org/osm-intl/" },
-                    "Wikimedia maps | Map data © OpenStreetMap contributors",
-                    new TileSourcePolicy(1,
-                            TileSourcePolicy.FLAG_NO_BULK
-                                    | TileSourcePolicy.FLAG_NO_PREVENTIVE
-                                    | TileSourcePolicy.FLAG_USER_AGENT_MEANINGFUL
-                                    | TileSourcePolicy.FLAG_USER_AGENT_NORMALIZED
-                    ));
-            map.setTileSource(WIKIMEDIA);*/
 
-            //map.setTileSource(TileSourceFactory.OpenTopo);//Blanco y negro
-
-            map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zoom con dos dedos
+            map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zum con dos dedos
             mapController = map.getController();
             map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
@@ -370,6 +361,7 @@ public class Maps extends AppCompatActivity implements
                 }
             });
 
+            //Búsqueda de municipios
             searchView = findViewById(R.id.svMapa);
             searchView.setOnSearchClickListener(new View.OnClickListener() {
                 @Override
@@ -438,7 +430,6 @@ public class Maps extends AppCompatActivity implements
                         if (!btCentrar.isShown())
                             btCentrar.show();
                     }
-
                     return false;
                 }
             });
@@ -458,6 +449,55 @@ public class Maps extends AppCompatActivity implements
         dialogoVariosPuntos.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogoVariosPuntos.setContentView(R.layout.dialogo_varios_puntos);
         dialogoVariosPuntos.setCancelable(true);
+
+
+        dialogoSegundoPlano = new Dialog(this);
+        dialogoSegundoPlano.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialogoSegundoPlano.setContentView(R.layout.dialogo_segundo_plano);
+        dialogoSegundoPlano.setCancelable(false);
+        dialogoSegundoPlano.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                dialogoSegundoPlanoVisible = false;
+            }
+        });
+        TextView textoSegundoPlano = dialogoSegundoPlano.findViewById(R.id.tvTextoSegundoPlano);
+        textoSegundoPlano.setText(Html.fromHtml(context.getString(R.string.texto_segundo_plano)));
+        Button vamos = dialogoSegundoPlano.findViewById(R.id.btVamosSegundoPlano);
+        vamos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogoSegundoPlano.cancel();
+                dialogoSegundoPlanoVisible = false;
+                noVuelvasAMostrarDialogoSegundoPlano();
+                boolean muestraToast = true;
+                for(Intent intent : Auxiliar.intentProblematicos()){
+                    if(getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null){
+                        muestraToast = false;
+                        startActivity(intent);
+                        break;
+                    }
+                }
+                if(muestraToast)
+                    Toast.makeText(context, context.getString(R.string.no_app_gestion), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        Button omitir = dialogoSegundoPlano.findViewById(R.id.btOmitirSegundoPlano);
+        omitir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogoSegundoPlanoVisible = false;
+                noVuelvasAMostrarDialogoSegundoPlano();
+                dialogoSegundoPlano.cancel();
+            }
+        });
+
+        dialogoSegundoPlanoVisible = false;
+        if (savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOSEGUNDOPLANO", false)) {
+            dialogoSegundoPlanoVisible = true;
+            dialogoSegundoPlano.show();
+        }
 
         try {
             String contenido = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.textoParaElMapa);
@@ -500,6 +540,35 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para que el usuario no vuelva a ver el diálogo sobre los problemas que puede tener su
+     * dispositivo debido a la aplicación de gestión de energía.
+     */
+    private void noVuelvasAMostrarDialogoSegundoPlano() {
+        try {
+            JSONArray ficheroSegundoPlano = PersistenciaDatos.leeFichero(
+                    getApplication(),
+                    PersistenciaDatos.ficheroSegundoPlano);
+            if(ficheroSegundoPlano.length() == 0) {
+                JSONObject noVuelvasMostrar = new JSONObject();
+                noVuelvasMostrar.put(Auxiliar.id, PersistenciaDatos.ficheroSegundoPlano);
+                noVuelvasMostrar.put(Auxiliar.instante, System.currentTimeMillis());
+
+                ficheroSegundoPlano.put(noVuelvasMostrar);
+                PersistenciaDatos.guardaFichero(
+                        getApplication(),
+                        PersistenciaDatos.ficheroSegundoPlano,
+                        ficheroSegundoPlano,
+                        Context.MODE_PRIVATE);
+            }
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Método para ocultar toda la información del punto de interés.
+     */
     private void ocultaInfoPuntoInteres() {
         InfoWindow.closeAllInfoWindowsOn(map);
         idZona = "";
@@ -522,6 +591,9 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para pasar la vista de la descripción del lugar de reducida a completa
+     */
     private void ocultaReducido() {
         textoPuntoReducido.setVisibility(View.GONE);
         masInfo.setVisibility(View.GONE);
@@ -783,6 +855,25 @@ public class Maps extends AppCompatActivity implements
             if (myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
                 activaPosicionMapa();
             }
+
+            if (idUsuario != null) {
+                JSONArray ficheroSegundoPlano = PersistenciaDatos.leeFichero(
+                        getApplication(),
+                        PersistenciaDatos.ficheroSegundoPlano);
+                if (ficheroSegundoPlano.length() == 0) {//El fichero no existe. Muestro el diálogo si es necesario
+                    boolean dispositivoConProblemas = false;
+                    for (Intent intent : Auxiliar.intentProblematicos()) {
+                        if (getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
+                            dialogoSegundoPlanoVisible = true;
+                            dialogoSegundoPlano.show();
+                            dispositivoConProblemas = true;
+                            break;
+                        }
+                    }
+                    if(!dispositivoConProblemas)
+                        noVolverAPreguntar();
+                }
+            }
         }
     }
 
@@ -856,7 +947,10 @@ public class Maps extends AppCompatActivity implements
                     pintaTareas(puntoInteres.getString(Auxiliar.id));
                 }
 
-                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
+                        context.getResources(),
+                        R.drawable.ic_speaker,
+                        null));
 
                 svPunto.fullScroll(ScrollView.FOCUS_UP);
 
@@ -865,7 +959,6 @@ public class Maps extends AppCompatActivity implements
                         (puntoInteres.getString(Auxiliar.comment).equals("") ?
                                 getResources().getString(R.string.puntoSinTexto) :
                                 puntoInteres.getString(Auxiliar.comment)));
-                int tama = textoPunto.getLineCount();
                 textoPunto.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
@@ -925,12 +1018,36 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para obtener los identificadores de las tareas que ya ha realizado el usuario.
+     * @return Lisita de identificaciones de tareas completadas
+     */
+    public List<String> getListaTareasCompletadas(){
+        JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroCompletadas);
+        List<String> listaId = new ArrayList<>();
+        try {
+            for (int i = 0; i < tareasCompletadas.length(); i++) {
+                listaId.add(tareasCompletadas.getJSONObject(i).getString(Auxiliar.id));
+            }
+        }catch (Exception e){
+            listaId = new ArrayList<>();
+        }
+        return listaId;
+    }
 
+    /**
+     * Método para representar las tareas del punto de interés en una lista en la parte inferior de
+     * la información.
+     *
+     * @param ficheroTareas Fichero de donde están las tareas del punto de interés
+     */
     public void pintaTareas(String ficheroTareas) {
         JSONArray tareas = PersistenciaDatos.leeFichero(getApplication(), ficheroTareas);
+        List<String> listaId = getListaTareasCompletadas();
         List<TareasMapaLista> tareasPunto = new ArrayList<>();
         JSONObject jo;
         String uriFondo;
+        String id;
         for (int i = 0; i < tareas.length(); i++) {
             try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
                 jo = tareas.getJSONObject(i);
@@ -941,12 +1058,23 @@ public class Maps extends AppCompatActivity implements
                 }
                 //Agrego el fichero de donde extraer la tarea
                 jo.put(Auxiliar.ficheroOrigen, ficheroTareas);
-                tareasPunto.add(new TareasMapaLista(
-                        jo.getString(Auxiliar.id),
-                        Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
-                        Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                        uriFondo,
-                        jo));
+                id = jo.getString(Auxiliar.id);
+                if(listaId.contains(id))
+                    tareasPunto.add(new TareasMapaLista(
+                            id,
+                            Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
+                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                            uriFondo,
+                            jo,
+                            true));
+                else
+                    tareasPunto.add(new TareasMapaLista(
+                            id,
+                            Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
+                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                            uriFondo,
+                            jo,
+                            false));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1046,13 +1174,11 @@ public class Maps extends AppCompatActivity implements
                     }
                 }
             } else {
-                //Toast.makeText(context, getString(R.string.recuperandoPosicion), Toast.LENGTH_SHORT).show();
                 if (myLocationNewOverlay != null) {
                     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                             && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                         pintaSnackBar(getString(R.string.activaUbicacion));
-                        //checkPermissions();
                     }
                 } else
                     pintaSnackBar(getString(R.string.recuperandoPosicion));
@@ -1306,8 +1432,10 @@ public class Maps extends AppCompatActivity implements
     }
 
     /**
-     * Se representan los marcadores existentes en las cuadrículas que se le muestran al usuario
-     * @param ficherosPintar Nombre de los ficheros donde se encuentran las tareas a representar
+     * Método que recupera la información de los lugares que posteriormente se representan a través
+     * de los marcadores. Establece la distancia mín. entre dos puntos a partir de la cual se agruparán.
+     *
+     * @param ficherosPintar Nombre de los ficheros donde se encuentran los puntos a representar
      */
     private void pintaZona(List<String> ficherosPintar, double diagonal){
         //Distancia a la que se van a agrupar los marcadores
@@ -1326,11 +1454,12 @@ public class Maps extends AppCompatActivity implements
                     for (int i = 0; i < ficheroPuntosInteres.length(); i++) {
                         puntoInteres = ficheroPuntosInteres.getJSONObject(i);
                         puntoInteres.put(Auxiliar.ficheroZona, nombreFichero);
-                        if(puntoInteres.has(Auxiliar.creadoPor) && !puntoInteres.getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores)) {
+                        if(puntoInteres.has(Auxiliar.creadoPor) &&
+                                !puntoInteres.getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores))
                             puntosEspeciales.put(puntoInteres);
-                        }else{
+                        else
                             todasTareas.put(puntoInteres);
-                        }
+
                     }
                 }
             } catch (JSONException e){
@@ -1338,7 +1467,33 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
+        List<Marcador> listaMarcadores = creaAgrupaciones(todasTareas, nivelZum);
+        if(!listaMarcadores.isEmpty()){
+            for(Marcador m : listaMarcadores){
+                newMarker(m, false);
+            }
+        }
+
+        listaMarcadores = creaAgrupaciones(puntosEspeciales, nivelZum);
+
+        if(!listaMarcadores.isEmpty()){
+            for(Marcador m : listaMarcadores){
+                newMarker(m, true);
+            }
+        }
+    }
+
+    /**
+     * Método que crea los marcadores a partir de una distancia mínima.
+     *
+     * @param todasTareas Lista con la información de todos los puntos a representar.
+     * @param nivelZum Distancia mínima entre dos puntos. Si la distancia es menor se agrupan en
+     *                 un marcador
+     * @return Lista de marcadores que se tienen que representar en el mapa
+     */
+    private List<Marcador> creaAgrupaciones(JSONArray todasTareas, double nivelZum){
         List<Marcador> listaMarcadores = new ArrayList<>();
+        JSONObject puntoInteres;
         Marcador marcador;
         double latitud, longitud;
 
@@ -1388,36 +1543,10 @@ public class Maps extends AppCompatActivity implements
                     }
                 }
             }
+            return  listaMarcadores;
         }catch (Exception e){
-            e.printStackTrace();
+            return new ArrayList<>();
         }
-
-        if(!listaMarcadores.isEmpty()){
-            for(Marcador m : listaMarcadores){
-                newMarker(m, false);
-            }
-        }
-
-        listaMarcadores = new ArrayList<>();
-        try {
-            while (puntosEspeciales.length() > 0) {
-                puntoInteres = (JSONObject)puntosEspeciales.remove(0);
-                marcador = new Marcador();
-                marcador.setTitulo(puntoInteres.getString(Auxiliar.label));
-                marcador.setPosicionMarcador(puntoInteres.getDouble(Auxiliar.latitud), puntoInteres.getDouble(Auxiliar.longitud));
-                marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
-                listaMarcadores.add(marcador);
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        if(!listaMarcadores.isEmpty()){
-            for(Marcador m : listaMarcadores){
-                newMarker(m, true);
-            }
-        }
-
     }
 
     @Override
@@ -1525,6 +1654,7 @@ public class Maps extends AppCompatActivity implements
         bundle.putDouble("LATITUDE", latitudeOrigen);
         bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putBoolean("DIALOGOSALIR", dialogoSalirAppActivo);
+        bundle.putBoolean("DIALOGOSEGUNDOPLANO", dialogoSegundoPlanoVisible);
         super.onSaveInstanceState(bundle);
     }
 
@@ -1557,18 +1687,8 @@ public class Maps extends AppCompatActivity implements
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key){
-            case Ajustes.NO_MOLESTAR_pref:
-                noMolestar = sharedPreferences.getBoolean(key, false);
-                /*if(!noMolestar)
-                    lanzaServicioPosicionamiento();*/
-                break;
-            case Ajustes.LISTABLANCA_pref:
-                if(sharedPreferences.getBoolean(key, true))
-                    Auxiliar.dialogoAyudaListaBlanca(this, sharedPreferences);
-                break;
-            default:
-                break;
+        if (Ajustes.NO_MOLESTAR_pref.equals(key)) {
+            noMolestar = sharedPreferences.getBoolean(key, false);
         }
     }
 
@@ -1670,8 +1790,7 @@ public class Maps extends AppCompatActivity implements
      * @return Punto más al norte y más al oeste
      */
     public GeoPoint establecePimeraCuadricula(){
-        //double latN = boundingBox.getLatNorth();
-        //double lonO = boundingBox.getLonWest();
+        //Teleco
         double latN = 41.66247;
         double lonO = -4.70605;
         try {
@@ -1786,7 +1905,8 @@ public class Maps extends AppCompatActivity implements
                             for(int i = 0; i < puntosInteres.length(); i++) {
                                 try {
                                     puntoInteres = puntosInteres.getJSONObject(i);
-                                    puntoInteres.put(Auxiliar.id, String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
+                                    puntoInteres.put(Auxiliar.id,
+                                            String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
                                     puntosInteres.put(i, puntoInteres);
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -1948,6 +2068,7 @@ public class Maps extends AppCompatActivity implements
                 null
         );
 
+        //Aumento el tiempo ya que el servidor tiene que recuperar la frase y autor de las fotografías
         jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(
                 18000,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
@@ -1956,14 +2077,18 @@ public class Maps extends AppCompatActivity implements
     }
 
     /**
-     * Método que se utiliza para agregar y representar un marcador al mapa. Al pulsar
-     * sobre el marcador se muestra la lista de tareas que contiene
+     * Método que se utiliza para representar un marcador en el mapa. Al pulsar obre el marcador se
+     * muestra la información del lugar y se descargar, si fuera necesario, la lista de tareas que
+     * contiene. También se muestra esta lista al final de la información.
+     *
      * @param marcador Información que representa al marcador
      */
     void newMarker(final Marcador marcador, final Boolean especial) {
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
-        BitmapDrawable d = new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas(), especial));
+        BitmapDrawable d = new BitmapDrawable(
+                context.getResources(),
+                generaBitmapMarkerNumero(marcador.getNumeroTareas(), especial));
         marker.setIcon(d);
 
         marker.setInfoWindow(new Bocadillo(R.layout.bocadillo, map));
@@ -1980,7 +2105,9 @@ public class Maps extends AppCompatActivity implements
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
                 mapController.animateTo(geoPoint);
-                marker.setIcon(new BitmapDrawable(context.getResources(), generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1 , especial)));
+                marker.setIcon(new BitmapDrawable(
+                        context.getResources(),
+                        generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1 , especial)));
                 marcadorPulsado = true;
                 String msg = getString(R.string.recuperandoPosicion);
                 try {
@@ -2058,7 +2185,8 @@ public class Maps extends AppCompatActivity implements
                     lista.add(puntoSingular);
             }
             RecyclerView rvPuntosInteres = dialogoVariosPuntos.findViewById(R.id.rvPuntosInteres);
-            rvPuntosInteres.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+            rvPuntosInteres.setLayoutManager(new LinearLayoutManager(
+                    this, LinearLayoutManager.VERTICAL, false));
 
             adaptadorListaPuntos = new AdaptadorListaPuntos(this, lista);
             adaptadorListaPuntos.setClickListenerDialogo(this);
@@ -2129,6 +2257,11 @@ public class Maps extends AppCompatActivity implements
         muestraPuntoInteres(puntoInteres);
     }
 
+    /**
+     * Método que se utiliza para actualizar la distancia del usuario al punto de interés en la
+     * información del punto.
+     * @param location Ubicación del usuario
+     */
     @Override
     public void onLocationChanged(Location location) {
         if(!idZona.equals("")) {
@@ -2171,6 +2304,9 @@ public class Maps extends AppCompatActivity implements
 
     }
 
+    /**
+     * Método para que se le muestre al usuario la sugerencia de valorar la aplicación en Google Play
+     */
     public void llamadaAPlayStore(){
         final Activity activity = this;
         JSONObject primeraApertura = PersistenciaDatos.recuperaTarea(
@@ -2219,6 +2355,9 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Método para no volver a mostrar la sugerencia de valoración de la aplicación en Google Play
+     */
     private void noVolverAPreguntar(){
         try {
             JSONObject primeraApertura = PersistenciaDatos.obtenTarea(
