@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
@@ -255,6 +256,7 @@ public class Maps extends AppCompatActivity implements
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
         onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
@@ -775,21 +777,32 @@ public class Maps extends AppCompatActivity implements
             permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
         }
-        //Compruebo permisos de localización en primer y segundo plano
+        //Compruebo permisos de localización en primer plano
         if (!(ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)) {
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
+
         //Comprobación para saber si el usuario se ha identificado
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if (idUsuario != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
                 if (!(ActivityCompat.checkSelfPermission(
                         context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
                 }
+            }
+            else {
+                if (Build.VERSION.SDK_INT >= 30 && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                    if (!(ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED)) {
+                        permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                    }
+                }
+            }
         }
         if(!permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
             if(permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
@@ -2167,7 +2180,8 @@ public class Maps extends AppCompatActivity implements
                 generaBitmapMarkerNumero(marcador.getNumeroTareas(), especial));
         marker.setIcon(d);
 
-        marker.setInfoWindow(new Bocadillo(R.layout.bocadillo, map));
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT)
+            marker.setInfoWindow(new Bocadillo(R.layout.bocadillo, map));
 
         marker.setTitle(marcador.getTitulo());
         final GeoPoint geoPoint;

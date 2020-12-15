@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
@@ -112,6 +113,8 @@ public class Completadas extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
         setContentView(R.layout.activity_completadas);
         //Se activa la flecha para volver a la actividad anterior
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);

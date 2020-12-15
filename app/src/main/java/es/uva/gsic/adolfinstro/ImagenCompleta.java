@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import android.os.Bundle;
 import android.view.View;
@@ -31,6 +32,8 @@ public class ImagenCompleta extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imagen_completa);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         PhotoView photoView = findViewById(R.id.photoView);

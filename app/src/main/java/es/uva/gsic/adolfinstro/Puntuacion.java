@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 
 import android.app.backup.BackupManager;
@@ -34,6 +35,8 @@ public class Puntuacion extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
         setContentView(R.layout.activity_score);
 
         btEnviarPuntuacion = findViewById(R.id.btEnviarPuntuacion);
