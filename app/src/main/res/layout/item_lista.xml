@@ -14,6 +14,13 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.25" />
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guiaVerticalItemLista2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1" />
+
     <ImageView
         android:id="@+id/ivListaTipoTarea"
         android:layout_width="0dp"
@@ -36,14 +43,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ivListaTipoTarea"
         app:layout_constraintEnd_toStartOf="@id/guiaVerticalItemLista"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:paddingBottom="5dp"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierLista"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="ivListaTipoTarea, rbLista"/>
 
     <TextView
         android:id="@+id/tvListaTitulo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textSize="@dimen/tama_titulo"
-        app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
+        android:maxLines="2"
+        android:fitsSystemWindows="true"
+        android:ellipsize="end"
+        app:layout_constraintStart_toEndOf="@id/barrierLista"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tvListaFechaTarea"
@@ -53,16 +71,23 @@
         android:id="@+id/tvListaFechaTarea"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
+        app:layout_constraintStart_toEndOf="@id/barrierLista"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvListaTitulo"
         app:layout_constraintBottom_toTopOf="@id/viewListaPospuestasLinea"
         android:textColor="@color/colorPrimary"
         android:paddingBottom="5dp"/>
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierLista2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvListaFechaTarea, rbLista" />
+
     <View
         android:id="@+id/viewListaPospuestasLinea"
-        app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista"
+        app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_height="1dp"

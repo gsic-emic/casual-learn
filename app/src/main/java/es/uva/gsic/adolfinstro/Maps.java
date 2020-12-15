@@ -1,11 +1,15 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -13,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,6 +32,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -62,6 +68,7 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.play.core.review.ReviewInfo;
 import com.google.android.play.core.review.ReviewManager;
@@ -124,7 +131,8 @@ public class Maps extends AppCompatActivity implements
         AdaptadorListaMapa.ItemClickListener,
         AdaptadorListaCoincidencia.ItemClickListenerDialogo,
         AdaptadorListaPuntos.ItemClickListenerDialogoVariosPuntos,
-        LocationListener {
+        LocationListener,
+        NavigationView.OnNavigationItemSelectedListener {
     /** Objeto que permite mostrar el mapa*/
     private MapView map;
 
@@ -228,6 +236,10 @@ public class Maps extends AppCompatActivity implements
     /** Objeto para saber si el diálogo sobre la gestión de energía está activo */
     private boolean dialogoSegundoPlanoVisible;
 
+    DrawerLayout drawerLayout;
+
+    NavigationView navigationView;
+
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
      * molestar para saber si se tiene que mostar el mapa o no
@@ -275,165 +287,179 @@ public class Maps extends AppCompatActivity implements
             dialogoSalirApp.show();
         }
 
-        //Se decide si se muestra el mapa
-        if (noMolestar) {
-            setContentView(R.layout.no_molestar);
-        } else {
-            setContentView(R.layout.activity_maps);
-            map = findViewById(R.id.map);
-            contenedor = findViewById(R.id.rvTareasMapa);
-            contenedorBusqMapa = findViewById(R.id.rvBusquedaMapa);
+        setContentView(R.layout.activity_maps);
+        Toolbar toolbar = findViewById(R.id.tbMaps);
+        setSupportActionBar((Toolbar) findViewById(R.id.tbMaps));
+        toolbar.setTitleTextColor(ResourcesCompat.getColor(context.getResources(), R.color.white, null));
 
-            guiaMapaH = findViewById(R.id.guiaMapa);
-            guiaMapaV = findViewById(R.id.guiaMapaV);
+        drawerLayout = findViewById(R.id.dlMapa);
+        ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.app_name, R.string.app_name);
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
 
-            contenedor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        navigationView = findViewById(R.id.nvMapa);
 
-            map.setTileSource(TileSourceFactory.MAPNIK);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setOnCreateContextMenuListener(this);
 
-            map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zum con dos dedos
-            mapController = map.getController();
-            map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+        ocultaOpcionInicioSesionSiIdentificado(navigationView.getMenu());
 
-            final FloatingActionButton btCentrar = findViewById(R.id.btCentrar);
-            if (PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
-                JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
-                try {
-                    assert posicion != null;
-                    mapController.setCenter(new GeoPoint(posicion.getDouble(Auxiliar.latitud), posicion.getDouble(Auxiliar.longitud)));
-                    mapController.setZoom(posicion.getDouble(Auxiliar.zum));
-                } catch (JSONException e) {
-                    centraPrimeraVez();
-                }
-            } else {
+        map = findViewById(R.id.map);
+        contenedor = findViewById(R.id.rvTareasMapa);
+        contenedorBusqMapa = findViewById(R.id.rvBusquedaMapa);
+
+        guiaMapaH = findViewById(R.id.guiaMapa);
+        guiaMapaV = findViewById(R.id.guiaMapaV);
+
+        contenedor.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+
+        map.setTileSource(TileSourceFactory.MAPNIK);
+
+        map.setMultiTouchControls(true); //Habilitada la posibilidad de hacer zum con dos dedos
+        mapController = map.getController();
+        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+
+        final FloatingActionButton btCentrar = findViewById(R.id.btCentrar);
+        if (PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
+            JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
+            try {
+                assert posicion != null;
+                mapController.setCenter(new GeoPoint(posicion.getDouble(Auxiliar.latitud), posicion.getDouble(Auxiliar.longitud)));
+                mapController.setZoom(posicion.getDouble(Auxiliar.zum));
+            } catch (JSONException e) {
                 centraPrimeraVez();
             }
+        } else {
+            centraPrimeraVez();
+        }
 
-            // Nivel de zum mínimo permitido
-            double nivelMin = 6.5;
-            map.setMinZoomLevel(nivelMin);
-            map.setMaxZoomLevel(nivelMax);
+        // Nivel de zum mínimo permitido
+        double nivelMin = 6.5;
+        map.setMinZoomLevel(nivelMin);
+        map.setMaxZoomLevel(nivelMax);
 
-            final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-            scaleBarOverlay = new ScaleBarOverlay(map);
-            scaleBarOverlay.setCentred(true); //La barra de escala se queda en el centro
+        final DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        scaleBarOverlay = new ScaleBarOverlay(map);
+        scaleBarOverlay.setCentred(true); //La barra de escala se queda en el centro
 
-            map.setTilesScaledToDpi(true);
+        map.setTilesScaledToDpi(true);
 
-            int ancho = displayMetrics.widthPixels;
-            int alto = displayMetrics.heightPixels;
-            if (getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
-                scaleBarOverlay.drawLongitudeScale(true);
-                scaleBarOverlay.drawLatitudeScale(false);
-                scaleBarOverlay.setScaleBarOffset((int) (ancho * 0.05), (int) (alto * 0.4)); //posición en el el display
-            } else {
-                scaleBarOverlay.drawLongitudeScale(true);
-                scaleBarOverlay.drawLatitudeScale(false);
-                scaleBarOverlay.setScaleBarOffset((int) (ancho * 0.02), (int) (alto * 0.4));
+        int ancho = displayMetrics.widthPixels;
+        int alto = displayMetrics.heightPixels;
+        if (getResources().getConfiguration().orientation == android.content.res.Configuration.ORIENTATION_PORTRAIT) {
+            scaleBarOverlay.drawLongitudeScale(true);
+            scaleBarOverlay.drawLatitudeScale(false);
+            scaleBarOverlay.setScaleBarOffset((int) (ancho * 0.05), (int) (alto * 0.4)); //posición en el el display
+        } else {
+            scaleBarOverlay.drawLongitudeScale(true);
+            scaleBarOverlay.drawLatitudeScale(false);
+            scaleBarOverlay.setScaleBarOffset((int) (ancho * 0.02), (int) (alto * 0.4));
+        }
+
+        pintaItemsfijos();
+
+        map.addMapListener(new DelayedMapListener(new MapListener() {
+            @Override
+            public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
+                if (map != null) {
+                    compruebaZona(true);
+                }
+                return false;
             }
 
-            pintaItemsfijos();
-
-            map.addMapListener(new DelayedMapListener(new MapListener() {
-                @Override
-                public boolean onScroll(ScrollEvent event) { //Movimientos y zoom con dedos
-                    if (map != null) {
-                        compruebaZona(true);
-                    }
-                    return false;
+            @Override
+            public boolean onZoom(ZoomEvent event) {//Zoom con botones
+                if (map != null) {
+                    compruebaZona(true);
                 }
+                return false;
+            }
+        }, 250));
 
-                @Override
-                public boolean onZoom(ZoomEvent event) {//Zoom con botones
-                    if (map != null) {
-                        compruebaZona(true);
-                    }
-                    return false;
-                }
-            }, 250));
+        //Para cerrar la lista de tareas y el bocadillo
+        map.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                ocultaInfoPuntoInteres();
+                return false;
+            }
+        });
 
-            //Para cerrar la lista de tareas y el bocadillo
-            map.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View v, MotionEvent event) {
+        //Búsqueda de municipios
+        searchView = findViewById(R.id.svMapa);
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(marcadorPulsado)
                     ocultaInfoPuntoInteres();
-                    return false;
-                }
-            });
+            }
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
 
-            //Búsqueda de municipios
-            searchView = findViewById(R.id.svMapa);
-            searchView.setOnSearchClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(marcadorPulsado)
-                        ocultaInfoPuntoInteres();
-                }
-            });
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    return false;
-                }
-
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    //Aqui debería ir la sugerencia según escriba
-                    if (newText.trim().length() > 0) {
-                        JSONArray municipios = Auxiliar.buscaMunicipio(
-                                context, StringUtils.stripAccents(newText.trim().toLowerCase()));
-                        if (municipios.length() > 0) {
-                            if (btCentrar.isShown())
-                                btCentrar.hide();
-                            contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
-                                    context, LinearLayoutManager.VERTICAL, false));
-                            contenedorBusqMapa.setBackgroundColor(getResources().
-                                    getColor(R.color.transparente));
-                            contenedorBusqMapa.setVisibility(View.VISIBLE);
-                            contenedorBusqMapa.setHasFixedSize(true);
-                            List<ListaCoincidencias> lista = new ArrayList<>();
-                            JSONObject lugar;
-                            try {
-                                for (int i = 0; i < municipios.length(); i++) {
-                                    lugar = municipios.getJSONObject(i);
-                                    if (lista.isEmpty())
-                                        lista.add(new ListaCoincidencias(lugar));
-                                    else {
-                                        ListaCoincidencias coincidencia;
-                                        boolean agregado = false;
-                                        for (int j = 0; j < lista.size(); j++) {
-                                            coincidencia = lista.get(j);
-                                            if (coincidencia.getPoblacion() < lugar.getInt("g")) {
-                                                lista.add(j, new ListaCoincidencias(lugar));
-                                                agregado = true;
-                                                break;
-                                            }
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //Aqui debería ir la sugerencia según escriba
+                if (newText.trim().length() > 0) {
+                    JSONArray municipios = Auxiliar.buscaMunicipio(
+                            context, StringUtils.stripAccents(newText.trim().toLowerCase()));
+                    if (municipios.length() > 0) {
+                        if (btCentrar.isShown())
+                            btCentrar.hide();
+                        contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
+                                context, LinearLayoutManager.VERTICAL, false));
+                        contenedorBusqMapa.setBackgroundColor(ResourcesCompat.getColor(
+                                context.getResources(),
+                                R.color.transparente,
+                                null));
+                        contenedorBusqMapa.setVisibility(View.VISIBLE);
+                        contenedorBusqMapa.setHasFixedSize(true);
+                        List<ListaCoincidencias> lista = new ArrayList<>();
+                        JSONObject lugar;
+                        try {
+                            for (int i = 0; i < municipios.length(); i++) {
+                                lugar = municipios.getJSONObject(i);
+                                if (lista.isEmpty())
+                                    lista.add(new ListaCoincidencias(lugar));
+                                else {
+                                    ListaCoincidencias coincidencia;
+                                    boolean agregado = false;
+                                    for (int j = 0; j < lista.size(); j++) {
+                                        coincidencia = lista.get(j);
+                                        if (coincidencia.getPoblacion() < lugar.getInt("g")) {
+                                            lista.add(j, new ListaCoincidencias(lugar));
+                                            agregado = true;
+                                            break;
                                         }
-                                        if (!agregado)
-                                            lista.add(new ListaCoincidencias(lugar));
                                     }
+                                    if (!agregado)
+                                        lista.add(new ListaCoincidencias(lugar));
                                 }
-                                adaptadorListaCoincidencia = new AdaptadorListaCoincidencia(context, lista);
-                                adaptadorListaCoincidencia.setClickListenerDialogo(Maps.this);
-                                contenedorBusqMapa.setAdapter(adaptadorListaCoincidencia);
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
-                        } else {
-                            ocultaContenedorBusqMapa();
-                            if (!btCentrar.isShown())
-                                btCentrar.show();
+                            adaptadorListaCoincidencia = new AdaptadorListaCoincidencia(context, lista);
+                            adaptadorListaCoincidencia.setClickListenerDialogo(Maps.this);
+                            contenedorBusqMapa.setAdapter(adaptadorListaCoincidencia);
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-
                     } else {
                         ocultaContenedorBusqMapa();
                         if (!btCentrar.isShown())
                             btCentrar.show();
                     }
-                    return false;
+
+                } else {
+                    ocultaContenedorBusqMapa();
+                    if (!btCentrar.isShown())
+                        btCentrar.show();
                 }
-            });
-        }
+                return false;
+            }
+        });
 
         tituloPunto = findViewById(R.id.tvPuntoTitulo);
         textoPunto = findViewById(R.id.tvPuntoTexto);
@@ -514,7 +540,7 @@ public class Maps extends AppCompatActivity implements
                             findViewById(R.id.clIdentificateMapa),
                             R.string.textoInicioBreve,
                             Snackbar.LENGTH_INDEFINITE);
-                    snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
+                    snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
                     snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -530,13 +556,26 @@ public class Maps extends AppCompatActivity implements
                             }
                         }
                     });
-                    snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary50));
-                    snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+                    snackbar.setActionTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondary50, null));
+                    snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
                     snackbar.show();
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Método para ocultar la opción de inicio de sesión en el menú lateral
+     * @param menu Menú lateral
+     */
+    private void ocultaOpcionInicioSesionSiIdentificado(Menu menu) {
+        if(PersistenciaDatos.recuperaTarea(
+                getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id) != null){
+            MenuItem sesion = menu.findItem(R.id.cerrarSesion);
+            if(sesion.isVisible())
+                sesion.setVisible(false);
         }
     }
 
@@ -604,7 +643,8 @@ public class Maps extends AppCompatActivity implements
      * Método para ocultar la lista de coincidencias de la búsqueda
      */
     private void ocultaContenedorBusqMapa() {
-        contenedorBusqMapa.setBackgroundColor(getResources().getColor(R.color.transparente));
+        contenedorBusqMapa.setBackgroundColor(ResourcesCompat.getColor(
+                context.getResources(), R.color.transparente, null));
         contenedorBusqMapa.setAdapter(null);
         contenedorBusqMapa.setLayoutManager(null);
         contenedorBusqMapa.setVisibility(View.GONE);
@@ -628,8 +668,8 @@ public class Maps extends AppCompatActivity implements
      */
     private void pintaSnackBar(String texto) {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
-        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
+        snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
         snackbar.setText(texto);
         snackbar.show();
     }
@@ -690,7 +730,8 @@ public class Maps extends AppCompatActivity implements
                 e.printStackTrace();
             }
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
-            invalidateOptionsMenu();
+            //invalidateOptionsMenu();
+            ocultaOpcionInicioSesionSiIdentificado((navigationView.getMenu()));
             checkPermissions();
         }
     }
@@ -739,7 +780,6 @@ public class Maps extends AppCompatActivity implements
                 context, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED)) {
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-            //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
         }
         //Comprobación para saber si el usuario se ha identificado
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
@@ -749,7 +789,6 @@ public class Maps extends AppCompatActivity implements
                         context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-                    //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                 }
         }
         if(!permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
@@ -850,17 +889,16 @@ public class Maps extends AppCompatActivity implements
             }
             dialogoPermisos.show();
         } else {
-            if (idUsuario != null)
+            if (idUsuario != null &&  !noMolestar)
                 lanzaServicioPosicionamiento();
             if (myLocationNewOverlay == null || myLocationNewOverlay.getMyLocation() == null) {
                 activaPosicionMapa();
             }
 
             if (idUsuario != null) {
-                JSONArray ficheroSegundoPlano = PersistenciaDatos.leeFichero(
+                if (PersistenciaDatos.leeFichero(
                         getApplication(),
-                        PersistenciaDatos.ficheroSegundoPlano);
-                if (ficheroSegundoPlano.length() == 0) {//El fichero no existe. Muestro el diálogo si es necesario
+                        PersistenciaDatos.ficheroSegundoPlano).length() == 0) {//El fichero no existe. Muestro el diálogo si es necesario
                     boolean dispositivoConProblemas = false;
                     for (Intent intent : Auxiliar.intentProblematicos()) {
                         if (getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY) != null) {
@@ -871,7 +909,7 @@ public class Maps extends AppCompatActivity implements
                         }
                     }
                     if(!dispositivoConProblemas)
-                        noVolverAPreguntar();
+                        noVuelvasAMostrarDialogoSegundoPlano();
                 }
             }
         }
@@ -973,7 +1011,6 @@ public class Maps extends AppCompatActivity implements
                         }
                     }
                 });
-
 
                 textoParaAltavoz = String.format(
                         "%s\n%s",
@@ -1279,46 +1316,54 @@ public class Maps extends AppCompatActivity implements
     @Override
     public void onResume() {
         super.onResume();
-        if (!noMolestar) {
-            checkPermissions();
-            locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-            if (map != null)
-                map.onResume();
-            if (!idZona.equals("") && locationManager != null) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
-            }
 
-            textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-                @Override
-                public void onInit(int status) {
-                    if(status < 0)
-                        Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
-                    else{
-                        textToSpeech.setLanguage(new Locale("spa", "ESP"));
-
-                        textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-                            @Override
-                            public void onStart(String utteranceId) {
-                                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_stop_24, null));
-                            }
-
-                            @Override
-                            public void onDone(String utteranceId) {
-                                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
-                            }
-
-                            @Override
-                            public void onError(String utteranceId) {
-                                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
-                            }
-                        });
-                    }
-                }
-            });
+        checkPermissions();
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        if (map != null)
+            map.onResume();
+        if (!idZona.equals("") && locationManager != null) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                    && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
         }
-        invalidateOptionsMenu();
+
+        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status < 0)
+                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                else{
+                    textToSpeech.setLanguage(new Locale("spa", "ESP"));
+
+                    textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                        @Override
+                        public void onStart(String utteranceId) {
+                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
+                                    context.getResources(), R.drawable.ic_stop_24, null));
+                        }
+
+                        @Override
+                        public void onDone(String utteranceId) {
+                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
+                                    context.getResources(), R.drawable.ic_speaker, null));
+                        }
+
+                        @Override
+                        public void onError(String utteranceId) {
+                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
+                                    context.getResources(), R.drawable.ic_speaker, null));
+                        }
+                    });
+                }
+            }
+        });
+
+        if(navigationView == null){
+            navigationView = findViewById(R.id.nvMapa);
+            navigationView.setNavigationItemSelectedListener(this);
+            navigationView.setOnCreateContextMenuListener(this);
+        }
+        ocultaOpcionInicioSesionSiIdentificado((navigationView.getMenu()));
     }
 
     /**
@@ -1700,19 +1745,19 @@ public class Maps extends AppCompatActivity implements
         new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
     }
 
-    /**
+    /*/**
      * Creación del menú en el layout
      * @param menu Menú a rellenar
      * @return Verdadero si se va a mostrar el menú
      */
-    @Override
+    /*@Override
     public boolean onCreateOptionsMenu(Menu menu){
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu, menu);
         return super.onCreateOptionsMenu(menu);
-    }
+    }*/
 
-    @Override
+    /*@Override
     public boolean onPrepareOptionsMenu(Menu menu){
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         MenuItem menuItem = menu.findItem(R.id.cerrarSesion);
@@ -1722,6 +1767,12 @@ public class Maps extends AppCompatActivity implements
             menuItem.setVisible(false);
         }
         return super.onPrepareOptionsMenu(menu);
+    }*/
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem menuItem){
+        onBackPressed();
+        return onOptionsItemSelected(menuItem);
     }
 
     /**
@@ -1768,6 +1819,23 @@ public class Maps extends AppCompatActivity implements
                     startActivityForResult(Login.googleSignInClient.getSignInIntent(), Login.requestAuth + 1);
                 }
                 return true;
+            case R.id.valora:
+                try {
+                    intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(
+                            "https://play.google.com/store/apps/details?id=" + getPackageName()));
+                    intent.setPackage("com.android.vending");
+                    startActivity(intent);
+                }catch (ActivityNotFoundException e){
+                    Toast.makeText(context, getResources().getString(R.string.noGooglePlay), Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            case R.id.comparte:
+                intent = new Intent(Intent.ACTION_SEND);
+                intent.putExtra(Intent.EXTRA_TEXT, context.getResources().getString(R.string.urlLanding));
+                intent.setType("text/plain");
+                startActivity(Intent.createChooser(intent, context.getResources().getString(R.string.app_name)));
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -1778,8 +1846,16 @@ public class Maps extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed(){
-        dialogoSalirAppActivo = true;
-        dialogoSalirApp.show();
+        if(drawerLayout.isDrawerOpen(GravityCompat.START))
+            drawerLayout.closeDrawer(GravityCompat.START);
+        else {
+            if (marcadorPulsado) {
+                ocultaInfoPuntoInteres();
+            } else {
+                dialogoSalirAppActivo = true;
+                dialogoSalirApp.show();
+            }
+        }
     }
 
     /**
