@@ -379,7 +379,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     private void snackBarLogin(int snack){
         Snackbar snackbar = Snackbar.make(findViewById(snack), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
-        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
+        snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
         snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -391,8 +391,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 startActivityForResult(intent, Login.requestAuth + 2);
             }
         });
-        snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary50));
-        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setActionTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondary50, null));
+        snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
         snackbar.show();
     }
 
@@ -519,7 +519,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
             }
 
             if(permisos.isEmpty())
-                new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
+                if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Ajustes.NO_MOLESTAR_pref, false))
+                    new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
             else
                 solicitaPermisoUbicacion();
         }
@@ -1018,8 +1019,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     private void pintaSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clPreview), R.string.app_name, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
-        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
+        snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
         snackbar.setText(texto);
         snackbar.show();
     }

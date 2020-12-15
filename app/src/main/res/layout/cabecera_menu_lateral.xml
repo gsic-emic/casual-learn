@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:layout_marginTop="@dimen/margen_texto">
+    <ImageView
+        android:id="@+id/ivCabecera"
+        android:layout_width="60dp"
+        android:layout_height="65dp"
+        android:src="@drawable/casual_learn_icono"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingHorizontal="10dp"
+        android:contentDescription="@string/app_name"
+        android:paddingBottom="@dimen/margen_texto" />
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:text="@string/app_name"
+        android:textAlignment="gravity"
+        android:gravity="center_vertical"
+        app:layout_constraintStart_toEndOf="@id/ivCabecera"
+        app:layout_constraintBottom_toBottomOf="@id/ivCabecera"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="@dimen/tama_titulo"
+        android:textColor="@color/texto"
+        android:paddingBottom="@dimen/margen_texto"/>
+    <View
+        app:layout_constraintBottom_toBottomOf="@id/ivCabecera"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

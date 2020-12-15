@@ -18,7 +18,7 @@
         android:textAlignment="center"
         android:padding="@dimen/margen_texto" />
 
-    <Switch
+    <androidx.appcompat.widget.SwitchCompat
         android:theme="@style/switchColor"
         android:id="@+id/switchNoMolestar"
         android:layout_width="wrap_content"

@@ -289,4 +289,8 @@
     <string name="vamos">Go</string>
     <string name="texto_segundo_plano"><![CDATA[Casual Learn has to run in the background in order to notify nearby tasks. We have detected that your phone can block this feature. If you wish, we can help you to find the app that manages this things. You need to allow Casual Learn to <b>run in the background</b> and <b>start automatically</b> (so the app works again when you turn on your device).<br><br>If you don\'t make this changes, Casual Learn won\'t be able to notify new tasks. Even so, you can continue using the app normally.]]></string>
     <string name="no_app_gestion">We have not found the management app…</string>
+    <string name="compartir_casual_learn">Share Casual Learn</string>
+    <string name="valora_la_app">Rate the app</string>
+    <string name="urlLanding" translatable="false">https://casuallearnapp.gsic.uva.es</string>
+    <string name="noGooglePlay">Error: you do not have install Google Play</string>
 </resources>

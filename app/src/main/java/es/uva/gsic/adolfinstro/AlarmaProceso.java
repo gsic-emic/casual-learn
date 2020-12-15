@@ -22,6 +22,7 @@ import android.os.Bundle;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -144,16 +145,18 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
      */
     public void activaAlarmaProceso(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if(alarmManager != null)
+        if(alarmManager != null) {
+            cancelaAlarmaProceso(context);
             alarmManager.setRepeating(
                     AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     10000,
                     intervaloComprobacion,
                     PendingIntent.getBroadcast(
-                                        context,
+                            context,
                             9995,
                             new Intent(context, AlarmaProceso.class),
-                    0));
+                            0));
+        }
     }
 
     /**
@@ -585,13 +588,13 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
-                        //.setSmallIcon(R.drawable.ic_walk_white)
                         .setSmallIcon(R.drawable.casual_learn_icono)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))
                         .setContentText(textoTarea)
-                        .setLargeIcon(iconoGrandeNotificacion(context.getResources().getDrawable(iconoTarea)));
+                        .setLargeIcon(iconoGrandeNotificacion(
+                                ResourcesCompat.getDrawable(context.getResources(), iconoTarea, null)));
 
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(
