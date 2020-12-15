@@ -2,6 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
@@ -129,6 +130,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
 
         setContentView(R.layout.activity_preview);
 
@@ -494,24 +496,32 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
             }
             //Compruebo permisos de localización en primer y segundo plano
             if(!(ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
             }
             //Comprobación para saber si el usuario se ha identificado
             if(idUsuario != null) {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.Q){
                     if(!(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
                         //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                     }
+                }
+                else {
+                    if (Build.VERSION.SDK_INT >= 30 && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                        if (!(ActivityCompat.checkSelfPermission(
+                                context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                                == PackageManager.PERMISSION_GRANTED)) {
+                            permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                        }
+                    }
+                }
             }
 
             if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){

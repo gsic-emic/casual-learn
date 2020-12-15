@@ -2,6 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
@@ -75,6 +76,8 @@ public class MapaNavegable extends AppCompatActivity {
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
         setContentView(R.layout.activity_mapa_navegable);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);

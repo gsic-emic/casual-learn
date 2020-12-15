@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -55,6 +56,8 @@ public class ListaTareas extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
         setContentView(R.layout.activity_lista_tareas);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
