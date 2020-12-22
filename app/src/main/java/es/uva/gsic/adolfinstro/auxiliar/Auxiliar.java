@@ -73,7 +73,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201203
+ * @version 20201222
  */
 public class Auxiliar {
 
@@ -81,6 +81,7 @@ public class Auxiliar {
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
+    public static String rutaContextos = direccionIP + "contextos";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
 
     public static final String id = "id";
@@ -109,7 +110,6 @@ public class Auxiliar {
     public static final String imagen = "imagen";
 
     public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
-
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
@@ -179,13 +179,7 @@ public class Auxiliar {
     public static final String comment = "comment";
     public static final String ficheroZona = "ficheroZona";
 
-
-
-
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
-
-
-    //private static final String[] listaFabricantes = {"huawei", "xiaomi", "samsung", "oneplus"};
 
     public static int incr = 0;
 

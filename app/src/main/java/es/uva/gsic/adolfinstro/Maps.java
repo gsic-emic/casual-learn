@@ -125,7 +125,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20201211
+ * @version 20201222
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -237,9 +237,11 @@ public class Maps extends AppCompatActivity implements
     /** Objeto para saber si el diálogo sobre la gestión de energía está activo */
     private boolean dialogoSegundoPlanoVisible;
 
-    DrawerLayout drawerLayout;
+    private DrawerLayout drawerLayout;
 
-    NavigationView navigationView;
+    private NavigationView navigationView;
+
+    private Uri rutaAlPunto;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -998,6 +1000,11 @@ public class Maps extends AppCompatActivity implements
                     pintaTareas(puntoInteres.getString(Auxiliar.id));
                 }
 
+                rutaAlPunto = Uri.parse("google.navigation:q="
+                        + puntoInteres.getDouble(Auxiliar.latitud) + ","
+                        + puntoInteres.getDouble(Auxiliar.longitud) +
+                        "&mode=r");
+
                 ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
                         context.getResources(),
                         R.drawable.ic_speaker,
@@ -1688,6 +1695,13 @@ public class Maps extends AppCompatActivity implements
             case R.id.btMasInfoPunto:
                 ocultaReducido();
                 break;
+            case R.id.btRutaMaps:
+                try {
+                    Intent intentRuta = new Intent(Intent.ACTION_VIEW, rutaAlPunto);
+                    startActivity(Intent.createChooser(intentRuta, ""));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             default:
                 break;
         }
@@ -1964,13 +1978,12 @@ public class Maps extends AppCompatActivity implements
     private void peticionPuntosInteres(final BoundingBox caja, final String nombre){
         List<String> keys = new ArrayList<>();
         List<Object> objects = new ArrayList<>();
-        keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionPuntos);
         keys.add(Auxiliar.norte); objects.add(caja.getLatNorth());
         keys.add(Auxiliar.este); objects.add(caja.getLonEast());
         keys.add(Auxiliar.sur); objects.add(caja.getLatSouth());
         keys.add(Auxiliar.oeste); objects.add(caja.getLonWest());
 
-        String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
+        String url = Auxiliar.creaQuery(Auxiliar.rutaContextos, keys, objects);
 
         synchronized ((Object)numeroCuadriculasPendientes) {
             ++numeroCuadriculasPendientes;
