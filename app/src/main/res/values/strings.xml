@@ -23,9 +23,9 @@
     <string name="gsic">GSIC/EMIC</string>
     <string name="respuestaVacia">The answer is empty!!</string>
     <string name="respuestaG">Saved answer</string>
-    <string name="noMolestar">Don\'t Disturb</string>
+    <string name="noMolestar">Don\'t Disturb with new tasks</string>
     <string name="intervalo">Interval between tasks</string>
-    <string name="intervaloResumen">Minimum interval between each task (hours)</string>
+    <string name="intervaloResumen">Minimum interval between each task</string>
     <string name="textoNotificacionPersistente">Looking for new tasks..</string>
     <string name="Usuario">User</string>
     <string name="Password">Password</string>
@@ -230,6 +230,7 @@
     <string name="logotipo_eslogan">Logo Slogan</string>
     <string name="botonCentrar">Button to center the map on the user\'s position</string>
     <string name="botonNavegar">Button to start the navigation to the task location. The navigation is done in another app.</string>
+    <string name="botonAmpliar">Button to expand the map.</string>
     <string name="botonCompartir">Button to share the answer</string>
     <string name="botonTwitter">Button to share the answer in Twitter</string>
     <string name="botonInstagram">Button to share the answer in Instagram</string>
@@ -257,7 +258,7 @@
     <string name="titulo_compartir_preferencias">Answers publication</string>
     <string name="compartir_id_portafolio">Click to share the portfolio ID</string>
     <string name="idporta_no_disponible">The portfolio ID is not yet available. Try again in a few minutes</string>
-    <string name="resumen_no_molestar">We will not show you any notification again until you disable this preference</string>
+    <string name="resumen_no_molestar">We will not show you any notification of near tasks until you disable this preference</string>
     <string name="copiar_portapapeles">Copy to clipboard</string>
     <string name="copiado_al_porta">Copied to clipboard</string>
     <string name="public_answer">Public answer</string>

@@ -8,7 +8,6 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -51,12 +50,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 
 import java.util.ArrayList;
@@ -281,19 +278,16 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 double longitud = tarea.getDouble(Auxiliar.longitud);
                 GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
 
-                mapController.setCenter(posicionTarea);
                 mapController.setZoom(17.5);
+                mapController.setCenter(posicionTarea);
                 map.setMaxZoomLevel(17.5);
                 map.setMinZoomLevel(17.5);
                 map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-
                 map.setMultiTouchControls(false);
-
                 map.setTilesScaledToDpi(true);
-
                 map.setClickable(false);
                 map.setEnabled(false);
-
+                map.invalidate();
 
                 TextView texto = findViewById(R.id.tituloPreview);
                 texto.setText(tarea.getString(Auxiliar.titulo));
@@ -312,20 +306,21 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 //marker.setTitle(extras.getString(Auxiliar.titulo));
                 marker.setInfoWindow(null);
 
-                map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+                /*map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
                     @SuppressLint("MissingPermission")
                     @Override
                     public boolean singleTapConfirmedHelper(GeoPoint p) {
-                        saltaNavegacion();
+                        //saltaNavegacion();
                         return false;
                     }
 
                     @Override
                     public boolean longPressHelper(GeoPoint p) {
-                        saltaNavegacion();
+                        //saltaNavegacion();
                         return false;
                     }
-                }));
+                }));*/
+
                 map.getOverlays().add(marker);
 
                 if (!getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion)) {
@@ -679,6 +674,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             Auxiliar.id,
                             Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
                     startActivity(intent);
+                    break;
+                case R.id.btAmpliarMapa:
+                    saltaNavegacion();
                     break;
                 default:
                     if (idUsuario == null) {

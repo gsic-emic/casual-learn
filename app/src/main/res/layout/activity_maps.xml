@@ -163,7 +163,8 @@
                     android:visibility="gone"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/tvPuntoTitulo"/>
+                    app:layout_constraintTop_toBottomOf="@id/tvPuntoTitulo"
+                    android:onClick="boton"/>
 
                 <androidx.constraintlayout.widget.Barrier
                     android:id="@+id/barrierMapa"
@@ -183,7 +184,7 @@
                     android:layout_margin="@dimen/margen_texto"
                     android:onClick="boton"/>
 
-                <Button
+                <!--<Button
                     android:id="@+id/btMasInfoPunto"
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
@@ -195,7 +196,7 @@
                     android:visibility="gone"
                     app:layout_constraintTop_toTopOf="@id/btRutaMaps"
                     app:layout_constraintBottom_toBottomOf="@id/btRutaMaps"
-                    app:layout_constraintEnd_toStartOf="@id/btRutaMaps"/>
+                    app:layout_constraintEnd_toStartOf="@id/btRutaMaps"/>-->
 
                 <TextView
                     android:id="@+id/tvPuntoDistancia"

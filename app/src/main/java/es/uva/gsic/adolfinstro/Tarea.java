@@ -270,6 +270,7 @@ public class Tarea extends AppCompatActivity implements
                                 activaBtTerminar();
                             break;
                         case Auxiliar.tipoVideo:
+                        case Auxiliar.tipoPreguntaVideo:
                             recyclerView.setVisibility(View.VISIBLE);
                             adaptadorVideos = new AdaptadorVideosCompletados(this, imagenesCamaraList);
                             adaptadorVideos.setClickListenerVideo(this);
@@ -299,6 +300,9 @@ public class Tarea extends AppCompatActivity implements
                         break;
                     case Auxiliar.tipoPreguntaImagen:
                     case Auxiliar.tipoPreguntaImagenes:
+                    case Auxiliar.tipoPreguntaVideo:
+                        if(tipo.equals(Auxiliar.tipoPreguntaVideo))
+                            btCamara.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_videocam_white_24dp, 0, 0, 0);
                         btCamara.setVisibility(View.VISIBLE);
                         break;
                     case Auxiliar.tipoImagen:
@@ -403,7 +407,7 @@ public class Tarea extends AppCompatActivity implements
                     permisos.add(Manifest.permission.CAMERA);
                     textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_camara));
                 }
-                if(tipo.equals(Auxiliar.tipoVideo) && !(ActivityCompat.checkSelfPermission(
+                if((tipo.equals(Auxiliar.tipoVideo) || tipo.equals(Auxiliar.tipoPreguntaVideo)) && !(ActivityCompat.checkSelfPermission(
                         this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.RECORD_AUDIO);
                     textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_micro));
@@ -423,6 +427,7 @@ public class Tarea extends AppCompatActivity implements
                             realizaCaptura(2);
                             break;
                         case Auxiliar.tipoVideo:
+                        case Auxiliar.tipoPreguntaVideo:
                             realizaVideo();
                             break;
                     }
@@ -470,7 +475,7 @@ public class Tarea extends AppCompatActivity implements
                 break;
             case R.id.btTerminar:
                 try {
-                    if(tipo.equals(Auxiliar.tipoPreguntaImagen) || tipo.equals(Auxiliar.tipoPreguntaImagenes)){
+                    if(tipo.equals(Auxiliar.tipoPreguntaImagen) || tipo.equals(Auxiliar.tipoPreguntaImagenes) || tipo.equals(Auxiliar.tipoPreguntaVideo)){
                         if(etRespuestaTextual.getText().toString().isEmpty()){
                             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
                         }else{
@@ -780,21 +785,27 @@ public class Tarea extends AppCompatActivity implements
             case 2://imagen multiple || preguntaImágenes
                 switch (resultCode){
                     case RESULT_OK:
-                        respuesta = PersistenciaDatos.recuperaTarea(
-                                getApplication(),
-                                PersistenciaDatos.ficheroNotificadas,
-                                idTarea,
-                                idUsuario);
-                        if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
-                                respuesta, photoURI.toString(), Auxiliar.uri,
-                                Context.MODE_PRIVATE))
+                        try {
+                            respuesta = PersistenciaDatos.recuperaTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNotificadas,
+                                    idTarea,
+                                    idUsuario);
+                            if(!PersistenciaDatos.guardaTareaRespuesta(getApplication(), PersistenciaDatos.ficheroNotificadas,
+                                    respuesta, photoURI.toString(), Auxiliar.uri,
+                                    Context.MODE_PRIVATE))
+                                mensajeError();
+                            else {
+                                activaBtTerminar();
+                                desbloqueaBt();
+                                imagenesCamaraList.add(new ImagenesCamara(photoURI, View.VISIBLE));
+                                actualizaContenedorImagenes(-1);
+                                muestraSnackBar(getString(R.string.imagenGN));
+                            }
+                        }catch (Exception e){
                             mensajeError();
-                        else {
-                            activaBtTerminar();
-                            desbloqueaBt();
-                            imagenesCamaraList.add(new ImagenesCamara(photoURI, View.VISIBLE));
-                            actualizaContenedorImagenes(-1);
-                            muestraSnackBar(getString(R.string.imagenGN));
+                            if(respuesta != null)
+                                PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroNotificadas, respuesta);
                         }
                         break;
                     case RESULT_CANCELED:
@@ -1058,6 +1069,7 @@ public class Tarea extends AppCompatActivity implements
                     imagenesCamaraList.remove(position);
                     switch (tipo){
                         case Auxiliar.tipoVideo:
+                        case Auxiliar.tipoPreguntaVideo:
                             desbloqueaBt();
                             actualizaContenedorVideos(position);
                             btTerminar.setVisibility(View.GONE);
