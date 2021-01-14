@@ -81,10 +81,11 @@ public class CompruebaEnvios extends BroadcastReceiver {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if(alarmManager != null) {
             cancelaComrpuebaEnvios(context);
+            //10 minutos entre cada comprobación
             alarmManager.setRepeating(
                     AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     5000,
-                    60000,
+                    600000,
                     PendingIntent.getBroadcast(
                             context,
                             9985,
