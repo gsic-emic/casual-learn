@@ -41,7 +41,6 @@
             android:minHeight="48dp"
             android:maxHeight="100dp"
             android:gravity="center_vertical"
-            android:drawableStart="@drawable/ic_baseline_copyright_24"
             android:textColor="@color/white"
             android:drawablePadding="5dp"
             android:textSize="12sp"
@@ -51,7 +50,8 @@
             android:background="@color/blackTransparente25"
             android:visibility="gone"
             android:contentDescription="@string/licenciaImagen"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            app:drawableStartCompat="@drawable/ic_baseline_copyright_24" />
 
         <ImageView
             android:id="@+id/ivWikiPreview"
@@ -94,7 +94,7 @@
         <org.osmdroid.views.MapView
             android:id="@+id/mapPreview"
             android:layout_width="0dp"
-            android:layout_height="90dp"
+            android:layout_height="120dp"
             android:layout_marginTop="5dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -109,6 +109,20 @@
             app:layout_constraintBottom_toBottomOf="@id/mapPreview"
             app:layout_constraintStart_toStartOf="@id/mapPreview"
             android:textSize="12sp"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btAmpliarMapa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/mapPreview"
+            app:layout_constraintEnd_toEndOf="@id/mapPreview"
+            app:backgroundTint="@color/colorSecondary"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            app:fabSize="auto"
+            app:srcCompat="@drawable/ic_ampliar"
+            android:onClick="boton"
+            android:contentDescription="@string/botonAmpliar"/>
 
         <TextView
             android:id="@+id/textoPreview"

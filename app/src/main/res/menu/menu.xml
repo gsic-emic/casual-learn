@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:id="@+id/grupo_ajustes"
-        android:checkableBehavior="none">
-        <item
-            android:id="@+id/ajustes"
-            android:icon="@drawable/ic_baseline_settings_24"
-            android:title="@string/settings" />
-    </group>
     <group android:id="@+id/grupo_listas"
         android:checkableBehavior="none">
         <item android:id="@+id/menuTareasCompletadas"
@@ -22,8 +15,13 @@
             android:title="@string/tareasRechazadas"
             android:icon="@drawable/ic_rechazadas"/>
     </group>
+
     <group android:id="@+id/grupo_acerca"
         android:checkableBehavior="none">
+        <item
+            android:id="@+id/ajustes"
+            android:icon="@drawable/ic_baseline_settings_24"
+            android:title="@string/settings" />
         <item android:id="@+id/comparte"
             android:title="@string/compartir_casual_learn"
             android:icon="@drawable/ic_share_white"/>
@@ -34,6 +32,7 @@
             android:title="@string/by"
             android:icon="@drawable/ic_info_black_24dp"/>
     </group>
+
     <group android:id="@+id/grupo_iniciaSesion"
         android:checkableBehavior="none">
         <item android:id="@+id/cerrarSesion"

@@ -21,9 +21,9 @@
     <string name="gsic">GSIC/EMIC</string>
     <string name="respuestaVacia">La respuesta no puede estar vacía</string>
     <string name="respuestaG">Respuesta almacenada</string>
-    <string name="noMolestar">No molestar</string>
+    <string name="noMolestar">No molestar con nuevas tareas</string>
     <string name="intervalo">Intervalo mínimo entre cada nueva notificación de tarea</string>
-    <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas (horas)</string>
+    <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas</string>
     <string name="textoNotificacionPersistente">Buscando nuevas tareas…</string>
     <string name="Password">Contraseña</string>
     <string name="Usuario">Usuario</string>
@@ -205,6 +205,7 @@
     <string name="logotipo_eslogan">Logo con eslogan</string>
     <string name="botonCentrar">Botón para centrar el mapa en la ubicación del usuario</string>
     <string name="botonNavegar">Botón para iniciar la navegación hasta la posición de la tarea. La navegación se realiza en otra aplicación.</string>
+    <string name="botonAmpliar">Botón para ampliar el mapa.</string>
     <string name="botonCompartir">Botón para compartir la respuesta en las distintas redes sociales</string>
     <string name="botonTwitter">Botón para compartir la respuesta en Twitter</string>
     <string name="botonInstagram">Botón para compartir la respuesta en Instagram</string>
@@ -233,7 +234,7 @@
     <string name="titulo_compartir_preferencias">Publicación de las respuestas</string>
     <string name="compartir_id_portafolio">Pulsa para compartir el identificador del portafolio</string>
     <string name="idporta_no_disponible">El identificador del portafolio no está disponible. Vuelve a probar en unos minutos</string>
-    <string name="resumen_no_molestar">No te mostraremos notificaciones hasta que no deshabilites esta preferencia</string>
+    <string name="resumen_no_molestar">No te mostraremos notificaciones de tareas cercanas hasta que no deshabilites esta preferencia</string>
     <string name="copiar_portapapeles">Copiar al portapapeles</string>
     <string name="copiado_al_porta">Copiado al portapapeles</string>
     <string name="public_answer">Publicar en el portafolio</string>

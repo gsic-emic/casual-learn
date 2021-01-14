@@ -78,6 +78,8 @@
         </activity>
 
         <receiver android:name=".AlarmaProceso" />
+        <receiver android:name=".CompruebaEnvios" />
+
         <receiver
             android:name=".RecepcionNotificaciones"
             android:enabled="true"

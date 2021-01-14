@@ -42,7 +42,6 @@ import android.speech.tts.UtteranceProgressListener;
 import android.text.Html;
 import android.util.DisplayMetrics;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -125,7 +124,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20201211
+ * @version 20210113
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -200,7 +199,7 @@ public class Maps extends AppCompatActivity implements
     /** Objeto para el texto reducido del punto de interés*/
     TextView textoPuntoReducido;
     /** Objeto para mostrar la información completa del punto de interés*/
-    Button masInfo;
+    //Button masInfo;
 
     /** Vista de los puntos de interés */
     ScrollView svPunto;
@@ -237,9 +236,11 @@ public class Maps extends AppCompatActivity implements
     /** Objeto para saber si el diálogo sobre la gestión de energía está activo */
     private boolean dialogoSegundoPlanoVisible;
 
-    DrawerLayout drawerLayout;
+    private DrawerLayout drawerLayout;
 
-    NavigationView navigationView;
+    private NavigationView navigationView;
+
+    private Uri rutaAlPunto;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -467,7 +468,7 @@ public class Maps extends AppCompatActivity implements
         textoPunto = findViewById(R.id.tvPuntoTexto);
         distanciaPunto = findViewById(R.id.tvPuntoDistancia);
         textoPuntoReducido = findViewById(R.id.tvPuntoTextoReducido);
-        masInfo = findViewById(R.id.btMasInfoPunto);
+        //masInfo = findViewById(R.id.btMasInfoPunto);
 
         ivWiki = findViewById(R.id.ivWikipediaMapa);
         ivSpeaker = findViewById(R.id.ivSpeaker);
@@ -559,7 +560,7 @@ public class Maps extends AppCompatActivity implements
                         }
                     });
                     snackbar.setActionTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondary50, null));
-                    snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
+                    snackbar.getView().setBackground(dameDrawable(R.drawable.snack));
                     snackbar.show();
                 }
             }
@@ -637,7 +638,7 @@ public class Maps extends AppCompatActivity implements
      */
     private void ocultaReducido() {
         textoPuntoReducido.setVisibility(View.GONE);
-        masInfo.setVisibility(View.GONE);
+        //masInfo.setVisibility(View.GONE);
         textoPunto.setVisibility(View.VISIBLE);
     }
 
@@ -671,7 +672,7 @@ public class Maps extends AppCompatActivity implements
     private void pintaSnackBar(String texto) {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
         snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
-        snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
+        snackbar.getView().setBackground(dameDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();
     }
@@ -998,10 +999,12 @@ public class Maps extends AppCompatActivity implements
                     pintaTareas(puntoInteres.getString(Auxiliar.id));
                 }
 
-                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
-                        context.getResources(),
-                        R.drawable.ic_speaker,
-                        null));
+                rutaAlPunto = Uri.parse("google.navigation:q="
+                        + puntoInteres.getDouble(Auxiliar.latitud) + ","
+                        + puntoInteres.getDouble(Auxiliar.longitud) +
+                        "&mode=r");
+
+                ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
 
                 svPunto.fullScroll(ScrollView.FOCUS_UP);
 
@@ -1019,7 +1022,7 @@ public class Maps extends AppCompatActivity implements
                                 textoPuntoReducido.setText(textoPunto.getText());
                                 textoPunto.setVisibility(View.GONE);
                                 textoPuntoReducido.setVisibility(View.VISIBLE);
-                                masInfo.setVisibility(View.VISIBLE);
+                                //masInfo.setVisibility(View.VISIBLE);
                             }
                         }
                     }
@@ -1236,7 +1239,16 @@ public class Maps extends AppCompatActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    /**
+     * Método para obtener un objeto que se pueda dibujar compatible con la versión más antigua
+     * soportada por la app (API 19). Especialmente util para los xml.
+     * @param id Identificador del recurso a representar.
+     * @return Objeto que se puede representar
+     */
+    private Drawable dameDrawable(int id){
+        return ResourcesCompat.getDrawable(context.getResources(), id, null);
     }
 
     /**
@@ -1246,42 +1258,46 @@ public class Maps extends AppCompatActivity implements
      * @return Representación gráfica del marcador
      */
     private Bitmap generaBitmapMarkerNumero(int size, boolean especial) {
-        Paint paint = new Paint();
         Drawable drawable;
+        if(especial){
+            if (size < 0)
+                drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
+            else if (size == 0)
+                drawable = dameDrawable(R.drawable.ic_marcador_uno);
+            else if (size <= 10)
+                drawable = dameDrawable(R.drawable.ic_marcador100_especial);
+            else if (size <= 20)
+                drawable = dameDrawable(R.drawable.ic_marcador300_especial);
+            else if (size <= 40)
+                drawable = dameDrawable(R.drawable.ic_marcador500_especial);
+            else if (size <= 70)
+                drawable = dameDrawable(R.drawable.ic_marcador700_especial);
+            else
+                drawable = dameDrawable(R.drawable.ic_marcador900_especial);
+        }else {
+            if (size < 0)
+                drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
+            else if (size == 0)
+                drawable = dameDrawable(R.drawable.ic_marcador_uno);
+            else if (size <= 10)
+                drawable = dameDrawable(R.drawable.ic_marcador100);
+            else if (size <= 20)
+                drawable = dameDrawable(R.drawable.ic_marcador300);
+            else if (size <= 40)
+                drawable = dameDrawable(R.drawable.ic_marcador500);
+            else if (size <= 70)
+                drawable = dameDrawable(R.drawable.ic_marcador700);
+            else
+                drawable = dameDrawable(R.drawable.ic_marcador900);
+        }
+
+        size = Math.abs(size);
+
+        Paint paint = new Paint();
         if (size > 40)
             paint.setARGB(255, 255, 255, 255);
         else
             paint.setARGB(255, 0, 0, 0);
-        if(especial){
-            if (size < 0)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_pulsado_especial, null);
-            else if (size <= 10)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador100_especial, null);
-            else if (size <= 20)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador300_especial, null);
-            else if (size <= 40)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador500_especial, null);
-            else if (size <= 70)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador700_especial, null);
-            else
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador900_especial, null);
-        }else {
-            if (size < 0)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador_pulsado, null);
-            else if (size <= 10)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador100, null);
-            else if (size <= 20)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador300, null);
-            else if (size <= 40)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador500, null);
-            else if (size <= 70)
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador700, null);
-            else
-                drawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_marcador900, null);
-        }
-
-        if (size<0)
-            size*=-1;
 
         assert drawable != null;
         Bitmap bitmap = Bitmap.createBitmap(
@@ -1351,20 +1367,17 @@ public class Maps extends AppCompatActivity implements
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
                         public void onStart(String utteranceId) {
-                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
-                                    context.getResources(), R.drawable.ic_stop_24, null));
+                            ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_stop_24));
                         }
 
                         @Override
                         public void onDone(String utteranceId) {
-                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
-                                    context.getResources(), R.drawable.ic_speaker, null));
+                            ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
                         }
 
                         @Override
                         public void onError(String utteranceId) {
-                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(
-                                    context.getResources(), R.drawable.ic_speaker, null));
+                            ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
                         }
                     });
                 }
@@ -1555,18 +1568,28 @@ public class Maps extends AppCompatActivity implements
         Marcador marcador;
         double latitud, longitud;
 
+        JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroCompletadas);
+        String nombreTareaCompletada, nombrePuntoInteres;
         boolean anterior = false;
         try {
+            int nTareasCompletadas;
             while (todasTareas.length() > 0) {//Barro todas las tareas disponibles en el fichero
                 puntoInteres = (JSONObject)todasTareas.remove(0);
                 latitud = puntoInteres.getDouble(Auxiliar.latitud);
                 longitud = puntoInteres.getDouble(Auxiliar.longitud);
+                nombrePuntoInteres = puntoInteres.getString(Auxiliar.contexto);
+                nTareasCompletadas = 0;
+                for(int i = 0; i < tareasCompletadas.length(); i++){
+                    nombreTareaCompletada = tareasCompletadas.getJSONObject(i).getString(Auxiliar.contexto);
+                    if(nombreTareaCompletada.equals(nombrePuntoInteres))
+                        ++nTareasCompletadas;
+                }
 
                 if (listaMarcadores.isEmpty()) {
                     marcador = new Marcador();
                     marcador.setTitulo(puntoInteres.getString(Auxiliar.label));
                     marcador.setPosicionMarcador(puntoInteres.getDouble(Auxiliar.latitud), puntoInteres.getDouble(Auxiliar.longitud));
-                    marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
+                    marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas) - nTareasCompletadas);
                     listaMarcadores.add(marcador);
                 } else {
                     for (int i = 0; i < listaMarcadores.size(); i++) {
@@ -1574,7 +1597,7 @@ public class Maps extends AppCompatActivity implements
                         marcador = listaMarcadores.get(i);
                         if (latitud == marcador.getLatitud() &&
                                 longitud == marcador.getLongitud()) { //La tarea es de la misma posición
-                            marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
+                            marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas) - nTareasCompletadas);
                             listaMarcadores.set(i, marcador);
                             anterior = true;
                             break;
@@ -1584,7 +1607,7 @@ public class Maps extends AppCompatActivity implements
                                     latitud, longitud)
                                     <= nivelZum) { //Se agrega al marcador ya que se debe agrupar
                                 marcador.setTitulo(getString(R.string.agrupacionPuntos));
-                                marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
+                                marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas) - nTareasCompletadas);
 
                                 listaMarcadores.set(i, marcador);
                                 anterior = true;
@@ -1596,7 +1619,7 @@ public class Maps extends AppCompatActivity implements
                         marcador = new Marcador();
                         marcador.setTitulo(puntoInteres.getString(Auxiliar.label));
                         marcador.setPosicionMarcador(puntoInteres.getDouble(Auxiliar.latitud), puntoInteres.getDouble(Auxiliar.longitud));
-                        marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas));
+                        marcador.agregaTareaAlMarcador(puntoInteres, puntoInteres.getInt(Auxiliar.nTareas) - nTareasCompletadas);
                         listaMarcadores.add(marcador);
                     }
                 }
@@ -1626,7 +1649,7 @@ public class Maps extends AppCompatActivity implements
                 textToSpeech.stop();
             }
             if(ivSpeaker != null)
-                ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
             if(locationManager != null)
                 locationManager.removeUpdates(this);
         }
@@ -1672,7 +1695,7 @@ public class Maps extends AppCompatActivity implements
                 if(textToSpeech != null) {
                     if(textToSpeech.isSpeaking()) {
                         textToSpeech.stop();
-                        ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                        ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
                     }else{
                         if (textoParaAltavoz != null && !textoParaAltavoz.equals("")) {
                             HashMap<String, String> map = new HashMap<>();
@@ -1685,9 +1708,16 @@ public class Maps extends AppCompatActivity implements
             case R.id.ivWikipediaMapa:
                 Auxiliar.navegadorInterno(this, enlaceWiki);
                 break;
-            case R.id.btMasInfoPunto:
+            case R.id.tvPuntoTextoReducido:
                 ocultaReducido();
                 break;
+            case R.id.btRutaMaps:
+                try {
+                    Intent intentRuta = new Intent(Intent.ACTION_VIEW, rutaAlPunto);
+                    startActivity(Intent.createChooser(intentRuta, ""));
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             default:
                 break;
         }
@@ -1964,13 +1994,12 @@ public class Maps extends AppCompatActivity implements
     private void peticionPuntosInteres(final BoundingBox caja, final String nombre){
         List<String> keys = new ArrayList<>();
         List<Object> objects = new ArrayList<>();
-        keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionPuntos);
         keys.add(Auxiliar.norte); objects.add(caja.getLatNorth());
         keys.add(Auxiliar.este); objects.add(caja.getLonEast());
         keys.add(Auxiliar.sur); objects.add(caja.getLatSouth());
         keys.add(Auxiliar.oeste); objects.add(caja.getLonWest());
 
-        String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
+        String url = Auxiliar.creaQuery(Auxiliar.rutaContextos, keys, objects);
 
         synchronized ((Object)numeroCuadriculasPendientes) {
             ++numeroCuadriculasPendientes;
