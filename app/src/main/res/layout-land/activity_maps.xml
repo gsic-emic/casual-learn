@@ -84,6 +84,21 @@
             app:srcCompat="@drawable/ic_my_location_black_72dp"
             android:contentDescription="@string/botonCentrar"/>
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btNavegarMaps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="15dp"
+            app:fabSize="mini"
+            android:visibility="gone"
+            android:onClick="boton"
+            app:backgroundTint="@color/white"
+            app:layout_constraintEnd_toStartOf="@id/guiaMapaV"
+            app:layout_constraintTop_toTopOf="@id/clIdentificateMapa"
+            app:srcCompat="@drawable/ic_navigation_sec"
+            android:contentDescription="@string/botonNavegar"/>
+
         <ScrollView
             android:id="@+id/svPunto"
             android:layout_width="0dp"
@@ -122,7 +137,7 @@
                     android:minHeight="48dp"
                     android:layout_width="0dp"
                     android:paddingHorizontal="5dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="10dp"
                     android:textSize="20sp"
                     android:textAlignment="gravity"
                     android:gravity="center"
@@ -148,6 +163,7 @@
                     android:id="@+id/tvPuntoTexto"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
                     android:paddingHorizontal="@dimen/margen_texto"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -157,6 +173,7 @@
                     android:id="@+id/tvPuntoTextoReducido"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
                     android:paddingHorizontal="@dimen/margen_texto"
                     android:maxLines="3"
                     android:ellipsize="end"
@@ -173,31 +190,6 @@
                     app:barrierDirection="bottom"
                     app:constraint_referenced_ids="tvPuntoTexto, tvPuntoTextoReducido"/>
 
-                <androidx.appcompat.widget.AppCompatImageButton
-                    android:id="@+id/btRutaMaps"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    app:srcCompat="@drawable/ic_navigation_sec"
-                    android:background="@drawable/boton_secundario"
-                    app:layout_constraintTop_toBottomOf="@id/barrierMapa"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_margin="@dimen/margen_texto"
-                    android:onClick="boton"/>
-
-                <!--<Button
-                    android:id="@+id/btMasInfoPunto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="48dp"
-                    android:background="@drawable/boton_rojo"
-                    android:text="@string/masInfo"
-                    android:layout_gravity="end"
-                    android:layout_margin="@dimen/margen_texto"
-                    android:onClick="boton"
-                    android:visibility="gone"
-                    app:layout_constraintTop_toTopOf="@id/btRutaMaps"
-                    app:layout_constraintBottom_toBottomOf="@id/btRutaMaps"
-                    app:layout_constraintEnd_toStartOf="@id/btRutaMaps"/>-->
-
                 <TextView
                     android:id="@+id/tvPuntoDistancia"
                     android:layout_width="0dp"
@@ -207,7 +199,7 @@
                     android:textAlignment="textEnd"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/btRutaMaps"/>
+                    app:layout_constraintTop_toBottomOf="@id/barrierMapa"/>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvTareasMapa"

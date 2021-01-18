@@ -209,8 +209,10 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                                 public void onLocationChanged(Location location) {
                                     //Fundamental eliminar la actualización antes de continuar para que
                                     // no entre más de una vez en la comprobación
-                                    locationManager.removeUpdates(locationListener);
-                                    compruebaTareas(location);
+                                    if(location.getAccuracy() < 50) {
+                                        locationManager.removeUpdates(locationListener);
+                                        compruebaTareas(location);
+                                    }
                                 }
 
                                 @Override
