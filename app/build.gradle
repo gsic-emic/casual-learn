@@ -15,8 +15,8 @@ android {
         applicationId "es.uva.gsic.adolfinstro"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 32
-        versionName "1.1.7"
+        versionCode 33
+        versionName "1.1.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
@@ -35,6 +35,10 @@ dependencies {
     // No lo actualices que si no no funciona para versiones anteriores a android O
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.7'
 }
+
+/*dependencies {
+    implementation 'id.zelory:compressor:2.1.0'
+}*/
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

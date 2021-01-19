@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
 
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +44,7 @@ public class Ajustes extends AppCompatActivity
     @Override
     public void onCreate(Bundle sIS){
         super.onCreate(sIS);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         setContentView(R.layout.activity_ajustes);
         getSupportFragmentManager().beginTransaction().replace(R.id.container_ajustes, new AjustesFragment()).commit();
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);

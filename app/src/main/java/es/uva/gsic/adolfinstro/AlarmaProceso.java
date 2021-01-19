@@ -22,6 +22,7 @@ import android.os.Bundle;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -29,6 +30,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +39,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
@@ -47,7 +50,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20201123
+ * @version 20210111
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */
@@ -61,8 +64,6 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     private final String idInstanteNotAuto = "instanteNotAuto";
 
     private final int intervaloComprobacion = 120000;
-
-    private boolean enviaWifi;
 
     LocationManager locationManager;
 
@@ -105,36 +106,6 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
             onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
             onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
             posicionamiento();
-            compruebaRespuestasSinEnviar(application, context);
-        }
-    }
-
-    /**
-     * Método para enviar al servidor las respuetas del usuario que no se han podido enviar antes.
-     * @param application App
-     * @param context Contexto
-     */
-    private void compruebaRespuestasSinEnviar(Application application, Context context) {
-        int tipoConectividad = Auxiliar.tipoConectividad(context);
-
-        if(tipoConectividad == 0 || (tipoConectividad == 1 && !enviaWifi)){
-            JSONArray respuestasPendientes = PersistenciaDatos.leeFichero(application, PersistenciaDatos.ficheroSinEnviar);
-            if(respuestasPendientes.length() > 0) {
-                JSONObject tareaPendiente;
-                for (int i = 0; i < respuestasPendientes.length(); i++) {
-                    try {
-                        tareaPendiente = respuestasPendientes.getJSONObject(i);
-                        Auxiliar.enviaResultados(application, context, tareaPendiente.getString(Auxiliar.id));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                respuestasPendientes = new JSONArray();
-                PersistenciaDatos.guardaFichero(application,
-                        PersistenciaDatos.ficheroSinEnviar,
-                        respuestasPendientes,
-                        Context.MODE_PRIVATE);
-            }
         }
     }
 
@@ -144,16 +115,18 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
      */
     public void activaAlarmaProceso(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if(alarmManager != null)
+        if(alarmManager != null) {
+            cancelaAlarmaProceso(context);
             alarmManager.setRepeating(
                     AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     10000,
                     intervaloComprobacion,
                     PendingIntent.getBroadcast(
-                                        context,
+                            context,
                             9995,
                             new Intent(context, AlarmaProceso.class),
-                    0));
+                            0));
+        }
     }
 
     /**
@@ -188,9 +161,6 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 if(noMolestar){
                     new AlarmaProceso().cancelaAlarmaProceso(context);
                 }
-                break;
-            case Ajustes.WIFI_pref:
-                enviaWifi = sharedPreferences.getBoolean(key, false);
                 break;
             default:
                 break;
@@ -239,8 +209,10 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                                 public void onLocationChanged(Location location) {
                                     //Fundamental eliminar la actualización antes de continuar para que
                                     // no entre más de una vez en la comprobación
-                                    locationManager.removeUpdates(locationListener);
-                                    compruebaTareas(location);
+                                    if(location.getAccuracy() < 50) {
+                                        locationManager.removeUpdates(locationListener);
+                                        compruebaTareas(location);
+                                    }
                                 }
 
                                 @Override
@@ -336,7 +308,6 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         if(idUsuario != null) {
             List<String> keys = new ArrayList<>();
             List<Object> objects = new ArrayList<>();
-            keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionPersonalizadas);
             keys.add(Auxiliar.norte); objects.add(location.getLatitude() + 0.00325);
             keys.add(Auxiliar.este); objects.add(location.getLongitude() + 0.00325);
             keys.add(Auxiliar.sur); objects.add(location.getLatitude() - 0.00325);
@@ -585,13 +556,15 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
-                        //.setSmallIcon(R.drawable.ic_walk_white)
                         .setSmallIcon(R.drawable.casual_learn_icono)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))
                         .setContentText(textoTarea)
-                        .setLargeIcon(iconoGrandeNotificacion(context.getResources().getDrawable(iconoTarea)));
+                        .setLargeIcon(iconoGrandeNotificacion(
+                                Objects.requireNonNull(
+                                        ResourcesCompat.getDrawable(
+                                                context.getResources(), iconoTarea, null))));
 
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -623,6 +596,20 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 j.put(Auxiliar.instante, instanteUltimaNotif);
                 PersistenciaDatos.reemplazaJSON(application, PersistenciaDatos.ficheroInstantes, j);
                 ++Auxiliar.incr; //Para que no tengan dos notificaciones el mismo valor
+
+                //Envio del evento a firebase
+                if(idUser != null) {
+                    try {
+                        if(Login.firebaseAnalytics == null){
+                            Login.firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+                        }
+                        Bundle bundle = new Bundle();
+                        bundle.putString(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
+                        Login.firebaseAnalytics.logEvent("tareaNotificada", bundle);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }catch (Exception e){
                 e.printStackTrace();
             }

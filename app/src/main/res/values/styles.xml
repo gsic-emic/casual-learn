@@ -11,11 +11,15 @@
         <item name="android:buttonStyle">@style/botonSecundario</item>
         <item name="android:fontFamily">@font/roboto</item>
         <item name="android:textSize">14sp</item>
+        <item name="android:listDivider">@color/colorSecondaryDarkTranspa</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="colorControlNormal">#deffffff</item>
+        <item name="android:textColor">@color/texto</item>
+        <item name="fontFamily">@font/roboto</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

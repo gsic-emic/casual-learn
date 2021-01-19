@@ -21,7 +21,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * el servicio en segundo plano cuando el dispositivo se reinicia.
  *
  * @author Pablo
- * @version 20201006
+ * @version 20210111
  */
 public class RecepcionNotificaciones extends BroadcastReceiver {
 
@@ -99,6 +99,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                 break;
             case Intent.ACTION_BOOT_COMPLETED:
                 new AlarmaProceso().activaAlarmaProceso(context);
+                new CompruebaEnvios().activaCompruebaEnvios(context);
                 break;
             default:
                 break;
@@ -117,7 +118,7 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
             try {
                 bundle = new Bundle();
                 bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
-                bundle.putString("idUsuario", idUsuario);
+                bundle.putString(Auxiliar.idUsuario, idUsuario);
                 Login.firebaseAnalytics.logEvent(evento, bundle);
             } catch (Exception e) {
                 e.printStackTrace();

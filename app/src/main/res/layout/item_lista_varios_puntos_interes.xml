@@ -21,6 +21,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:paddingBottom="5dp"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:textColor="@color/colorPrimaryDark"/>
 
     <TextView

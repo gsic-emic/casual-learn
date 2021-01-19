@@ -62,6 +62,7 @@ import java.util.Date;
 import java.util.List;
 
 import es.uva.gsic.adolfinstro.Ajustes;
+import es.uva.gsic.adolfinstro.CompruebaEnvios;
 import es.uva.gsic.adolfinstro.Login;
 import es.uva.gsic.adolfinstro.Maps;
 import es.uva.gsic.adolfinstro.R;
@@ -73,7 +74,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201203
+ * @version 20201222
  */
 public class Auxiliar {
 
@@ -81,6 +82,7 @@ public class Auxiliar {
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
+    public static String rutaContextos = direccionIP + "contextos";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
 
     public static final String id = "id";
@@ -110,7 +112,6 @@ public class Auxiliar {
 
     public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
 
-
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
 
@@ -131,6 +132,7 @@ public class Auxiliar {
     public static final String tipoPreguntaLarga = "texto";
     public static final String tipoPreguntaImagen = "fotografiaYTexto";
     public static final String tipoPreguntaImagenes = "multiplesFotografiasYTexto";
+    public static final String tipoPreguntaVideo = "videoYTexto";
 
     public static final String peticion = "peticion";
 
@@ -179,13 +181,7 @@ public class Auxiliar {
     public static final String comment = "comment";
     public static final String ficheroZona = "ficheroZona";
 
-
-
-
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
-
-
-    //private static final String[] listaFabricantes = {"huawei", "xiaomi", "samsung", "oneplus"};
 
     public static int incr = 0;
 
@@ -478,6 +474,9 @@ public class Auxiliar {
             case Auxiliar.tipoPreguntaImagenes:
                 iconoTarea = R.drawable.ic_preguntaimagenesmultiples;
                 break;
+            case Auxiliar.tipoPreguntaVideo:
+                iconoTarea =  R.drawable.ic_preguntavideo;
+                break;
             default:
                 iconoTarea = 0;
                 break;
@@ -518,6 +517,9 @@ public class Auxiliar {
             case Auxiliar.tipoPreguntaImagenes:
                 iconoTarea = R.drawable.ic_preguntaimagenesmultiples_lista;
                 break;
+            case Auxiliar.tipoPreguntaVideo:
+                iconoTarea =  R.drawable.ic_preguntavideo_lista;
+                break;
             default:
                 iconoTarea = 0;
                 break;
@@ -543,13 +545,10 @@ public class Auxiliar {
             case 3:
                 return String.format("1 %s", resources.getString(R.string.hora));
             case 4:
-                return String.format("3 %s", resources.getString(R.string.horas));
             case 5:
-                return String.format("4 %s", resources.getString(R.string.horas));
             case 6:
-                return String.format("5 %s", resources.getString(R.string.horas));
             case 7:
-                return String.format("6 %s", resources.getString(R.string.horas));
+                return String.format("%d %s", posicion - 1, resources.getString(R.string.horas));
             case 8:
                 return String.format("12 %s", resources.getString(R.string.horas));
             case 9:
@@ -1254,6 +1253,7 @@ public class Auxiliar {
                         PersistenciaDatos.ficheroSinEnviar,
                         jsonObject,
                         Context.MODE_PRIVATE);
+                new CompruebaEnvios().activaCompruebaEnvios(appContext);
             }catch (Exception e){
                 e.printStackTrace();
             }

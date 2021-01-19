@@ -77,10 +77,10 @@
             android:textAlignment="gravity"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/bPolitica"
-            android:drawableStart="@drawable/ic_email"
             android:drawablePadding="5dp"
             android:gravity="center"
-            android:onClick="boton" />
+            android:onClick="boton"
+            app:drawableStartCompat="@drawable/ic_email" />
 
         <TextView
             android:id="@+id/tvLicencia"
@@ -91,11 +91,11 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvContacto"
-            android:drawableStart="@drawable/ic_license"
             android:drawablePadding="5dp"
             android:textAlignment="gravity"
             android:gravity="center_vertical"
-            android:onClick="boton" />
+            android:onClick="boton"
+            app:drawableStartCompat="@drawable/ic_license" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guiaVerticalAcerca"
@@ -226,7 +226,6 @@
             android:id="@+id/tvDesarrolladores"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:drawableStart="@drawable/ic_info_black_menu"
             android:drawablePadding="4dp"
             android:layout_marginTop="10dp"
             android:text="@string/Desarrolladores"
@@ -234,7 +233,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/imagenGsic"
             android:gravity="center"
-            android:onClick="boton"/>
+            android:onClick="boton"
+            app:drawableStartCompat="@drawable/ic_info_black_menu" />
 
         <TextView
             android:id="@+id/tvCreditos"

@@ -2,6 +2,7 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
@@ -43,7 +44,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * las indicaciones.
  *
  * @author Pablo
- * @version 20201117
+ * @version 20201222
  */
 public class MapaNavegable extends AppCompatActivity {
 
@@ -75,6 +76,8 @@ public class MapaNavegable extends AppCompatActivity {
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
         setContentView(R.layout.activity_mapa_navegable);
 
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -248,21 +251,10 @@ public class MapaNavegable extends AppCompatActivity {
                     latitudUser = myLocationNewOverlay.getMyLocation().getLatitude();
                     longitudUser = myLocationNewOverlay.getMyLocation().getLongitude();
                 }
-                Uri uri;
-                /*if (Auxiliar.calculaDistanciaDosPuntos(
-                        latitudMarker, longitudMarker,
-                        latitudUser, longitudUser)
-                        <= 2) {*/
-                uri = Uri.parse("google.navigation:q="
+                Uri uri = Uri.parse("google.navigation:q="
                         + latitudMarker + "," + longitudMarker +
                         "&mode=r");
-                /*} else {
-                    uri = Uri.parse("google.navigation:q="
-                            + latitudMarker + "," + longitudMarker +
-                            "&mode=r");
-                }*/
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                //intent.setPackage("com.google.android.apps.maps");
                 startActivity(Intent.createChooser(intent, ""));
             }catch (Exception e){
                 e.printStackTrace();

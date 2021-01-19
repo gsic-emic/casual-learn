@@ -2,12 +2,12 @@ package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -50,12 +50,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 
 import java.util.ArrayList;
@@ -129,6 +127,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
 
         setContentView(R.layout.activity_preview);
 
@@ -279,19 +278,16 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 double longitud = tarea.getDouble(Auxiliar.longitud);
                 GeoPoint posicionTarea = new GeoPoint(latitud, longitud);
 
-                mapController.setCenter(posicionTarea);
                 mapController.setZoom(17.5);
+                mapController.setCenter(posicionTarea);
                 map.setMaxZoomLevel(17.5);
                 map.setMinZoomLevel(17.5);
                 map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-
                 map.setMultiTouchControls(false);
-
                 map.setTilesScaledToDpi(true);
-
                 map.setClickable(false);
                 map.setEnabled(false);
-
+                map.invalidate();
 
                 TextView texto = findViewById(R.id.tituloPreview);
                 texto.setText(tarea.getString(Auxiliar.titulo));
@@ -310,20 +306,21 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 //marker.setTitle(extras.getString(Auxiliar.titulo));
                 marker.setInfoWindow(null);
 
-                map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
+                /*map.getOverlays().add(new MapEventsOverlay(new MapEventsReceiver() {
                     @SuppressLint("MissingPermission")
                     @Override
                     public boolean singleTapConfirmedHelper(GeoPoint p) {
-                        saltaNavegacion();
+                        //saltaNavegacion();
                         return false;
                     }
 
                     @Override
                     public boolean longPressHelper(GeoPoint p) {
-                        saltaNavegacion();
+                        //saltaNavegacion();
                         return false;
                     }
-                }));
+                }));*/
+
                 map.getOverlays().add(marker);
 
                 if (!getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion)) {
@@ -379,7 +376,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     private void snackBarLogin(int snack){
         Snackbar snackbar = Snackbar.make(findViewById(snack), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
-        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
+        snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
         snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -391,8 +388,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 startActivityForResult(intent, Login.requestAuth + 2);
             }
         });
-        snackbar.setActionTextColor(getResources().getColor(R.color.colorSecondary50));
-        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setActionTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondary50, null));
+        snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
         snackbar.show();
     }
 
@@ -494,24 +491,32 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.permiso_almacenamiento));
             }
             //Compruebo permisos de localización en primer y segundo plano
             if(!(ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
-                //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_primer));
             }
             //Comprobación para saber si el usuario se ha identificado
             if(idUsuario != null) {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.Q){
                     if(!(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
                         //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                     }
+                }
+                else {
+                    if (Build.VERSION.SDK_INT >= 30 && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                        if (!(ActivityCompat.checkSelfPermission(
+                                context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                                == PackageManager.PERMISSION_GRANTED)) {
+                            permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+                        }
+                    }
+                }
             }
 
             if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
@@ -519,7 +524,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
             }
 
             if(permisos.isEmpty())
-                new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
+                if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Ajustes.NO_MOLESTAR_pref, false))
+                    new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
             else
                 solicitaPermisoUbicacion();
         }
@@ -668,6 +674,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             Auxiliar.id,
                             Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
                     startActivity(intent);
+                    break;
+                case R.id.btAmpliarMapa:
+                    saltaNavegacion();
                     break;
                 default:
                     if (idUsuario == null) {
@@ -1018,8 +1027,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     private void pintaSnackBar(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clPreview), R.string.app_name, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
-        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
+        snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
         snackbar.setText(texto);
         snackbar.show();
     }

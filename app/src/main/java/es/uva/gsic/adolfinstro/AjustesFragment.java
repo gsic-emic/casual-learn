@@ -81,7 +81,6 @@ public class AjustesFragment extends PreferenceFragmentCompat
                 public boolean onPreferenceClick(Preference preference) {
                     try {
                         String urlPortafolio = Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio);
-                        //String urlPortafolio = Auxiliar.direccionIP;
                         Intent intent = new Intent(Intent.ACTION_SEND);
                         intent.putExtra(Intent.EXTRA_TEXT, urlPortafolio);
                         intent.setType("text/plain");

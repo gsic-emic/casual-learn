@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.FileProvider;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.preference.PreferenceManager;
@@ -112,6 +113,8 @@ public class Completadas extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+
         setContentView(R.layout.activity_completadas);
         //Se activa la flecha para volver a la actividad anterior
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
@@ -198,6 +201,7 @@ public class Completadas extends AppCompatActivity implements
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoVideo:
                 case Auxiliar.tipoPreguntaImagenes:
+                case Auxiliar.tipoPreguntaVideo:
                     recyclerView.setVisibility(View.VISIBLE);
                     for (String s : listaURI) {
                         imagenesCamaras.add(new ImagenesCamara(s, View.GONE));
@@ -213,6 +217,7 @@ public class Completadas extends AppCompatActivity implements
                             recyclerView.setAdapter(adaptadorImagenesCompletadas);
                             break;
                         case Auxiliar.tipoVideo:
+                        case Auxiliar.tipoPreguntaVideo:
                             adaptadorVideosCompletados = new AdaptadorVideosCompletados(this,
                                     imagenesCamaras);
                             adaptadorVideosCompletados.setClickListenerVideo(this);
@@ -343,6 +348,7 @@ public class Completadas extends AppCompatActivity implements
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaVideo)
                                 ) && etTextoUsuario.getText().toString().isEmpty()) {
                             etTextoUsuario.setError(getString(R.string.respuestaVacia));
                         } else {
@@ -352,6 +358,7 @@ public class Completadas extends AppCompatActivity implements
                                     || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
                                     || tipoRespuesta.equals(Auxiliar.tipoVideo)
                                     || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaVideo)
                             ) && (listaURI.size() == 0)) {
                                 muestraSnack(getString(R.string.agregarContenido));
                             } else {
@@ -498,6 +505,7 @@ public class Completadas extends AppCompatActivity implements
                         updateRV(lista);
                         break;
                     case Auxiliar.tipoVideo:
+                    case Auxiliar.tipoPreguntaVideo:
                         for(int i = 0; i< imagenesCamaras.size(); i++){
                             ic = imagenesCamaras.get(i);
                             ic.setVisible(View.GONE);
@@ -550,8 +558,8 @@ public class Completadas extends AppCompatActivity implements
 
     private void muestraSnack(String texto){
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clCompletada), R.string.tareaGuardada, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(getResources().getColor(R.color.colorSecondaryText));
-        snackbar.getView().setBackground(getResources().getDrawable(R.drawable.snack));
+        snackbar.setTextColor(ResourcesCompat.getColor(this.getResources(), R.color.colorSecondaryText, null));
+        snackbar.getView().setBackground(ResourcesCompat.getDrawable(this.getResources(), R.drawable.snack, null));
         snackbar.setText(texto);
         snackbar.show();
     }
@@ -579,6 +587,7 @@ public class Completadas extends AppCompatActivity implements
                 case Auxiliar.tipoPreguntaImagen:
                 case Auxiliar.tipoVideo:
                 case Auxiliar.tipoPreguntaImagenes:
+                case Auxiliar.tipoPreguntaVideo:
                     btAgregar.setVisibility(View.VISIBLE);
                     break;
                 default:
@@ -601,6 +610,7 @@ public class Completadas extends AppCompatActivity implements
                             updateRV(lista);
                             break;
                         case Auxiliar.tipoVideo:
+                        case Auxiliar.tipoPreguntaVideo:
                             updateRVVideo(lista);
                             break;
                         default:
@@ -758,9 +768,11 @@ public class Completadas extends AppCompatActivity implements
                         case Auxiliar.tipoPreguntaImagen:
                         case Auxiliar.tipoVideo:
                         case Auxiliar.tipoPreguntaImagenes:
+                        case Auxiliar.tipoPreguntaVideo:
                             Intent intent = new Intent();
                             intent.setAction(Intent.ACTION_GET_CONTENT);
-                            if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
+                            if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)
+                                || tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoPreguntaVideo)){
                                 intent.setType("video/*");
                             }else{
                                 intent.setType("image/*");
@@ -797,7 +809,7 @@ public class Completadas extends AppCompatActivity implements
                 try {//-1 si que tiene contenido; //0 no tiene contenido
                     String tipo = tarea.getString(Auxiliar.tipoRespuesta);
                     File copia;
-                    if (tipo.equals(Auxiliar.tipoVideo))
+                    if (tipo.equals(Auxiliar.tipoVideo) || tipo.equals(Auxiliar.tipoPreguntaVideo))
                         copia = Auxiliar.createFile(3, this);
                     else
                         copia = Auxiliar.createFile(0, this);
@@ -805,7 +817,7 @@ public class Completadas extends AppCompatActivity implements
                     Uri uri = FileProvider.getUriForFile(this,
                             getString(R.string.fileProvider), copia);
                     uriGuardadas.add(uri);
-                    copiar(getContentResolver().openInputStream(Objects.requireNonNull(datos.getData())),
+                    copiar(Objects.requireNonNull(getContentResolver().openInputStream(Objects.requireNonNull(datos.getData()))),
                             new FileOutputStream(copia));
                     listaURI.add(uri.toString());
                     JSONArray respuestas = tarea.getJSONArray(Auxiliar.respuestas);
@@ -818,7 +830,7 @@ public class Completadas extends AppCompatActivity implements
                     imagenesCamaras.add(new ImagenesCamara(uri, View.VISIBLE));
                     if (recyclerView.getVisibility() == View.GONE)
                         recyclerView.setVisibility(View.VISIBLE);
-                    if (tipo.equals(Auxiliar.tipoVideo)) {
+                    if (tipo.equals(Auxiliar.tipoVideo) || tipo.equals(Auxiliar.tipoPreguntaVideo)) {
                         adaptadorVideosCompletados = new AdaptadorVideosCompletados(
                                 this, imagenesCamaras);
                         adaptadorVideosCompletados.setClickListenerVideo(this);
