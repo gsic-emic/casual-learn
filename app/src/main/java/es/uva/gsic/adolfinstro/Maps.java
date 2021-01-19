@@ -242,6 +242,10 @@ public class Maps extends AppCompatActivity implements
 
     private Uri rutaAlPunto;
 
+    private FloatingActionButton btCentrar;
+
+    private FloatingActionButton btNavegar;
+
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
      * molestar para saber si se tiene que mostar el mapa o no
@@ -293,7 +297,7 @@ public class Maps extends AppCompatActivity implements
         setContentView(R.layout.activity_maps);
         Toolbar toolbar = findViewById(R.id.tbMaps);
         setSupportActionBar((Toolbar) findViewById(R.id.tbMaps));
-        toolbar.setTitleTextColor(ResourcesCompat.getColor(context.getResources(), R.color.white, null));
+        toolbar.setTitleTextColor(dameColor(R.color.white));
 
         drawerLayout = findViewById(R.id.dlMapa);
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(
@@ -323,7 +327,8 @@ public class Maps extends AppCompatActivity implements
         mapController = map.getController();
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
 
-        final FloatingActionButton btCentrar = findViewById(R.id.btCentrar);
+        btCentrar = findViewById(R.id.btCentrar);
+        btNavegar = findViewById(R.id.btNavegarMaps);
         if (PersistenciaDatos.existeTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom)) {
             JSONObject posicion = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroPosicion, idPosicionZoom);
             try {
@@ -415,10 +420,7 @@ public class Maps extends AppCompatActivity implements
                             btCentrar.hide();
                         contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
                                 context, LinearLayoutManager.VERTICAL, false));
-                        contenedorBusqMapa.setBackgroundColor(ResourcesCompat.getColor(
-                                context.getResources(),
-                                R.color.transparente,
-                                null));
+                        contenedorBusqMapa.setBackgroundColor(dameColor(R.color.transparente));
                         contenedorBusqMapa.setVisibility(View.VISIBLE);
                         contenedorBusqMapa.setHasFixedSize(true);
                         List<ListaCoincidencias> lista = new ArrayList<>();
@@ -543,7 +545,7 @@ public class Maps extends AppCompatActivity implements
                             findViewById(R.id.clIdentificateMapa),
                             R.string.textoInicioBreve,
                             Snackbar.LENGTH_INDEFINITE);
-                    snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
+                    snackbar.setTextColor(dameColor(R.color.colorSecondaryText));
                     snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -559,7 +561,7 @@ public class Maps extends AppCompatActivity implements
                             }
                         }
                     });
-                    snackbar.setActionTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondary50, null));
+                    snackbar.setActionTextColor(dameColor(R.color.colorSecondary50));
                     snackbar.getView().setBackground(dameDrawable(R.drawable.snack));
                     snackbar.show();
                 }
@@ -631,6 +633,8 @@ public class Maps extends AppCompatActivity implements
         if(textoPuntoReducido.getVisibility() == View.VISIBLE){
             ocultaReducido();
         }
+        btCentrar.setVisibility(View.VISIBLE);
+        btNavegar.setVisibility(View.GONE);
     }
 
     /**
@@ -646,8 +650,7 @@ public class Maps extends AppCompatActivity implements
      * Método para ocultar la lista de coincidencias de la búsqueda
      */
     private void ocultaContenedorBusqMapa() {
-        contenedorBusqMapa.setBackgroundColor(ResourcesCompat.getColor(
-                context.getResources(), R.color.transparente, null));
+        contenedorBusqMapa.setBackgroundColor(dameColor(R.color.transparente));
         contenedorBusqMapa.setAdapter(null);
         contenedorBusqMapa.setLayoutManager(null);
         contenedorBusqMapa.setVisibility(View.GONE);
@@ -671,7 +674,7 @@ public class Maps extends AppCompatActivity implements
      */
     private void pintaSnackBar(String texto) {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clMapa), R.string.gracias, Snackbar.LENGTH_SHORT);
-        snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
+        snackbar.setTextColor(dameColor(R.color.colorSecondaryText));
         snackbar.getView().setBackground(dameDrawable(R.drawable.snack));
         snackbar.setText(texto);
         snackbar.show();
@@ -1065,6 +1068,8 @@ public class Maps extends AppCompatActivity implements
                     guiaMapaH.setGuidelinePercent(0.5f);
                 else
                     guiaMapaV.setGuidelinePercent(0.5f);
+                btCentrar.setVisibility(View.GONE);
+                btNavegar.setVisibility(View.VISIBLE);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -1251,6 +1256,10 @@ public class Maps extends AppCompatActivity implements
         return ResourcesCompat.getDrawable(context.getResources(), id, null);
     }
 
+    private int dameColor(int id){
+        return ResourcesCompat.getColor(context.getResources(), id, null);
+    }
+
     /**
      * Método para generar la parte gráfica del marcador. Dentro de un elemento fijo se dibujará el
      * número de tareas.
@@ -1263,7 +1272,7 @@ public class Maps extends AppCompatActivity implements
             if (size < 0)
                 drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
             else if (size == 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_uno);
+                drawable = dameDrawable(R.drawable.ic_marcador_check);
             else if (size <= 10)
                 drawable = dameDrawable(R.drawable.ic_marcador100_especial);
             else if (size <= 20)
@@ -1278,7 +1287,7 @@ public class Maps extends AppCompatActivity implements
             if (size < 0)
                 drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
             else if (size == 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_uno);
+                drawable = dameDrawable(R.drawable.ic_marcador_check);
             else if (size <= 10)
                 drawable = dameDrawable(R.drawable.ic_marcador100);
             else if (size <= 20)
@@ -1711,7 +1720,7 @@ public class Maps extends AppCompatActivity implements
             case R.id.tvPuntoTextoReducido:
                 ocultaReducido();
                 break;
-            case R.id.btRutaMaps:
+            case R.id.btNavegarMaps:
                 try {
                     Intent intentRuta = new Intent(Intent.ACTION_VIEW, rutaAlPunto);
                     startActivity(Intent.createChooser(intentRuta, ""));
@@ -1998,6 +2007,21 @@ public class Maps extends AppCompatActivity implements
         keys.add(Auxiliar.este); objects.add(caja.getLonEast());
         keys.add(Auxiliar.sur); objects.add(caja.getLatSouth());
         keys.add(Auxiliar.oeste); objects.add(caja.getLonWest());
+        try{
+            /*Envío el ID del usuario si lo tuviera. Por ahora no se está haciendo nada con este dato,
+            pero en un futuro podrá utilizarse para personalizar los contextos que se muestran. */
+            JSONObject usuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if(usuario != null) {
+                String idUsuario = usuario.getString(Auxiliar.uid);
+                if(!idUsuario.trim().equals("")) {
+                    keys.add(Auxiliar.id);
+                    objects.add(idUsuario);
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
         String url = Auxiliar.creaQuery(Auxiliar.rutaContextos, keys, objects);
 
@@ -2029,7 +2053,6 @@ public class Maps extends AppCompatActivity implements
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-
                             }
                             PersistenciaDatos.guardaFichero(
                                     getApplication(),
@@ -2074,8 +2097,6 @@ public class Maps extends AppCompatActivity implements
                                 getApplication(),
                                 PersistenciaDatos.ficheroNuevasCuadriculas,
                                 nombre);
-                        /*cuadricula.put(Auxiliar.caducidad,
-                                System.currentTimeMillis() + 604800000);*///Caduca a la semana
                         cuadricula.put(Auxiliar.caducidad,
                                 System.currentTimeMillis() + 86400000);//Caduca al día
                         PersistenciaDatos.reemplazaJSON(
@@ -2120,7 +2141,6 @@ public class Maps extends AppCompatActivity implements
             final String nombre){//Seguro que necesito algo más como el id del lugar donde lo voy a colocar
         List<String> keys = new ArrayList<>();
         List<Object> objects = new ArrayList<>();
-        keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionTareas);
         keys.add(Auxiliar.contextos); objects.add(contexto);
         String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
 

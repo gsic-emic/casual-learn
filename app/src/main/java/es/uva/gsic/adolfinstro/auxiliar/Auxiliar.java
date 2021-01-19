@@ -78,8 +78,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  */
 public class Auxiliar {
 
-    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://192.168.1.222:10001/app/";
+    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
