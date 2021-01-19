@@ -308,7 +308,6 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         if(idUsuario != null) {
             List<String> keys = new ArrayList<>();
             List<Object> objects = new ArrayList<>();
-            keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionPersonalizadas);
             keys.add(Auxiliar.norte); objects.add(location.getLatitude() + 0.00325);
             keys.add(Auxiliar.este); objects.add(location.getLongitude() + 0.00325);
             keys.add(Auxiliar.sur); objects.add(location.getLatitude() - 0.00325);

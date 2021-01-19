@@ -2007,6 +2007,21 @@ public class Maps extends AppCompatActivity implements
         keys.add(Auxiliar.este); objects.add(caja.getLonEast());
         keys.add(Auxiliar.sur); objects.add(caja.getLatSouth());
         keys.add(Auxiliar.oeste); objects.add(caja.getLonWest());
+        try{
+            /*Envío el ID del usuario si lo tuviera. Por ahora no se está haciendo nada con este dato,
+            pero en un futuro podrá utilizarse para personalizar los contextos que se muestran. */
+            JSONObject usuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if(usuario != null) {
+                String idUsuario = usuario.getString(Auxiliar.uid);
+                if(!idUsuario.trim().equals("")) {
+                    keys.add(Auxiliar.id);
+                    objects.add(idUsuario);
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
 
         String url = Auxiliar.creaQuery(Auxiliar.rutaContextos, keys, objects);
 
@@ -2038,7 +2053,6 @@ public class Maps extends AppCompatActivity implements
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
-
                             }
                             PersistenciaDatos.guardaFichero(
                                     getApplication(),
@@ -2083,8 +2097,6 @@ public class Maps extends AppCompatActivity implements
                                 getApplication(),
                                 PersistenciaDatos.ficheroNuevasCuadriculas,
                                 nombre);
-                        /*cuadricula.put(Auxiliar.caducidad,
-                                System.currentTimeMillis() + 604800000);*///Caduca a la semana
                         cuadricula.put(Auxiliar.caducidad,
                                 System.currentTimeMillis() + 86400000);//Caduca al día
                         PersistenciaDatos.reemplazaJSON(
@@ -2129,7 +2141,6 @@ public class Maps extends AppCompatActivity implements
             final String nombre){//Seguro que necesito algo más como el id del lugar donde lo voy a colocar
         List<String> keys = new ArrayList<>();
         List<Object> objects = new ArrayList<>();
-        keys.add(Auxiliar.peticion); objects.add(Auxiliar.peticionTareas);
         keys.add(Auxiliar.contextos); objects.add(contexto);
         String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
 
