@@ -5,6 +5,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -41,6 +43,7 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.Html;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -54,13 +57,16 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -174,10 +180,14 @@ public class Maps extends AppCompatActivity implements
     /** Diálogo para salir de la apliación */
     private AlertDialog.Builder dialogoSalirApp;
     /** Boolean que determian si el dialogo de salir de la aplicación está activo */
-    Boolean dialogoSalirAppActivo = false;
+    private boolean dialogoSalirAppActivo = false;
 
     /** Dialogo para mostrar los distintos puntos que agrupa un marcador */
-    Dialog dialogoVariosPuntos;
+    private Dialog dialogoVariosPuntos;
+
+    private Dialog dialogoConfiguracionPorfolio;
+    private boolean dialogoConfiguracionPorfolioVisible;
+
 
     /** Guía de la vista vertical */
     Guideline guiaMapaH;
@@ -198,8 +208,6 @@ public class Maps extends AppCompatActivity implements
     TextView distanciaPunto;
     /** Objeto para el texto reducido del punto de interés*/
     TextView textoPuntoReducido;
-    /** Objeto para mostrar la información completa del punto de interés*/
-    //Button masInfo;
 
     /** Vista de los puntos de interés */
     ScrollView svPunto;
@@ -470,7 +478,6 @@ public class Maps extends AppCompatActivity implements
         textoPunto = findViewById(R.id.tvPuntoTexto);
         distanciaPunto = findViewById(R.id.tvPuntoDistancia);
         textoPuntoReducido = findViewById(R.id.tvPuntoTextoReducido);
-        //masInfo = findViewById(R.id.btMasInfoPunto);
 
         ivWiki = findViewById(R.id.ivWikipediaMapa);
         ivSpeaker = findViewById(R.id.ivSpeaker);
@@ -530,6 +537,62 @@ public class Maps extends AppCompatActivity implements
             dialogoSegundoPlano.show();
         }
 
+        dialogoConfiguracionPorfolio = new Dialog(this);
+        dialogoConfiguracionPorfolio.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialogoConfiguracionPorfolio.setContentView(R.layout.dialogo_conf_porfolio);
+        dialogoConfiguracionPorfolio.setCancelable(true);
+
+        final SwitchCompat swActivarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swActivarPor);
+        final SwitchCompat swRetardarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swRetardarPor);
+        //final TextView textoTiempo = dialogoConfiguracionPorfolio.findViewById(R.id.tvIntervaloPor);
+        //textoTiempo.setText(String.format("%s\n(3 %s)", getResources().getString(R.string.intervalo), getResources().getString(R.string.horas)));
+        //SeekBar seekBar = dialogoConfiguracionPorfolio.findViewById(R.id.sbIntervalo);
+        final Button btOmitir = dialogoConfiguracionPorfolio.findViewById(R.id.btOmitirPor);
+
+        dialogoConfiguracionPorfolio.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                boolean estadoPorfolio, retardo;
+                estadoPorfolio = swActivarPorfolio.isChecked();
+                if(swRetardarPorfolio.isEnabled()){
+                    retardo = !swRetardarPorfolio.isChecked();
+                } else{
+                    retardo = true;
+                }
+                enviaConfiguracionPorfolio(estadoPorfolio, retardo);
+                dialogoConfiguracionPorfolioVisible = false;
+                dialogoConfiguracionPorfolio.cancel();
+            }
+        });
+
+        swActivarPorfolio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean estado = ((SwitchCompat) v).isChecked();
+                swRetardarPorfolio.setEnabled(estado);
+                if(estado) {
+                    swRetardarPorfolio.setEnabled(true);
+                    btOmitir.setText(context.getString(R.string.cerrar));
+                } else {
+                    swRetardarPorfolio.setChecked(false);
+                    swRetardarPorfolio.setEnabled(false);
+                }
+            }
+        });
+
+        btOmitir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogoConfiguracionPorfolio.cancel();
+            }
+        });
+
+        dialogoConfiguracionPorfolioVisible = false;
+        if (savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOCONFPOR", false)) {
+            dialogoConfiguracionPorfolioVisible = true;
+            dialogoConfiguracionPorfolio.show();
+        }
+
         try {
             String contenido = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.textoParaElMapa);
             if (contenido != null && !contenido.equals("")) {
@@ -571,6 +634,93 @@ public class Maps extends AppCompatActivity implements
         }
     }
 
+    private void enviaConfiguracionPorfolio(final boolean publico, final boolean retardado) {
+        final JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if (idUsuario == null || idUsuario.has(Auxiliar.uid)) {
+            try {
+                JSONObject infoUsuario = new JSONObject();
+                JsonObjectRequest jsonObjectRequest;
+                infoUsuario.put(Auxiliar.publico, publico);
+                infoUsuario.put(Auxiliar.retardado, retardado);
+                if (idUsuario != null && idUsuario.has(Auxiliar.idPortafolio)) {//Es una actualización
+                    jsonObjectRequest = new JsonObjectRequest(
+                            Request.Method.PUT,
+                            Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),
+                            infoUsuario,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                                        editor.putBoolean(Ajustes.PORTAFOLIO_pref, publico);
+                                        editor.putBoolean(Ajustes.RETARDOPORTA_pref, retardado);
+                                        editor.commit();
+                                    } catch (Exception e) {
+                                        Log.d("porfolio", "Creación del porfolio desde el dialogo");
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    idUsuario.remove(Auxiliar.idPortafolio);
+                                    PersistenciaDatos.reemplazaJSON(
+                                            (Application) context.getApplicationContext(),
+                                            PersistenciaDatos.ficheroUsuario,
+                                            idUsuario);
+                                    Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                } else {//Es una creación
+                    infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
+                    jsonObjectRequest = new JsonObjectRequest(
+                            Request.Method.POST,
+                            Auxiliar.direccionIP + "portafolio",
+                            infoUsuario,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject docUsuario) {
+                                    if (docUsuario != null) {
+                                        try {
+                                            idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
+                                            PersistenciaDatos.reemplazaJSON(
+                                                    (Application) context.getApplicationContext(),
+                                                    PersistenciaDatos.ficheroUsuario,
+                                                    idUsuario);
+                                            try {
+                                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                                editor.putBoolean(Ajustes.PORTAFOLIO_pref, publico);
+                                                editor.putBoolean(Ajustes.RETARDOPORTA_pref, retardado);
+                                                editor.commit();
+                                            } catch (Exception e) {
+                                                Log.d("porfolio", "Creación del porfolio desde el dialogo");
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Toast.makeText(context, context.getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                }
+
+                ColaConexiones.getInstance(context).getRequestQueue().add(jsonObjectRequest);
+            }
+            catch (Exception e){
+                Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+        }
+    }
+
     /**
      * Método para ocultar la opción de inicio de sesión en el menú lateral
      * @param menu Menú lateral
@@ -605,6 +755,10 @@ public class Maps extends AppCompatActivity implements
                         ficheroSegundoPlano,
                         Context.MODE_PRIVATE);
             }
+            //En este momento indico al usuario la posibilidad de utilizar el porfolio
+            if(!dialogoConfiguracionPorfolio.isShowing())
+                dialogoConfiguracionPorfolio.show();
+            dialogoConfiguracionPorfolioVisible = true;
         } catch (JSONException e){
             e.printStackTrace();
         }
@@ -1077,23 +1231,6 @@ public class Maps extends AppCompatActivity implements
     }
 
     /**
-     * Método para obtener los identificadores de las tareas que ya ha realizado el usuario.
-     * @return Lisita de identificaciones de tareas completadas
-     */
-    public List<String> getListaTareasCompletadas(){
-        JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroCompletadas);
-        List<String> listaId = new ArrayList<>();
-        try {
-            for (int i = 0; i < tareasCompletadas.length(); i++) {
-                listaId.add(tareasCompletadas.getJSONObject(i).getString(Auxiliar.id));
-            }
-        }catch (Exception e){
-            listaId = new ArrayList<>();
-        }
-        return listaId;
-    }
-
-    /**
      * Método para representar las tareas del punto de interés en una lista en la parte inferior de
      * la información.
      *
@@ -1101,7 +1238,14 @@ public class Maps extends AppCompatActivity implements
      */
     public void pintaTareas(String ficheroTareas) {
         JSONArray tareas = PersistenciaDatos.leeFichero(getApplication(), ficheroTareas);
-        List<String> listaId = getListaTareasCompletadas();
+        String idUsuario;
+        try{
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id).getString(Auxiliar.uid);
+        }catch (Exception e){
+            idUsuario = null;
+        }
+        List<String> listaId = Auxiliar.getListaTareasCompletadas(getApplication(), idUsuario);
         List<TareasMapaLista> tareasPunto = new ArrayList<>();
         JSONObject jo;
         String uriFondo;
@@ -1752,6 +1896,7 @@ public class Maps extends AppCompatActivity implements
         bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putBoolean("DIALOGOSALIR", dialogoSalirAppActivo);
         bundle.putBoolean("DIALOGOSEGUNDOPLANO", dialogoSegundoPlanoVisible);
+        bundle.putBoolean("DIALOGOCONFPOR", dialogoConfiguracionPorfolioVisible);
         super.onSaveInstanceState(bundle);
     }
 

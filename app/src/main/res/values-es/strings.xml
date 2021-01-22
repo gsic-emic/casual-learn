@@ -197,7 +197,6 @@
     <string name="solicitar">Solicitar</string>
     <string name="necesidad_permisos">Se necesitan los siguientes permisos:</string>
     <string name="ubicacion_primer"><![CDATA[<p>Se necesita conocer tu <b>ubicación en primer plano</b> para poder mostrar tu posición en el mapa.</p>]]></string>
-    <!--<string name="ubicacion_segundo"><![CDATA[<p>Se necesita conocer tu <b>posición en segundo plano</b> para notificarte de las tareas cercanas.</p>]]></string>-->
     <string name="volver">Atrás</string>
     <string name="permiso_camara"><![CDATA[<p>Se necesita acceder a la <b>cámara</b> del dispositivo para tomar fotografías o grabar vídeos.</p>]]></string>
     <string name="permiso_micro"><![CDATA[<p>Se necesita acceder al <b>micrófono</b> para que los vídeos tengan audio.</p>]]></string>
@@ -249,6 +248,7 @@
     <string name="distancia">Distancia:</string>
     <string name="speaker">Altavóz</string>
     <string name="puntoSinTexto">El punto de interés aún no dispone de descripción…</string>
+    <string name="desarrolladores_nombres"><![CDATA[<p><b>Adolfo Ruiz Calleja</b><br>adolfo@gsic.uva.es</p><p><b>Pablo García Zarza</b><br>pablogz@gsic.uva.es</p>]]></string>
     <string name="aun_no_disponible">La opción aún no está disponible. Vuelva a intentarlo en unos minutos.</string>
     <string name="texto_peticion_ubicacion_siempre">Para poder recomendarte tareas cercanas, Casual Learn necesita conocer tu posición incluso cuando se encuentre en segundo plano.\n\n\nCasual Learn solo recoge tu posición con la aplicación cerrada cuando vence el temporizador de notificaciones, configurable desde los ajustes de la aplicación. Cuando te recomiende una tarea dejará de obtener tu posición hasta que vuelva a vencer el temporizador.</string>
     <string name="uso_posicion">Posición en segundo plano</string>
@@ -263,4 +263,8 @@
     <string name="compartir_casual_learn">Comparte Casual Learn</string>
     <string name="valora_la_app">Valóranos</string>
     <string name="noGooglePlay">Error: no tienes instalado Google Play</string>
+    <string name="ajustes_rapidos">Ajustes rápidos</string>
+    <string name="hacer_porfolio_publico">Publicar tus respuestas en un porfolio público.\nPodrás desactivarlo desde los ajustes de la aplicación.</string>
+    <string name="activar_retardo">Activar que las respuetas se hagan públicas lo antes posible.\nSi está desactivada se publicarán cuando pasen unas horas.</string>
+    <string name="compartir_id_porfolio">Compartir el identificador del porfolio a través de distintas aplicaciones que tengas instaladas.</string>
 </resources>

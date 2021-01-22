@@ -274,14 +274,14 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if(idUsuario != null) {
             if (latitudGet == 0 || longitudGet == 0 || ((new Date().getTime() - momento) > 7200000)) {
-                peticionTareasServidor(location);
+                peticionContextosServidor(location);
             } else {
                 double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
                         latitud, longitud,
                         latitudGet, longitudGet);
                 if (distanciaOrigen >= 0.5) {
                     //Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
-                    peticionTareasServidor(location);
+                    peticionContextosServidor(location);
                 } else {//El fichero sigue siendo válido
                     compruebaLocalizacion(location);
                 }
@@ -290,10 +290,117 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     }
 
     /**
+     * Método para obtener los contextos cercanos al usuario.
+     *
+     * @param location Lugar donde se encuentra el usuario
+     */
+    private void peticionContextosServidor(final Location location){
+        String idUsuario;
+        try{
+            try {
+                idUsuario = PersistenciaDatos.recuperaTarea(
+                        application,
+                        PersistenciaDatos.ficheroUsuario,
+                        Auxiliar.id
+                ).getString(Auxiliar.uid);
+            }catch (Exception e){
+                idUsuario = null;
+            }
+            if(idUsuario != null){
+                List<String> keys = new ArrayList<>();
+                List<Object> objects = new ArrayList<>();
+                keys.add(Auxiliar.norte); objects.add(location.getLatitude() + 0.00325);
+                keys.add(Auxiliar.este); objects.add(location.getLongitude() + 0.00325);
+                keys.add(Auxiliar.sur); objects.add(location.getLatitude() - 0.00325);
+                keys.add(Auxiliar.oeste); objects.add(location.getLongitude() - 0.00325);
+                keys.add(Auxiliar.id); objects.add(idUsuario);
+
+                String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
+
+                final String finalIdUsuario = idUsuario;
+                JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                        Request.Method.GET,
+                        url,
+                        null,
+                        new Response.Listener<JSONArray>() {
+                            @Override
+                            public void onResponse(JSONArray response) {
+                                JSONArray puntosGuarda = new JSONArray();
+                                List<String> cTareasComp = Auxiliar.getListaContextosTareasCompletadas(application, finalIdUsuario);
+                                JSONObject punto;
+                                boolean guarda;
+                                int nTareas, sum;
+                                String c;
+                                for (int i = 0; i < response.length(); i++) {
+                                    try {
+                                        punto = response.getJSONObject(i);
+                                        c = punto.getString(Auxiliar.contexto);
+                                        nTareas = punto.getInt(Auxiliar.nTareas);
+                                        if (nTareas > 0) {
+                                            guarda = true;
+                                            sum = 0;
+                                            for (String cTareaComp : cTareasComp)
+                                                if (c.equals(cTareaComp))
+                                                    ++sum;
+                                            if (sum >= nTareas)
+                                                guarda = false;
+                                        } else
+                                            guarda = false;
+                                        if (guarda)
+                                            puntosGuarda.put(punto);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                PersistenciaDatos.guardaFichero(
+                                        application,
+                                        PersistenciaDatos.ficheroContextos,
+                                        puntosGuarda,
+                                        Context.MODE_PRIVATE);
+                                JSONObject tiempos;
+                                try {
+                                    tiempos = new JSONObject();
+                                    tiempos.put(Auxiliar.id, idInstanteGET);
+                                    tiempos.put(Auxiliar.latitud, location.getLatitude());
+                                    tiempos.put(Auxiliar.longitud, location.getLongitude());
+                                    tiempos.put(Auxiliar.instante, new Date().getTime());
+                                    PersistenciaDatos.reemplazaJSON(
+                                            application,
+                                            PersistenciaDatos.ficheroInstantes,
+                                            tiempos);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+
+                                compruebaLocalizacion(location);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                compruebaLocalizacion(location);
+                            }
+                        }
+                );
+
+                jsonArrayRequest.setRetryPolicy(
+                        new DefaultRetryPolicy(
+                                19000,
+                                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+                ColaConexiones.getInstance(application).getRequestQueue().add(jsonArrayRequest);
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    /*/**
      * Método para realizar la petición de tareas al servidor
      * @param location Punto del que se extraerá la latitud y la longitud
      */
-    private void peticionTareasServidor(final Location location){
+    /*private void peticionTareasServidor(final Location location){
         String idUsuario = null;
         try{
             JSONObject usuario = PersistenciaDatos.recuperaTarea(
@@ -402,7 +509,9 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                             DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
             ColaConexiones.getInstance(application).getRequestQueue().add(jsonObjectRequest);
         }
-    }
+    }*/
+
+
 
     /**
      * Método para comprobar si el usuario puede realizar alguna tarea de la zona en la que se
@@ -477,9 +586,9 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                     double maxAndado = (5 * ((double) intervaloComprobacion / 1000) / 3600);
                     if (distanciaAndada <= maxAndado) {//Se comprueba si el usuario está caminando
                         //Comprobación de la ubucación actual a las tareas almacenadas
-                        JSONObject tarea = null;
+                        JSONObject lugar = null;
                         try {
-                            tarea = Auxiliar.tareaMasCercana(
+                            lugar = Auxiliar.contextoMasCercano(
                                     application,
                                     latitud,
                                     longitud,
@@ -488,12 +597,12 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                             e.printStackTrace();
                         }
                         //Se obtiene la distancia más baja a la tarea
-                        if (tarea != null) {
+                        if (lugar != null) {
                             double distancia;
                             try {
                                 distancia = Auxiliar.calculaDistanciaDosPuntos(
                                         latitud, longitud,
-                                        tarea.getDouble(Auxiliar.latitud), tarea.getDouble(Auxiliar.longitud));
+                                        lugar.getDouble(Auxiliar.latitud), lugar.getDouble(Auxiliar.longitud));
                             } catch (JSONException je) {
                                 distancia = 10;
                             }
@@ -502,9 +611,9 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                                     //Se extrae la tarea para que no se le vuelva a ofrecer
                                     PersistenciaDatos.obtenTarea(
                                             application,
-                                            PersistenciaDatos.ficheroTareasUsuario,
-                                            tarea.getString(Auxiliar.id));
-                                    pintaNotificacion(tarea);
+                                            PersistenciaDatos.ficheroContextos,
+                                            lugar.getString(Auxiliar.id));
+                                    pintaNotificacion(lugar);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -516,12 +625,13 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         }
     }
 
+    //TODO CAMBIAR ESTE MÉTODO PARA QUE ENVIE NOTIFICACIONES DE CONTEXTO
     /**
      * Método para notificar al usuario mediante una notificación del sistema
      *
      * @param jsonObject Tarea que se va a notificar
      */
-    public void pintaNotificacion(JSONObject jsonObject){
+    public void pintaaNotificacion(JSONObject jsonObject){
         try{
             //Recursos que siempre van a tener todas las tareas
             String id = jsonObject.getString(Auxiliar.id);

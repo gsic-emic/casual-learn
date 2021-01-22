@@ -49,6 +49,9 @@ public class PersistenciaDatos {
     public static final String ficheroNuevasCuadriculas = "ficheroNuevasCuadriculas";
     public static final String ficheroPrimeraApertura = "primeraApertura";
     public static final String ficheroSegundoPlano = "enSegundoPlano";
+    public static final String ficheroContextosNotificados = "lugaresNotificados";
+    public static final String ficheroTareasPersonalizadas = "tareasPersonalizadas";
+    public static final String ficheroContextos = "lugaresSegundoPlano";
 
 
     /**

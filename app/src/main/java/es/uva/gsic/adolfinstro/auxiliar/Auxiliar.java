@@ -27,6 +27,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.webkit.WebView;
@@ -41,6 +42,7 @@ import androidx.preference.PreferenceManager;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -389,6 +391,41 @@ public class Auxiliar {
                 return null;
         }
         catch (Exception e){
+            return null;
+        }
+    }
+
+    public static JSONObject contextoMasCercano(
+            Application app,
+            double latitudUsuario,
+            double longitudUsuario,
+            String idUsuario){
+        JSONObject lugar;
+        double distanciaMin = -1, distancia;
+        JSONArray aMismaDistancia = null;
+        try{
+            JSONArray lugaresUsuario = PersistenciaDatos.leeFichero(
+                    app,
+                    PersistenciaDatos.ficheroTareasUsuario);
+            for(int i = 0; i < lugaresUsuario.length(); i++){
+                lugar = lugaresUsuario.getJSONObject(i);
+                distancia = calculaDistanciaDosPuntos(
+                        latitudUsuario, longitudUsuario,
+                        lugar.getDouble(Auxiliar.latitud), lugar.getDouble(Auxiliar.longitud)
+                );
+                if(distanciaMin < 0 || distancia < distanciaMin) {
+                    distanciaMin = distancia;
+                    aMismaDistancia = new JSONArray();//Es más rápido que borrar
+                }
+                if(distanciaMin == distancia){
+                    aMismaDistancia.put(lugar);
+                }
+            }
+            if(aMismaDistancia != null)
+                return aMismaDistancia.getJSONObject((int)(Math.random()*aMismaDistancia.length()));
+            else  return null;
+        } catch (Exception e){
+            e.printStackTrace();
             return null;
         }
     }
@@ -1733,5 +1770,49 @@ public class Auxiliar {
                 new Intent().setComponent(new ComponentName("com.asus.mobilemanager", "com.asus.mobilemanager.MainActivity")),
                 new Intent().setComponent(new ComponentName("com.transsion.phonemanager", "com.itel.autobootmanager.activity.AutoBootMgrActivity"))
         };
+    }
+
+    /**
+     * Método para obtener los identificadores de las tareas que ya ha realizado el usuario.
+     * @return Lisita de identificaciones de tareas completadas
+     */
+    public static List<String> getListaTareasCompletadas(Application app, String idUsuario){
+        if(idUsuario != null) {
+            JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroCompletadas);
+            List<String> listaId = new ArrayList<>();
+            try {
+                JSONObject tarea;
+                for (int i = 0; i < tareasCompletadas.length(); i++) {
+                    tarea = tareasCompletadas.getJSONObject(i);
+                    if (tarea.get(Auxiliar.idUsuario).equals(idUsuario))
+                        listaId.add(tareasCompletadas.getJSONObject(i).getString(Auxiliar.id));
+                }
+            } catch (Exception e) {
+                listaId = new ArrayList<>();
+            }
+            return listaId;
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<String> getListaContextosTareasCompletadas(Application app, String idUsuario){
+        if(idUsuario != null) {
+            JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroCompletadas);
+            List<String> listaId = new ArrayList<>();
+            try {
+                JSONObject tarea;
+                for (int i = 0; i < tareasCompletadas.length(); i++) {
+                    tarea = tareasCompletadas.getJSONObject(i);
+                    if(tarea.get(Auxiliar.idUsuario).equals(idUsuario))
+                        listaId.add(tareasCompletadas.getJSONObject(i).getString(Auxiliar.contexto));
+                }
+            }catch (Exception e){
+                listaId = new ArrayList<>();
+            }
+            return listaId;
+        } else {
+            return new ArrayList<>();
+        }
     }
 }
