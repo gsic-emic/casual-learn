@@ -24,6 +24,7 @@ import android.speech.tts.UtteranceProgressListener;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -65,7 +66,7 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
     private ImageView ivSpeaker;
     private List<String> permisos;
     private LocationManager locationManager;
-    private TextView distanciaTexto;
+    private TextView distanciaTexto, textoLugar, textoLugarReducido;
     private TextToSpeech textToSpeech;
     private AdaptadorListaMapa adaptadorListaMapa;
     private RecyclerView contenedorTareas;
@@ -90,9 +91,10 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                     PersistenciaDatos.ficheroUsuario,
                     Auxiliar.id
             ).getString(Auxiliar.uid);
-            lugar = PersistenciaDatos.recuperaTarea(
+            lugar = PersistenciaDatos.recuperaObjeto(
                     getApplication(),
                     PersistenciaDatos.ficheroContextosNotificados,
+                    Auxiliar.contexto,
                     idContexto,
                     idUsuario);
             if(lugar.has(Auxiliar.enlaceWiki)){
@@ -134,11 +136,28 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
 
             ((TextView) findViewById(R.id.tvTituloInfoPunto)).setText(lugar.getString(Auxiliar.label));
 
+
             distanciaTexto = findViewById(R.id.tvDistanciaInfoPunto);
 
-            TextView descripcion = findViewById(R.id.textoInfoPunto);
-            descripcion.setText(Auxiliar.creaEnlaces(context, lugar.getString(Auxiliar.comment), false));
-            descripcion.setMovementMethod(LinkMovementMethod.getInstance());
+            textoLugar = findViewById(R.id.textoInfoPunto);
+            textoLugar.setText(Auxiliar.creaEnlaces(context, lugar.getString(Auxiliar.comment), false));
+            textoLugar.setMovementMethod(LinkMovementMethod.getInstance());
+
+            textoLugarReducido = findViewById(R.id.textoReducidoInfoPunto);
+            textoLugarReducido.setText(Auxiliar.quitaEnlaces(lugar.getString(Auxiliar.comment)));
+
+            textoLugar.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (textoLugar.getLineCount() > 0) {
+                        textoLugar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        if(textoLugar.getLineCount() > 5){
+                            textoLugar.setVisibility(View.GONE);
+                            textoLugarReducido.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+            });
 
             textoSpeaker = String.format(
                     "%s\n%s", lugar.getString(Auxiliar.label),
@@ -156,12 +175,6 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
             contenedorTareas = findViewById(R.id.rvTareasInfoPunto);
 
             contenedorTareas.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
-
-            JSONArray tareasPersonalizadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareasPersonalizadas);
-            if(tareasPersonalizadas == null || tareasPersonalizadas.length() == 0)
-                peticionTareasPersonalizadas(lugar.getString(Auxiliar.enlaceWiki));
-            else
-                pintaTareas(tareasPersonalizadas);
         }catch (Exception e){
             Intent intent = new Intent(context, Maps.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -194,29 +207,29 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                                     JSONArray tareasGuardar = new JSONArray();
                                     for (int i = 0; i < response.length(); i++) {
                                         tarea = response.getJSONObject(i);
-                                        if(!tarea.has(Auxiliar.latitud) || !tarea.has(Auxiliar.longitud)){
+                                        if (!tarea.has(Auxiliar.latitud) || !tarea.has(Auxiliar.longitud)) {
                                             tarea.put(Auxiliar.latitud, lugar.getDouble(Auxiliar.latitud));
                                             tarea.put(Auxiliar.longitud, lugar.getDouble(Auxiliar.longitud));
-                                            if(enlaceWiki != null)
-                                                tarea.put(Auxiliar.enlaceWiki, enlaceWiki);
-                                            if(!tarea.has(Auxiliar.comment) || tarea.getString(Auxiliar.comment).equals(""))
-                                                tarea.put(Auxiliar.comment, lugar.getString(Auxiliar.label));
-                                            tareasGuardar.put(tarea);
-                                            boolean actualiza = false;
-                                            if(tareasGuardar.length() > 0)
-                                                    actualiza = PersistenciaDatos.guardaFichero(
-                                                            getApplication(),
-                                                            PersistenciaDatos.ficheroTareasPersonalizadas,
-                                                            tareasGuardar,
-                                                            Context.MODE_PRIVATE
-                                                    );
-                                            if(actualiza){
-                                                pintaTareas(tareasGuardar);
-                                            }
                                         }
+                                        if (enlaceWiki != null)
+                                            tarea.put(Auxiliar.enlaceWiki, enlaceWiki);
+                                        if (!tarea.has(Auxiliar.comment) || tarea.getString(Auxiliar.comment).equals(""))
+                                            tarea.put(Auxiliar.comment, lugar.getString(Auxiliar.label));
+                                        tareasGuardar.put(tarea);
+                                    }
+                                    boolean actualiza = false;
+                                    if(tareasGuardar.length() > 0)
+                                            actualiza = PersistenciaDatos.guardaFichero(
+                                                    getApplication(),
+                                                    PersistenciaDatos.ficheroTareasPersonalizadas,
+                                                    tareasGuardar,
+                                                    Context.MODE_PRIVATE
+                                            );
+                                    if(actualiza){
+                                        pintaTareas(tareasGuardar);
                                     }
                                 }catch (Exception e){
-
+                                    e.printStackTrace();
                                 }
                             }
                         }
@@ -300,6 +313,24 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
         });
     }
 
+    @Override
+    public void onStart() {
+        JSONArray tareasPersonalizadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroTareasPersonalizadas);
+        try {
+            if (tareasPersonalizadas == null || tareasPersonalizadas.length() == 0  || !tareasPersonalizadas.getJSONObject(0).getString(Auxiliar.contexto).equals(lugar.getString(Auxiliar.contexto))) {
+                if(lugar.has(Auxiliar.enlaceWiki))
+                    peticionTareasPersonalizadas(lugar.getString(Auxiliar.enlaceWiki));
+                else
+                    peticionTareasPersonalizadas(null);
+            }
+            else
+                pintaTareas(tareasPersonalizadas);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        super.onStart();
+    }
+
     private void solicitaPermisoUbicacion() {
         final Dialog dialogoPermisos = new Dialog(context);
         dialogoPermisos.setContentView(R.layout.dialogo_permisos_ubicacion);
@@ -321,18 +352,18 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
         }
 
         if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
-            final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+            final TextView tituloPermisos = dialogoPermisos.findViewById(R.id.tvTituloPermisos);
             tituloPermisos.setVisibility(View.GONE);
-            final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+            final TextView textoPermiso = dialogoPermisos.findViewById(R.id.tvTextoPermisos);
             textoPermiso.setText(Html.fromHtml(textoPermisos));
-            Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+            Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
             salir.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     finishAffinity();
                 }
             });
-            final Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+            final Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
             siguiente.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -353,17 +384,17 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                 }
             });
         } else{
-            TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+            TextView textView = dialogoPermisos.findViewById(R.id.tvTituloPermisos);
             if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
                 textView.setVisibility(View.VISIBLE);
-                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
                 salir.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         finishAffinity();
                     }
                 });
-                Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
                 siguiente.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -378,16 +409,16 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                 });
             }else {//Solo muestro el normal
                 textView.setVisibility(View.GONE);
-                textView = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+                textView = dialogoPermisos.findViewById(R.id.tvTextoPermisos);
                 textView.setText(Html.fromHtml(textoPermisos));
-                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
                 salir.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         finishAffinity();
                     }
                 });
-                Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
                 siguiente.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -411,9 +442,9 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                 usuarioLat,
                 usuarioLon);
         if(distancia>=1)
-            distanciaTexto.setText(String.format("%.2fkm", distancia));
+            distanciaTexto.setText(String.format("%s %.2fkm", context.getResources().getString(R.string.distancia_linea_recta),distancia));
         else
-            distanciaTexto.setText(String.format("%.2fm", distancia*1000));
+            distanciaTexto.setText(String.format("%s %.2fm", context.getResources().getString(R.string.distancia_linea_recta),distancia*1000));
     }
 
     @Override
@@ -513,6 +544,26 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                     }
                 }
                 break;
+            case R.id.btAmpliarInfoPunto:
+                try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
+                    if(posicion != null){
+                        Intent intent = new Intent(context, MapaNavegable.class);
+                        intent.putExtra(Auxiliar.latitud + "user", posicion.getLatitude());
+                        intent.putExtra(Auxiliar.longitud + "user", posicion.getLongitude());
+                        intent.putExtra(Auxiliar.latitud + "task", lugar.getDouble(Auxiliar.latitud));
+                        intent.putExtra(Auxiliar.longitud + "task", lugar.getDouble(Auxiliar.longitud));
+                        startActivity(intent);
+                    }else{
+                        Toast.makeText(context, R.string.recuperandoPosicion, Toast.LENGTH_SHORT).show();
+                    }
+                }catch (JSONException e){
+                    e.printStackTrace();
+                }
+                break;
+            case R.id.textoReducidoInfoPunto:
+                textoLugarReducido.setVisibility(View.GONE);
+                textoLugar.setVisibility(View.VISIBLE);
+                break;
             default:
 
                 break;
@@ -527,7 +578,29 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
 
     @Override
     public void onBackPressed(){
+        Bundle extras = getIntent().getExtras();
+        if (extras != null && extras.containsKey(Auxiliar.previa)) {
+            switch (extras.getString(Auxiliar.previa)){
+                case Auxiliar.mapa:
+                    finish();
+                    break;
+                case Auxiliar.notificacion:
+                default:
+                    aMapas();
+                    break;
+            }
+        }else{
+            aMapas();
+        }
+    }
 
+    private void aMapas(){
+        Intent intent = new Intent(context, Maps.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(Auxiliar.textoParaElMapa, "");
+        context.startActivity(intent);
+        finish();
     }
 
     @Override

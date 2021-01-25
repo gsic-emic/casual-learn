@@ -117,17 +117,26 @@
             android:layout_marginHorizontal="@dimen/margen_texto"
             android:visibility="gone"
             android:ellipsize="end"
-            android:maxLines="5"/>
+            android:maxLines="5"
+            android:onClick="boton"/>
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/barrierPuntoInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="textoInfoPunto, textoReducidoInfoPunto" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvTareasInfoPunto"
             android:layout_marginHorizontal="@dimen/margen_texto"
             android:layout_width="match_parent"
             android:layout_height="160dp"
+            android:layout_marginTop="@dimen/margen_texto"
             android:visibility="gone"
             android:scrollbars="horizontal"
             android:scrollbarSize="10dp"
-            app:layout_constraintTop_toBottomOf="@id/textoInfoPunto"
+            app:layout_constraintTop_toBottomOf="@id/barrierPuntoInfo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>

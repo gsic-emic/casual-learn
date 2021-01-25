@@ -7,6 +7,7 @@
     android:paddingVertical="5dp"
     android:paddingHorizontal="@dimen/margen_texto"
     android:layout_marginTop="1dp"
+    android:layout_marginHorizontal="5dp"
     android:background="@drawable/boton_secundario">
 
     <TextView

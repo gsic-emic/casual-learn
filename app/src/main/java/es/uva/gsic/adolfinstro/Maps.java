@@ -1179,7 +1179,6 @@ public class Maps extends AppCompatActivity implements
                                 textoPuntoReducido.setText(textoPunto.getText());
                                 textoPunto.setVisibility(View.GONE);
                                 textoPuntoReducido.setVisibility(View.VISIBLE);
-                                //masInfo.setVisibility(View.VISIBLE);
                             }
                         }
                     }
@@ -2004,6 +2003,10 @@ public class Maps extends AppCompatActivity implements
             case R.id.menuTareasCompletadas:
                 intent = new Intent(this, ListaTareas.class);
                 intent.putExtra(Auxiliar.peticion, PersistenciaDatos.ficheroCompletadas);
+                startActivity(intent);
+                return true;
+            case R.id.menuLugaresNotificados:
+                intent = new Intent(this, ListaContextos.class);
                 startActivity(intent);
                 return true;
             case R.id.cerrarSesion://Puede ser el de inicio de sesión si el usuario aún no se ha identificado

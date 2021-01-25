@@ -80,7 +80,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  */
 public class Auxiliar {
 
-    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
@@ -119,6 +120,7 @@ public class Auxiliar {
 
     public static final String nunca_mas = "NUNCA_MAS";
     public static final String ahora_no = "AHORA_NO";
+    public static final String ahora_no_contexto = "AHORA_NO_CONTEXTO";
 
     /** Identificador del canal de tareas */
     public static final String channelId = "notiTareas";
@@ -406,7 +408,7 @@ public class Auxiliar {
         try{
             JSONArray lugaresUsuario = PersistenciaDatos.leeFichero(
                     app,
-                    PersistenciaDatos.ficheroTareasUsuario);
+                    PersistenciaDatos.ficheroContextos);
             for(int i = 0; i < lugaresUsuario.length(); i++){
                 lugar = lugaresUsuario.getJSONObject(i);
                 distancia = calculaDistanciaDosPuntos(
@@ -1741,7 +1743,10 @@ public class Auxiliar {
     public static String quitaEnlaces(String string) {
         return string
                 .replaceAll("</a>", "")
-                .replaceAll("<a.*?>","");
+                .replaceAll("<a.*?>","")
+                .replace("<span>", "")
+                .replace("</span>", "")
+                .replace("<br>"," ");
     }
 
     /**

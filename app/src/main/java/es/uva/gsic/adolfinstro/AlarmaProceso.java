@@ -315,7 +315,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 keys.add(Auxiliar.oeste); objects.add(location.getLongitude() - 0.00325);
                 keys.add(Auxiliar.id); objects.add(idUsuario);
 
-                String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
+                String url = Auxiliar.creaQuery(Auxiliar.rutaContextos, keys, objects);
 
                 final String finalIdUsuario = idUsuario;
                 JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
@@ -346,8 +346,10 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                                                 guarda = false;
                                         } else
                                             guarda = false;
-                                        if (guarda)
+                                        if (guarda) {
+                                            punto.put(Auxiliar.idUsuario, finalIdUsuario);
                                             puntosGuarda.put(punto);
+                                        }
                                     } catch (Exception e) {
                                         e.printStackTrace();
                                     }
@@ -609,10 +611,11 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                             if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
                                 try {
                                     //Se extrae la tarea para que no se le vuelva a ofrecer
-                                    PersistenciaDatos.obtenTarea(
+                                    PersistenciaDatos.obtenObjeto(
                                             application,
                                             PersistenciaDatos.ficheroContextos,
-                                            lugar.getString(Auxiliar.id));
+                                            Auxiliar.contexto,
+                                            lugar.getString(Auxiliar.contexto));
                                     pintaNotificacion(lugar);
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -625,56 +628,42 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         }
     }
 
-    //TODO CAMBIAR ESTE MÉTODO PARA QUE ENVIE NOTIFICACIONES DE CONTEXTO
     /**
      * Método para notificar al usuario mediante una notificación del sistema
      *
-     * @param jsonObject Tarea que se va a notificar
+     * @param lugar Tarea que se va a notificar
      */
-    public void pintaaNotificacion(JSONObject jsonObject){
+    public void pintaNotificacion(JSONObject lugar){
         try{
-            //Recursos que siempre van a tener todas las tareas
-            String id = jsonObject.getString(Auxiliar.id);
-            String tipoRespuesta = jsonObject.getString(Auxiliar.tipoRespuesta);
-            tipoRespuesta = Auxiliar.ultimaParte(tipoRespuesta);
+            String idLugar = lugar.getString(Auxiliar.contexto);
             try {
-                jsonObject.put(Auxiliar.tipoRespuesta, tipoRespuesta);
-                jsonObject.put(Auxiliar.estadoTarea, EstadoTarea.NOTIFICADA.getValue());
-                jsonObject.put(Auxiliar.origen, PersistenciaDatos.ficheroTareasUsuario);
-                jsonObject.put(Auxiliar.fechaNotificiacion, Auxiliar.horaFechaActual());
+                lugar.put(Auxiliar.origen, PersistenciaDatos.ficheroContextosNotificados);
+                lugar.put(Auxiliar.fechaNotificiacion, Auxiliar.horaFechaActual());
                 JSONObject idUser = PersistenciaDatos.recuperaTarea(
                         application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
                 if(idUser != null)
-                    jsonObject.put(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
+                    lugar.put(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
                 if(!PersistenciaDatos.guardaJSON(
                         application,
-                        PersistenciaDatos.ficheroNotificadas,
-                        jsonObject,
+                        PersistenciaDatos.ficheroContextosNotificados,
+                        lugar,
                         Context.MODE_PRIVATE))
                     throw new Exception();
-                Intent intent = new Intent(context, Preview.class);
-                intent.putExtra(Auxiliar.id, id);
+                Intent intent = new Intent(context, PuntoInteres.class);
+                intent.putExtra(Auxiliar.contexto, idLugar);
                 intent.putExtra(Auxiliar.previa, Auxiliar.notificacion);
                 NotificationCompat.Builder builder;
-                int iconoTarea;
-                if((iconoTarea = Auxiliar.iconoTipoTarea(tipoRespuesta)) == 0)
-                    iconoTarea = R.drawable.ic_marcador_uno;
-                //Elimino los enlaces
-                String textoTarea = Auxiliar.quitaEnlaces(jsonObject.getString(Auxiliar.recursoAsociadoTexto))
+                String textoTarea = Auxiliar.quitaEnlaces(lugar.getString(Auxiliar.comment))
                         .replace("<br>"," ").trim();
 
-                String titulo = String.format("%s %s!", context.getString(R.string.nuevaTarea), jsonObject.getString(Auxiliar.titulo));
+                String titulo = String.format("%s %s!", context.getString(R.string.nuevasTareas), lugar.getString(Auxiliar.label));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.casual_learn_icono)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setContentTitle(titulo)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(textoTarea))
-                        .setContentText(textoTarea)
-                        .setLargeIcon(iconoGrandeNotificacion(
-                                Objects.requireNonNull(
-                                        ResourcesCompat.getDrawable(
-                                                context.getResources(), iconoTarea, null))));
+                        .setContentText(textoTarea);
 
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 PendingIntent pendingIntent = PendingIntent.getActivity(
@@ -689,8 +678,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
                 //Acción de descartar la notificación
                 Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
-                intentBoton.setAction(Auxiliar.ahora_no);
-                intentBoton.putExtra(Auxiliar.id, id);
+                intentBoton.setAction(Auxiliar.ahora_no_contexto);
+                intentBoton.putExtra(Auxiliar.contexto, idLugar);
                 intentBoton.putExtra(Auxiliar.idNotificacion, Auxiliar.incr);
                 PendingIntent ahoraNoPending = PendingIntent.getBroadcast(
                         context,
@@ -715,7 +704,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         }
                         Bundle bundle = new Bundle();
                         bundle.putString(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
-                        Login.firebaseAnalytics.logEvent("tareaNotificada", bundle);
+                        Login.firebaseAnalytics.logEvent("contextoNotificado", bundle);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

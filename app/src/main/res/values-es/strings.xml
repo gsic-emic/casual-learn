@@ -21,7 +21,7 @@
     <string name="gsic">GSIC/EMIC</string>
     <string name="respuestaVacia">La respuesta no puede estar vacía</string>
     <string name="respuestaG">Respuesta almacenada</string>
-    <string name="noMolestar">No molestar con nuevas tareas</string>
+    <string name="noMolestar">No molestar con notificaciones de lugares</string>
     <string name="intervalo">Intervalo mínimo entre cada nueva notificación de tarea</string>
     <string name="intervaloResumen">Intervalo temporal entre cada una de las tareas</string>
     <string name="textoNotificacionPersistente">Buscando nuevas tareas…</string>
@@ -62,7 +62,7 @@
     <string name="respuestaEspeTitulo">Respuesta esperada</string>
     <string name="respuestaEspeCorrecta">¡Respuesta correcta!</string>
     <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
-    <string name="nuevaTarea">¡Nueva tarea en</string>
+    <string name="nuevasTareas">¡Nuevas tareas en</string>
     <string name="enviar">Enviar</string>
     <string name="gracias">¡¡Gracias!! Con tus valoraciones mejoran las tareas recomendadas</string>
     <string name="realizar">Realizar</string>
@@ -233,7 +233,7 @@
     <string name="titulo_compartir_preferencias">Publicación de las respuestas</string>
     <string name="compartir_id_portafolio">Pulsa para compartir el identificador del portafolio</string>
     <string name="idporta_no_disponible">El identificador del portafolio no está disponible. Vuelve a probar en unos minutos</string>
-    <string name="resumen_no_molestar">No te mostraremos notificaciones de tareas cercanas hasta que no deshabilites esta preferencia</string>
+    <string name="resumen_no_molestar">No te mostraremos notificaciones de lugares cercanas mientras tengas esta preferencia activa</string>
     <string name="copiar_portapapeles">Copiar al portapapeles</string>
     <string name="copiado_al_porta">Copiado al portapapeles</string>
     <string name="public_answer">Publicar en el portafolio</string>
@@ -267,4 +267,9 @@
     <string name="hacer_porfolio_publico">Publicar tus respuestas en un porfolio público.\nPodrás desactivarlo desde los ajustes de la aplicación.</string>
     <string name="activar_retardo">Activar que las respuetas se hagan públicas lo antes posible.\nSi está desactivada se publicarán cuando pasen unas horas.</string>
     <string name="compartir_id_porfolio">Compartir el identificador del porfolio a través de distintas aplicaciones que tengas instaladas.</string>
+    <string name="info_lugar">Detalles del lugar</string>
+    <string name="lugares_notificados">Lugares notificados</string>
+    <string name="distancia_linea_recta">La distancia en línea recta hasta el lugar es de </string>
+    <string name="sinContextosLista">Todavía no se ha notificado ningún lugar</string>
+    <string name="instanteNotificacion">Instante de la notificación:</string>
 </resources>

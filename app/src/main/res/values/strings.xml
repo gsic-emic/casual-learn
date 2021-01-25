@@ -23,7 +23,7 @@
     <string name="gsic">GSIC/EMIC</string>
     <string name="respuestaVacia">The answer is empty!!</string>
     <string name="respuestaG">Saved answer</string>
-    <string name="noMolestar">Don\'t Disturb with new tasks</string>
+    <string name="noMolestar">Don\'t Disturb with notifications of places</string>
     <string name="intervalo">Interval between tasks</string>
     <string name="intervaloResumen">Minimum interval between each task</string>
     <string name="textoNotificacionPersistente">Looking for new tasks..</string>
@@ -69,7 +69,7 @@
     <string name="respuestaEspeTitulo">Expected response</string>
     <string name="respuestaEspeCorrecta">Correct answer!</string>
     <string name="respuestaEspeIncrrecta">Wrong answer!</string>
-    <string name="nuevaTarea">New task in</string>
+    <string name="nuevasTareas">New tasks in</string>
     <string name="enviar">Send</string>
     <string name="gracias">Thanks!!</string>
     <string name="realizar">Do</string>
@@ -257,7 +257,7 @@
     <string name="titulo_compartir_preferencias">Answers publication</string>
     <string name="compartir_id_portafolio">Click to share the portfolio ID</string>
     <string name="idporta_no_disponible">The portfolio ID is not yet available. Try again in a few minutes</string>
-    <string name="resumen_no_molestar">We will not show you any notification of near tasks until you disable this preference</string>
+    <string name="resumen_no_molestar">We will not show you any notification of near places until you disable this preference</string>
     <string name="copiar_portapapeles">Copy to clipboard</string>
     <string name="copiado_al_porta">Copied to clipboard</string>
     <string name="public_answer">Public answer</string>
@@ -297,4 +297,9 @@
     <string name="hacer_porfolio_publico">Publish your answers in a public portfolio.\nYou can disable it from the app settings.</string>
     <string name="activar_retardo">Turn on this option if you want that the answers are made public as soon as possible.\nIf it is disable, they will be published after a few hours.</string>
     <string name="compartir_id_porfolio">Share the portfolio\'s ID.</string>
+    <string name="info_lugar">Place details</string>
+    <string name="lugares_notificados">Places notified</string>
+    <string name="distancia_linea_recta">Your straight-line distance to the place</string>
+    <string name="sinContextosLista">The list don\'t have any item</string>
+    <string name="instanteNotificacion">Instant notification:</string>
 </resources>

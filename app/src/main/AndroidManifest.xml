@@ -30,7 +30,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".PuntoInteres"></activity>
+        <activity android:name=".ListaContextos"></activity>
         <activity
             android:name=".CompartirRespuesta"
             android:label="@string/compartir_respuesta" />
@@ -55,7 +55,10 @@
             android:label="@string/acercade" />
         <activity
             android:name=".Tarea"
-            android:label="@string/tareaRealizar">
+            android:label="@string/tareaRealizar"></activity>
+        <activity
+            android:name=".PuntoInteres"
+            android:label="@string/info_lugar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="es.uva.gsic.adolfinstro.Login" />
@@ -88,6 +91,7 @@
             <intent-filter>
                 <action android:name="AHORA_NO" />
                 <action android:name="NUNCA_MAS" />
+                <action android:name="AHORA_NO_CONTEXTO" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
