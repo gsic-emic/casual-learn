@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -57,7 +58,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -254,6 +254,14 @@ public class Maps extends AppCompatActivity implements
 
     private FloatingActionButton btNavegar;
 
+    private FloatingActionButton btModos;
+
+    private Button btModos1, btModos2, btModos3, btModos4;
+
+    private Button[] btsModo;
+
+    private ConstraintLayout modos;
+
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
      * molestar para saber si se tiene que mostar el mapa o no
@@ -409,8 +417,21 @@ public class Maps extends AppCompatActivity implements
             public void onClick(View v) {
                 if(marcadorPulsado)
                     ocultaInfoPuntoInteres();
+                if (btCentrar.isShown())
+                    btCentrar.hide();
+                ocultaTodoModos();
             }
         });
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                ocultaModos();
+                if(!btCentrar.isShown())
+                    btCentrar.show();
+                return false;
+            }
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -424,8 +445,6 @@ public class Maps extends AppCompatActivity implements
                     JSONArray municipios = Auxiliar.buscaMunicipio(
                             context, StringUtils.stripAccents(newText.trim().toLowerCase()));
                     if (municipios.length() > 0) {
-                        if (btCentrar.isShown())
-                            btCentrar.hide();
                         contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
                                 context, LinearLayoutManager.VERTICAL, false));
                         contenedorBusqMapa.setBackgroundColor(dameColor(R.color.transparente));
@@ -461,14 +480,14 @@ public class Maps extends AppCompatActivity implements
                         }
                     } else {
                         ocultaContenedorBusqMapa();
-                        if (!btCentrar.isShown())
-                            btCentrar.show();
+                        /*if (!btCentrar.isShown())
+                            btCentrar.show();*/
                     }
 
                 } else {
                     ocultaContenedorBusqMapa();
-                    if (!btCentrar.isShown())
-                        btCentrar.show();
+                    /*if (!btCentrar.isShown())
+                        btCentrar.show();*/
                 }
                 return false;
             }
@@ -632,6 +651,14 @@ public class Maps extends AppCompatActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        btModos = findViewById(R.id.btModo);
+        modos = findViewById(R.id.modos);
+        btModos1 = findViewById(R.id.modo1);
+        btModos2 = findViewById(R.id.modo2);
+        btModos3 = findViewById(R.id.modo3);
+        btModos4 = findViewById(R.id.modo4);
+        btsModo = new Button[]{btModos1, btModos2, btModos3, btModos4};
     }
 
     private void enviaConfiguracionPorfolio(final boolean publico, final boolean retardado) {
@@ -789,6 +816,23 @@ public class Maps extends AppCompatActivity implements
         }
         btCentrar.setVisibility(View.VISIBLE);
         btNavegar.setVisibility(View.GONE);
+        ocultaModos();
+    }
+
+    private void ocultaModos(){
+        if(modos.isShown()){
+            modos.setVisibility(View.GONE);
+        }
+        if(!btModos.isShown())
+            btModos.show();
+    }
+
+    private void ocultaTodoModos(){
+        if(modos.isShown()){
+            modos.setVisibility(View.GONE);
+        }
+        if(btModos.isShown())
+            btModos.hide();
     }
 
     /**
@@ -1126,6 +1170,7 @@ public class Maps extends AppCompatActivity implements
      */
     public void muestraPuntoInteres(JSONObject puntoInteres) {
         try {
+            ocultaTodoModos();
             //Con el siguiente if evito que se hagan dos peticiones al servidor
             if (!idZona.equals(puntoInteres.getString(Auxiliar.ficheroZona))) {
                 idZona = puntoInteres.getString(Auxiliar.ficheroZona);
@@ -1820,6 +1865,9 @@ public class Maps extends AppCompatActivity implements
             textToSpeech.shutdown();
     }
 
+    //TODO Esto luego va todo en las preferencias o un fichero. Solo para la demo
+    int numero = 1;
+
     /**
      * Método que responde a la pulsación del alguno de los botones
      * @param view Instancia del botón pulsado que ha lanzado el método
@@ -1827,6 +1875,7 @@ public class Maps extends AppCompatActivity implements
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btCentrar: //Solo centra la posición si se ha conseguido recuperar
+                ocultaModos();
                 if(myLocationNewOverlay.getMyLocation() != null) {
                     mapController.setZoom(nivelMax);
                     mapController.setCenter(myLocationNewOverlay.getMyLocation());
@@ -1870,9 +1919,61 @@ public class Maps extends AppCompatActivity implements
                 }catch (Exception e){
                     e.printStackTrace();
                 }
+                break;
+            case R.id.btModo:
+                if(!modos.isShown()) {
+                    btModos.hide();
+                    configuraModos();
+                }
+                break;
+            case R.id.modo1:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_uno));
+                numero = 1;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;
+            case R.id.modo2:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_dos));
+                numero = 2;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;
+            case R.id.modo3:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_tres));
+                numero = 3;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;
+            case R.id.modo4:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_cuatro));
+                numero = 4;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;
             default:
                 break;
         }
+    }
+
+    private void configuraModos() {
+        for(Button b : btsModo){
+            b.setBackground(dameDrawable(R.drawable.boton_rojo));
+        }
+        switch (numero){
+            case 1:
+                btModos1.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+            case 2:
+                btModos2.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+            case 3:
+                btModos3.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+            default:
+                btModos4.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+        }
+        modos.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -2527,6 +2628,7 @@ public class Maps extends AppCompatActivity implements
         if(!searchView.isIconified())
             searchView.setIconified(true);
 
+        ocultaModos();
         llamadaAPlayStore();
     }
 

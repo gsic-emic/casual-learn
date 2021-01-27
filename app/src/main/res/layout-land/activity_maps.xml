@@ -71,6 +71,99 @@
             app:layout_constraintGuide_percent="1" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btModo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="15dp"
+            app:fabSize="mini"
+            android:onClick="boton"
+            app:backgroundTint="@color/white"
+            app:layout_constraintEnd_toEndOf="@id/map"
+            app:layout_constraintTop_toBottomOf="@id/clIdentificateMapa"
+            app:srcCompat="@drawable/ic_uno"
+            android:contentDescription="@string/botonCentrar"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/modos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/fondo_modos"
+            app:layout_constraintEnd_toEndOf="@id/map"
+            app:layout_constraintTop_toBottomOf="@id/clIdentificateMapa"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="15dp"
+            android:padding="10dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tituloModo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Modos de notificación"
+                android:paddingBottom="10dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/modo1"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:drawableTop="@drawable/ic_uno"
+                android:text="Turista"
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                app:layout_constraintTop_toBottomOf="@id/tituloModo"
+                app:layout_constraintStart_toStartOf="parent"
+                android:onClick="boton"
+                android:textColor="@color/black"/>
+
+            <Button
+                android:id="@+id/modo2"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:drawableTop="@drawable/ic_dos"
+                android:text="Paseando"
+                android:textSize="12sp"
+                android:layout_marginStart="10dp"
+                android:textAllCaps="false"
+                app:layout_constraintTop_toBottomOf="@id/tituloModo"
+                app:layout_constraintStart_toEndOf="@id/modo1"
+                android:onClick="boton"
+                android:textColor="@color/black"/>
+
+            <Button
+                android:id="@+id/modo3"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:drawableTop="@drawable/ic_tres"
+                android:text="En casa"
+                android:textSize="12sp"
+                android:layout_marginStart="10dp"
+                android:textAllCaps="false"
+                app:layout_constraintTop_toBottomOf="@id/tituloModo"
+                app:layout_constraintStart_toEndOf="@id/modo2"
+                android:onClick="boton"
+                android:textColor="@color/black"/>
+
+            <Button
+                android:id="@+id/modo4"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:drawableTop="@drawable/ic_cuatro"
+                android:text="No molestar"
+                android:textSize="12sp"
+                android:layout_marginStart="10dp"
+                android:textAllCaps="false"
+                app:layout_constraintTop_toBottomOf="@id/tituloModo"
+                app:layout_constraintStart_toEndOf="@id/modo3"
+                android:onClick="boton"
+                android:textColor="@color/black"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btCentrar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
