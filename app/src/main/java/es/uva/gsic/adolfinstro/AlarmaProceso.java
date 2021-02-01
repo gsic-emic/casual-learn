@@ -23,6 +23,7 @@ import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -69,6 +70,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
 
     LocationListener locationListener;
 
+    SharedPreferences sharedPreferences;
+
 
     /**
      * Acciones que se realizarán cuando se recibe la notificación de la alarma
@@ -101,7 +104,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 }
             }
 
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
             sharedPreferences.registerOnSharedPreferenceChangeListener(this);
             onSharedPreferenceChanged(sharedPreferences, Ajustes.INTERVALO_pref);
             onSharedPreferenceChanged(sharedPreferences, Ajustes.NO_MOLESTAR_pref);
@@ -250,42 +253,47 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         double latitud = location.getLatitude();
         double longitud = location.getLongitude();
         //Se comprueba si existe el fichero y el objeto
-        if(PersistenciaDatos.existeTarea(
-                application,
-                PersistenciaDatos.ficheroInstantes,
-                idInstanteGET)){
-            try {
-                JSONObject instante = PersistenciaDatos.recuperaTarea(
-                        application,
-                        PersistenciaDatos.ficheroInstantes,
-                        idInstanteGET);
-                assert instante != null;
-                latitudGet = instante.getDouble(Auxiliar.latitud);
-                longitudGet = instante.getDouble(Auxiliar.longitud);
-                momento = instante.getLong(Auxiliar.instante);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }
 
-        //Inicio del servicio, se tiene que recuperar la tarea del servidor
-        //Validez de un día para las tareas
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
-                application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-        if(idUsuario != null) {
-            if (latitudGet == 0 || longitudGet == 0 || ((new Date().getTime() - momento) > 7200000)) {
-                peticionContextosServidor(location);
-            } else {
-                double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
-                        latitud, longitud,
-                        latitudGet, longitudGet);
-                if (distanciaOrigen >= 0.5) {
-                    //Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
-                    peticionContextosServidor(location);
-                } else {//El fichero sigue siendo válido
-                    compruebaLocalizacion(location);
+        if(!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false)) {
+            if (PersistenciaDatos.existeTarea(
+                    application,
+                    PersistenciaDatos.ficheroInstantes,
+                    idInstanteGET)) {
+                try {
+                    JSONObject instante = PersistenciaDatos.recuperaTarea(
+                            application,
+                            PersistenciaDatos.ficheroInstantes,
+                            idInstanteGET);
+                    assert instante != null;
+                    latitudGet = instante.getDouble(Auxiliar.latitud);
+                    longitudGet = instante.getDouble(Auxiliar.longitud);
+                    momento = instante.getLong(Auxiliar.instante);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
+
+            //Inicio del servicio, se tiene que recuperar la tarea del servidor
+            //Validez de un día para las tareas
+            JSONObject idUsuario = PersistenciaDatos.recuperaTarea(
+                    application, PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+            if (idUsuario != null) {
+                if (latitudGet == 0 || longitudGet == 0 || ((new Date().getTime() - momento) > 7200000)) {
+                    peticionContextosServidor(location);
+                } else {
+                    double distanciaOrigen = Auxiliar.calculaDistanciaDosPuntos(
+                            latitud, longitud,
+                            latitudGet, longitudGet);
+                    if (distanciaOrigen >= 0.5) {
+                        //Las tareas en local están obsoletas, hay que pedir unas nuevas al servidor
+                        peticionContextosServidor(location);
+                    } else {//El fichero sigue siendo válido
+                        compruebaLocalizacion(location);
+                    }
+                }
+            }
+        }else{
+            cancelaAlarmaProceso(context);
         }
     }
 
@@ -616,6 +624,18 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                                             PersistenciaDatos.ficheroContextos,
                                             Auxiliar.contexto,
                                             lugar.getString(Auxiliar.contexto));
+                                    try{
+                                        //Por si se había notificado previamente.
+                                        //Se vuelve a notificar mientras el usuario no realice, al menos, una tarea del lugar
+                                        PersistenciaDatos.obtenObjeto(
+                                                application,
+                                                PersistenciaDatos.ficheroContextosNotificados,
+                                                Auxiliar.contexto,
+                                                lugar.getString(Auxiliar.contexto),
+                                                idUsuario.getString(Auxiliar.uid));
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
                                     pintaNotificacion(lugar);
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -656,7 +676,13 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 String textoTarea = Auxiliar.quitaEnlaces(lugar.getString(Auxiliar.comment))
                         .replace("<br>"," ").trim();
 
-                String titulo = String.format("%s %s!", context.getString(R.string.nuevasTareas), lugar.getString(Auxiliar.label));
+                String titulo = (System.currentTimeMillis() % 2 == 0) ?
+                        String.format("%s %s?",
+                                context.getString(R.string.porque_no_acercas),
+                                Auxiliar.articuloDeterminado(lugar.getString(Auxiliar.label))):
+                        String.format("%s %s",
+                                context.getString(R.string.estas_cerca),
+                                Auxiliar.articuloDeterminado(lugar.getString(Auxiliar.label)));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.casual_learn_icono)
@@ -677,7 +703,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                 //builder.setTimeoutAfter(tiempoNotificacion); No es necesario en este tipo de notificaciones
 
                 //Acción de descartar la notificación
-                Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
+                /* Intent intentBoton = new Intent(context, RecepcionNotificaciones.class);
                 intentBoton.setAction(Auxiliar.ahora_no_contexto);
                 intentBoton.putExtra(Auxiliar.contexto, idLugar);
                 intentBoton.putExtra(Auxiliar.idNotificacion, Auxiliar.incr);
@@ -686,7 +712,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         Auxiliar.incr + 999,
                         intentBoton,
                         PendingIntent.FLAG_UPDATE_CURRENT);
-                builder.setDeleteIntent(ahoraNoPending);
+                builder.setDeleteIntent(ahoraNoPending); */
                 notificationManager.notify(Auxiliar.incr, builder.build()); //Notificación lanzada
 
                 long instanteUltimaNotif = new Date().getTime(); //Actualizamos el instante

@@ -70,6 +70,9 @@
     <string name="respuestaEspeCorrecta">Correct answer!</string>
     <string name="respuestaEspeIncrrecta">Wrong answer!</string>
     <string name="nuevasTareas">New tasks in</string>
+    <string name="visista">You can visit</string>
+    <string name="estas_cerca">You\'re near of</string>
+    <string name="porque_no_acercas">Why don\'t you go to</string>
     <string name="enviar">Send</string>
     <string name="gracias">Thanks!!</string>
     <string name="realizar">Do</string>
@@ -302,4 +305,5 @@
     <string name="distancia_linea_recta">Your straight-line distance to the place</string>
     <string name="sinContextosLista">The list don\'t have any item</string>
     <string name="instanteNotificacion">Instant notification:</string>
+    <string name="compartir_respuestas">Share your answers</string>
 </resources>

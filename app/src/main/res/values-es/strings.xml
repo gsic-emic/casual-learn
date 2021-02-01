@@ -63,6 +63,9 @@
     <string name="respuestaEspeCorrecta">¡Respuesta correcta!</string>
     <string name="respuestaEspeIncrrecta">¡Respuesta incorrecta!</string>
     <string name="nuevasTareas">¡Nuevas tareas en</string>
+    <string name="visista">Visita</string>
+    <string name="estas_cerca">Estás cerca de</string>
+    <string name="porque_no_acercas">¿Por qué no te acercas a</string>
     <string name="enviar">Enviar</string>
     <string name="gracias">¡¡Gracias!! Con tus valoraciones mejoran las tareas recomendadas</string>
     <string name="realizar">Realizar</string>
@@ -272,4 +275,5 @@
     <string name="distancia_linea_recta">La distancia en línea recta hasta el lugar es de </string>
     <string name="sinContextosLista">Todavía no se ha notificado ningún lugar</string>
     <string name="instanteNotificacion">Instante de la notificación:</string>
+    <string name="compartir_respuestas">Comparte tus respuestas</string>
 </resources>

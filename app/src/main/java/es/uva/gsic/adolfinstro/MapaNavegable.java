@@ -251,9 +251,9 @@ public class MapaNavegable extends AppCompatActivity {
                     latitudUser = myLocationNewOverlay.getMyLocation().getLatitude();
                     longitudUser = myLocationNewOverlay.getMyLocation().getLongitude();
                 }
-                Uri uri = Uri.parse("google.navigation:q="
-                        + latitudMarker + "," + longitudMarker +
-                        "&mode=r");
+                Uri uri = Uri.parse("https://www.google.com/maps/dir/?api=1&destination="
+                        + latitudMarker + "," + longitudMarker
+                        + "&travelmode=transit");
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 startActivity(Intent.createChooser(intent, ""));
             }catch (Exception e){

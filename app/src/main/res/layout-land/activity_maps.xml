@@ -70,7 +70,7 @@
             android:orientation="vertical"
             app:layout_constraintGuide_percent="1" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <!--<com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btModo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -161,7 +161,7 @@
                 android:onClick="boton"
                 android:textColor="@color/black"/>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>-->
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btCentrar"
@@ -242,15 +242,14 @@
                     android:id="@+id/ivSpeaker"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    app:srcCompat="@drawable/ic_speaker"
-                    android:layout_marginEnd="5dp"
-                    android:onClick="boton"
                     android:layout_gravity="center"
-                    app:layout_constraintStart_toEndOf="@id/tvPuntoTitulo"
-                    app:layout_constraintTop_toTopOf="@id/tvPuntoTitulo"
+                    android:contentDescription="@string/speaker"
+                    android:onClick="boton"
                     app:layout_constraintBottom_toBottomOf="@id/tvPuntoTitulo"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:contentDescription="@string/speaker" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tvPuntoTitulo"
+                    app:srcCompat="@drawable/ic_speaker" />
 
                 <TextView
                     android:id="@+id/tvPuntoTexto"

@@ -143,7 +143,7 @@ public class PersistenciaDatos {
                         if(PersistenciaDatos.borraFichero(app,
                                 PersistenciaDatos.ficheroDenunciadas))
                             if(PersistenciaDatos.borraFichero(app,
-                                    PersistenciaDatos.ficheroTareasUsuario))
+                                    PersistenciaDatos.ficheroContextos))
                                 return PersistenciaDatos.borraFichero(app,
                                         PersistenciaDatos.ficheroSinEnviar);
 
@@ -450,10 +450,21 @@ public class PersistenciaDatos {
      * @return JSONObject que corresponde con el identificador y el fichero
      * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
      */
-    public static JSONObject obtenTarea(Application app,
-                                                     String fichero,
-                                                     String idTarea,
-                                                     String idUser)
+    public static JSONObject obtenTarea(
+            Application app,
+            String fichero,
+            String idTarea,
+            String idUser)
+            throws Exception {
+        return obtenObjeto(app, fichero, Auxiliar.id, idTarea, idUser);
+    }
+
+    public static JSONObject obtenObjeto(
+            Application app,
+            String fichero,
+            String tipoIdentificador,
+            String idObjeto,
+            String idUser)
             throws Exception {
         synchronized (PersistenciaDatos.bloqueo) {
             JSONArray jsonArray = leeFichero(app, fichero);
@@ -463,12 +474,12 @@ public class PersistenciaDatos {
             for (i = 0; i < jsonArray.length(); i++) {
                 jsonObject = jsonArray.getJSONObject(i);
                 if (idUser != null) {
-                    if (jsonObject.get(Auxiliar.id).equals(idTarea) && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
+                    if (jsonObject.get(tipoIdentificador).equals(idObjeto) && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
                         encontrado = true;
                         break;
                     }
                 } else {
-                    if (jsonObject.get(Auxiliar.id).equals(idTarea) && !jsonObject.has(Auxiliar.idUsuario)) {
+                    if (jsonObject.get(tipoIdentificador).equals(idObjeto) && !jsonObject.has(Auxiliar.idUsuario)) {
                         encontrado = true;
                         break;
                     }

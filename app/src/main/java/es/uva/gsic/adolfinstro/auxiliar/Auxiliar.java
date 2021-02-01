@@ -115,6 +115,10 @@ public class Auxiliar {
     public static final String imagen = "imagen";
 
     public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
+    public static final String r1 = "charo1";
+    public static final String r2 = "charo2";
+    public static final String r3 = "charo3";
+    public static final String r4 = "charo4";
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
@@ -403,29 +407,48 @@ public class Auxiliar {
             double latitudUsuario,
             double longitudUsuario,
             String idUsuario){
-        JSONObject lugar;
+        JSONObject lugar, tareaCompletada;
+        boolean lugarConTareaCompletada;
         double distanciaMin = -1, distancia;
+        String contextoLugar;
         JSONArray aMismaDistancia = null;
         try{
             JSONArray lugaresUsuario = PersistenciaDatos.leeFichero(
                     app,
                     PersistenciaDatos.ficheroContextos);
+            JSONArray tareasCompletadas = PersistenciaDatos.leeTareasUsuario(
+                    app,
+                    PersistenciaDatos.ficheroCompletadas,
+                    idUsuario);
+
             for(int i = 0; i < lugaresUsuario.length(); i++){
                 lugar = lugaresUsuario.getJSONObject(i);
-                distancia = calculaDistanciaDosPuntos(
-                        latitudUsuario, longitudUsuario,
-                        lugar.getDouble(Auxiliar.latitud), lugar.getDouble(Auxiliar.longitud)
-                );
-                if(distanciaMin < 0 || distancia < distanciaMin) {
-                    distanciaMin = distancia;
-                    aMismaDistancia = new JSONArray();//Es más rápido que borrar
+                contextoLugar = lugar.getString(Auxiliar.contexto);
+                lugarConTareaCompletada = false;
+                for(int j = 0; j < tareasCompletadas.length(); j++){
+                    tareaCompletada = tareasCompletadas.getJSONObject(j);
+                    if(contextoLugar.equals(tareaCompletada.getString(Auxiliar.contexto))){
+                        lugarConTareaCompletada = true;
+                        break;
+                    }
                 }
-                if(distanciaMin == distancia){
-                    aMismaDistancia.put(lugar);
+                if(!lugarConTareaCompletada) {
+                    distancia = calculaDistanciaDosPuntos(
+                            latitudUsuario, longitudUsuario,
+                            lugar.getDouble(Auxiliar.latitud), lugar.getDouble(Auxiliar.longitud)
+                    );
+                    if (distanciaMin < 0 || distancia < distanciaMin) {
+                        distanciaMin = distancia;
+                        aMismaDistancia = new JSONArray();//Es más rápido que borrar
+                    }
+                    if (distanciaMin == distancia) {
+                        aMismaDistancia.put(lugar);
+                    }
                 }
             }
-            if(aMismaDistancia != null)
-                return aMismaDistancia.getJSONObject((int)(Math.random()*aMismaDistancia.length()));
+            if(aMismaDistancia != null) {
+                return aMismaDistancia.getJSONObject((int) (Math.random() * aMismaDistancia.length()));
+            }
             else  return null;
         } catch (Exception e){
             e.printStackTrace();
@@ -1222,8 +1245,6 @@ public class Auxiliar {
                                          boolean recorta){
         String texto = null;
 
-        String[] femeninas = {"catedral", "calle"};
-
         String[] hashtags = hashtag.split(",");
         int tama = 0;
         for(int i = 0; i < hashtags.length; i++){
@@ -1268,6 +1289,60 @@ public class Auxiliar {
             }
         }
         return texto;
+    }
+
+    public static String articuloDeterminado(String nombreLugar){
+        String[] femenina = {"catedral", "necrópolis", "torre", "casona-torre", "concatedral",
+                "casa-fuerte", "casa-torre", "carcel", "mansión", "cruz", "estación"};
+
+        String[] femeninas = {"catedrales", "escuelas", "murallas", "casonas", "ruinas", "casas",
+                "fachadas", "salinas", "facultad"};
+
+        String[] masculinos = {"puentes", "reales", "restos"};
+
+        try{
+            String[] lugar = nombreLugar.split(" ");
+            String primera = lugar[0].toLowerCase();
+            if(lugar.length == 1 ||
+                    primera.equals("el") || primera.equals("los") ||
+                    primera.equals("las") || primera.equals("la"))
+                return nombreLugar;
+            else {
+                String caracter = lugar[0].substring(lugar[0].length() - 1);
+                if (caracter.equals("o"))
+                    return String.format("el %s", nombreLugar);
+                else {
+                    if (caracter.equals("a"))
+                        return String.format("la %s", nombreLugar);
+                    else {
+                        String salida = String.format("el %s",nombreLugar);
+                        boolean encontrado = false;
+                        for (String a : femeninas)
+                            if (a.equals(primera)) {
+                                salida = String.format("las %s", nombreLugar);
+                                encontrado = true;
+                                break;
+                            }
+                        if(!encontrado)
+                            for (String a : femenina)
+                                if (a.equals(primera)) {
+                                    salida = String.format("la %s", nombreLugar);
+                                    encontrado = true;
+                                    break;
+                                }
+                        if(!encontrado)
+                            for (String a : masculinos)
+                                if (a.equals(primera)) {
+                                    salida = String.format("los %s", nombreLugar);
+                                    break;
+                                }
+                        return salida;
+                    }
+                }
+            }
+        }catch (Exception e){
+            return nombreLugar;
+        }
     }
 
     /**

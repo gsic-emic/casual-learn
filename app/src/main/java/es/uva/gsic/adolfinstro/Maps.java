@@ -97,6 +97,7 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.tileprovider.tilesource.MapBoxTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -254,13 +255,13 @@ public class Maps extends AppCompatActivity implements
 
     private FloatingActionButton btNavegar;
 
-    private FloatingActionButton btModos;
+    //private FloatingActionButton btModos;
 
-    private Button btModos1, btModos2, btModos3, btModos4;
+    //private Button btModos1, btModos2, btModos3, btModos4;
 
-    private Button[] btsModo;
+    //private Button[] btsModo;
 
-    private ConstraintLayout modos;
+    //private ConstraintLayout modos;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -419,13 +420,13 @@ public class Maps extends AppCompatActivity implements
                     ocultaInfoPuntoInteres();
                 if (btCentrar.isShown())
                     btCentrar.hide();
-                ocultaTodoModos();
+                //ocultaTodoModos();
             }
         });
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                ocultaModos();
+                //ocultaModos();
                 if(!btCentrar.isShown())
                     btCentrar.show();
                 return false;
@@ -652,13 +653,13 @@ public class Maps extends AppCompatActivity implements
             e.printStackTrace();
         }
 
-        btModos = findViewById(R.id.btModo);
-        modos = findViewById(R.id.modos);
-        btModos1 = findViewById(R.id.modo1);
-        btModos2 = findViewById(R.id.modo2);
-        btModos3 = findViewById(R.id.modo3);
-        btModos4 = findViewById(R.id.modo4);
-        btsModo = new Button[]{btModos1, btModos2, btModos3, btModos4};
+        //btModos = findViewById(R.id.btModo);
+        //modos = findViewById(R.id.modos);
+        //btModos1 = findViewById(R.id.modo1);
+        //btModos2 = findViewById(R.id.modo2);
+        //btModos3 = findViewById(R.id.modo3);
+        //btModos4 = findViewById(R.id.modo4);
+        //btsModo = new Button[]{btModos1, btModos2, btModos3, btModos4};
     }
 
     private void enviaConfiguracionPorfolio(final boolean publico, final boolean retardado) {
@@ -816,10 +817,10 @@ public class Maps extends AppCompatActivity implements
         }
         btCentrar.setVisibility(View.VISIBLE);
         btNavegar.setVisibility(View.GONE);
-        ocultaModos();
+        //ocultaModos();
     }
 
-    private void ocultaModos(){
+    /*private void ocultaModos(){
         if(modos.isShown()){
             modos.setVisibility(View.GONE);
         }
@@ -833,7 +834,7 @@ public class Maps extends AppCompatActivity implements
         }
         if(btModos.isShown())
             btModos.hide();
-    }
+    }*/
 
     /**
      * Método para pasar la vista de la descripción del lugar de reducida a completa
@@ -1170,7 +1171,7 @@ public class Maps extends AppCompatActivity implements
      */
     public void muestraPuntoInteres(JSONObject puntoInteres) {
         try {
-            ocultaTodoModos();
+            //ocultaTodoModos();
             //Con el siguiente if evito que se hagan dos peticiones al servidor
             if (!idZona.equals(puntoInteres.getString(Auxiliar.ficheroZona))) {
                 idZona = puntoInteres.getString(Auxiliar.ficheroZona);
@@ -1201,10 +1202,9 @@ public class Maps extends AppCompatActivity implements
                     pintaTareas(puntoInteres.getString(Auxiliar.id));
                 }
 
-                rutaAlPunto = Uri.parse("google.navigation:q="
-                        + puntoInteres.getDouble(Auxiliar.latitud) + ","
-                        + puntoInteres.getDouble(Auxiliar.longitud) +
-                        "&mode=r");
+                rutaAlPunto = Uri.parse("https://www.google.com/maps/dir/?api=1&destination="
+                        + puntoInteres.getDouble(Auxiliar.latitud) + "," + puntoInteres.getDouble(Auxiliar.longitud)
+                        + "&travelmode=transit");
 
                 ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
 
@@ -1454,38 +1454,106 @@ public class Maps extends AppCompatActivity implements
      * @param size Número de tareas que representa el marcador en un interior
      * @return Representación gráfica del marcador
      */
-    private Bitmap generaBitmapMarkerNumero(int size, boolean especial) {
+    private Bitmap generaBitmapMarkerNumero(int size, int tipo) {
         Drawable drawable;
-        if(especial){
-            if (size < 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
-            else if (size == 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_check);
-            else if (size <= 10)
-                drawable = dameDrawable(R.drawable.ic_marcador100_especial);
-            else if (size <= 20)
-                drawable = dameDrawable(R.drawable.ic_marcador300_especial);
-            else if (size <= 40)
-                drawable = dameDrawable(R.drawable.ic_marcador500_especial);
-            else if (size <= 70)
-                drawable = dameDrawable(R.drawable.ic_marcador700_especial);
-            else
-                drawable = dameDrawable(R.drawable.ic_marcador900_especial);
-        }else {
-            if (size < 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
-            else if (size == 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_check);
-            else if (size <= 10)
-                drawable = dameDrawable(R.drawable.ic_marcador100);
-            else if (size <= 20)
-                drawable = dameDrawable(R.drawable.ic_marcador300);
-            else if (size <= 40)
-                drawable = dameDrawable(R.drawable.ic_marcador500);
-            else if (size <= 70)
-                drawable = dameDrawable(R.drawable.ic_marcador700);
-            else
-                drawable = dameDrawable(R.drawable.ic_marcador900);
+
+        switch (tipo){
+            case 0:
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial);
+                break;
+            case 1://R1
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial1);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial1);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial1);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial1);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial1);
+                break;
+            case 2://R2
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial2);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial2);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial2);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial2);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial2);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial2);
+                break;
+            case 3://R3
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial3);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial3);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial3);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial3);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial3);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial3);
+                break;
+            case 4://R4
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial4);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial4);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial4);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial4);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial4);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial4);
+                break;
+            default:
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900);
+                break;
         }
 
         size = Math.abs(size);
@@ -1710,8 +1778,12 @@ public class Maps extends AppCompatActivity implements
         //Evito los marcadores duplicados
         double nivelZum = Math.max(diagonal / 20000, 0.01);//10m;
 
-        JSONArray todasTareas = new JSONArray();
-        JSONArray puntosEspeciales = new JSONArray();
+        JSONArray todasTareas = new JSONArray(),
+                puntosEspeciales = new JSONArray(),
+                puntosEpecialesR1 = new JSONArray(),
+                puntosEpecialesR2 = new JSONArray(),
+                puntosEpecialesR3 = new JSONArray(),
+                puntosEpecialesR4 = new JSONArray();
 
         JSONObject puntoInteres;
         JSONArray ficheroPuntosInteres;
@@ -1722,9 +1794,28 @@ public class Maps extends AppCompatActivity implements
                     for (int i = 0; i < ficheroPuntosInteres.length(); i++) {
                         puntoInteres = ficheroPuntosInteres.getJSONObject(i);
                         puntoInteres.put(Auxiliar.ficheroZona, nombreFichero);
-                        if(puntoInteres.has(Auxiliar.creadoPor) &&
-                                !puntoInteres.getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores))
-                            puntosEspeciales.put(puntoInteres);
+                        if(puntoInteres.has(Auxiliar.creadoPor)){
+                            switch (puntoInteres.getString(Auxiliar.creadoPor)){
+                                case Auxiliar.r1:
+                                    puntosEpecialesR1.put(puntoInteres);
+                                    break;
+                                case Auxiliar.r2:
+                                    puntosEpecialesR2.put(puntoInteres);
+                                    break;
+                                case Auxiliar.r3:
+                                    puntosEpecialesR3.put(puntoInteres);
+                                    break;
+                                case Auxiliar.r4:
+                                    puntosEpecialesR4.put(puntoInteres);
+                                    break;
+                                case Auxiliar.creadorInvestigadores:
+                                    todasTareas.put(puntoInteres);
+                                    break;
+                                default:
+                                    puntosEspeciales.put(puntoInteres);
+                                    break;
+                            }
+                        }
                         else
                             todasTareas.put(puntoInteres);
 
@@ -1735,18 +1826,14 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
-        List<Marcador> listaMarcadores = creaAgrupaciones(todasTareas, nivelZum);
-        if(!listaMarcadores.isEmpty()){
-            for(Marcador m : listaMarcadores){
-                newMarker(m, false);
-            }
-        }
+        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3};
 
-        listaMarcadores = creaAgrupaciones(puntosEspeciales, nivelZum);
-
-        if(!listaMarcadores.isEmpty()){
-            for(Marcador m : listaMarcadores){
-                newMarker(m, true);
+        List<Marcador> listaMarcadores;
+        for(int i = 0; i < tareas.length; i++){
+            if(tareas[i].length() > 0){
+                listaMarcadores = creaAgrupaciones(tareas[i], nivelZum);
+                for(Marcador m : listaMarcadores)
+                    newMarker(m, i - 1);
             }
         }
     }
@@ -1875,7 +1962,7 @@ public class Maps extends AppCompatActivity implements
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btCentrar: //Solo centra la posición si se ha conseguido recuperar
-                ocultaModos();
+                //ocultaModos();
                 if(myLocationNewOverlay.getMyLocation() != null) {
                     mapController.setZoom(nivelMax);
                     mapController.setCenter(myLocationNewOverlay.getMyLocation());
@@ -1920,7 +2007,7 @@ public class Maps extends AppCompatActivity implements
                     e.printStackTrace();
                 }
                 break;
-            case R.id.btModo:
+            /*case R.id.btModo:
                 if(!modos.isShown()) {
                     btModos.hide();
                     configuraModos();
@@ -1949,13 +2036,13 @@ public class Maps extends AppCompatActivity implements
                 numero = 4;
                 modos.setVisibility(View.GONE);
                 btModos.show();
-                break;
+                break;*/
             default:
                 break;
         }
     }
 
-    private void configuraModos() {
+    /*private void configuraModos() {
         for(Button b : btsModo){
             b.setBackground(dameDrawable(R.drawable.boton_rojo));
         }
@@ -1974,7 +2061,7 @@ public class Maps extends AppCompatActivity implements
                 break;
         }
         modos.setVisibility(View.VISIBLE);
-    }
+    }*/
 
     /**
      * Método que se llamará antes de destruir temporalmente la actividad para almacenar la posición
@@ -2470,12 +2557,12 @@ public class Maps extends AppCompatActivity implements
      *
      * @param marcador Información que representa al marcador
      */
-    void newMarker(final Marcador marcador, final Boolean especial) {
+    void newMarker(final Marcador marcador, final int tipo) {
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
         BitmapDrawable d = new BitmapDrawable(
                 context.getResources(),
-                generaBitmapMarkerNumero(marcador.getNumeroTareas(), especial));
+                generaBitmapMarkerNumero(marcador.getNumeroTareas(), tipo));
         marker.setIcon(d);
 
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT)
@@ -2495,7 +2582,7 @@ public class Maps extends AppCompatActivity implements
                 mapController.animateTo(geoPoint);
                 marker.setIcon(new BitmapDrawable(
                         context.getResources(),
-                        generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1 , especial)));
+                        generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1 , tipo)));
                 marcadorPulsado = true;
                 String msg = getString(R.string.recuperandoPosicion);
                 try {
@@ -2628,7 +2715,7 @@ public class Maps extends AppCompatActivity implements
         if(!searchView.isIconified())
             searchView.setIconified(true);
 
-        ocultaModos();
+        //ocultaModos();
         llamadaAPlayStore();
     }
 

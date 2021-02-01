@@ -55,7 +55,7 @@
             android:label="@string/acercade" />
         <activity
             android:name=".Tarea"
-            android:label="@string/tareaRealizar"></activity>
+            android:label="@string/tareaRealizar"/>
         <activity
             android:name=".PuntoInteres"
             android:label="@string/info_lugar">
