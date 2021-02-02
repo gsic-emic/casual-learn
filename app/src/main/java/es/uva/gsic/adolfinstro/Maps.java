@@ -5,6 +5,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -41,6 +43,7 @@ import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.text.Html;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -60,7 +63,9 @@ import android.widget.Toast;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -91,6 +96,7 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
+import org.osmdroid.tileprovider.tilesource.MapBoxTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -124,7 +130,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20210113
+ * @version 20210202
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -174,10 +180,14 @@ public class Maps extends AppCompatActivity implements
     /** Diálogo para salir de la apliación */
     private AlertDialog.Builder dialogoSalirApp;
     /** Boolean que determian si el dialogo de salir de la aplicación está activo */
-    Boolean dialogoSalirAppActivo = false;
+    private boolean dialogoSalirAppActivo = false;
 
     /** Dialogo para mostrar los distintos puntos que agrupa un marcador */
-    Dialog dialogoVariosPuntos;
+    private Dialog dialogoVariosPuntos;
+
+    private Dialog dialogoConfiguracionPorfolio;
+    private boolean dialogoConfiguracionPorfolioVisible;
+
 
     /** Guía de la vista vertical */
     Guideline guiaMapaH;
@@ -198,8 +208,6 @@ public class Maps extends AppCompatActivity implements
     TextView distanciaPunto;
     /** Objeto para el texto reducido del punto de interés*/
     TextView textoPuntoReducido;
-    /** Objeto para mostrar la información completa del punto de interés*/
-    //Button masInfo;
 
     /** Vista de los puntos de interés */
     ScrollView svPunto;
@@ -245,6 +253,14 @@ public class Maps extends AppCompatActivity implements
     private FloatingActionButton btCentrar;
 
     private FloatingActionButton btNavegar;
+
+    //private FloatingActionButton btModos;
+
+    //private Button btModos1, btModos2, btModos3, btModos4;
+
+    //private Button[] btsModo;
+
+    //private ConstraintLayout modos;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -401,8 +417,21 @@ public class Maps extends AppCompatActivity implements
             public void onClick(View v) {
                 if(marcadorPulsado)
                     ocultaInfoPuntoInteres();
+                if (btCentrar.isShown())
+                    btCentrar.hide();
+                //ocultaTodoModos();
             }
         });
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                //ocultaModos();
+                if(!btCentrar.isShown())
+                    btCentrar.show();
+                return false;
+            }
+        });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -416,8 +445,6 @@ public class Maps extends AppCompatActivity implements
                     JSONArray municipios = Auxiliar.buscaMunicipio(
                             context, StringUtils.stripAccents(newText.trim().toLowerCase()));
                     if (municipios.length() > 0) {
-                        if (btCentrar.isShown())
-                            btCentrar.hide();
                         contenedorBusqMapa.setLayoutManager(new LinearLayoutManager(
                                 context, LinearLayoutManager.VERTICAL, false));
                         contenedorBusqMapa.setBackgroundColor(dameColor(R.color.transparente));
@@ -453,14 +480,14 @@ public class Maps extends AppCompatActivity implements
                         }
                     } else {
                         ocultaContenedorBusqMapa();
-                        if (!btCentrar.isShown())
-                            btCentrar.show();
+                        /*if (!btCentrar.isShown())
+                            btCentrar.show();*/
                     }
 
                 } else {
                     ocultaContenedorBusqMapa();
-                    if (!btCentrar.isShown())
-                        btCentrar.show();
+                    /*if (!btCentrar.isShown())
+                        btCentrar.show();*/
                 }
                 return false;
             }
@@ -470,7 +497,6 @@ public class Maps extends AppCompatActivity implements
         textoPunto = findViewById(R.id.tvPuntoTexto);
         distanciaPunto = findViewById(R.id.tvPuntoDistancia);
         textoPuntoReducido = findViewById(R.id.tvPuntoTextoReducido);
-        //masInfo = findViewById(R.id.btMasInfoPunto);
 
         ivWiki = findViewById(R.id.ivWikipediaMapa);
         ivSpeaker = findViewById(R.id.ivSpeaker);
@@ -530,6 +556,62 @@ public class Maps extends AppCompatActivity implements
             dialogoSegundoPlano.show();
         }
 
+        dialogoConfiguracionPorfolio = new Dialog(this);
+        dialogoConfiguracionPorfolio.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialogoConfiguracionPorfolio.setContentView(R.layout.dialogo_conf_porfolio);
+        dialogoConfiguracionPorfolio.setCancelable(true);
+
+        final SwitchCompat swActivarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swActivarPor);
+        final SwitchCompat swRetardarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swRetardarPor);
+        //final TextView textoTiempo = dialogoConfiguracionPorfolio.findViewById(R.id.tvIntervaloPor);
+        //textoTiempo.setText(String.format("%s\n(3 %s)", getResources().getString(R.string.intervalo), getResources().getString(R.string.horas)));
+        //SeekBar seekBar = dialogoConfiguracionPorfolio.findViewById(R.id.sbIntervalo);
+        final Button btOmitir = dialogoConfiguracionPorfolio.findViewById(R.id.btOmitirPor);
+
+        dialogoConfiguracionPorfolio.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                boolean estadoPorfolio, retardo;
+                estadoPorfolio = swActivarPorfolio.isChecked();
+                if(swRetardarPorfolio.isEnabled()){
+                    retardo = !swRetardarPorfolio.isChecked();
+                } else{
+                    retardo = true;
+                }
+                enviaConfiguracionPorfolio(estadoPorfolio, retardo);
+                dialogoConfiguracionPorfolioVisible = false;
+                dialogoConfiguracionPorfolio.cancel();
+            }
+        });
+
+        swActivarPorfolio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean estado = ((SwitchCompat) v).isChecked();
+                swRetardarPorfolio.setEnabled(estado);
+                if(estado) {
+                    swRetardarPorfolio.setEnabled(true);
+                    btOmitir.setText(context.getString(R.string.cerrar));
+                } else {
+                    swRetardarPorfolio.setChecked(false);
+                    swRetardarPorfolio.setEnabled(false);
+                }
+            }
+        });
+
+        btOmitir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogoConfiguracionPorfolio.cancel();
+            }
+        });
+
+        dialogoConfiguracionPorfolioVisible = false;
+        if (savedInstanceState != null && savedInstanceState.getBoolean("DIALOGOCONFPOR", false)) {
+            dialogoConfiguracionPorfolioVisible = true;
+            dialogoConfiguracionPorfolio.show();
+        }
+
         try {
             String contenido = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.textoParaElMapa);
             if (contenido != null && !contenido.equals("")) {
@@ -569,6 +651,101 @@ public class Maps extends AppCompatActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        //btModos = findViewById(R.id.btModo);
+        //modos = findViewById(R.id.modos);
+        //btModos1 = findViewById(R.id.modo1);
+        //btModos2 = findViewById(R.id.modo2);
+        //btModos3 = findViewById(R.id.modo3);
+        //btModos4 = findViewById(R.id.modo4);
+        //btsModo = new Button[]{btModos1, btModos2, btModos3, btModos4};
+    }
+
+    private void enviaConfiguracionPorfolio(final boolean publico, final boolean retardado) {
+        final JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        if (idUsuario == null || idUsuario.has(Auxiliar.uid)) {
+            try {
+                JSONObject infoUsuario = new JSONObject();
+                JsonObjectRequest jsonObjectRequest;
+                infoUsuario.put(Auxiliar.publico, publico);
+                infoUsuario.put(Auxiliar.retardado, retardado);
+                if (idUsuario != null && idUsuario.has(Auxiliar.idPortafolio)) {//Es una actualización
+                    jsonObjectRequest = new JsonObjectRequest(
+                            Request.Method.PUT,
+                            Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),
+                            infoUsuario,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                                        editor.putBoolean(Ajustes.PORTAFOLIO_pref, publico);
+                                        editor.putBoolean(Ajustes.RETARDOPORTA_pref, retardado);
+                                        editor.commit();
+                                    } catch (Exception e) {
+                                        Log.d("porfolio", "Creación del porfolio desde el dialogo");
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    idUsuario.remove(Auxiliar.idPortafolio);
+                                    PersistenciaDatos.reemplazaJSON(
+                                            (Application) context.getApplicationContext(),
+                                            PersistenciaDatos.ficheroUsuario,
+                                            idUsuario);
+                                    Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                } else {//Es una creación
+                    infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
+                    jsonObjectRequest = new JsonObjectRequest(
+                            Request.Method.POST,
+                            Auxiliar.direccionIP + "portafolio",
+                            infoUsuario,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject docUsuario) {
+                                    if (docUsuario != null) {
+                                        try {
+                                            idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
+                                            PersistenciaDatos.reemplazaJSON(
+                                                    (Application) context.getApplicationContext(),
+                                                    PersistenciaDatos.ficheroUsuario,
+                                                    idUsuario);
+                                            try {
+                                                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                                editor.putBoolean(Ajustes.PORTAFOLIO_pref, publico);
+                                                editor.putBoolean(Ajustes.RETARDOPORTA_pref, retardado);
+                                                editor.commit();
+                                            } catch (Exception e) {
+                                                Log.d("porfolio", "Creación del porfolio desde el dialogo");
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Toast.makeText(context, context.getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                }
+
+                ColaConexiones.getInstance(context).getRequestQueue().add(jsonObjectRequest);
+            }
+            catch (Exception e){
+                Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(context, getString(R.string.errorOpera), Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -605,6 +782,10 @@ public class Maps extends AppCompatActivity implements
                         ficheroSegundoPlano,
                         Context.MODE_PRIVATE);
             }
+            //En este momento indico al usuario la posibilidad de utilizar el porfolio
+            if(!dialogoConfiguracionPorfolio.isShowing())
+                dialogoConfiguracionPorfolio.show();
+            dialogoConfiguracionPorfolioVisible = true;
         } catch (JSONException e){
             e.printStackTrace();
         }
@@ -635,7 +816,24 @@ public class Maps extends AppCompatActivity implements
         }
         btCentrar.setVisibility(View.VISIBLE);
         btNavegar.setVisibility(View.GONE);
+        //ocultaModos();
     }
+
+    /*private void ocultaModos(){
+        if(modos.isShown()){
+            modos.setVisibility(View.GONE);
+        }
+        if(!btModos.isShown())
+            btModos.show();
+    }
+
+    private void ocultaTodoModos(){
+        if(modos.isShown()){
+            modos.setVisibility(View.GONE);
+        }
+        if(btModos.isShown())
+            btModos.hide();
+    }*/
 
     /**
      * Método para pasar la vista de la descripción del lugar de reducida a completa
@@ -972,6 +1170,7 @@ public class Maps extends AppCompatActivity implements
      */
     public void muestraPuntoInteres(JSONObject puntoInteres) {
         try {
+            //ocultaTodoModos();
             //Con el siguiente if evito que se hagan dos peticiones al servidor
             if (!idZona.equals(puntoInteres.getString(Auxiliar.ficheroZona))) {
                 idZona = puntoInteres.getString(Auxiliar.ficheroZona);
@@ -1002,10 +1201,9 @@ public class Maps extends AppCompatActivity implements
                     pintaTareas(puntoInteres.getString(Auxiliar.id));
                 }
 
-                rutaAlPunto = Uri.parse("google.navigation:q="
-                        + puntoInteres.getDouble(Auxiliar.latitud) + ","
-                        + puntoInteres.getDouble(Auxiliar.longitud) +
-                        "&mode=r");
+                rutaAlPunto = Uri.parse("https://www.google.com/maps/dir/?api=1&destination="
+                        + puntoInteres.getDouble(Auxiliar.latitud) + "," + puntoInteres.getDouble(Auxiliar.longitud)
+                        + "&travelmode=transit");
 
                 ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
 
@@ -1025,7 +1223,6 @@ public class Maps extends AppCompatActivity implements
                                 textoPuntoReducido.setText(textoPunto.getText());
                                 textoPunto.setVisibility(View.GONE);
                                 textoPuntoReducido.setVisibility(View.VISIBLE);
-                                //masInfo.setVisibility(View.VISIBLE);
                             }
                         }
                     }
@@ -1077,23 +1274,6 @@ public class Maps extends AppCompatActivity implements
     }
 
     /**
-     * Método para obtener los identificadores de las tareas que ya ha realizado el usuario.
-     * @return Lisita de identificaciones de tareas completadas
-     */
-    public List<String> getListaTareasCompletadas(){
-        JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroCompletadas);
-        List<String> listaId = new ArrayList<>();
-        try {
-            for (int i = 0; i < tareasCompletadas.length(); i++) {
-                listaId.add(tareasCompletadas.getJSONObject(i).getString(Auxiliar.id));
-            }
-        }catch (Exception e){
-            listaId = new ArrayList<>();
-        }
-        return listaId;
-    }
-
-    /**
      * Método para representar las tareas del punto de interés en una lista en la parte inferior de
      * la información.
      *
@@ -1101,7 +1281,14 @@ public class Maps extends AppCompatActivity implements
      */
     public void pintaTareas(String ficheroTareas) {
         JSONArray tareas = PersistenciaDatos.leeFichero(getApplication(), ficheroTareas);
-        List<String> listaId = getListaTareasCompletadas();
+        String idUsuario;
+        try{
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id).getString(Auxiliar.uid);
+        }catch (Exception e){
+            idUsuario = null;
+        }
+        List<String> listaId = Auxiliar.getListaTareasCompletadas(getApplication(), idUsuario);
         List<TareasMapaLista> tareasPunto = new ArrayList<>();
         JSONObject jo;
         String uriFondo;
@@ -1117,22 +1304,13 @@ public class Maps extends AppCompatActivity implements
                 //Agrego el fichero de donde extraer la tarea
                 jo.put(Auxiliar.ficheroOrigen, ficheroTareas);
                 id = jo.getString(Auxiliar.id);
-                if(listaId.contains(id))
-                    tareasPunto.add(new TareasMapaLista(
-                            id,
-                            Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
-                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                            uriFondo,
-                            jo,
-                            true));
-                else
-                    tareasPunto.add(new TareasMapaLista(
-                            id,
-                            Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
-                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                            uriFondo,
-                            jo,
-                            false));
+                tareasPunto.add(new TareasMapaLista(
+                        id,
+                        Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
+                        Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                        uriFondo,
+                        jo,
+                        listaId.contains(id)));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1266,38 +1444,106 @@ public class Maps extends AppCompatActivity implements
      * @param size Número de tareas que representa el marcador en un interior
      * @return Representación gráfica del marcador
      */
-    private Bitmap generaBitmapMarkerNumero(int size, boolean especial) {
+    private Bitmap generaBitmapMarkerNumero(int size, int tipo) {
         Drawable drawable;
-        if(especial){
-            if (size < 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
-            else if (size == 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_check);
-            else if (size <= 10)
-                drawable = dameDrawable(R.drawable.ic_marcador100_especial);
-            else if (size <= 20)
-                drawable = dameDrawable(R.drawable.ic_marcador300_especial);
-            else if (size <= 40)
-                drawable = dameDrawable(R.drawable.ic_marcador500_especial);
-            else if (size <= 70)
-                drawable = dameDrawable(R.drawable.ic_marcador700_especial);
-            else
-                drawable = dameDrawable(R.drawable.ic_marcador900_especial);
-        }else {
-            if (size < 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
-            else if (size == 0)
-                drawable = dameDrawable(R.drawable.ic_marcador_check);
-            else if (size <= 10)
-                drawable = dameDrawable(R.drawable.ic_marcador100);
-            else if (size <= 20)
-                drawable = dameDrawable(R.drawable.ic_marcador300);
-            else if (size <= 40)
-                drawable = dameDrawable(R.drawable.ic_marcador500);
-            else if (size <= 70)
-                drawable = dameDrawable(R.drawable.ic_marcador700);
-            else
-                drawable = dameDrawable(R.drawable.ic_marcador900);
+
+        switch (tipo){
+            case 0:
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial);
+                break;
+            case 1://R1
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial1);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial1);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial1);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial1);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial1);
+                break;
+            case 2://R2
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial2);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial2);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial2);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial2);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial2);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial2);
+                break;
+            case 3://R3
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial3);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial3);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial3);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial3);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial3);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial3);
+                break;
+            case 4://R4
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial4);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100_especial4);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300_especial4);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500_especial4);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700_especial4);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900_especial4);
+                break;
+            default:
+                if (size < 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
+                else if (size == 0)
+                    drawable = dameDrawable(R.drawable.ic_marcador_check);
+                else if (size <= 10)
+                    drawable = dameDrawable(R.drawable.ic_marcador100);
+                else if (size <= 20)
+                    drawable = dameDrawable(R.drawable.ic_marcador300);
+                else if (size <= 40)
+                    drawable = dameDrawable(R.drawable.ic_marcador500);
+                else if (size <= 70)
+                    drawable = dameDrawable(R.drawable.ic_marcador700);
+                else
+                    drawable = dameDrawable(R.drawable.ic_marcador900);
+                break;
         }
 
         size = Math.abs(size);
@@ -1522,8 +1768,12 @@ public class Maps extends AppCompatActivity implements
         //Evito los marcadores duplicados
         double nivelZum = Math.max(diagonal / 20000, 0.01);//10m;
 
-        JSONArray todasTareas = new JSONArray();
-        JSONArray puntosEspeciales = new JSONArray();
+        JSONArray todasTareas = new JSONArray(),
+                puntosEspeciales = new JSONArray(),
+                puntosEpecialesR1 = new JSONArray(),
+                puntosEpecialesR2 = new JSONArray(),
+                puntosEpecialesR3 = new JSONArray(),
+                puntosEpecialesR4 = new JSONArray();
 
         JSONObject puntoInteres;
         JSONArray ficheroPuntosInteres;
@@ -1534,9 +1784,28 @@ public class Maps extends AppCompatActivity implements
                     for (int i = 0; i < ficheroPuntosInteres.length(); i++) {
                         puntoInteres = ficheroPuntosInteres.getJSONObject(i);
                         puntoInteres.put(Auxiliar.ficheroZona, nombreFichero);
-                        if(puntoInteres.has(Auxiliar.creadoPor) &&
-                                !puntoInteres.getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores))
-                            puntosEspeciales.put(puntoInteres);
+                        if(puntoInteres.has(Auxiliar.creadoPor)){
+                            switch (puntoInteres.getString(Auxiliar.creadoPor)){
+                                case Auxiliar.r1:
+                                    puntosEpecialesR1.put(puntoInteres);
+                                    break;
+                                case Auxiliar.r2:
+                                    puntosEpecialesR2.put(puntoInteres);
+                                    break;
+                                case Auxiliar.r3:
+                                    puntosEpecialesR3.put(puntoInteres);
+                                    break;
+                                case Auxiliar.r4:
+                                    puntosEpecialesR4.put(puntoInteres);
+                                    break;
+                                case Auxiliar.creadorInvestigadores:
+                                    todasTareas.put(puntoInteres);
+                                    break;
+                                default:
+                                    puntosEspeciales.put(puntoInteres);
+                                    break;
+                            }
+                        }
                         else
                             todasTareas.put(puntoInteres);
 
@@ -1547,18 +1816,14 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
-        List<Marcador> listaMarcadores = creaAgrupaciones(todasTareas, nivelZum);
-        if(!listaMarcadores.isEmpty()){
-            for(Marcador m : listaMarcadores){
-                newMarker(m, false);
-            }
-        }
+        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3};
 
-        listaMarcadores = creaAgrupaciones(puntosEspeciales, nivelZum);
-
-        if(!listaMarcadores.isEmpty()){
-            for(Marcador m : listaMarcadores){
-                newMarker(m, true);
+        List<Marcador> listaMarcadores;
+        for(int i = 0; i < tareas.length; i++){
+            if(tareas[i].length() > 0){
+                listaMarcadores = creaAgrupaciones(tareas[i], nivelZum);
+                for(Marcador m : listaMarcadores)
+                    newMarker(m, i - 1);
             }
         }
     }
@@ -1684,6 +1949,7 @@ public class Maps extends AppCompatActivity implements
     public void boton(View view) {
         switch (view.getId()){
             case R.id.btCentrar: //Solo centra la posición si se ha conseguido recuperar
+                //ocultaModos();
                 if(myLocationNewOverlay.getMyLocation() != null) {
                     mapController.setZoom(nivelMax);
                     mapController.setCenter(myLocationNewOverlay.getMyLocation());
@@ -1727,10 +1993,62 @@ public class Maps extends AppCompatActivity implements
                 }catch (Exception e){
                     e.printStackTrace();
                 }
+                break;
+            /*case R.id.btModo:
+                if(!modos.isShown()) {
+                    btModos.hide();
+                    configuraModos();
+                }
+                break;
+            case R.id.modo1:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_uno));
+                numero = 1;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;
+            case R.id.modo2:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_dos));
+                numero = 2;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;
+            case R.id.modo3:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_tres));
+                numero = 3;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;
+            case R.id.modo4:
+                btModos.setImageDrawable(dameDrawable(R.drawable.ic_cuatro));
+                numero = 4;
+                modos.setVisibility(View.GONE);
+                btModos.show();
+                break;*/
             default:
                 break;
         }
     }
+
+    /*private void configuraModos() {
+        for(Button b : btsModo){
+            b.setBackground(dameDrawable(R.drawable.boton_rojo));
+        }
+        switch (numero){
+            case 1:
+                btModos1.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+            case 2:
+                btModos2.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+            case 3:
+                btModos3.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+            default:
+                btModos4.setBackground(dameDrawable(R.drawable.boton_secundario));
+                break;
+        }
+        modos.setVisibility(View.VISIBLE);
+    }*/
 
     /**
      * Método que se llamará antes de destruir temporalmente la actividad para almacenar la posición
@@ -1752,6 +2070,7 @@ public class Maps extends AppCompatActivity implements
         bundle.putDouble("LONGITUDE", longitudeOrigen);
         bundle.putBoolean("DIALOGOSALIR", dialogoSalirAppActivo);
         bundle.putBoolean("DIALOGOSEGUNDOPLANO", dialogoSegundoPlanoVisible);
+        bundle.putBoolean("DIALOGOCONFPOR", dialogoConfiguracionPorfolioVisible);
         super.onSaveInstanceState(bundle);
     }
 
@@ -1859,6 +2178,10 @@ public class Maps extends AppCompatActivity implements
             case R.id.menuTareasCompletadas:
                 intent = new Intent(this, ListaTareas.class);
                 intent.putExtra(Auxiliar.peticion, PersistenciaDatos.ficheroCompletadas);
+                startActivity(intent);
+                return true;
+            case R.id.menuLugaresNotificados:
+                intent = new Intent(this, ListaContextos.class);
                 startActivity(intent);
                 return true;
             case R.id.cerrarSesion://Puede ser el de inicio de sesión si el usuario aún no se ha identificado
@@ -2030,93 +2353,104 @@ public class Maps extends AppCompatActivity implements
         }
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-            Request.Method.GET,
-            url,
-            null,
-            new Response.Listener<JSONArray>() {
-                @Override
-                public void onResponse(JSONArray puntosInteres) {
-                    //Tengo que guardar el fichero específico de la cuadrícula con los puntos de interés
-                    if(puntosInteres != null){
-                        JSONArray ficheroAntiguo = PersistenciaDatos.leeFichero(
-                                getApplication(),
-                                nombre);
-                        //Si el fichero está vacío no va a tener tareas relacionadas
-                        if(ficheroAntiguo == null || ficheroAntiguo.length() == 0) {
-                            JSONObject puntoInteres;
-                            for(int i = 0; i < puntosInteres.length(); i++) {
-                                try {
-                                    puntoInteres = puntosInteres.getJSONObject(i);
-                                    puntoInteres.put(Auxiliar.id,
-                                            String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
-                                    puntosInteres.put(i, puntoInteres);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            PersistenciaDatos.guardaFichero(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray puntosInteres) {
+                        //Tengo que guardar el fichero específico de la cuadrícula con los puntos de interés
+                        if (puntosInteres != null) {
+                            JSONArray ficheroAntiguo = PersistenciaDatos.leeFichero(
                                     getApplication(),
-                                    nombre,
-                                    puntosInteres,
-                                    Context.MODE_PRIVATE);
-                        } else {
-                            JSONArray vectorFinal = new JSONArray();
-                            JSONObject nuevoPunto, puntoAntiguo;
-                            //Me quedo con los datos del servidor más actualizados
-                            for(int i = 0; i < puntosInteres.length(); i++){
-                                try {
-                                    nuevoPunto = puntosInteres.getJSONObject(i);
-                                    for(int j = 0; j < ficheroAntiguo.length(); j++) {
-                                        puntoAntiguo = ficheroAntiguo.getJSONObject(j);
-                                        //Si hay conincidencia guardo el instante y el nombre del fichero si lo tuviera
-                                        if(nuevoPunto.getString(Auxiliar.contexto).equals(puntoAntiguo.getString(Auxiliar.contexto))){
-                                            if(puntoAntiguo.has(Auxiliar.caducidad) && puntoAntiguo.has(Auxiliar.id)) {
-                                                nuevoPunto.put(Auxiliar.caducidad, puntoAntiguo.getLong(Auxiliar.caducidad));
-                                                nuevoPunto.put(Auxiliar.id, puntoAntiguo.getString(Auxiliar.id));
-                                            }
-                                            break;
-                                        }
+                                    nombre);
+                            //Si el fichero está vacío no va a tener tareas relacionadas
+                            if (ficheroAntiguo == null || ficheroAntiguo.length() == 0) {
+                                JSONObject puntoInteres;
+                                for (int i = 0; i < puntosInteres.length(); i++) {
+                                    try {
+                                        puntoInteres = puntosInteres.getJSONObject(i);
+                                        puntoInteres.put(Auxiliar.id,
+                                                String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
+                                        puntosInteres.put(i, puntoInteres);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
-                                    if(!nuevoPunto.has(Auxiliar.id))
-                                        nuevoPunto.put(Auxiliar.id, String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
-                                    vectorFinal.put(nuevoPunto);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
                                 }
+                                PersistenciaDatos.guardaFichero(
+                                        getApplication(),
+                                        nombre,
+                                        puntosInteres,
+                                        Context.MODE_PRIVATE);
+                            } else {
+                                JSONArray vectorFinal = new JSONArray();
+                                JSONObject nuevoPunto, puntoAntiguo;
+                                //Me quedo con los datos del servidor más actualizados
+                                for (int i = 0; i < puntosInteres.length(); i++) {
+                                    try {
+                                        nuevoPunto = puntosInteres.getJSONObject(i);
+                                        for (int j = 0; j < ficheroAntiguo.length(); j++) {
+                                            puntoAntiguo = ficheroAntiguo.getJSONObject(j);
+                                            //Si hay conincidencia guardo el instante y el nombre del fichero si lo tuviera
+                                            if (nuevoPunto.getString(Auxiliar.contexto).equals(puntoAntiguo.getString(Auxiliar.contexto))) {
+                                                if (puntoAntiguo.has(Auxiliar.caducidad) && puntoAntiguo.has(Auxiliar.id)) {
+                                                    nuevoPunto.put(Auxiliar.caducidad, puntoAntiguo.getLong(Auxiliar.caducidad));
+                                                    nuevoPunto.put(Auxiliar.id, puntoAntiguo.getString(Auxiliar.id));
+                                                }
+                                                break;
+                                            }
+                                        }
+                                        if (!nuevoPunto.has(Auxiliar.id))
+                                            nuevoPunto.put(Auxiliar.id, String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
+                                        vectorFinal.put(nuevoPunto);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                PersistenciaDatos.guardaFichero(
+                                        getApplication(),
+                                        nombre,
+                                        vectorFinal,
+                                        Context.MODE_PRIVATE);
                             }
-                            PersistenciaDatos.guardaFichero(
+                        }
+
+                        try {//Actualización del fichero de cuadrículas
+                            JSONObject cuadricula = PersistenciaDatos.recuperaTarea(
                                     getApplication(),
-                                    nombre,
-                                    vectorFinal,
-                                    Context.MODE_PRIVATE);
+                                    PersistenciaDatos.ficheroNuevasCuadriculas,
+                                    nombre);
+                            cuadricula.put(Auxiliar.caducidad,
+                                    System.currentTimeMillis() + 86400000);//Caduca al día
+                            PersistenciaDatos.reemplazaJSON(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNuevasCuadriculas,
+                                    cuadricula);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        synchronized ((Object) numeroCuadriculasPendientes) {
+                            if (numeroCuadriculasPendientes > 0) {
+                                --numeroCuadriculasPendientes;
+                                if (numeroCuadriculasPendientes == 0)
+                                    compruebaZona(false);
+                            }
                         }
                     }
-
-                    try {//Actualización del fichero de cuadrículas
-                        JSONObject cuadricula = PersistenciaDatos.recuperaTarea(
-                                getApplication(),
-                                PersistenciaDatos.ficheroNuevasCuadriculas,
-                                nombre);
-                        cuadricula.put(Auxiliar.caducidad,
-                                System.currentTimeMillis() + 86400000);//Caduca al día
-                        PersistenciaDatos.reemplazaJSON(
-                                getApplication(),
-                                PersistenciaDatos.ficheroNuevasCuadriculas,
-                                cuadricula);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    synchronized ((Object)numeroCuadriculasPendientes) {
-                        if(numeroCuadriculasPendientes > 0) {
-                            --numeroCuadriculasPendientes;
-                            if (numeroCuadriculasPendientes == 0)
-                                compruebaZona(false);
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        synchronized ((Object) numeroCuadriculasPendientes) {
+                            if (numeroCuadriculasPendientes > 0) {
+                                --numeroCuadriculasPendientes;
+                                if (numeroCuadriculasPendientes == 0)
+                                    compruebaZona(false);
+                            }
                         }
                     }
                 }
-            },
-            null
         );
 
         ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonArrayRequest);
@@ -2221,12 +2555,12 @@ public class Maps extends AppCompatActivity implements
      *
      * @param marcador Información que representa al marcador
      */
-    void newMarker(final Marcador marcador, final Boolean especial) {
+    void newMarker(final Marcador marcador, final int tipo) {
         Marker marker = new Marker(map);
         marker.setPosition(new GeoPoint(marcador.getLatitud(), marcador.getLongitud()));
         BitmapDrawable d = new BitmapDrawable(
                 context.getResources(),
-                generaBitmapMarkerNumero(marcador.getNumeroTareas(), especial));
+                generaBitmapMarkerNumero(marcador.getNumeroTareas(), tipo));
         marker.setIcon(d);
 
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT)
@@ -2246,7 +2580,7 @@ public class Maps extends AppCompatActivity implements
                 mapController.animateTo(geoPoint);
                 marker.setIcon(new BitmapDrawable(
                         context.getResources(),
-                        generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1 , especial)));
+                        generaBitmapMarkerNumero(marcador.getNumeroTareas()*-1 , tipo)));
                 marcadorPulsado = true;
                 String msg = getString(R.string.recuperandoPosicion);
                 try {
@@ -2379,6 +2713,7 @@ public class Maps extends AppCompatActivity implements
         if(!searchView.isIconified())
             searchView.setIconified(true);
 
+        //ocultaModos();
         llamadaAPlayStore();
     }
 

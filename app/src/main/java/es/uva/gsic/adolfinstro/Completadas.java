@@ -545,7 +545,7 @@ public class Completadas extends AppCompatActivity implements
         try {
             Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), tarea.getString(Auxiliar.id), enviaWifi);
             Bundle bundle = new Bundle();
-            bundle.putString("user", Login.firebaseAuth.getUid());
+            bundle.putString("user", idUsuario);
             bundle.putString("idTarea", tarea.getString(Auxiliar.id));
             Login.firebaseAnalytics.logEvent("tareaModificada", bundle);
             invalidateOptionsMenu();

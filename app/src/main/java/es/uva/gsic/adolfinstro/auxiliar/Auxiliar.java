@@ -74,11 +74,13 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201222
+ * @version 20210202
  */
 public class Auxiliar {
 
+    //TODO comprueba que sea la dirección correcta
     public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
@@ -111,12 +113,17 @@ public class Auxiliar {
     public static final String imagen = "imagen";
 
     public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
+    public static final String r1 = "charo1";
+    public static final String r2 = "charo2";
+    public static final String r3 = "charo3";
+    public static final String r4 = "charo4";
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
 
     public static final String nunca_mas = "NUNCA_MAS";
     public static final String ahora_no = "AHORA_NO";
+    public static final String ahora_no_contexto = "AHORA_NO_CONTEXTO";
 
     /** Identificador del canal de tareas */
     public static final String channelId = "notiTareas";
@@ -316,79 +323,65 @@ public class Auxiliar {
     }
 
     /**
-     * Método para obtener la tarea más cercana al usuario. Si hay varias tareas a la misma
-     * distancia se obtiene una de ellas aleatoriamente.
+     * Método para obtener el contexto más cercana al usuario. Si hay varios contextos a la misma
+     * distancia se obtiene uno de ellos aleatoriamente. Solo se envía un contexto en el que no se haya
+     * realizado ninguna tarea.
      *
      * @param app Aplicación
      * @param latitudUsuario Latitud de la posción del usuario
      * @param longitudUsuario Longitud de la posición del usuario
-     * @return JSONObject con la tarea a realizar o null
+     * @return JSONObject con la información del contexto o null
      */
-    public static JSONObject tareaMasCercana(
+    public static JSONObject contextoMasCercano(
             Application app,
             double latitudUsuario,
             double longitudUsuario,
             String idUsuario){
-        //Inicializo la lista de tareas a la misma distancia
-        List<JSONObject> tarea = new ArrayList<>();
-        //Creo la referencia al objeto JSONObject para que no se esté creando y destruyendo en cada
-        //iteración del bucle
-        JSONObject tareaEvaluada;
-        //Distancia a la que se encuentra el usuario de la tarea
-        double distancia;
-        //Distancia más pequeña encontrada del usuario a una tarea
-        double distanciaMin = 10000;
+        JSONObject lugar, tareaCompletada;
+        boolean lugarConTareaCompletada;
+        double distanciaMin = -1, distancia;
+        String contextoLugar;
+        JSONArray aMismaDistancia = null;
         try{
-            //Se obtienen las tareas del fichero
-            JSONArray vectorTareas = PersistenciaDatos.leeFichero(
+            JSONArray lugaresUsuario = PersistenciaDatos.leeFichero(
                     app,
-                    PersistenciaDatos.ficheroTareasUsuario);
-            //Se recorren todas las tareas del fichero. Es necesario para saber cuál es la tarea más cercana
-            for(int i = 0; i < vectorTareas.length(); i++){
-                tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tareaRegistrada(
-                        app,
-                        tareaEvaluada.getString(Auxiliar.id),
-                        idUsuario
-                ) && !PersistenciaDatos.existeTarea(
-                        app,
-                        PersistenciaDatos.ficheroNotificadas,
-                        tareaEvaluada.getString(Auxiliar.id),
-                        idUsuario)) {
-                    if (!tarea.isEmpty()) {
-                        distancia = calculaDistanciaDosPuntos(
-                                tareaEvaluada.getDouble(Auxiliar.latitud),
-                                tareaEvaluada.getDouble(Auxiliar.longitud),
-                                latitudUsuario,
-                                longitudUsuario);
-                        if (distancia < distanciaMin) {
-                            distanciaMin = distancia;
-                            tarea = new ArrayList<>();
-                            tarea.add(tareaEvaluada);
-                        } else {
-                            if (distancia == distanciaMin) {
-                                tarea.add(tareaEvaluada);
-                            }
-                        }
-                    } else {//Solo se va entrar aquí con la primera tarea
-                        tarea.add(tareaEvaluada);
-                        distanciaMin = calculaDistanciaDosPuntos(
-                                tareaEvaluada.getDouble(Auxiliar.latitud),
-                                tareaEvaluada.getDouble(Auxiliar.longitud),
-                                latitudUsuario,
-                                longitudUsuario);
+                    PersistenciaDatos.ficheroContextos);
+            JSONArray tareasCompletadas = PersistenciaDatos.leeTareasUsuario(
+                    app,
+                    PersistenciaDatos.ficheroCompletadas,
+                    idUsuario);
+
+            for(int i = 0; i < lugaresUsuario.length(); i++){
+                lugar = lugaresUsuario.getJSONObject(i);
+                contextoLugar = lugar.getString(Auxiliar.contexto);
+                lugarConTareaCompletada = false;
+                for(int j = 0; j < tareasCompletadas.length(); j++){
+                    tareaCompletada = tareasCompletadas.getJSONObject(j);
+                    if(contextoLugar.equals(tareaCompletada.getString(Auxiliar.contexto))){
+                        lugarConTareaCompletada = true;
+                        break;
+                    }
+                }
+                if(!lugarConTareaCompletada) {
+                    distancia = calculaDistanciaDosPuntos(
+                            latitudUsuario, longitudUsuario,
+                            lugar.getDouble(Auxiliar.latitud), lugar.getDouble(Auxiliar.longitud)
+                    );
+                    if (distanciaMin < 0 || distancia < distanciaMin) {
+                        distanciaMin = distancia;
+                        aMismaDistancia = new JSONArray();//Es más rápido que borrar
+                    }
+                    if (distanciaMin == distancia) {
+                        aMismaDistancia.put(lugar);
                     }
                 }
             }
-            //Devolvemos una de las tareas del vector escogida de manera aleatorio
-            //return tarea.get((int)(Math.random()*tarea.size()));
-            //Devolvemos la primera tarea que será la recomenda por Recombee
-            if(tarea.size() > 0)
-                return tarea.get(0);
-            else
-                return null;
-        }
-        catch (Exception e){
+            if(aMismaDistancia != null) {
+                return aMismaDistancia.getJSONObject((int) (Math.random() * aMismaDistancia.length()));
+            }
+            else  return null;
+        } catch (Exception e){
+            e.printStackTrace();
             return null;
         }
     }
@@ -1182,8 +1175,6 @@ public class Auxiliar {
                                          boolean recorta){
         String texto = null;
 
-        String[] femeninas = {"catedral", "calle"};
-
         String[] hashtags = hashtag.split(",");
         int tama = 0;
         for(int i = 0; i < hashtags.length; i++){
@@ -1228,6 +1219,60 @@ public class Auxiliar {
             }
         }
         return texto;
+    }
+
+    public static String articuloDeterminado(String nombreLugar){
+        String[] femenina = {"catedral", "necrópolis", "torre", "casona-torre", "concatedral",
+                "casa-fuerte", "casa-torre", "carcel", "mansión", "cruz", "estación"};
+
+        String[] femeninas = {"catedrales", "escuelas", "murallas", "casonas", "ruinas", "casas",
+                "fachadas", "salinas", "facultad"};
+
+        String[] masculinos = {"puentes", "reales", "restos"};
+
+        try{
+            String[] lugar = nombreLugar.split(" ");
+            String primera = lugar[0].toLowerCase();
+            if(lugar.length == 1 ||
+                    primera.equals("el") || primera.equals("los") ||
+                    primera.equals("las") || primera.equals("la"))
+                return nombreLugar;
+            else {
+                String caracter = lugar[0].substring(lugar[0].length() - 1);
+                if (caracter.equals("o"))
+                    return String.format("el %s", nombreLugar);
+                else {
+                    if (caracter.equals("a"))
+                        return String.format("la %s", nombreLugar);
+                    else {
+                        String salida = String.format("el %s",nombreLugar);
+                        boolean encontrado = false;
+                        for (String a : femeninas)
+                            if (a.equals(primera)) {
+                                salida = String.format("las %s", nombreLugar);
+                                encontrado = true;
+                                break;
+                            }
+                        if(!encontrado)
+                            for (String a : femenina)
+                                if (a.equals(primera)) {
+                                    salida = String.format("la %s", nombreLugar);
+                                    encontrado = true;
+                                    break;
+                                }
+                        if(!encontrado)
+                            for (String a : masculinos)
+                                if (a.equals(primera)) {
+                                    salida = String.format("los %s", nombreLugar);
+                                    break;
+                                }
+                        return salida;
+                    }
+                }
+            }
+        }catch (Exception e){
+            return nombreLugar;
+        }
     }
 
     /**
@@ -1704,7 +1749,10 @@ public class Auxiliar {
     public static String quitaEnlaces(String string) {
         return string
                 .replaceAll("</a>", "")
-                .replaceAll("<a.*?>","");
+                .replaceAll("<a.*?>","")
+                .replace("<span>", "")
+                .replace("</span>", "")
+                .replace("<br>"," ");
     }
 
     /**
@@ -1733,5 +1781,49 @@ public class Auxiliar {
                 new Intent().setComponent(new ComponentName("com.asus.mobilemanager", "com.asus.mobilemanager.MainActivity")),
                 new Intent().setComponent(new ComponentName("com.transsion.phonemanager", "com.itel.autobootmanager.activity.AutoBootMgrActivity"))
         };
+    }
+
+    /**
+     * Método para obtener los identificadores de las tareas que ya ha realizado el usuario.
+     * @return Lisita de identificaciones de tareas completadas
+     */
+    public static List<String> getListaTareasCompletadas(Application app, String idUsuario){
+        if(idUsuario != null) {
+            JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroCompletadas);
+            List<String> listaId = new ArrayList<>();
+            try {
+                JSONObject tarea;
+                for (int i = 0; i < tareasCompletadas.length(); i++) {
+                    tarea = tareasCompletadas.getJSONObject(i);
+                    if (tarea.get(Auxiliar.idUsuario).equals(idUsuario))
+                        listaId.add(tareasCompletadas.getJSONObject(i).getString(Auxiliar.id));
+                }
+            } catch (Exception e) {
+                listaId = new ArrayList<>();
+            }
+            return listaId;
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<String> getListaContextosTareasCompletadas(Application app, String idUsuario){
+        if(idUsuario != null) {
+            JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroCompletadas);
+            List<String> listaId = new ArrayList<>();
+            try {
+                JSONObject tarea;
+                for (int i = 0; i < tareasCompletadas.length(); i++) {
+                    tarea = tareasCompletadas.getJSONObject(i);
+                    if(tarea.get(Auxiliar.idUsuario).equals(idUsuario))
+                        listaId.add(tareasCompletadas.getJSONObject(i).getString(Auxiliar.contexto));
+                }
+            }catch (Exception e){
+                listaId = new ArrayList<>();
+            }
+            return listaId;
+        } else {
+            return new ArrayList<>();
+        }
     }
 }

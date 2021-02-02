@@ -80,6 +80,7 @@
         android:onClick="boton"
         android:text="@string/pruebaApp"
         android:textColor="@color/common_google_signin_btn_text_light_focused"
+        android:padding="5dp"
         app:layout_constraintBottom_toTopOf="@id/glLogin2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

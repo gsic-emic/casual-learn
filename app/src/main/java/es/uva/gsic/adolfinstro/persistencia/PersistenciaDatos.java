@@ -49,6 +49,9 @@ public class PersistenciaDatos {
     public static final String ficheroNuevasCuadriculas = "ficheroNuevasCuadriculas";
     public static final String ficheroPrimeraApertura = "primeraApertura";
     public static final String ficheroSegundoPlano = "enSegundoPlano";
+    public static final String ficheroContextosNotificados = "lugaresNotificados";
+    public static final String ficheroTareasPersonalizadas = "tareasPersonalizadas";
+    public static final String ficheroContextos = "lugaresSegundoPlano";
 
 
     /**
@@ -140,7 +143,7 @@ public class PersistenciaDatos {
                         if(PersistenciaDatos.borraFichero(app,
                                 PersistenciaDatos.ficheroDenunciadas))
                             if(PersistenciaDatos.borraFichero(app,
-                                    PersistenciaDatos.ficheroTareasUsuario))
+                                    PersistenciaDatos.ficheroContextos))
                                 return PersistenciaDatos.borraFichero(app,
                                         PersistenciaDatos.ficheroSinEnviar);
 
@@ -383,19 +386,21 @@ public class PersistenciaDatos {
     }
 
     /**
-     * Método para recuparar un JSONObject de un fichero. Modifia el fichero ya que elmina el JSONObject
-     * del JSONArray y sobrescribe el fichero
+     * Método para obtener un objeto de un fichero. Hay que indicar el por qué tipo de identificador
+     * es necesario buscar. Modifica el fichero sobre el que se actua cuando encuentra una coindicidencia
      *
      * @param app Aplicación
      * @param fichero Nombre del fichero
-     * @param idTarea Identificador de la tarea
-     * @return JSONObject que corresponde con el identificador y el fichero
-     * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
+     * @param tipoIdentificador Tipo de identificador
+     * @param idObjeto Identificador del objeto
+     * @return Objeto en formato JSONObject si se ha encontrado una coincidencia
+     * @throws Exception Excepción si ocurre algún problema en la lectura del fichero o en la escritura
      */
-    public static JSONObject obtenTarea(Application app,
-                                                     String fichero,
-                                                     String idTarea)
-            throws Exception {
+    public static JSONObject obtenObjeto(
+            Application app,
+            String fichero,
+            String tipoIdentificador,
+            String idObjeto) throws Exception {
         synchronized (PersistenciaDatos.bloqueo) {
             JSONArray jsonArray = leeFichero(app, fichero);
             JSONObject jsonObject = null;
@@ -403,7 +408,7 @@ public class PersistenciaDatos {
             int i;
             for (i = 0; i < jsonArray.length(); i++) {
                 jsonObject = jsonArray.getJSONObject(i);
-                if (jsonObject.get(Auxiliar.id).equals(idTarea)) {
+                if (jsonObject.get(tipoIdentificador).equals(idObjeto)) {
                     encontrado = true;
                     break;
                 }
@@ -419,6 +424,23 @@ public class PersistenciaDatos {
     }
 
     /**
+     * Método para recuparar un JSONObject de un fichero. Modifia el fichero ya que elmina el JSONObject
+     * del JSONArray y sobrescribe el fichero
+     *
+     * @param app Aplicación
+     * @param fichero Nombre del fichero
+     * @param idTarea Identificador de la tarea
+     * @return JSONObject que corresponde con el identificador y el fichero
+     * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
+     */
+    public static JSONObject obtenTarea(
+            Application app,
+            String fichero,
+            String idTarea) throws Exception {
+        return obtenObjeto(app, fichero, Auxiliar.id, idTarea);
+    }
+
+    /**
      * Método para recuparar un JSONObject de un fichero. Modifica el fichero ya que elmina el JSONObject
      * del JSONArray y sobrescribe el fichero
      *
@@ -428,10 +450,21 @@ public class PersistenciaDatos {
      * @return JSONObject que corresponde con el identificador y el fichero
      * @throws Exception Se lanza una excepción cuando el identificador no esté en el registro
      */
-    public static JSONObject obtenTarea(Application app,
-                                                     String fichero,
-                                                     String idTarea,
-                                                     String idUser)
+    public static JSONObject obtenTarea(
+            Application app,
+            String fichero,
+            String idTarea,
+            String idUser)
+            throws Exception {
+        return obtenObjeto(app, fichero, Auxiliar.id, idTarea, idUser);
+    }
+
+    public static JSONObject obtenObjeto(
+            Application app,
+            String fichero,
+            String tipoIdentificador,
+            String idObjeto,
+            String idUser)
             throws Exception {
         synchronized (PersistenciaDatos.bloqueo) {
             JSONArray jsonArray = leeFichero(app, fichero);
@@ -441,12 +474,12 @@ public class PersistenciaDatos {
             for (i = 0; i < jsonArray.length(); i++) {
                 jsonObject = jsonArray.getJSONObject(i);
                 if (idUser != null) {
-                    if (jsonObject.get(Auxiliar.id).equals(idTarea) && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
+                    if (jsonObject.get(tipoIdentificador).equals(idObjeto) && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
                         encontrado = true;
                         break;
                     }
                 } else {
-                    if (jsonObject.get(Auxiliar.id).equals(idTarea) && !jsonObject.has(Auxiliar.idUsuario)) {
+                    if (jsonObject.get(tipoIdentificador).equals(idObjeto) && !jsonObject.has(Auxiliar.idUsuario)) {
                         encontrado = true;
                         break;
                     }
@@ -498,19 +531,23 @@ public class PersistenciaDatos {
      * o null si no existía
      */
     public static JSONObject recuperaTarea(Application app, String fichero, String idTarea, String idUser) {
+        return recuperaObjeto(app, fichero, Auxiliar.id, idTarea, idUser);
+    }
+
+    public static JSONObject recuperaObjeto(Application app, String fichero, String tipoObjeto, String idObjeto, String idUser){
         JSONArray jsonArray = leeFichero(app, fichero);
         JSONObject jsonObject;
         try{
             for (int i = 0; i < jsonArray.length(); i++) {
                 jsonObject = jsonArray.getJSONObject(i);
                 if(idUser != null) {
-                    if (jsonObject.get(Auxiliar.id).equals(idTarea)
+                    if (jsonObject.get(tipoObjeto).equals(idObjeto)
                             && idUser.equals(jsonObject.get(Auxiliar.idUsuario))) {
                         return jsonObject;
                     }
                 } else{ //El usuario no se ha identificado aún
                     if (!jsonObject.has(Auxiliar.idUsuario)
-                            && jsonObject.get(Auxiliar.id).equals(idTarea))
+                            && jsonObject.get(tipoObjeto).equals(idObjeto))
                         return jsonObject;
                 }
             }

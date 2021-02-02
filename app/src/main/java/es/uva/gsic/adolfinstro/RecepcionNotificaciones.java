@@ -39,12 +39,16 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
      */
     @Override
     public void onReceive(Context context, Intent intent) {
-        String idTarea = "", accion = intent.getAction();
+        String idTarea = "", idContexto = "", accion = intent.getAction();
         try {
+            Bundle extras = intent.getExtras();
+            if(extras != null && extras.containsKey(Auxiliar.contexto)){
+                idContexto = intent.getExtras().getString(Auxiliar.contexto);
+                NotificationManager notificationManager = (NotificationManager) context.
+                        getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(extras.getInt(Auxiliar.idNotificacion));
+            }
             idTarea = Objects.requireNonNull(intent.getExtras()).getString(Auxiliar.id);
-            NotificationManager notificationManager = (NotificationManager) context.
-                    getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.cancel(intent.getExtras().getInt("idNotificacion"));
         }catch (Exception ef){
             //Saltará en los reincios, pero es lo esperado
         }
@@ -97,6 +101,23 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
                     e.printStackTrace();
                 }
                 break;
+            case Auxiliar.ahora_no_contexto:
+                try {
+                    JSONObject lugar = PersistenciaDatos.obtenObjeto(
+                            (Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroContextosNotificados,
+                            Auxiliar.contexto,
+                            idContexto);
+                    lugar.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                    PersistenciaDatos.guardaJSON((Application) context.getApplicationContext(),
+                            PersistenciaDatos.ficheroContextosNotificados,
+                            lugar,
+                            Context.MODE_PRIVATE);
+                    eventoFirebase("notContDescartada", "idContexto", idContexto);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
             case Intent.ACTION_BOOT_COMPLETED:
                 new AlarmaProceso().activaAlarmaProceso(context);
                 new CompruebaEnvios().activaCompruebaEnvios(context);
@@ -113,11 +134,15 @@ public class RecepcionNotificaciones extends BroadcastReceiver {
      * @param idTarea Identificador de la tarea
      */
     private void tareaFirebase(String evento, String idTarea){
+        eventoFirebase(evento, "idTarea", idTarea);
+    }
+
+    private void eventoFirebase(String evento, String tipoObjeto, String idObjeto){
         Bundle bundle;
         if(idUsuario != null) {
             try {
                 bundle = new Bundle();
-                bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+                bundle.putString(tipoObjeto, Auxiliar.idReducida(idObjeto));
                 bundle.putString(Auxiliar.idUsuario, idUsuario);
                 Login.firebaseAnalytics.logEvent(evento, bundle);
             } catch (Exception e) {

@@ -59,7 +59,7 @@ import static java.util.Objects.requireNonNull;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20201211
+ * @version 20210202
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -175,16 +175,28 @@ public class Tarea extends AppCompatActivity implements
                 if(recursoAsociadoImagen != null){
                     if(recursoAsociadoImagen300px != null){ //Se muestra la imagen en baja resolución
                         urlImagen = recursoAsociadoImagen300px;
-                        Picasso.get()
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                            Picasso.get()
                                 .load(recursoAsociadoImagen300px)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                                 .tag(Auxiliar.cargaImagenTarea)
                                 .into(ivImagenDescripcion);
+                        else
+                            Picasso.get()
+                                    .load(recursoAsociadoImagen300px)
+                                    .tag(Auxiliar.cargaImagenTarea)
+                                    .into(ivImagenDescripcion);
                     }else{ //Solo tiene imagen en alta resolución
                         urlImagen = recursoAsociadoImagen;
-                        Picasso.get()
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                            Picasso.get()
                                 .load(recursoAsociadoImagen)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                                .tag(Auxiliar.cargaImagenTarea)
+                                .into(ivImagenDescripcion);
+                        else
+                            Picasso.get()
+                                .load(recursoAsociadoImagen)
                                 .tag(Auxiliar.cargaImagenTarea)
                                 .into(ivImagenDescripcion);
                     }

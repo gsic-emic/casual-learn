@@ -33,7 +33,16 @@
     <color name="paleta_vegetacion">#7d8e74</color>
     <color name="paleta">#dfae43</color>
     <color name="paleta_suelo">#a15b1c</color>
-    <color name="paleta_especial">#000E68</color>
-    <color name="paleta_especial_transparente">#1A000E68</color>
+    <color name="p1">#e9d49c</color>
+    <color name="paleta_especial">#f2e6c6</color>
+    <color name="paleta_especial_transparente">#1Af2e6c6</color>
+    <color name="paleta_especial1">#ccd7dd</color>
+    <color name="paleta_especial1_transparente">#1Accd7dd</color>
+    <color name="paleta_especial2">#718068</color>
+    <color name="paleta_especial2_transparente">#1A718068</color>
+    <color name="paleta_especial3">#cc7424</color>
+    <color name="paleta_especial3_transparente">#1Acc7424</color>
+    <color name="paleta_especial4">#764214</color>
+    <color name="paleta_especial4_transparente">#1A764214</color>
 
 </resources>
