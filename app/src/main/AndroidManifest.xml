@@ -30,7 +30,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".ListaContextos"></activity>
+        <activity
+            android:name=".ListaContextos"
+            android:label="@string/lugares_notificados" />
         <activity
             android:name=".CompartirRespuesta"
             android:label="@string/compartir_respuesta" />

@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Guideline;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -131,7 +130,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20210113
+ * @version 20210202
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -1305,22 +1304,13 @@ public class Maps extends AppCompatActivity implements
                 //Agrego el fichero de donde extraer la tarea
                 jo.put(Auxiliar.ficheroOrigen, ficheroTareas);
                 id = jo.getString(Auxiliar.id);
-                if(listaId.contains(id))
-                    tareasPunto.add(new TareasMapaLista(
-                            id,
-                            Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
-                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                            uriFondo,
-                            jo,
-                            true));
-                else
-                    tareasPunto.add(new TareasMapaLista(
-                            id,
-                            Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
-                            Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                            uriFondo,
-                            jo,
-                            false));
+                tareasPunto.add(new TareasMapaLista(
+                        id,
+                        Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
+                        Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                        uriFondo,
+                        jo,
+                        listaId.contains(id)));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1952,9 +1942,6 @@ public class Maps extends AppCompatActivity implements
             textToSpeech.shutdown();
     }
 
-    //TODO Esto luego va todo en las preferencias o un fichero. Solo para la demo
-    int numero = 1;
-
     /**
      * Método que responde a la pulsación del alguno de los botones
      * @param view Instancia del botón pulsado que ha lanzado el método
@@ -2366,93 +2353,104 @@ public class Maps extends AppCompatActivity implements
         }
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
-            Request.Method.GET,
-            url,
-            null,
-            new Response.Listener<JSONArray>() {
-                @Override
-                public void onResponse(JSONArray puntosInteres) {
-                    //Tengo que guardar el fichero específico de la cuadrícula con los puntos de interés
-                    if(puntosInteres != null){
-                        JSONArray ficheroAntiguo = PersistenciaDatos.leeFichero(
-                                getApplication(),
-                                nombre);
-                        //Si el fichero está vacío no va a tener tareas relacionadas
-                        if(ficheroAntiguo == null || ficheroAntiguo.length() == 0) {
-                            JSONObject puntoInteres;
-                            for(int i = 0; i < puntosInteres.length(); i++) {
-                                try {
-                                    puntoInteres = puntosInteres.getJSONObject(i);
-                                    puntoInteres.put(Auxiliar.id,
-                                            String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
-                                    puntosInteres.put(i, puntoInteres);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            PersistenciaDatos.guardaFichero(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray puntosInteres) {
+                        //Tengo que guardar el fichero específico de la cuadrícula con los puntos de interés
+                        if (puntosInteres != null) {
+                            JSONArray ficheroAntiguo = PersistenciaDatos.leeFichero(
                                     getApplication(),
-                                    nombre,
-                                    puntosInteres,
-                                    Context.MODE_PRIVATE);
-                        } else {
-                            JSONArray vectorFinal = new JSONArray();
-                            JSONObject nuevoPunto, puntoAntiguo;
-                            //Me quedo con los datos del servidor más actualizados
-                            for(int i = 0; i < puntosInteres.length(); i++){
-                                try {
-                                    nuevoPunto = puntosInteres.getJSONObject(i);
-                                    for(int j = 0; j < ficheroAntiguo.length(); j++) {
-                                        puntoAntiguo = ficheroAntiguo.getJSONObject(j);
-                                        //Si hay conincidencia guardo el instante y el nombre del fichero si lo tuviera
-                                        if(nuevoPunto.getString(Auxiliar.contexto).equals(puntoAntiguo.getString(Auxiliar.contexto))){
-                                            if(puntoAntiguo.has(Auxiliar.caducidad) && puntoAntiguo.has(Auxiliar.id)) {
-                                                nuevoPunto.put(Auxiliar.caducidad, puntoAntiguo.getLong(Auxiliar.caducidad));
-                                                nuevoPunto.put(Auxiliar.id, puntoAntiguo.getString(Auxiliar.id));
-                                            }
-                                            break;
-                                        }
+                                    nombre);
+                            //Si el fichero está vacío no va a tener tareas relacionadas
+                            if (ficheroAntiguo == null || ficheroAntiguo.length() == 0) {
+                                JSONObject puntoInteres;
+                                for (int i = 0; i < puntosInteres.length(); i++) {
+                                    try {
+                                        puntoInteres = puntosInteres.getJSONObject(i);
+                                        puntoInteres.put(Auxiliar.id,
+                                                String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
+                                        puntosInteres.put(i, puntoInteres);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
                                     }
-                                    if(!nuevoPunto.has(Auxiliar.id))
-                                        nuevoPunto.put(Auxiliar.id, String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
-                                    vectorFinal.put(nuevoPunto);
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
                                 }
+                                PersistenciaDatos.guardaFichero(
+                                        getApplication(),
+                                        nombre,
+                                        puntosInteres,
+                                        Context.MODE_PRIVATE);
+                            } else {
+                                JSONArray vectorFinal = new JSONArray();
+                                JSONObject nuevoPunto, puntoAntiguo;
+                                //Me quedo con los datos del servidor más actualizados
+                                for (int i = 0; i < puntosInteres.length(); i++) {
+                                    try {
+                                        nuevoPunto = puntosInteres.getJSONObject(i);
+                                        for (int j = 0; j < ficheroAntiguo.length(); j++) {
+                                            puntoAntiguo = ficheroAntiguo.getJSONObject(j);
+                                            //Si hay conincidencia guardo el instante y el nombre del fichero si lo tuviera
+                                            if (nuevoPunto.getString(Auxiliar.contexto).equals(puntoAntiguo.getString(Auxiliar.contexto))) {
+                                                if (puntoAntiguo.has(Auxiliar.caducidad) && puntoAntiguo.has(Auxiliar.id)) {
+                                                    nuevoPunto.put(Auxiliar.caducidad, puntoAntiguo.getLong(Auxiliar.caducidad));
+                                                    nuevoPunto.put(Auxiliar.id, puntoAntiguo.getString(Auxiliar.id));
+                                                }
+                                                break;
+                                            }
+                                        }
+                                        if (!nuevoPunto.has(Auxiliar.id))
+                                            nuevoPunto.put(Auxiliar.id, String.format("%d%d", System.currentTimeMillis(), System.nanoTime()));
+                                        vectorFinal.put(nuevoPunto);
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                PersistenciaDatos.guardaFichero(
+                                        getApplication(),
+                                        nombre,
+                                        vectorFinal,
+                                        Context.MODE_PRIVATE);
                             }
-                            PersistenciaDatos.guardaFichero(
+                        }
+
+                        try {//Actualización del fichero de cuadrículas
+                            JSONObject cuadricula = PersistenciaDatos.recuperaTarea(
                                     getApplication(),
-                                    nombre,
-                                    vectorFinal,
-                                    Context.MODE_PRIVATE);
+                                    PersistenciaDatos.ficheroNuevasCuadriculas,
+                                    nombre);
+                            cuadricula.put(Auxiliar.caducidad,
+                                    System.currentTimeMillis() + 86400000);//Caduca al día
+                            PersistenciaDatos.reemplazaJSON(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNuevasCuadriculas,
+                                    cuadricula);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        synchronized ((Object) numeroCuadriculasPendientes) {
+                            if (numeroCuadriculasPendientes > 0) {
+                                --numeroCuadriculasPendientes;
+                                if (numeroCuadriculasPendientes == 0)
+                                    compruebaZona(false);
+                            }
                         }
                     }
-
-                    try {//Actualización del fichero de cuadrículas
-                        JSONObject cuadricula = PersistenciaDatos.recuperaTarea(
-                                getApplication(),
-                                PersistenciaDatos.ficheroNuevasCuadriculas,
-                                nombre);
-                        cuadricula.put(Auxiliar.caducidad,
-                                System.currentTimeMillis() + 86400000);//Caduca al día
-                        PersistenciaDatos.reemplazaJSON(
-                                getApplication(),
-                                PersistenciaDatos.ficheroNuevasCuadriculas,
-                                cuadricula);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    synchronized ((Object)numeroCuadriculasPendientes) {
-                        if(numeroCuadriculasPendientes > 0) {
-                            --numeroCuadriculasPendientes;
-                            if (numeroCuadriculasPendientes == 0)
-                                compruebaZona(false);
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        synchronized ((Object) numeroCuadriculasPendientes) {
+                            if (numeroCuadriculasPendientes > 0) {
+                                --numeroCuadriculasPendientes;
+                                if (numeroCuadriculasPendientes == 0)
+                                    compruebaZona(false);
+                            }
                         }
                     }
                 }
-            },
-            null
         );
 
         ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonArrayRequest);

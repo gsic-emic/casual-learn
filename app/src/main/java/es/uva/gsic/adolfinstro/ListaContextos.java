@@ -17,12 +17,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import es.uva.gsic.adolfinstro.auxiliar.AdaptadorLista;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaContextos;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.ContextoLista;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
+/**
+ * Clase para mostrar la activdad de la lista de los contextos notificados.
+ *
+ * @author Pablo
+ * @version 20210202
+ */
 public class ListaContextos extends AppCompatActivity
     implements AdaptadorListaContextos.ItemClickListenerContexto {
 

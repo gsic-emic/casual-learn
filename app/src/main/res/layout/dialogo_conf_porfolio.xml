@@ -52,30 +52,6 @@
             android:layout_marginHorizontal="@dimen/margen_texto"
             android:layout_marginTop="10dp"/>
 
-        <!--<TextView
-            android:id="@+id/tvIntervaloPor"
-            android:layout_marginTop="10dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/swRetardarPor"
-            app:layout_constraintStart_toStartOf="parent"
-            android:text="@string/intervalo"
-            android:layout_marginHorizontal="@dimen/margen_texto"/>
-
-        <androidx.appcompat.widget.AppCompatSeekBar
-            android:id="@+id/sbIntervalo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/margen_texto"
-            app:layout_constraintTop_toBottomOf="@id/tvIntervaloPor"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginTop="10dp"
-            android:max="15"
-            android:progress="4"
-            app:updatesContinuously="false"
-            app:showSeekBarValue="false"
-            app:seekBarIncrement="1"/>-->
-
         <Button
             android:id="@+id/btOmitirPor"
             android:layout_width="wrap_content"

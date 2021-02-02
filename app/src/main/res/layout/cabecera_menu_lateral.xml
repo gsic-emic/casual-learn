@@ -10,7 +10,7 @@
         android:id="@+id/ivCabecera"
         android:layout_width="60dp"
         android:layout_height="65dp"
-        android:src="@drawable/casual_learn_icono"
+        app:srcCompat="@drawable/casual_learn_icono"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:paddingHorizontal="10dp"

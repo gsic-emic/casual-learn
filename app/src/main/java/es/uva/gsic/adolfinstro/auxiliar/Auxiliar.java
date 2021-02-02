@@ -27,7 +27,6 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.webkit.WebView;
@@ -42,7 +41,6 @@ import androidx.preference.PreferenceManager;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -76,13 +74,13 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20201222
+ * @version 20210202
  */
 public class Auxiliar {
 
     //TODO comprueba que sea la dirección correcta
-    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
@@ -325,83 +323,15 @@ public class Auxiliar {
     }
 
     /**
-     * Método para obtener la tarea más cercana al usuario. Si hay varias tareas a la misma
-     * distancia se obtiene una de ellas aleatoriamente.
+     * Método para obtener el contexto más cercana al usuario. Si hay varios contextos a la misma
+     * distancia se obtiene uno de ellos aleatoriamente. Solo se envía un contexto en el que no se haya
+     * realizado ninguna tarea.
      *
      * @param app Aplicación
      * @param latitudUsuario Latitud de la posción del usuario
      * @param longitudUsuario Longitud de la posición del usuario
-     * @return JSONObject con la tarea a realizar o null
+     * @return JSONObject con la información del contexto o null
      */
-    public static JSONObject tareaMasCercana(
-            Application app,
-            double latitudUsuario,
-            double longitudUsuario,
-            String idUsuario){
-        //Inicializo la lista de tareas a la misma distancia
-        List<JSONObject> tarea = new ArrayList<>();
-        //Creo la referencia al objeto JSONObject para que no se esté creando y destruyendo en cada
-        //iteración del bucle
-        JSONObject tareaEvaluada;
-        //Distancia a la que se encuentra el usuario de la tarea
-        double distancia;
-        //Distancia más pequeña encontrada del usuario a una tarea
-        double distanciaMin = 10000;
-        try{
-            //Se obtienen las tareas del fichero
-            JSONArray vectorTareas = PersistenciaDatos.leeFichero(
-                    app,
-                    PersistenciaDatos.ficheroTareasUsuario);
-            //Se recorren todas las tareas del fichero. Es necesario para saber cuál es la tarea más cercana
-            for(int i = 0; i < vectorTareas.length(); i++){
-                tareaEvaluada = vectorTareas.getJSONObject(i);
-                if(!tareaRegistrada(
-                        app,
-                        tareaEvaluada.getString(Auxiliar.id),
-                        idUsuario
-                ) && !PersistenciaDatos.existeTarea(
-                        app,
-                        PersistenciaDatos.ficheroNotificadas,
-                        tareaEvaluada.getString(Auxiliar.id),
-                        idUsuario)) {
-                    if (!tarea.isEmpty()) {
-                        distancia = calculaDistanciaDosPuntos(
-                                tareaEvaluada.getDouble(Auxiliar.latitud),
-                                tareaEvaluada.getDouble(Auxiliar.longitud),
-                                latitudUsuario,
-                                longitudUsuario);
-                        if (distancia < distanciaMin) {
-                            distanciaMin = distancia;
-                            tarea = new ArrayList<>();
-                            tarea.add(tareaEvaluada);
-                        } else {
-                            if (distancia == distanciaMin) {
-                                tarea.add(tareaEvaluada);
-                            }
-                        }
-                    } else {//Solo se va entrar aquí con la primera tarea
-                        tarea.add(tareaEvaluada);
-                        distanciaMin = calculaDistanciaDosPuntos(
-                                tareaEvaluada.getDouble(Auxiliar.latitud),
-                                tareaEvaluada.getDouble(Auxiliar.longitud),
-                                latitudUsuario,
-                                longitudUsuario);
-                    }
-                }
-            }
-            //Devolvemos una de las tareas del vector escogida de manera aleatorio
-            //return tarea.get((int)(Math.random()*tarea.size()));
-            //Devolvemos la primera tarea que será la recomenda por Recombee
-            if(tarea.size() > 0)
-                return tarea.get(0);
-            else
-                return null;
-        }
-        catch (Exception e){
-            return null;
-        }
-    }
-
     public static JSONObject contextoMasCercano(
             Application app,
             double latitudUsuario,

@@ -208,7 +208,7 @@
             app:layout_constraintTop_toBottomOf="@id/clPreview"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginVertical="20dp"
-            android:drawableStart="@drawable/ic_check_no_completada"
+            app:drawableStartCompat="@drawable/ic_check_no_completada"
             android:visibility="gone"/>
 
         <Button

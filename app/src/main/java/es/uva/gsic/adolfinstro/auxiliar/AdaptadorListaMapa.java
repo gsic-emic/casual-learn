@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro.auxiliar;
 
 import android.content.Context;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,7 @@ import es.uva.gsic.adolfinstro.R;
 /**
  * Clase para establecer la lista de tareas que se muestra cuando un usuario pulsa en un marcador
  * @author pablo
- * @version 20201210
+ * @version 20210202
  */
 public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.ViewHolderMapa>  {
 
@@ -99,11 +100,15 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
         holder.tvTitulo.setText(lista.get(position).getTitulo());
         String uriFondo = lista.get(position).getUriFondo();
         if(uriFondo != null && !uriFondo.equals("") && !uriFondo.equals("?width=300")) {
-            Picasso.get()
-                    .load(uriFondo)
-                    .placeholder(R.drawable.ic_cloud_download_blue_80dp)
-                    .tag(Auxiliar.cargaImagenPreview)
-                    .into(holder.ivFondo);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                Picasso.get()
+                        .load(uriFondo)
+                        .placeholder(R.drawable.ic_cloud_download_blue_80dp)
+                        .into(holder.ivFondo);
+            else
+                Picasso.get()
+                        .load(uriFondo)
+                        .into(holder.ivFondo);
             holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(
                     context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
         }
@@ -119,12 +124,31 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
             holder.ivCompletada.setVisibility(View.INVISIBLE);
         }
         try{
-            if(!lista.get(position).getTarea().getString(Auxiliar.creadoPor).equals(Auxiliar.creadorInvestigadores)){
-                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                        context.getResources(), R.drawable.fondo_especial, null));
-            }else{
-                holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                        context.getResources(), R.drawable.boton_secundario, null));
+            switch (lista.get(position).getTarea().getString(Auxiliar.creadoPor)){
+                case Auxiliar.creadorInvestigadores:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.boton_secundario, null));
+                    break;
+                case Auxiliar.r1:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.fondo_especial1, null));
+                    break;
+                case Auxiliar.r2:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.fondo_especial2, null));
+                    break;
+                case Auxiliar.r3:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.fondo_especial3, null));
+                    break;
+                case Auxiliar.r4:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.fondo_especial4, null));
+                    break;
+                default:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.fondo_especial, null));
+                    break;
             }
         }catch (Exception e){
             e.printStackTrace();

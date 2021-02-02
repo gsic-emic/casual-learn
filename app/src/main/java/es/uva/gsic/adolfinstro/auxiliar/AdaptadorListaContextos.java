@@ -13,10 +13,15 @@ import java.util.List;
 
 import es.uva.gsic.adolfinstro.R;
 
+/**
+ * Clase para lista de contextos que se le han notificado al usuario
+ *
+ * @author Pablo
+ * @version 20210202
+ */
 public class AdaptadorListaContextos extends RecyclerView.Adapter<AdaptadorListaContextos.ViewHolder> {
     public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView label, fecha;
-
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             label = itemView.findViewById(R.id.tvTituloListaContextos);

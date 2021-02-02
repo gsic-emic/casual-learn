@@ -47,11 +47,11 @@ import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
- * Clase encargada de gestionar la comprobación de la posición del usuario y de proponerle tareas si
+ * Clase encargada de gestionar la comprobación de la posición del usuario y de proponerle contextos si
  * se cumplen una serie de circustancias.
  *
  * @author Pablo
- * @version 20210111
+ * @version 20210202
  */
 public class AlarmaProceso extends BroadcastReceiver implements SharedPreferences.OnSharedPreferenceChangeListener {
     /** Contexto */

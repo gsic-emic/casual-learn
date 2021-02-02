@@ -57,6 +57,13 @@ import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 import es.uva.gsic.adolfinstro.auxiliar.TareasMapaLista;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
+/**
+ * Clase para mostrar toda la información disponible de un contexto. Carga dinámica de las tareas del
+ * contexto. El orden viene determinado por lo que indique el sistema de recomendación.
+ *
+ * @author Pablo
+ * @version 20210202
+ */
 public class PuntoInteres extends AppCompatActivity implements LocationListener, AdaptadorListaMapa.ItemClickListener {
 
     private Context context;

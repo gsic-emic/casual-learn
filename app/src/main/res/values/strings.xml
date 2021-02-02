@@ -277,7 +277,7 @@
     <string name="puntoSinTexto">This point does not have a description yet…</string>
     <string name="desarrolladores_nombres"><![CDATA[<p><b>Pablo García Zarza</b><br>pablogz@gsic.uva.es</p><p><b>Adolfo Ruiz Calleja</b><br>adolfo@gsic.uva.es</p>]]></string>
     <string name="aun_no_disponible">This option is not enable yet. Try again in a few minutes.</string>
-    <string name="texto_peticion_ubicacion_siempre">In order to recommend you of nearby tasks, Casual Learn needs to know your position when the app is in the background.\n\nCasual Learn only collects your position in the background when the notification timer expires (customizable from the app settings). When it notifies a task it will stop collecting your position until the timer expires again.</string>
+    <string name="texto_peticion_ubicacion_siempre">In order to recommend you of nearby places, Casual Learn needs to know your position when the app is in the background.\n\nCasual Learn only collects your position in the background when the notification timer expires (customizable from the app settings). When it notifies a place it will stop collecting your position until the timer expires again.</string>
     <string name="uso_posicion">Use your location</string>
     <string name="masInfo" translatable="false">+info</string>
     <string name="bic_jcyl" translatable="false">Bienes de Interés Cultura (BIC) de Castilla y León: Bienes Inmuebles</string>
@@ -290,13 +290,13 @@
     <string name="ejecucion_segundo_plano">Running in the background</string>
     <string name="omitir">Skip</string>
     <string name="vamos">Go</string>
-    <string name="texto_segundo_plano"><![CDATA[Casual Learn has to run in the background in order to notify nearby tasks. We have detected that your phone can block this feature. If you wish, we can help you to find the app that manages this things. You need to allow Casual Learn to <b>run in the background</b> and <b>start automatically</b> (so the app works again when you turn on your device).<br><br>If you don\'t make this changes, Casual Learn won\'t be able to notify new tasks. Even so, you can continue using the app normally.]]></string>
+    <string name="texto_segundo_plano"><![CDATA[Casual Learn has to run in the background in order to notify nearby places. We have detected that your phone can block this feature. If you wish, we can help you to find the app that manages this things. You need to allow Casual Learn to <b>run in the background</b> and <b>start automatically</b> (so the app works again when you turn on your device).<br><br>If you don\'t make this changes, Casual Learn won\'t be able to notify new places. Even so, you can continue using the app normally.]]></string>
     <string name="no_app_gestion">We have not found the management app…</string>
     <string name="compartir_casual_learn">Share Casual Learn</string>
     <string name="valora_la_app">Rate the app</string>
     <string name="urlLanding" translatable="false">https://casuallearnapp.gsic.uva.es</string>
     <string name="noGooglePlay">Error: you do not have install Google Play</string>
-    <string name="ajustes_rapidos">Quick settings</string>
+    <string name="ajustes_rapidos">Portfolio settings</string>
     <string name="hacer_porfolio_publico">Publish your answers in a public portfolio.\nYou can disable it from the app settings.</string>
     <string name="activar_retardo">Turn on this option if you want that the answers are made public as soon as possible.\nIf it is disable, they will be published after a few hours.</string>
     <string name="compartir_id_porfolio">Share the portfolio\'s ID.</string>
