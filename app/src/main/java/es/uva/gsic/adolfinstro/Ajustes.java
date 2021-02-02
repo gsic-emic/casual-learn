@@ -80,14 +80,15 @@ public class Ajustes extends AppCompatActivity
 
     @Override
     public void onBackPressed(){
-        if(reiniciaMapa) {
+        /*if(reiniciaMapa) {
             Intent intent = new Intent(this, Maps.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
             finishAffinity();
             startActivity(intent);
         }else {
             finish();
-        }
+        }*/
+        finish();
     }
 }
 

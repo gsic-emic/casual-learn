@@ -78,6 +78,8 @@ public class ListaTareas extends AppCompatActivity
             case PersistenciaDatos.ficheroCompletadas:
                 setTitle(getString(R.string.tareasCompletadas));
                 break;
+            default:
+                break;
         }
 
         try{

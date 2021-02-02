@@ -3,6 +3,7 @@ package es.uva.gsic.adolfinstro;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -17,7 +18,7 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 /**
  * Clase diseñada para mostrar una imagen y que el usuario pueda ampliarla.
  * @author Pablo
- * @version 20200612
+ * @version 20210202
  */
 public class ImagenCompleta extends AppCompatActivity {
 
@@ -38,11 +39,17 @@ public class ImagenCompleta extends AppCompatActivity {
 
         PhotoView photoView = findViewById(R.id.photoView);
         try {
-            Picasso.get()
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                Picasso.get()
                     .load(Objects.requireNonNull(getIntent().getExtras()).getString("IMAGENCOMPLETA"))
                     .tag(Auxiliar.cargaImagenDetalles)
                     .placeholder(R.drawable.ic_cloud_download_blue_80dp)
                     .into(photoView);
+            else
+                Picasso.get()
+                        .load(Objects.requireNonNull(getIntent().getExtras()).getString("IMAGENCOMPLETA"))
+                        .tag(Auxiliar.cargaImagenDetalles)
+                        .into(photoView);
         }catch (Exception e){
             e.printStackTrace();
         }

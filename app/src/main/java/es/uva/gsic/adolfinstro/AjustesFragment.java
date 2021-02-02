@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputFilter;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -179,74 +180,91 @@ public class AjustesFragment extends PreferenceFragmentCompat
                 break;
             case Ajustes.PORTAFOLIO_pref:
             case Ajustes.RETARDOPORTA_pref:
-                final Context context = getContext();
-                if(idUsuario == null || idUsuario.has(Auxiliar.uid)) {
-                    final boolean publico = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
-                    final boolean retardado = sharedPreferences.getBoolean(Ajustes.RETARDOPORTA_pref, true);
-                    try {
-                        JSONObject infoUsuario = new JSONObject();
-                        JsonObjectRequest jsonObjectRequest;
-                        infoUsuario.put(Auxiliar.publico, publico);
-                        infoUsuario.put(Auxiliar.retardado, retardado);
-                        if (idUsuario != null && idUsuario.has(Auxiliar.idPortafolio)) {//Es una actualización
-                            jsonObjectRequest = new JsonObjectRequest(
-                                    Request.Method.PUT,
-                                    Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),
-                                    infoUsuario,
-                                    new Response.Listener<JSONObject>() {
-                                        @Override
-                                        public void onResponse(JSONObject response) {
-                                            compartirPorta.setEnabled(publico);
-                                            preferenciaRetardo.setEnabled(publico);
-                                        }
-                                    },
-                                    new Response.ErrorListener() {
-                                        @Override
-                                        public void onErrorResponse(VolleyError error) {
-                                            idUsuario.remove(Auxiliar.idPortafolio);
-                                            PersistenciaDatos.reemplazaJSON(
-                                                    (Application) context.getApplicationContext(),
-                                                    PersistenciaDatos.ficheroUsuario,
-                                                    idUsuario);
-                                            Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
-                                        }
-                                    }
-                            );
-                        } else {//Es una creación
-                            infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
-                            jsonObjectRequest = new JsonObjectRequest(
-                                    Request.Method.POST,
-                                    Auxiliar.direccionIP + "portafolio",
-                                    infoUsuario,
-                                    new Response.Listener<JSONObject>() {
-                                        @Override
-                                        public void onResponse(JSONObject docUsuario) {
-                                            if (docUsuario != null) {
+                try {
+                    final Context context = getContext();
+                    if (idUsuario == null || idUsuario.has(Auxiliar.uid)) {
+                        final boolean publico = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+                        final boolean retardado = sharedPreferences.getBoolean(Ajustes.RETARDOPORTA_pref, true);
+                        try {
+                            JSONObject infoUsuario = new JSONObject();
+                            JsonObjectRequest jsonObjectRequest;
+                            infoUsuario.put(Auxiliar.publico, publico);
+                            infoUsuario.put(Auxiliar.retardado, retardado);
+                            if (idUsuario != null && idUsuario.has(Auxiliar.idPortafolio)) {//Es una actualización
+                                jsonObjectRequest = new JsonObjectRequest(
+                                        Request.Method.PUT,
+                                        Auxiliar.rutaPortafolio + idUsuario.getString(Auxiliar.idPortafolio),
+                                        infoUsuario,
+                                        new Response.Listener<JSONObject>() {
+                                            @Override
+                                            public void onResponse(JSONObject response) {
                                                 try {
-                                                    idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
-                                                    PersistenciaDatos.reemplazaJSON(
-                                                            (Application) context.getApplicationContext(),
-                                                            PersistenciaDatos.ficheroUsuario,
-                                                            idUsuario);
                                                     compartirPorta.setEnabled(publico);
                                                     preferenciaRetardo.setEnabled(publico);
-                                                } catch (JSONException e) {
-                                                    e.printStackTrace();
+                                                } catch (Exception e) {
+                                                    Log.d("porfolio", "Creación del porfolio desde el dialogo");
                                                 }
                                             }
+                                        },
+                                        new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                                idUsuario.remove(Auxiliar.idPortafolio);
+                                                PersistenciaDatos.reemplazaJSON(
+                                                        (Application) context.getApplicationContext(),
+                                                        PersistenciaDatos.ficheroUsuario,
+                                                        idUsuario);
+                                                Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
+                                            }
                                         }
-                                    },
-                                    null
-                            );
-                        }
+                                );
+                            } else {//Es una creación
+                                infoUsuario.put(Auxiliar.idUsuario, idUsuario.getString(Auxiliar.uid));
+                                jsonObjectRequest = new JsonObjectRequest(
+                                        Request.Method.POST,
+                                        Auxiliar.direccionIP + "portafolio",
+                                        infoUsuario,
+                                        new Response.Listener<JSONObject>() {
+                                            @Override
+                                            public void onResponse(JSONObject docUsuario) {
+                                                if (docUsuario != null) {
+                                                    try {
+                                                        idUsuario.put(Auxiliar.idPortafolio, docUsuario.getString(Auxiliar.idPortafolio));
+                                                        PersistenciaDatos.reemplazaJSON(
+                                                                (Application) context.getApplicationContext(),
+                                                                PersistenciaDatos.ficheroUsuario,
+                                                                idUsuario);
+                                                        try {
+                                                            compartirPorta.setEnabled(publico);
+                                                            preferenciaRetardo.setEnabled(publico);
+                                                        } catch (Exception e) {
+                                                            Log.d("porfolio", "Creación del porfolio desde el dialogo");
+                                                        }
+                                                    } catch (JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+                                                Toast.makeText(context, context.getString(R.string.errorCambioEstado), Toast.LENGTH_SHORT).show();
+                                            }
+                                        }
+                                );
+                            }
 
-                        ColaConexiones.getInstance(context).getRequestQueue().add(jsonObjectRequest);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                            ColaConexiones.getInstance(context).getRequestQueue().add(jsonObjectRequest);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        assert context != null;
+                        Toast.makeText(context, context.getResources().getString(R.string.aun_no_disponible), Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    assert context != null;
-                    Toast.makeText(context, context.getResources().getString(R.string.aun_no_disponible), Toast.LENGTH_SHORT).show();
+                } catch (Exception e){
+                    e.printStackTrace();
                 }
                 break;
             default:

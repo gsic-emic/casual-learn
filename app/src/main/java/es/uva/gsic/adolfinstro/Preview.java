@@ -900,8 +900,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 }
             });
         } else{
+            TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
             if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
-                TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
                 textView.setVisibility(View.VISIBLE);
                 Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
                 salir.setOnClickListener(new View.OnClickListener() {
@@ -924,7 +924,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     }
                 });
             }else {//Solo muestro el normal
-                TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
                 textView.setVisibility(View.GONE);
                 textView = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
                 textView.setText(Html.fromHtml(textoPermisos));
