@@ -11,20 +11,13 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.text.Html;
-import android.text.Layout;
 import android.text.SpannableStringBuilder;
-import android.text.StaticLayout;
-import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.text.style.URLSpan;
 import android.view.View;
@@ -36,7 +29,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.Request;
@@ -52,7 +44,6 @@ import org.osmdroid.util.BoundingBox;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
@@ -74,13 +65,13 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20210202
+ * @version 2021020
  */
 public class Auxiliar {
 
     //TODO comprueba que sea la dirección correcta
-    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
@@ -174,9 +165,6 @@ public class Auxiliar {
     public static final String publico = "publico";
     public static final String retardado = "retardado";
 
-    public static final String peticionPuntos = "puntosInteres";
-    public static final String peticionTareas = "tareasContexto";
-    public static final String peticionPersonalizadas = "tareasPersonalizadas";
     public static final String norte = "norte";
     public static final String sur = "sur";
     public static final String este = "este";
@@ -200,6 +188,10 @@ public class Auxiliar {
     private static final String respuestaTextual = "respuestaTextual";
     private static final String numeroMedia = "numeroMedia";
     private static final String puntuacion = "puntuacion";
+    public static final String twitter = "twitter";
+    public static final String teams = "teams";
+    public static final String yammer = "yammer";
+    public static final String instagram = "instagram";
 
     /**
      * Creación del fichero donde se almacena la foto o el vídeo
@@ -573,7 +565,9 @@ public class Auxiliar {
     }
 
     /**
-     * Método para centar el mapa entre el rectángulo que se crea con dos latitudos y dos longitudes
+     * Método para centar el mapa entre el rectángulo que se crea con dos latitudos y dos longitudes.
+     * Devuelve al mapa un área que tiene que representar.
+     *
      * @param lat1 Latitud 1
      * @param long1 Longitud 1
      * @param lat2 Latitud 2
@@ -589,107 +583,191 @@ public class Auxiliar {
     }
 
     /**
+     * Método para configurar los distintos intents de las redes soportadas
+     *
+     * @param red Identificador de la red social
+     * @param context Contexto
+     * @param tarea JSONObject con la respuesta del usuario
+     * @param hashtag Etiqueta que podrá ir en la respuesta de la red social
+     */
+    private static void mandaRed(String red, Context context, JSONObject tarea, String hashtag){
+        int maxMulti;
+        String paquete;
+        switch (red){
+            case Auxiliar.twitter:
+                maxMulti = 4;
+                paquete = "com.twitter.android";
+                break;
+            case Auxiliar.instagram:
+                maxMulti = 10;
+                paquete = "com.instagram.android";
+                break;
+            case Auxiliar.teams:
+                maxMulti = 10;
+                paquete = "com.microsoft.teams";
+                break;
+            case Auxiliar.yammer:
+                maxMulti = 1;
+                paquete = "com.yammer.v1";
+                break;
+            default:
+                maxMulti = 0;
+                paquete = null;
+                break;
+        }
+        if(paquete != null){
+            try{
+                context.getPackageManager().getPackageInfo(paquete, PackageManager.GET_ACTIVITIES);
+
+                Intent intent = null;
+                List<String> listaURI = new ArrayList<>();
+                String textoUsuario = null;
+                JSONArray respuestas;
+                try {
+                    respuestas = tarea.getJSONArray(Auxiliar.respuestas);
+                }catch (Exception e){
+                    respuestas = new JSONArray();
+                }
+                JSONObject respuesta;
+                for(int i = 0; i < respuestas.length(); i++){
+                    respuesta = respuestas.getJSONObject(i);
+                    if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
+                        if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                            textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
+                        }
+                    } else {//URI de video o fotos
+                        listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
+                    }
+                }
+
+                switch (tarea.getString(Auxiliar.tipoRespuesta)){
+                    case Auxiliar.tipoPreguntaCorta:
+                    case Auxiliar.tipoPreguntaLarga:
+                    case Auxiliar.tipoSinRespuesta:
+                        switch (red){
+                            case Auxiliar.twitter:
+                                intent = new Intent(Intent.ACTION_SEND);
+                                intent.putExtra(Intent.EXTRA_TEXT,
+                                        contenidoT(context, tarea, hashtag));
+                                break;
+                            case Auxiliar.instagram:
+                                Toast.makeText(context,
+                                        context.getString(R.string.errorInstagram),
+                                        Toast.LENGTH_LONG).show();
+                                break;
+                            default:
+                                intent = new Intent(Intent.ACTION_SEND);
+                                intent.putExtra(Intent.EXTRA_TEXT,
+                                        contenidoTexto(context, tarea, textoUsuario, hashtag));
+                                break;
+                        }
+                        if(intent != null)
+                            intent.setType("text/plain");
+                        break;
+                    case Auxiliar.tipoPreguntaImagen:
+                    case Auxiliar.tipoImagen:
+                    case Auxiliar.tipoImagenMultiple:
+                    case Auxiliar.tipoPreguntaImagenes:
+                    case Auxiliar.tipoVideo:
+                    case Auxiliar.tipoPreguntaVideo:
+                        ArrayList<Uri> uris = new ArrayList<>();
+                        if(red.equals(Auxiliar.yammer))
+                            intent = new Intent(Intent.ACTION_SEND);
+                        else
+                        if(listaURI.size() > 0)
+                            intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
+                        else
+                            intent = new Intent(Intent.ACTION_SEND);
+
+                        switch (red){
+                            case Auxiliar.twitter:
+                                intent.putExtra(Intent.EXTRA_TEXT,
+                                        Auxiliar.contenidoT(context, tarea, hashtag));
+                                break;
+                            case Auxiliar.yammer:
+                            case Auxiliar.teams:
+                                intent.putExtra(Intent.EXTRA_TEXT,
+                                        Auxiliar.contenidoTexto(context, tarea, textoUsuario, hashtag));
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if(!listaURI.isEmpty()){
+                            if(red.equals(Auxiliar.yammer)){
+                                intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
+                            }else {
+                                int i = 0;
+                                for (String s : listaURI) {
+                                    if (i < maxMulti) {
+                                        uris.add(Uri.parse(s));
+                                        ++i;
+                                    } else
+                                        break;
+                                }
+                                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
+                            }
+                            if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)
+                                    || tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoPreguntaVideo))
+                                if(red.equals(Auxiliar.yammer))
+                                    intent.setType("video/*");
+                                else
+                                    intent.setType("*/*");
+                            else
+                            if(red.equals(Auxiliar.teams))
+                                intent.setType("image/jpeg");
+                            else
+                                intent.setType("image/*");
+                        }
+                        break;
+                    default:
+                        intent = null;
+                        break;
+                }
+
+                if(intent != null) {
+                    intent.setPackage(paquete);
+                    context.startActivity(intent);
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                switch (red){
+                    case Auxiliar.twitter:
+                        Toast.makeText(context,
+                                context.getString(R.string.instalaTwitter),
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case Auxiliar.instagram:
+                        Toast.makeText(context,
+                                context.getString(R.string.instalaInsta),
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case Auxiliar.teams:
+                        Toast.makeText(context,
+                                context.getString(R.string.instalaTeams),
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case Auxiliar.yammer:
+                        Toast.makeText(context,
+                                context.getString(R.string.instalaYammer),
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        break;
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
      * Envía el contenido a la app de Twitter para que el usuario pueda compartirlo
      * @param context Contexto
      * @param tarea JSON de la tarea
      * @param hashtag Etiquetas con la que se envía el tweet
      */
     public static void mandaTweet(Context context, JSONObject tarea, String hashtag){
-        final int maxMulti = 4;
-        try {
-            //Compruebo que tiene instalado el cliente oficial de twitter antes de seguir
-            context.getPackageManager().getPackageInfo("com.twitter.android",
-                    PackageManager.GET_ACTIVITIES);
-
-            Intent intent;
-            List<String> listaURI = new ArrayList<>();
-            String textoUsuario = null;
-            JSONArray respuestas;
-            try {
-                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
-            }catch (Exception e){
-                respuestas = new JSONArray();
-            }
-            JSONObject respuesta;
-            for(int i = 0; i < respuestas.length(); i++){
-                respuesta = respuestas.getJSONObject(i);
-                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
-                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
-                    }
-                } else {//URI de video o fotos
-                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
-                }
-            }
-
-            switch (tarea.getString(Auxiliar.tipoRespuesta)){
-                case Auxiliar.tipoPreguntaCorta:
-                case Auxiliar.tipoPreguntaLarga:
-                case Auxiliar.tipoSinRespuesta:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoT(context, tarea, hashtag, true));
-                    intent.setType("text/plain");
-                    //intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
-                    //intent.setType("image/*");
-                    break;
-                case Auxiliar.tipoPreguntaImagen:
-                case Auxiliar.tipoImagen:
-                case Auxiliar.tipoImagenMultiple:
-                case Auxiliar.tipoPreguntaImagenes:
-                case Auxiliar.tipoVideo:
-                    ArrayList<Uri> uris = new ArrayList<>();
-                    //if(listaURI.size() > 0)
-                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    //else
-                        //intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoT(context, tarea, hashtag, true));
-                    intent.setType("text/plain");
-                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
-                        if(!listaURI.isEmpty()){
-                            int i = 0;
-                            for(String s : listaURI){
-                                if(i < maxMulti) {
-                                    uris.add(Uri.parse(s));
-                                    ++i;
-                                } else
-                                    break;
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("*/*");
-                        }
-                    }else{
-                        if(!listaURI.isEmpty()){
-                            int i = 0;
-                            for(String s : listaURI){
-                                if(i < maxMulti) {
-                                    uris.add(Uri.parse(s));
-                                    ++i;
-                                } else
-                                    break;
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("image/*");
-                        }
-                    }
-                    break;
-                default:
-                    intent = null;
-                    break;
-            }
-
-            if(intent != null) {
-                intent.setPackage("com.twitter.android");
-                context.startActivity(intent);
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(context,
-                    context.getString(R.string.instalaTwitter),
-                    Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Auxiliar.mandaRed(Auxiliar.twitter, context, tarea, hashtag);
     }
 
     /**
@@ -700,172 +778,17 @@ public class Auxiliar {
      * @param hashtag Etiquetas configurables por el usuario.
      */
     public static void mandaYammer(Context context, JSONObject tarea, String hashtag){
-        try {
-            context.getPackageManager().getPackageInfo(
-                    "com.yammer.v1", PackageManager.GET_ACTIVITIES);
-
-            Intent intent;
-            List<String> listaURI = new ArrayList<>();
-            String textoUsuario = null;
-            JSONArray respuestas;
-            try {
-                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
-            } catch (Exception e) {
-                respuestas = new JSONArray();
-            }
-            JSONObject respuesta;
-            for (int i = 0; i < respuestas.length(); i++) {
-                respuesta = respuestas.getJSONObject(i);
-                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
-                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
-                    }
-                } else {//URI de video o fotos
-                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
-                }
-            }
-            switch (tarea.getString(Auxiliar.tipoRespuesta)) {
-                case Auxiliar.tipoPreguntaCorta:
-                case Auxiliar.tipoPreguntaLarga:
-                case Auxiliar.tipoSinRespuesta:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
-                    intent.setType("text/plain");
-                    break;
-                case Auxiliar.tipoPreguntaImagen:
-                case Auxiliar.tipoImagen:
-                case Auxiliar.tipoImagenMultiple:
-                case Auxiliar.tipoPreguntaImagenes:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
-                    intent.setType("text/plain");
-                    if (!listaURI.isEmpty()) {
-                        //Solo me permite enviar una imagen la app de yammer
-                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
-                        intent.setType("image/*");
-                    }
-                    break;
-                case Auxiliar.tipoVideo:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
-                    intent.setType("text/plain");
-                    if (!listaURI.isEmpty()) {
-                        intent.putExtra(Intent.EXTRA_STREAM, Uri.parse(listaURI.get(0)));
-                        intent.setType("video/*");
-                    }
-                    break;
-                default:
-                    intent = null;
-                    break;
-            }
-
-            if (intent != null) {
-                intent.setPackage("com.yammer.v1");
-                context.startActivity(intent);
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(context,
-                    context.getString(R.string.instalaYammer),
-                    Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Auxiliar.mandaRed(Auxiliar.yammer, context, tarea, hashtag);
     }
 
+    /**
+     * Método para compartir la respuesta del usuario con Microsoft Teams.
+     * @param context Contexto
+     * @param tarea JSONObject con las respuestas del usuario
+     * @param hashtag Eitqueta que puede acompañar al texto
+     */
     public static void mandaTeams(Context context, JSONObject tarea, String hashtag){
-        try {
-            final int maxMulti = 10;
-            context.getPackageManager().getPackageInfo(
-                    "com.microsoft.teams", PackageManager.GET_ACTIVITIES);
-
-            Intent intent;
-            List<String> listaURI = new ArrayList<>();
-            String textoUsuario = null;
-            JSONArray respuestas;
-            ArrayList<Uri> uris = new ArrayList<>();
-            try {
-                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
-            } catch (Exception e) {
-                respuestas = new JSONArray();
-            }
-            JSONObject respuesta;
-            for (int i = 0; i < respuestas.length(); i++) {
-                respuesta = respuestas.getJSONObject(i);
-                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
-                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
-                    }
-                } else {//URI de video o fotos
-                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
-                }
-            }
-            switch (tarea.getString(Auxiliar.tipoRespuesta)) {
-                case Auxiliar.tipoPreguntaCorta:
-                case Auxiliar.tipoPreguntaLarga:
-                case Auxiliar.tipoSinRespuesta:
-                    intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
-                    intent.setType("text/plain");
-                    break;
-                case Auxiliar.tipoPreguntaImagen:
-                case Auxiliar.tipoImagen:
-                case Auxiliar.tipoImagenMultiple:
-                case Auxiliar.tipoPreguntaImagenes:
-                case Auxiliar.tipoVideo:
-                    if(listaURI.size() > 0)
-                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    else
-                        intent = new Intent(Intent.ACTION_SEND);
-                    intent.putExtra(Intent.EXTRA_TEXT,
-                            contenidoTexto(context, tarea, textoUsuario, hashtag, false));
-                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
-                        if(!listaURI.isEmpty()){
-                            int i = 0;
-                            for(String s : listaURI){
-                                if(i < maxMulti) {
-                                    uris.add(Uri.parse(s));
-                                    ++i;
-                                } else
-                                    break;
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("*/*");
-                        }
-                    }else{
-                        if(!listaURI.isEmpty()){
-                            int i = 0;
-                            for(String s : listaURI){
-                                if(i < maxMulti) {
-                                    uris.add(Uri.parse(s));
-                                    ++i;
-                                } else
-                                    break;
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("image/jpeg");
-                        }
-                    }
-                    break;
-                default:
-                    intent = null;
-                    break;
-            }
-
-            if (intent != null) {
-                intent.setPackage("com.microsoft.teams");
-                context.startActivity(intent);
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(context,
-                    context.getString(R.string.instalaTeams),
-                    Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Auxiliar.mandaRed(Auxiliar.teams, context, tarea, hashtag);
     }
 
     /**
@@ -877,172 +800,7 @@ public class Auxiliar {
      * @param hashtag Lista de etiquetas que el usuario ha configurado en los ajustes de la aplicación.
      */
     public static void mandaInsta(Context context, JSONObject tarea, String hashtag){
-        final int maxMulti = 10;
-        try {
-            context.getPackageManager().getPackageInfo(
-                    "com.instagram.android", PackageManager.GET_ACTIVITIES);
-
-            Intent intent = null;
-            List<String> listaURI = new ArrayList<>();
-            String textoUsuario = null;
-            JSONArray respuestas;
-            try {
-                respuestas = tarea.getJSONArray(Auxiliar.respuestas);
-            }catch (Exception e){
-                respuestas = new JSONArray();
-            }
-            JSONObject respuesta;
-            for(int i = 0; i < respuestas.length(); i++){
-                respuesta = respuestas.getJSONObject(i);
-                if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                    if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
-                        textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
-                    }
-                } else {//URI de video o fotos
-                    listaURI.add(respuesta.getString(Auxiliar.respuestaRespuesta));
-                }
-            }
-
-            ArrayList<Uri> uris = new ArrayList<>();
-
-            switch (tarea.getString(Auxiliar.tipoRespuesta)){
-                case Auxiliar.tipoPreguntaCorta:
-                case Auxiliar.tipoPreguntaLarga:
-                case Auxiliar.tipoSinRespuesta:
-                    Toast.makeText(context,
-                            context.getString(R.string.errorInstagram),
-                            Toast.LENGTH_LONG).show();
-                    break;
-                case Auxiliar.tipoPreguntaImagen:
-                case Auxiliar.tipoImagen:
-                case Auxiliar.tipoImagenMultiple:
-                case Auxiliar.tipoPreguntaImagenes:
-                case Auxiliar.tipoVideo:
-                    if(listaURI.size() > 0)
-                        intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
-                    else
-                        intent = new Intent(Intent.ACTION_SEND);
-                    if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)){
-                        if(!listaURI.isEmpty()){
-                            int i = 0;
-                            for(String s : listaURI){
-                                if(i < maxMulti) {
-                                    uris.add(Uri.parse(s));
-                                    ++i;
-                                } else
-                                    break;
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("*/*");
-                        }
-                    }else{
-                        if(!listaURI.isEmpty()){
-                            int i = 0;
-                            for(String s : listaURI){
-                                if(i < maxMulti) {
-                                    uris.add(Uri.parse(s));
-                                    ++i;
-                                } else
-                                    break;
-                            }
-                            intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-                            intent.setType("image/*");
-                        }
-                    }
-                    break;
-                default:
-                    intent = null;
-                    break;
-            }
-
-            if(intent != null) {
-                intent.setPackage("com.instagram.android");
-                context.startActivity(intent);
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Toast.makeText(context,
-                    context.getString(R.string.instalaInsta),
-                    Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Método con el que se crea una imagen con la respuesta que ha dado el usuario. Vacía el directorio
-     * de ficheros intermedios antes de generar el nuevo.
-     *
-     * @param context Contexto
-     * @param drawable Imagen genérica. Editable para que sea configurable con el color secundario
-     * @param texto Texto del usuario.
-     * @return Uri del fichero creado.
-     */
-    private static Uri uriTexto(Context context, Drawable drawable, String texto) {
-        Bitmap bitmap = Bitmap.createBitmap(
-                drawable.getIntrinsicWidth(),
-                drawable.getIntrinsicHeight(),
-                Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-        TextPaint paint = new TextPaint();
-        paint.setARGB(255, 255, 255, 255); //blanco
-        paint.setStyle(Paint.Style.FILL);
-        paint.setTextSize(((int)(22 * context.getResources().getDisplayMetrics().density)));
-        paint.setTextAlign(Paint.Align.CENTER);
-        paint.setAntiAlias(true);
-        StaticLayout staticLayout = new StaticLayout(
-                texto,
-                paint,
-                (int)(bitmap.getWidth()/1.2),
-                Layout.Alignment.ALIGN_NORMAL,
-                1f,
-                0f,
-                false);
-
-        canvas.save();
-        canvas.translate(
-                (bitmap.getWidth())/2f,
-                ((bitmap.getHeight() - staticLayout.getHeight())/2f > 0)?
-                        ((bitmap.getHeight() - staticLayout.getHeight())/2f):
-                        0);
-        staticLayout.draw(canvas);
-        canvas.restore();
-
-        try {
-            File cache = context.getExternalFilesDir("cache");
-            assert cache != null;
-            if(cache.isDirectory()){
-                File[] borrarFicheros = cache.listFiles();
-                assert borrarFicheros != null;
-                for(File borrar : borrarFicheros){
-                    borrar.delete();
-                }
-            }
-
-            File foto = Auxiliar.createFile(4, context);
-
-            FileOutputStream fileOutputStream = null;
-            try {
-                fileOutputStream = new FileOutputStream(foto);
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            } finally {
-                try {
-                    if (fileOutputStream != null)
-                        fileOutputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            return FileProvider.getUriForFile(context, context.getResources().getString(R.string.fileProvider), foto);
-        }catch (IOException e){
-            return null;
-        }
+        Auxiliar.mandaRed(Auxiliar.instagram, context, tarea, hashtag);
     }
 
     /**
@@ -1050,23 +808,13 @@ public class Auxiliar {
      * @param context Contexto
      * @param tarea Tarea completa. Contiene todos los datos necesarios.
      * @param hashtag Lista de etiquetas del usuario. Están separadas con comas
-     * @param recorta Indica si debe recortar o no el mensaje.
      * @return Frase que se le pasará a la aplicación deseada
      */
     private static String contenidoT(
             Context context,
             JSONObject tarea,
-            String hashtag,
-            boolean recorta){
-        String texto = null;
-
-        String[] femenina = {"catedral", "necrópolis", "torre", "casona-torre", "concatedral",
-                "casa-fuerte", "casa-torre", "carcel", "mansión", "cruz", "estación"};
-
-        String[] femeninas = {"catedrales", "escuelas", "murallas", "casonas", "ruinas", "casas",
-                "fachadas", "salinas", "facultad"};
-
-        String[] masculinos = {"puentes", "reales", "restos"};
+            String hashtag){
+        String texto;
 
         String[] hashtags = hashtag.split(",");
         int tama = 0;
@@ -1076,60 +824,10 @@ public class Auxiliar {
         }
 
         try{
-            String[] lugar = tarea.getString(Auxiliar.titulo).split(" ");
-            String primera = lugar[0].toLowerCase();
-            if(lugar.length == 1 || primera.equals("el") || primera.equals("los")
-                    || primera.equals("ie")){
-                texto = String.format("%s %s", context.getResources().getString(R.string.twitSinTexto), lugar[0]);
-            }else{
-                String caracter = lugar[0].substring(lugar[0].length() - 1);
-                if(caracter.equals("o")){
-                    texto = String.format("%s %s",
-                            context.getResources().getString(R.string.twitSinTextoM),
-                            tarea.getString(Auxiliar.titulo));
-                }else{
-                    if(caracter.equals("a")){
-                        texto = String.format("%s %s",
-                                context.getResources().getString(R.string.twitSinTextoF),
-                                tarea.getString(Auxiliar.titulo));
-                    }else{
-                        texto = String.format("%s %s",
-                                context.getResources().getString(R.string.twitSinTextoM),
-                                tarea.getString(Auxiliar.titulo));
-                        boolean encontrado = false;
-                        for(String a : femeninas){
-                            if(a.equals(primera)){
-                                texto = String.format("%s %s",
-                                        context.getResources().getString(R.string.twitSinTextoFs),
-                                        tarea.getString(Auxiliar.titulo));
-                                encontrado = true;
-                                break;
-                            }
-                        }
-                        if(!encontrado){
-                            for(String a : femenina){
-                                if(a.equals(primera)){
-                                    texto = String.format("%s %s",
-                                            context.getResources().getString(R.string.twitSinTextoF),
-                                            tarea.getString(Auxiliar.titulo));
-                                    encontrado = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if(!encontrado){
-                            for(String a : masculinos){
-                                if(a.equals(primera)){
-                                    texto = String.format("%s %s",
-                                            context.getResources().getString(R.string.twitSinTextoMs),
-                                            tarea.getString(Auxiliar.titulo));
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            texto = String.format("%s %s %s",
+                    context.getResources().getString(R.string.twitSinTexto),
+                    Auxiliar.articuloDeterminado(context, tarea.getString(Auxiliar.titulo)),
+                    tarea.getString(Auxiliar.titulo));
             String link = "";
             if(tarea.has(Auxiliar.idToken) && tarea.has(Auxiliar.publico)) {
                 if (tarea.getBoolean(Auxiliar.publico)) {
@@ -1144,7 +842,7 @@ public class Auxiliar {
             }
             if(!link.equals(""))
                 tama += 23;
-            if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
+            if(texto.length() + hashtags.length + tama > 279){ //espacios + texto
                 texto = texto.substring(0, 279 - (hashtags.length + tama + 5)) + "...";
             }
 
@@ -1171,8 +869,7 @@ public class Auxiliar {
     private static String contenidoTexto(Context context,
                                          JSONObject tarea,
                                          String textoUsuario,
-                                         String hashtag,
-                                         boolean recorta){
+                                         String hashtag){
         String texto = null;
 
         String[] hashtags = hashtag.split(",");
@@ -1187,41 +884,35 @@ public class Auxiliar {
             texto = "";
             if(textoUsuario != null && !textoUsuario.equals("")){
                 texto = String.format("%s\n%s", texto, textoUsuario);
-                if(recorta && texto.length() + hashtags.length + tama > 279){ //espacios + texto
-                    texto = texto.substring(0, 279 - (hashtags.length + tama + 4)) + "...";
-                }
-                if(!recorta){
-                    texto = String.format("%s %s\n\n%s %s\n\n%s %s",
-                            context.getString(R.string.yammerSinTexto),
-                            tarea.getString(Auxiliar.titulo),
-                            context.getString(R.string.tareaPregunta),
-                            Auxiliar.quitaEnlaces(tarea.getString(Auxiliar.recursoAsociadoTexto)),
-                            context.getString(R.string.tareaRespuesta),
-                            textoUsuario);
-                }
+
+                texto = String.format("%s %s\n\n%s %s\n\n%s %s",
+                        context.getString(R.string.yammerSinTexto),
+                        tarea.getString(Auxiliar.titulo),
+                        context.getString(R.string.tareaPregunta),
+                        Auxiliar.quitaEnlaces(tarea.getString(Auxiliar.recursoAsociadoTexto)),
+                        context.getString(R.string.tareaRespuesta),
+                        textoUsuario);
+
             }else{
-                if(recorta)
-                    texto = String.format("%s %s", context.getString(R.string.twitSinTexto), texto);
-                else
-                    texto = String.format("%s %s\n\n%s %s",
-                            context.getString(R.string.yammerSinTexto),
-                            tarea.getString(Auxiliar.titulo),
-                            context.getString(R.string.tareaPregunta),
-                            tarea.getString(Auxiliar.recursoAsociadoTexto));
+                texto = String.format("%s %s\n\n%s %s",
+                        context.getString(R.string.yammerSinTexto),
+                        tarea.getString(Auxiliar.titulo),
+                        context.getString(R.string.tareaPregunta),
+                        tarea.getString(Auxiliar.recursoAsociadoTexto));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        if(recorta) {
-            for (String string : hashtags) {
-                texto = String.format("%s %s", texto, string);
-            }
-        }
         return texto;
     }
 
-    public static String articuloDeterminado(String nombreLugar){
+    /**
+     * Método para concatenar el artículo determinado a una palabra.
+     * @param nombreLugar Palabra a la que agregar el artículo
+     * @return Palabra con artículo
+     */
+    public static String articuloDeterminado(Context context, String nombreLugar){
         String[] femenina = {"catedral", "necrópolis", "torre", "casona-torre", "concatedral",
                 "casa-fuerte", "casa-torre", "carcel", "mansión", "cruz", "estación"};
 
@@ -1236,34 +927,34 @@ public class Auxiliar {
             if(lugar.length == 1 ||
                     primera.equals("el") || primera.equals("los") ||
                     primera.equals("las") || primera.equals("la"))
-                return nombreLugar;
+                return "";
             else {
                 String caracter = lugar[0].substring(lugar[0].length() - 1);
                 if (caracter.equals("o"))
-                    return String.format("el %s", nombreLugar);
+                    return context.getString(R.string.el);
                 else {
                     if (caracter.equals("a"))
-                        return String.format("la %s", nombreLugar);
+                        return context.getString(R.string.la);
                     else {
-                        String salida = String.format("el %s",nombreLugar);
+                        String salida =  context.getString(R.string.el);
                         boolean encontrado = false;
                         for (String a : femeninas)
                             if (a.equals(primera)) {
-                                salida = String.format("las %s", nombreLugar);
+                                salida = context.getString(R.string.las);
                                 encontrado = true;
                                 break;
                             }
                         if(!encontrado)
                             for (String a : femenina)
                                 if (a.equals(primera)) {
-                                    salida = String.format("la %s", nombreLugar);
+                                    salida = context.getString(R.string.la);
                                     encontrado = true;
                                     break;
                                 }
                         if(!encontrado)
                             for (String a : masculinos)
                                 if (a.equals(primera)) {
-                                    salida = String.format("los %s", nombreLugar);
+                                    salida = context.getString(R.string.los);
                                     break;
                                 }
                         return salida;
@@ -1337,10 +1028,10 @@ public class Auxiliar {
             if(tarea.has(Auxiliar.fechaFinalizacion))
                 jsonObject.put(Auxiliar.instanteFin, tarea.getString(Auxiliar.fechaFinalizacion));
             else
-                if(tarea.has(Auxiliar.fechaUltimaModificacion))
-                    jsonObject.put(Auxiliar.instanteFin, tarea.getString(Auxiliar.fechaUltimaModificacion));
-                else
-                    jsonObject.put(Auxiliar.instanteFin, Auxiliar.horaFechaActual());
+            if(tarea.has(Auxiliar.fechaUltimaModificacion))
+                jsonObject.put(Auxiliar.instanteFin, tarea.getString(Auxiliar.fechaUltimaModificacion));
+            else
+                jsonObject.put(Auxiliar.instanteFin, Auxiliar.horaFechaActual());
             jsonObject.put(Auxiliar.instanteModificacion,
                     tarea.getString(Auxiliar.fechaUltimaModificacion));
             jsonObject.put(Auxiliar.tipoRespuesta, tarea.getString(Auxiliar.tipoRespuesta));
@@ -1417,7 +1108,8 @@ public class Auxiliar {
      *          -1 Sin conectividad
      */
     public static int tipoConectividad(Context contexto){
-        ConnectivityManager connectivityManager = (ConnectivityManager) contexto.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager) contexto.
+                getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if(networkInfo == null || !networkInfo.isConnected())
             return -1;
@@ -1583,6 +1275,8 @@ public class Auxiliar {
                 return contexto.getString(R.string.imagenMultiple);
             case Auxiliar.tipoVideo:
                 return contexto.getString(R.string.video);
+            case Auxiliar.tipoPreguntaVideo:
+                return contexto.getString(R.string.preguntaVideo);
             case Auxiliar.tipoPreguntaImagenes:
                 return contexto.getString(R.string.preguntaImagenes);
             default:
@@ -1701,10 +1395,10 @@ public class Auxiliar {
                     Login.googleSignInClient.signOut().addOnCompleteListener(
                             (Activity) actividad,
                             new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                        }
-                    });
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                }
+                            });
                     return true;
                 }catch (Exception e){
                     return false;
@@ -1807,6 +1501,12 @@ public class Auxiliar {
         }
     }
 
+    /**
+     * Método para obtener la lista de contextos con sus tareas completadas
+     * @param app Aplicación
+     * @param idUsuario Identificador del usuario
+     * @return Lista de identificadores de contextos con todas las taeras completadas.
+     */
     public static List<String> getListaContextosTareasCompletadas(Application app, String idUsuario){
         if(idUsuario != null) {
             JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(app, PersistenciaDatos.ficheroCompletadas);

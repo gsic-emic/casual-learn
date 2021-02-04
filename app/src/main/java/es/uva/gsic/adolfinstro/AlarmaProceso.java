@@ -677,12 +677,14 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         .replace("<br>"," ").trim();
 
                 String titulo = (System.currentTimeMillis() % 2 == 0) ?
-                        String.format("%s %s?",
+                        String.format("%s %s %s?",
                                 context.getString(R.string.porque_no_acercas),
-                                Auxiliar.articuloDeterminado(lugar.getString(Auxiliar.label))):
-                        String.format("%s %s",
+                                Auxiliar.articuloDeterminado(context, lugar.getString(Auxiliar.label)),
+                                lugar.getString(Auxiliar.label)):
+                        String.format("%s %s %s",
                                 context.getString(R.string.estas_cerca),
-                                Auxiliar.articuloDeterminado(lugar.getString(Auxiliar.label)));
+                                Auxiliar.articuloDeterminado(context, lugar.getString(Auxiliar.label)),
+                                lugar.getString(Auxiliar.label));
 
                 builder = new NotificationCompat.Builder(context, Auxiliar.channelId)
                         .setSmallIcon(R.drawable.casual_learn_icono)
