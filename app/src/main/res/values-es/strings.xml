@@ -102,7 +102,6 @@
     <string name="dia">día</string>
     <string name="dias">días</string>
     <string name="pulsaMarker">Pulsa en un marcador para ver sus tareas</string>
-    <!--<string name="agrupacionTareas">Zona con varias tareas cercanas</string>-->
     <string name="agrupacionPuntos">Grupo de puntos de interés</string>
     <string name="tareaRegistrada">La tarea está completada, reportada, pospuesta o rechazada</string>
     <string name="hola">"Hola "</string>
@@ -132,10 +131,9 @@
     <string name="puntuaCompletada">Puedes puntuar la tarea realizada desde el menú de tareas completadas</string>
     <string name="tareaGuardada">Tarea modificada correctamente</string>
     <string name="preguntaImagenes">Tarea que solicita responder a una pregunta y realizar múltiples fotografías</string>
+    <string name="preguntaVideo">Pregunta y vídeo</string>
     <string name="descripcionFuncionamientoPalabraClave">Si quieres utilizar múltiples <i>hashtags</i>, sepáralos con comas. Nosotros nos encargarmos de poner los # necesarios</string>
     <string name="twitSinTexto">He realizado una tarea con @CasualLearn cerca de</string>
-    <string name="twitSinTextoM">He realizado una tarea con @CasualLearn cerca de el</string>
-    <string name="twitSinTextoF">He realizado una tarea con @CasualLearn cerca de la</string>
     <string name="yammerSinTexto">He realizado una tarea con Casual Learn cerca de </string>
     <string name="iconoTareaPreview">Icono</string>
     <string name="previewVisita">Visita un lugar</string>
@@ -220,8 +218,6 @@
     <string name="noAhora">Ahora no</string>
     <string name="cerrar">Cerrar</string>
     <string name="errorInstagram">Solo se puede compartir en Instagram en las tareas que tengan fotografías o vídeos</string>
-    <string name="twitSinTextoFs">He realizado una tarea con @CasualLearn cerca de las</string>
-    <string name="twitSinTextoMs">He realizado una tarea con @CasualLearn cerca de los</string>
     <string name="infoWikipedia">Información de la Wikipedia</string>
     <string name="icono_tarea_completada">Tarea completada</string>
     <string name="unaTareaMas">Una tarea más…</string>
@@ -276,4 +272,8 @@
     <string name="sinContextosLista">Todavía no se ha notificado ningún lugar</string>
     <string name="instanteNotificacion">Instante de la notificación:</string>
     <string name="compartir_respuestas">Comparte tus respuestas</string>
+    <string name="el">el</string>
+    <string name="la">la</string>
+    <string name="las">las</string>
+    <string name="los">los</string>
 </resources>
