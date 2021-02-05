@@ -6,31 +6,15 @@
     android:orientation="horizontal"
     android:paddingVertical="5dp">
 
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guiaVerticalItemLista"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.25" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guiaVerticalItemLista2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.1" />
-
     <ImageView
         android:id="@+id/ivListaTipoTarea"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/guiaVerticalItemLista"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/rbLista"/>
+        app:layout_constraintBottom_toTopOf="@id/rbLista" />
 
     <RatingBar
         android:id="@+id/rbLista"
@@ -42,8 +26,8 @@
         android:isIndicator="true"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ivListaTipoTarea"
-        app:layout_constraintEnd_toStartOf="@id/guiaVerticalItemLista"
         android:visibility="gone"
+        android:layout_marginStart="5dp"
         android:paddingBottom="5dp"/>
 
     <androidx.constraintlayout.widget.Barrier
@@ -63,9 +47,10 @@
         android:ellipsize="end"
         app:layout_constraintStart_toEndOf="@id/barrierLista"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/ivListaTipoTarea"
         app:layout_constraintBottom_toTopOf="@id/tvListaFechaTarea"
-        android:textColor="@color/colorPrimaryDark"  />
+        android:textColor="@color/colorPrimaryDark"
+        android:paddingHorizontal="@dimen/margen_texto"/>
 
     <TextView
         android:id="@+id/tvListaFechaTarea"
@@ -74,9 +59,10 @@
         app:layout_constraintStart_toEndOf="@id/barrierLista"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvListaTitulo"
-        app:layout_constraintBottom_toTopOf="@id/viewListaPospuestasLinea"
+        app:layout_constraintBottom_toBottomOf="@id/rbLista"
         android:textColor="@color/colorPrimary"
-        android:paddingBottom="5dp"/>
+        android:paddingBottom="5dp"
+        android:paddingHorizontal="@dimen/margen_texto"/>
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrierLista2"
@@ -87,12 +73,14 @@
 
     <View
         android:id="@+id/viewListaPospuestasLinea"
-        app:layout_constraintStart_toStartOf="@id/guiaVerticalItemLista2"
+        app:layout_constraintStart_toStartOf="@id/barrierLista"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrierLista2"
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_height="1dp"
         android:layout_width="0dp"
-        android:background="@color/colorSecondary" />
+        android:background="@color/colorSecondary"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"/>
 
 
 

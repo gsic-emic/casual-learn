@@ -65,13 +65,13 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 2021020
+ * @version 20210205
  */
 public class Auxiliar {
 
     //TODO comprueba que sea la dirección correcta
-    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";
@@ -329,8 +329,8 @@ public class Auxiliar {
             double latitudUsuario,
             double longitudUsuario,
             String idUsuario){
-        JSONObject lugar, tareaCompletada;
-        boolean lugarConTareaCompletada;
+        JSONObject lugar, auxiliar;
+        boolean lugarConTareaCompletada, distanciaNotificacion;
         double distanciaMin = -1, distancia;
         String contextoLugar;
         JSONArray aMismaDistancia = null;
@@ -338,6 +338,10 @@ public class Auxiliar {
             JSONArray lugaresUsuario = PersistenciaDatos.leeFichero(
                     app,
                     PersistenciaDatos.ficheroContextos);
+            JSONArray lugaresNotificados = PersistenciaDatos.leeTareasUsuario(
+                    app,
+                    PersistenciaDatos.ficheroContextosNotificados,
+                    idUsuario);
             JSONArray tareasCompletadas = PersistenciaDatos.leeTareasUsuario(
                     app,
                     PersistenciaDatos.ficheroCompletadas,
@@ -347,24 +351,42 @@ public class Auxiliar {
                 lugar = lugaresUsuario.getJSONObject(i);
                 contextoLugar = lugar.getString(Auxiliar.contexto);
                 lugarConTareaCompletada = false;
-                for(int j = 0; j < tareasCompletadas.length(); j++){
-                    tareaCompletada = tareasCompletadas.getJSONObject(j);
-                    if(contextoLugar.equals(tareaCompletada.getString(Auxiliar.contexto))){
-                        lugarConTareaCompletada = true;
+                distanciaNotificacion = true;//Por defecto hago el resto de comprobaciones
+                for(int j = 0; j < lugaresNotificados.length(); j++){
+                    auxiliar = lugaresNotificados.getJSONObject(j);
+                    /*Si el contexto es igual que el de auxiliar se comprueba si tiene el atributo
+                    * de los instantes (nueva actualización para que no existan problemas con la
+                    * versión en producción). Si tiene el valor del instante de notificación se
+                    * comprueba si el momento actual es superior al de la notifiación más el incremento
+                    * que se le haya dado cuando se notificó.*/
+                    if(contextoLugar.equals(auxiliar.getString(Auxiliar.contexto))){
+                        if(auxiliar.has(Auxiliar.instante))
+                            distanciaNotificacion = System.currentTimeMillis() > auxiliar.getLong(Auxiliar.instante);
                         break;
                     }
                 }
-                if(!lugarConTareaCompletada) {
-                    distancia = calculaDistanciaDosPuntos(
-                            latitudUsuario, longitudUsuario,
-                            lugar.getDouble(Auxiliar.latitud), lugar.getDouble(Auxiliar.longitud)
-                    );
-                    if (distanciaMin < 0 || distancia < distanciaMin) {
-                        distanciaMin = distancia;
-                        aMismaDistancia = new JSONArray();//Es más rápido que borrar
+                if(distanciaNotificacion) {
+                    if (lugar.has(Auxiliar.instante) && (System.currentTimeMillis() <= lugar.getLong(Auxiliar.instante)))
+                        break;
+                    for (int j = 0; j < tareasCompletadas.length(); j++) {
+                        auxiliar = tareasCompletadas.getJSONObject(j);
+                        if (contextoLugar.equals(auxiliar.getString(Auxiliar.contexto))) {
+                            lugarConTareaCompletada = true;
+                            break;
+                        }
                     }
-                    if (distanciaMin == distancia) {
-                        aMismaDistancia.put(lugar);
+                    if (!lugarConTareaCompletada) {
+                        distancia = calculaDistanciaDosPuntos(
+                                latitudUsuario, longitudUsuario,
+                                lugar.getDouble(Auxiliar.latitud), lugar.getDouble(Auxiliar.longitud)
+                        );
+                        if (distanciaMin < 0 || distancia < distanciaMin) {
+                            distanciaMin = distancia;
+                            aMismaDistancia = new JSONArray();//Es más rápido que borrar
+                        }
+                        if (distanciaMin == distancia) {
+                            aMismaDistancia.put(lugar);
+                        }
                     }
                 }
             }
