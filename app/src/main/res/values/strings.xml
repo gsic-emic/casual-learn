@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="app_name" translatable="false">Casual Learn</string>
     <string name="emailCasualLearn" translatable="false">casuallearnapp@gsic.uva.es</string>
     <string name="fileProvider" translatable="false">es.uva.gsic.adolfinstro.fileprovider</string>
@@ -155,12 +155,9 @@
     <string name="puntuaCompletada">You can edit the score of the task</string>
     <string name="tareaGuardada">Task successfully modified</string>
     <string name="preguntaImagenes">Ask and multiple photos</string>
+    <string name="preguntaVideo">Ask and video</string>
     <string name="descripcionFuncionamientoPalabraClave">If you want multiples hashtags, split them with commas. We will take care of add # necessary</string>
     <string name="twitSinTexto">I just did a task with @CasualLearn near</string>
-    <string name="twitSinTextoM">I just did a task with @CasualLearn near</string>
-    <string name="twitSinTextoF">I just did a task with @CasualLearn near</string>
-    <string name="twitSinTextoMs">I just did a task with @CasualLearn near</string>
-    <string name="twitSinTextoFs">I just did a task with @CasualLearn near</string>
     <string name="yammerSinTexto">I just did a task with Casual Learn near </string>
     <string name="iconoTareaPreview">Icon</string>
     <string name="previewVisita">Visit a place</string>
@@ -306,4 +303,8 @@
     <string name="sinContextosLista">The list don\'t have any item</string>
     <string name="instanteNotificacion">Instant notification:</string>
     <string name="compartir_respuestas">Share your answers</string>
+    <string name="el">the</string>
+    <string name="la">the</string>
+    <string name="las">the</string>
+    <string name="los">the</string>
 </resources>

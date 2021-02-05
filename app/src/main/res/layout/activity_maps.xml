@@ -298,13 +298,14 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvTareasMapa"
-                    android:layout_marginHorizontal="15dp"
                     android:layout_width="match_parent"
                     android:layout_height="160dp"
                     android:visibility="gone"
-                    android:scrollbars="horizontal"
-                    android:scrollbarSize="10dp"
+                    android:fadingEdge="vertical"
+                    android:fadingEdgeLength="@dimen/margen_texto"
+                    android:requiresFadingEdge="horizontal"
                     app:layout_constraintTop_toBottomOf="@id/tvPuntoDistancia"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>

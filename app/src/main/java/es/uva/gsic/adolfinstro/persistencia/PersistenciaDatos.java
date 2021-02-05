@@ -172,7 +172,6 @@ public class PersistenciaDatos {
         }catch (Exception e){
             return false;
         }
-
     }
 
     /**
@@ -459,6 +458,18 @@ public class PersistenciaDatos {
         return obtenObjeto(app, fichero, Auxiliar.id, idTarea, idUser);
     }
 
+    /**
+     * Método para recuperar un JSONObject de un fichero. El objeto se identifica mediante el parámetro
+     * que se indique. Modifica el fichero ya que elimina el JSONObject del JSONArray y sobrescribe
+     * el fichero.
+     * @param app Aplicación
+     * @param fichero Fichero
+     * @param tipoIdentificador Tipo de identificador. Párametro con el que se identificará al objeto (key)
+     * @param idObjeto Identificador del objeto (value)
+     * @param idUser Identificador del usuario
+     * @return JSONObjecto con el objeto solicitado o null si no se ha encontrado ninguno
+     * @throws Exception Excepción al hacer las comprobaciones de usuario e identificador de objeto
+     */
     public static JSONObject obtenObjeto(
             Application app,
             String fichero,

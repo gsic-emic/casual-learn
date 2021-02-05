@@ -129,13 +129,13 @@
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvTareasInfoPunto"
-            android:layout_marginHorizontal="@dimen/margen_texto"
             android:layout_width="match_parent"
             android:layout_height="160dp"
             android:layout_marginTop="@dimen/margen_texto"
             android:visibility="gone"
-            android:scrollbars="horizontal"
-            android:scrollbarSize="10dp"
+            android:fadingEdge="vertical"
+            android:fadingEdgeLength="@dimen/margen_texto"
+            android:requiresFadingEdge="horizontal"
             app:layout_constraintTop_toBottomOf="@id/barrierPuntoInfo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

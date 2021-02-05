@@ -96,7 +96,6 @@ import org.osmdroid.events.DelayedMapListener;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
-import org.osmdroid.tileprovider.tilesource.MapBoxTileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
@@ -615,6 +614,7 @@ public class Maps extends AppCompatActivity implements
         try {
             String contenido = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.textoParaElMapa);
             if (contenido != null && !contenido.equals("")) {
+                getIntent().removeExtra(Auxiliar.textoParaElMapa);
                 pintaSnackBar(contenido);
                 if(!contenido.contains(getString(R.string.hola)))
                     llamadaAPlayStore();
