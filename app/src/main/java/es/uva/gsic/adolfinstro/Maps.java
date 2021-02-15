@@ -1,6 +1,7 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -113,6 +114,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
@@ -1434,8 +1436,73 @@ public class Maps extends AppCompatActivity implements
         return ResourcesCompat.getDrawable(context.getResources(), id, null);
     }
 
+    /**
+     * Método para obtener un color de forma que funcione en las versiones más antiguas de Android.
+     * @param id Identificador del color
+     * @return Color compatible
+     */
     private int dameColor(int id){
         return ResourcesCompat.getColor(context.getResources(), id, null);
+    }
+
+    /**
+     * Método para obtener el marcador que se precisa en cada instante
+     * @param size Número de tareas que representar en el marcador
+     * @param tipo Tipo de marcador que se tiene que representar: 0 para el especial; 1 para especial1;
+     *             2 para especial2; 3 para especial3; 4 para especial4; y cualquier otro para el
+     *             marcador por defecto
+     * @return objeto del marcador que se va a representar
+     */
+    private Drawable dameMarcador(int size, int tipo){
+        int[] vector;
+        if(size == 0)
+            return dameDrawable(R.drawable.ic_marcador_check);
+        else{
+            switch (tipo){
+                case 0:
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial, R.drawable.ic_marcador100_especial,
+                            R.drawable.ic_marcador300_especial, R.drawable.ic_marcador500_especial,
+                            R.drawable.ic_marcador700_especial, R.drawable.ic_marcador900_especial};
+                    break;
+                case 1://R1
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial1, R.drawable.ic_marcador100_especial1,
+                            R.drawable.ic_marcador300_especial1, R.drawable.ic_marcador500_especial1,
+                            R.drawable.ic_marcador700_especial1, R.drawable.ic_marcador900_especial1};
+                    break;
+                case 2://R2
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial2, R.drawable.ic_marcador100_especial2,
+                            R.drawable.ic_marcador300_especial2, R.drawable.ic_marcador500_especial2,
+                            R.drawable.ic_marcador700_especial2, R.drawable.ic_marcador900_especial2};
+                    break;
+                case 3://R3
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial3, R.drawable.ic_marcador100_especial3,
+                            R.drawable.ic_marcador300_especial3, R.drawable.ic_marcador500_especial3,
+                            R.drawable.ic_marcador700_especial3, R.drawable.ic_marcador900_especial3};
+                    break;
+                case 4://R4
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial4, R.drawable.ic_marcador100_especial4,
+                            R.drawable.ic_marcador300_especial4, R.drawable.ic_marcador500_especial4,
+                            R.drawable.ic_marcador700_especial4, R.drawable.ic_marcador900_especial4};
+                    break;
+                default:
+                    vector = new int[]{R.drawable.ic_marcador_pulsado, R.drawable.ic_marcador100,
+                            R.drawable.ic_marcador300, R.drawable.ic_marcador500,
+                            R.drawable.ic_marcador700, R.drawable.ic_marcador900};
+                    break;
+            }
+            if(size < 0)
+                return dameDrawable(vector[0]);
+            else if (size <= 10)
+                return dameDrawable(vector[1]);
+            else if (size <= 20)
+                return dameDrawable(vector[2]);
+            else if (size <= 40)
+                return dameDrawable(vector[3]);
+            else if (size <= 70)
+                return dameDrawable(vector[4]);
+            else
+                return dameDrawable(vector[5]);
+        }
     }
 
     /**
@@ -1445,106 +1512,7 @@ public class Maps extends AppCompatActivity implements
      * @return Representación gráfica del marcador
      */
     private Bitmap generaBitmapMarkerNumero(int size, int tipo) {
-        Drawable drawable;
-
-        switch (tipo){
-            case 0:
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial);
-                break;
-            case 1://R1
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial1);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial1);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial1);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial1);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial1);
-                break;
-            case 2://R2
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial2);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial2);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial2);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial2);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial2);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial2);
-                break;
-            case 3://R3
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial3);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial3);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial3);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial3);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial3);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial3);
-                break;
-            case 4://R4
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial4);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial4);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial4);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial4);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial4);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial4);
-                break;
-            default:
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900);
-                break;
-        }
+        Drawable drawable = dameMarcador(size, tipo);
 
         size = Math.abs(size);
 
@@ -1614,11 +1582,10 @@ public class Maps extends AppCompatActivity implements
         textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status < 0)
-                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                if(status < 0) {
+                    pintaSnackBar(context.getResources().getString(R.string.noTTS));
+                }
                 else{
-                    textToSpeech.setLanguage(new Locale("spa", "ESP"));
-
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
                         public void onStart(String utteranceId) {
@@ -1638,6 +1605,11 @@ public class Maps extends AppCompatActivity implements
                 }
             }
         });
+
+        if(textToSpeech.getEngines() == null)
+            ivSpeaker.setVisibility(View.INVISIBLE);
+        else if(textToSpeech.getEngines().size() <= 0)
+            ivSpeaker.setVisibility(View.INVISIBLE);
 
         if(navigationView == null){
             navigationView = findViewById(R.id.nvMapa);
@@ -2202,7 +2174,7 @@ public class Maps extends AppCompatActivity implements
                     intent.setPackage("com.android.vending");
                     startActivity(intent);
                 }catch (ActivityNotFoundException e){
-                    Toast.makeText(context, getResources().getString(R.string.noGooglePlay), Toast.LENGTH_SHORT).show();
+                    pintaSnackBar(context.getResources().getString(R.string.noGooglePlay));
                 }
                 return true;
             case R.id.comparte:

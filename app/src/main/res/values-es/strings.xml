@@ -276,4 +276,5 @@
     <string name="la">la</string>
     <string name="las">las</string>
     <string name="los">los</string>
+    <string name="noTTS">No tienes instalado \«Síntesis de voz de Google\» para escuchar los textos</string>
 </resources>

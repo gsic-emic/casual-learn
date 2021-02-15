@@ -307,4 +307,5 @@
     <string name="la">the</string>
     <string name="las">the</string>
     <string name="los">the</string>
+    <string name="noTTS">You don\'t have \"Google Text-to-Speech\" instaled to listen the texts</string>
 </resources>

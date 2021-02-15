@@ -35,14 +35,19 @@
     <color name="paleta_suelo">#a15b1c</color>
     <color name="p1">#e9d49c</color>
     <color name="paleta_especial">#f2e6c6</color>
+    <color name="paleta_especial_dark">#bfb495</color>
     <color name="paleta_especial_transparente">#1Af2e6c6</color>
     <color name="paleta_especial1">#ccd7dd</color>
+    <color name="paleta_especial1_dark">#9ba6ab</color>
     <color name="paleta_especial1_transparente">#1Accd7dd</color>
     <color name="paleta_especial2">#718068</color>
+    <color name="paleta_especial2_dark">#46543d</color>
     <color name="paleta_especial2_transparente">#1A718068</color>
     <color name="paleta_especial3">#cc7424</color>
+    <color name="paleta_especial3_dark">#964700</color>
     <color name="paleta_especial3_transparente">#1Acc7424</color>
     <color name="paleta_especial4">#764214</color>
+    <color name="paleta_especial4_dark">#471a00</color>
     <color name="paleta_especial4_transparente">#1A764214</color>
 
 </resources>
