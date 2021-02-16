@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/tvTituloSelectorColor"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/tama_titulo"
+        android:padding="@dimen/margen_texto"
+        android:textAlignment="center"
+        android:text="@string/seleccionaMarcador"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/colorSecondary"
+        android:textColor="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ImageView
+        android:id="@+id/ivNormalSC"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_marcador100"
+        android:onClick="onClick"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivEspecial0"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloSelectorColor"
+        app:layout_constraintBottom_toTopOf="@id/ivEspecial3" />
+
+    <ImageView
+        android:id="@+id/ivEspecial0"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_marcador100_especial"
+        android:onClick="onClick"
+        app:layout_constraintStart_toEndOf="@id/ivNormalSC"
+        app:layout_constraintEnd_toStartOf="@id/ivEspecial1"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloSelectorColor"
+        app:layout_constraintBottom_toTopOf="@id/ivEspecial3"/>
+
+    <ImageView
+        android:id="@+id/ivEspecial1"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_marcador100_especial1"
+        android:onClick="onClick"
+        app:layout_constraintStart_toEndOf="@id/ivEspecial0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTituloSelectorColor"
+        app:layout_constraintBottom_toTopOf="@id/ivEspecial3"/>
+
+    <ImageView
+        android:id="@+id/ivEspecial2"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_marcador100_especial2"
+        android:onClick="onClick"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivEspecial0"
+        app:layout_constraintTop_toBottomOf="@id/ivNormalSC"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/ivEspecial3"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_marcador100_especial3"
+        android:onClick="onClick"
+        app:layout_constraintStart_toEndOf="@id/ivNormalSC"
+        app:layout_constraintEnd_toStartOf="@id/ivEspecial1"
+        app:layout_constraintTop_toBottomOf="@id/ivNormalSC"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageView
+        android:id="@+id/ivEspecial4"
+        android:layout_width="84dp"
+        android:layout_height="84dp"
+        android:padding="10dp"
+        app:srcCompat="@drawable/ic_marcador100_especial4"
+        android:onClick="onClick"
+        app:layout_constraintStart_toEndOf="@id/ivEspecial0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivNormalSC"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

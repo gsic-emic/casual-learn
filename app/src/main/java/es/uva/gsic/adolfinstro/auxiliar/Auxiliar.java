@@ -70,8 +70,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //TODO comprueba que sea la dirección correcta
-    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
     private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static String rutaTareas = direccionIP + "tareas";

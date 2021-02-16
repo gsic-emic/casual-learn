@@ -14,6 +14,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
@@ -69,12 +72,32 @@ public class AjustesFragment extends PreferenceFragmentCompat
         final EditTextPreference hashtag = findPreference(Ajustes.HASHTAG_pref);
         SwitchPreference datos = findPreference(Ajustes.WIFI_pref);
         preferenciaRetardo = findPreference(Ajustes.RETARDOPORTA_pref);
+        Preference confCanales = findPreference(Ajustes.CONFCANALES_pref);
+        //TODO quitar
+        confCanales.setEnabled(true);
+        confCanales.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = new Intent(context, ConfiguracionCanales.class);
+                startActivity(intent);
+                return false;
+            }
+        });
         if(idUsuario != null) {
             compartirProtafolio.setEnabled(true);
             noMolestar.setEnabled(true);
             hashtag.setEnabled(true);
             datos.setEnabled(true);
             seekBarPreference.setEnabled(true);
+            confCanales.setEnabled(true);
+            confCanales.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(context, ConfiguracionCanales.class);
+                    startActivity(intent);
+                    return false;
+                }
+            });
             compartirPorta.setEnabled(sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false));
             preferenciaRetardo.setEnabled(compartirPorta.isEnabled());
             compartirPorta.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -150,7 +173,6 @@ public class AjustesFragment extends PreferenceFragmentCompat
                     return false;
                 }
             });
-
         }
     }
 

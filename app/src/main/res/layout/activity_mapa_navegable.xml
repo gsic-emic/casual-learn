@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:text="@string/openstreetmap_contributors"
         android:background="@color/colorPrimaryLight68"
-        android:textColor="@android:color/black"
+        android:textColor="@color/texto"
         app:layout_constraintBottom_toBottomOf="@id/mvMapaNavegable"
         app:layout_constraintStart_toStartOf="@id/mvMapaNavegable"
         android:layout_marginStart="5dp"

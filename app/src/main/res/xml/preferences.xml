@@ -18,6 +18,14 @@
             app:defaultValue="false" />
     </PreferenceCategory>
     <PreferenceCategory
+        android:title="@string/canales">
+        <Preference
+            android:key="confCanales"
+            app:title="@string/confCanales"
+            app:summary="@string/descripcionConfCanales"
+            app:enabled="false" />
+    </PreferenceCategory>
+    <PreferenceCategory
         android:title="@string/titulo_compartir_preferencias">
         <SwitchPreference
             app:key="portafolioPublico"
@@ -48,14 +56,6 @@
             app:title="@string/enviarWifi"
             app:defaultValue="false" />
     </PreferenceCategory>
-    <!--<PreferenceCategory
-        android:key="listaBlancaCategoria">
-        <CheckBoxPreference
-            app:key="listaBlanca"
-            app:title="@string/tituloListaBlancaPref"
-            app:summary="@string/descripcionListaBlancaPref"
-            app:defaultValue="true" />
-    </PreferenceCategory>-->
     <PreferenceCategory
         android:key="cierreCategoria">
         <Preference

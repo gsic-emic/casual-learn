@@ -42,7 +42,8 @@
         <activity
             android:name=".Completadas"
             android:label="@string/tareaCompletada" />
-        <activity android:name=".ListaTareas" />
+        <activity
+            android:name=".ListaTareas" />
         <activity
             android:name=".Preview"
             android:label="@string/infoTarea" />
@@ -83,6 +84,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ConfiguracionCanales"
+            android:label="@string/confCanales"/>
 
         <receiver android:name=".AlarmaProceso" />
         <receiver android:name=".CompruebaEnvios" />

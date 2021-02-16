@@ -308,4 +308,9 @@
     <string name="las">the</string>
     <string name="los">the</string>
     <string name="noTTS">You don\'t have \"Google Text-to-Speech\" instaled to listen the texts</string>
+    <string name="canales">Channels</string>
+    <string name="confCanales">Configuration of channels</string>
+    <string name="descripcionConfCanales">Select your favorite subscriptions</string>
+    <string name="activarCanales">Enable channels and get the list of existing ones</string>
+    <string name="seleccionaMarcador">Select a marker for this channel</string>
 </resources>

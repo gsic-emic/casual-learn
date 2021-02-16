@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/clItemCanal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="@dimen/tama_titulo"
+    android:layout_marginHorizontal="5dp"
+    android:background="@color/white"
+    android:theme="@style/AppTheme">
+
+    <CheckBox
+        android:id="@+id/cbItemCanal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guia10Canales"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guia10Canales"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guia80Canales"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.8"/>
+
+    <TextView
+        android:id="@+id/tituloItemCanal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="32dp"
+        android:textAlignment="gravity"
+        android:gravity="center_vertical"
+        android:textSize="@dimen/tama_titulo"
+        android:paddingHorizontal="@dimen/margen_texto"
+        app:layout_constraintStart_toStartOf="@id/guia10Canales"
+        app:layout_constraintEnd_toStartOf="@id/marcadorItemCanal"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/descripcionItemCanal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="16dp"
+        android:textAlignment="gravity"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/margen_texto"
+        app:layout_constraintStart_toStartOf="@id/guia10Canales"
+        app:layout_constraintEnd_toStartOf="@id/marcadorItemCanal"
+        app:layout_constraintTop_toBottomOf="@id/tituloItemCanal"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageView
+        android:id="@+id/marcadorItemCanal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
+        app:layout_constraintStart_toStartOf="@id/guia80Canales"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/descripcionItemCanal"
+        android:visibility="gone"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -37,6 +37,8 @@ public class Ajustes extends AppCompatActivity
 
     public static final String RETARDOPORTA_pref = "portaRetardado";
 
+    public static final String CONFCANALES_pref = "confCanales";
+
     public static SharedPreferences sharedPreferences;
     private boolean reiniciaMapa = false;
     private boolean estadoAnterior;
