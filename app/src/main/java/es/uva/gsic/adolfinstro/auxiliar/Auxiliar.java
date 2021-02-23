@@ -65,7 +65,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20210205
+ * @version 20210223
  */
 public class Auxiliar {
 
@@ -73,10 +73,11 @@ public class Auxiliar {
     //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
     public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
-    private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
-    public static String rutaTareas = direccionIP + "tareas";
-    public static String rutaContextos = direccionIP + "contextos";
+    private static final String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
+    public static final String rutaTareas = direccionIP + "tareas";
+    public static final String rutaContextos = direccionIP + "contextos";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
+    public static final String rutaCanales = direccionIP + "channels";
 
     public static final String id = "id";
     public static final String tipoRespuesta = "tipoRespuesta";
@@ -102,6 +103,9 @@ public class Auxiliar {
     public static final String busquedasMunicipio = "busquedaMunicipio";
     public static final String creadoPor = "creadoPor";
     public static final String imagen = "imagen";
+
+    public static final String canal = "channel";
+    public static final String tipo = "type";
 
     public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
     public static final String r1 = "charo1";
@@ -175,6 +179,10 @@ public class Auxiliar {
     public static final String label = "label";
     public static final String comment = "comment";
     public static final String ficheroZona = "ficheroZona";
+    public static final String configuracionActual = "configuracionActual";
+    public static final String marcado = "marcado";
+    public static final String marcador = "marcador";
+    public static final String caracteristica = "caracteristica";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 

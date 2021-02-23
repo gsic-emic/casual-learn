@@ -313,4 +313,6 @@
     <string name="descripcionConfCanales">Select your favorite subscriptions</string>
     <string name="activarCanales">Enable channels and get the list of existing ones</string>
     <string name="seleccionaMarcador">Select a marker for this channel</string>
+    <string name="buscaCanales">Search channels by name</string>
+    <string name="update_channel_list">Update channel list</string>
 </resources>

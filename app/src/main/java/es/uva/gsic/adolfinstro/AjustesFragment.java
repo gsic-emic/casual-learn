@@ -73,22 +73,13 @@ public class AjustesFragment extends PreferenceFragmentCompat
         SwitchPreference datos = findPreference(Ajustes.WIFI_pref);
         preferenciaRetardo = findPreference(Ajustes.RETARDOPORTA_pref);
         Preference confCanales = findPreference(Ajustes.CONFCANALES_pref);
-        //TODO quitar
-        confCanales.setEnabled(true);
-        confCanales.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                Intent intent = new Intent(context, ConfiguracionCanales.class);
-                startActivity(intent);
-                return false;
-            }
-        });
         if(idUsuario != null) {
             compartirProtafolio.setEnabled(true);
             noMolestar.setEnabled(true);
             hashtag.setEnabled(true);
             datos.setEnabled(true);
             seekBarPreference.setEnabled(true);
+            //Al pulsar sobre esta preferencia se lanza una nueva actividad para configurar los canales
             confCanales.setEnabled(true);
             confCanales.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override

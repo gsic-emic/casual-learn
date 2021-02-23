@@ -279,7 +279,9 @@
     <string name="noTTS">No tienes instalado \«Síntesis de voz de Google\» para escuchar los textos</string>
     <string name="canales">Canales</string>
     <string name="confCanales">Configuración de los canales</string>
-    <string name="descripcionConfCanales">Activa la característica de canles y selecciona tus subscripciones favoritas</string>
-    <string name="activarCanales">Activar la característica de canales y descargar la lista de los existentes</string>
+    <string name="descripcionConfCanales">Activa la característica de canales y selecciona tus suscripciones favoritas</string>
+    <string name="activarCanales">Activar la característica de canales y descargar la lista de canales</string>
     <string name="seleccionaMarcador">Selecciona un marcador para este canal</string>
+    <string name="buscaCanales">Busca canales por nombre</string>
+    <string name="update_channel_list">Actualizar la lista de canales</string>
 </resources>

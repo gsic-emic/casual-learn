@@ -86,7 +86,7 @@
         </activity>
         <activity
             android:name=".ConfiguracionCanales"
-            android:label="@string/confCanales"/>
+            android:label="@string/canales"/>
 
         <receiver android:name=".AlarmaProceso" />
         <receiver android:name=".CompruebaEnvios" />

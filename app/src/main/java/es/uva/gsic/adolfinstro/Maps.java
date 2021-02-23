@@ -1,7 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -114,13 +113,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaPuntos;
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.Bocadillo;
+import es.uva.gsic.adolfinstro.auxiliar.Canal;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
 import es.uva.gsic.adolfinstro.auxiliar.ListaCoincidencias;
 import es.uva.gsic.adolfinstro.auxiliar.Marcador;
@@ -131,7 +130,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20210202
+ * @version 20210223
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -355,9 +354,8 @@ public class Maps extends AppCompatActivity implements
             } catch (JSONException e) {
                 centraPrimeraVez();
             }
-        } else {
+        } else
             centraPrimeraVez();
-        }
 
         // Nivel de zum mínimo permitido
         double nivelMin = 6.5;
@@ -1024,18 +1022,18 @@ public class Maps extends AppCompatActivity implements
             dialogoPermisos.setContentView(R.layout.dialogo_permisos_ubicacion);
             dialogoPermisos.setCancelable(false);
             if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
-                final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+                final TextView tituloPermisos = dialogoPermisos.findViewById(R.id.tvTituloPermisos);
                 tituloPermisos.setVisibility(View.GONE);
-                final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+                final TextView textoPermiso = dialogoPermisos.findViewById(R.id.tvTextoPermisos);
                 textoPermiso.setText(Html.fromHtml(textoPermisos));
-                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
                 salir.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         finishAffinity();
                     }
                 });
-                final Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                final Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
                 siguiente.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -1056,17 +1054,17 @@ public class Maps extends AppCompatActivity implements
                     }
                 });
             } else{
-                TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+                TextView textView = dialogoPermisos.findViewById(R.id.tvTituloPermisos);
                 if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
                     textView.setVisibility(View.VISIBLE);
-                    Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                    Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
                     salir.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             finishAffinity();
                         }
                     });
-                    Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                    Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
                     siguiente.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -1081,16 +1079,16 @@ public class Maps extends AppCompatActivity implements
                     });
                 }else {//Solo muestro el normal
                     textView.setVisibility(View.GONE);
-                    textView = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+                    textView = dialogoPermisos.findViewById(R.id.tvTextoPermisos);
                     textView.setText(Html.fromHtml(textoPermisos));
-                    Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                    Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
                     salir.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             finishAffinity();
                         }
                     });
-                    Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                    Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
                     siguiente.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -1484,6 +1482,11 @@ public class Maps extends AppCompatActivity implements
                             R.drawable.ic_marcador300_especial4, R.drawable.ic_marcador500_especial4,
                             R.drawable.ic_marcador700_especial4, R.drawable.ic_marcador900_especial4};
                     break;
+                case 5:
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial_combi, R.drawable.ic_marcador100_especial_combi,
+                            R.drawable.ic_marcador300_especial_combi, R.drawable.ic_marcador500_especial_combi,
+                            R.drawable.ic_marcador700_especial_combi, R.drawable.ic_marcador900_especial_combi};
+                    break;
                 default:
                     vector = new int[]{R.drawable.ic_marcador_pulsado, R.drawable.ic_marcador100,
                             R.drawable.ic_marcador300, R.drawable.ic_marcador500,
@@ -1617,6 +1620,9 @@ public class Maps extends AppCompatActivity implements
             navigationView.setOnCreateContextMenuListener(this);
         }
         ocultaOpcionInicioSesionSiIdentificado((navigationView.getMenu()));
+
+        if(PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas).length() == 0)
+            compruebaZona(true);
     }
 
     /**
@@ -1732,6 +1738,7 @@ public class Maps extends AppCompatActivity implements
     /**
      * Método que recupera la información de los lugares que posteriormente se representan a través
      * de los marcadores. Establece la distancia mín. entre dos puntos a partir de la cual se agruparán.
+     * La agrupación se realizará teniendo en cuenta el canal al que pertenezca el contexto.
      *
      * @param ficherosPintar Nombre de los ficheros donde se encuentran los puntos a representar
      */
@@ -1740,15 +1747,52 @@ public class Maps extends AppCompatActivity implements
         //Evito los marcadores duplicados
         double nivelZum = Math.max(diagonal / 20000, 0.01);//10m;
 
-        JSONArray todasTareas = new JSONArray(),
-                puntosEspeciales = new JSONArray(),
-                puntosEpecialesR1 = new JSONArray(),
-                puntosEpecialesR2 = new JSONArray(),
-                puntosEpecialesR3 = new JSONArray(),
-                puntosEpecialesR4 = new JSONArray();
+        JSONArray
+                M0 = new JSONArray(),
+                M1 = new JSONArray(),
+                M2 = new JSONArray(),
+                M3 = new JSONArray(),
+                M4 = new JSONArray(),
+                M5 = new JSONArray(),
+                M6 = new JSONArray();
 
-        JSONObject puntoInteres;
-        JSONArray ficheroPuntosInteres;
+        JSONObject puntoInteres, auxiliar;
+        JSONArray ficheroPuntosInteres, listaCanales = null;
+        String idUsuario;
+        boolean canalesActivos = false;
+        try {
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroUsuario,
+                    Auxiliar.id)
+                    .getString(Auxiliar.uid);
+            JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    Auxiliar.configuracionActual,
+                    idUsuario);
+            if(confCanales != null) {
+                if(confCanales.has(Auxiliar.caracteristica)) {
+                    canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
+                    if(canalesActivos) {
+                        listaCanales = PersistenciaDatos.leeFichero(
+                                getApplication(),
+                                PersistenciaDatos.ficheroListaCanales);
+                        for(int i = 0; i < listaCanales.length(); i++){
+                            if(listaCanales.getJSONObject(i).getString(Auxiliar.canal)
+                                    .equals(Auxiliar.configuracionActual)){
+                                listaCanales.remove(i);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e){
+            idUsuario = null;
+            canalesActivos = false;
+        }
         for(String nombreFichero : ficherosPintar){
             ficheroPuntosInteres = PersistenciaDatos.leeFichero(getApplication(), nombreFichero);
             try {
@@ -1756,31 +1800,56 @@ public class Maps extends AppCompatActivity implements
                     for (int i = 0; i < ficheroPuntosInteres.length(); i++) {
                         puntoInteres = ficheroPuntosInteres.getJSONObject(i);
                         puntoInteres.put(Auxiliar.ficheroZona, nombreFichero);
-                        if(puntoInteres.has(Auxiliar.creadoPor)){
-                            switch (puntoInteres.getString(Auxiliar.creadoPor)){
-                                case Auxiliar.r1:
-                                    puntosEpecialesR1.put(puntoInteres);
-                                    break;
-                                case Auxiliar.r2:
-                                    puntosEpecialesR2.put(puntoInteres);
-                                    break;
-                                case Auxiliar.r3:
-                                    puntosEpecialesR3.put(puntoInteres);
-                                    break;
-                                case Auxiliar.r4:
-                                    puntosEpecialesR4.put(puntoInteres);
-                                    break;
-                                case Auxiliar.creadorInvestigadores:
-                                    todasTareas.put(puntoInteres);
-                                    break;
-                                default:
-                                    puntosEspeciales.put(puntoInteres);
-                                    break;
-                            }
-                        }
-                        else
-                            todasTareas.put(puntoInteres);
+                        if(!canalesActivos)
+                            M0.put(puntoInteres);
+                        else{
+                            if(puntoInteres.has(Auxiliar.canal)) {
+                                String[] canales = puntoInteres.getString(Auxiliar.canal).split(";");
+                                List<Integer> lugarCoincidencia = new ArrayList<>();
+                                for(int j = 0; j < listaCanales.length(); j++) {
+                                    auxiliar = listaCanales.getJSONObject(j);
+                                    for (String canale : canales) {
+                                        if((auxiliar.getString(Auxiliar.tipo).equals(Canal.obligatorio)
+                                                || auxiliar.getBoolean(Auxiliar.marcado))
+                                                && listaCanales.getJSONObject(j).getString(Auxiliar.canal).equals(canale)) {
+                                            lugarCoincidencia.add(j);
+                                        }
+                                    }
+                                }
+                                boolean iguales = true;
+                                for(int j = 0; j < (lugarCoincidencia.size() - 1) ; j++){
+                                    if(listaCanales.getJSONObject(lugarCoincidencia.get(j)).getInt(Auxiliar.marcador)
+                                            != listaCanales.getJSONObject(lugarCoincidencia.get(j+1)).getInt(Auxiliar.marcador)){
+                                        iguales = false;
+                                        break;
+                                    }
+                                }
+                                if(iguales){
+                                    switch (listaCanales.getJSONObject(lugarCoincidencia.get(0)).getInt(Auxiliar.marcador)){
+                                        case 0:
+                                            M1.put(puntoInteres);
+                                            break;
+                                        case 1:
+                                            M2.put(puntoInteres);
+                                            break;
+                                        case 2:
+                                            M3.put(puntoInteres);
+                                            break;
+                                        case 3:
+                                            M4.put(puntoInteres);
+                                            break;
+                                        case 4:
+                                            M5.put(puntoInteres);
+                                            break;
+                                        default:
+                                            M0.put(puntoInteres);
+                                    }
+                                }else
+                                    M6.put(puntoInteres);
 
+                            } else
+                                M0.put(puntoInteres);
+                        }
                     }
                 }
             } catch (JSONException e){
@@ -1788,7 +1857,7 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
-        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3};
+        JSONArray[] tareas = {M0, M1, M2, M3, M4, M5, M6};
 
         List<Marcador> listaMarcadores;
         for(int i = 0; i < tareas.length; i++){
@@ -2772,14 +2841,14 @@ public class Maps extends AppCompatActivity implements
                         com.google.android.play.core.tasks.Task<ReviewInfo> peticion = reviewManager.requestReviewFlow();
                         peticion.addOnCompleteListener(new com.google.android.play.core.tasks.OnCompleteListener<ReviewInfo>() {
                             @Override
-                            public void onComplete(com.google.android.play.core.tasks.Task<ReviewInfo> task) {
+                            public void onComplete(@NotNull com.google.android.play.core.tasks.Task<ReviewInfo> task) {
                                 if (task.isSuccessful()) {
                                     ReviewInfo reviewInfo = task.getResult();
                                     com.google.android.play.core.tasks.Task<Void> flow =
                                             reviewManager.launchReviewFlow(activity, reviewInfo);
                                     flow.addOnCompleteListener(new com.google.android.play.core.tasks.OnCompleteListener<Void>() {
                                         @Override
-                                        public void onComplete(com.google.android.play.core.tasks.Task<Void> peticionFlujo) {
+                                        public void onComplete(@NotNull com.google.android.play.core.tasks.Task<Void> peticionFlujo) {
                                             if (peticionFlujo.isSuccessful()) {
                                                 noVolverAPreguntar();
                                             }

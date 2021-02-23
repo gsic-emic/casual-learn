@@ -19,11 +19,9 @@ import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
  * Clase que gestiona las llamadas a los ficheros para la persistencia de datos
  *
  * @author Pablo
- * @version 20200924
+ * @version 20210223
  */
 public class PersistenciaDatos {
-    /** Fichero donde se almacenan las tareas recibidas desde el servidor que el usuario puede iniciar*/
-    public static final String ficheroTareasUsuario = "tareasUsuario";
     /** Fichero donde se encuentras las tareas notificadas al ususario */
     public static final String ficheroNotificadas = "notificadas";
     /** Fichero con las tareas rechazadas */
@@ -52,6 +50,7 @@ public class PersistenciaDatos {
     public static final String ficheroContextosNotificados = "lugaresNotificados";
     public static final String ficheroTareasPersonalizadas = "tareasPersonalizadas";
     public static final String ficheroContextos = "lugaresSegundoPlano";
+    public static final String ficheroListaCanales = "listaDeCanales";
 
 
     /**
@@ -232,7 +231,7 @@ public class PersistenciaDatos {
                         fichero,
                         jsonObject.getString(Auxiliar.id),
                         jsonObject.getString(Auxiliar.idUsuario));
-                JSONArray vectorRespuestas = null;
+                JSONArray vectorRespuestas;
                 try {
                     vectorRespuestas = tarea.getJSONArray(Auxiliar.respuestas);
                 } catch (Exception e) {
@@ -264,30 +263,7 @@ public class PersistenciaDatos {
      * @return Devolverá true si se ha conseguido almacenar el JSON en el fichero
      */
     public static boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject){
-        synchronized (PersistenciaDatos.bloqueo) {
-            try {
-                int modo = Context.MODE_PRIVATE;
-                JSONArray array = leeFichero(app, fichero);
-                String id = jsonObject.getString(Auxiliar.id);
-                JSONObject base;
-                boolean encontrado = false;
-                int i;
-                for (i = 0; i < array.length(); i++) {
-                    base = array.getJSONObject(i);
-                    if (base.getString(Auxiliar.id).equals(id)) {
-                        encontrado = true;
-                        break;
-                    }
-                }
-                if (encontrado) {
-                    array.remove(i);
-                }
-                array.put(jsonObject);
-                return guardaFichero(app, fichero, array, modo);
-            } catch (Exception e) {
-                return false;
-            }
-        }
+        return reemplazaJSON(app, fichero, jsonObject, null);
     }
 
     /**
@@ -301,34 +277,57 @@ public class PersistenciaDatos {
      * @return Devolverá true si se ha conseguido almacenar el JSON en el fichero
      */
     public static boolean reemplazaJSON(Application app, String fichero, JSONObject jsonObject, String idUsuario){
+        return reemplazaJSON(app, fichero, Auxiliar.id, jsonObject, idUsuario);
+    }
+
+    /**
+     * Método para reemplazar un objeto dentro de un JSONArray. Si no existe un objeto con ese identificador
+     * se guarda el objeto al final de array sin reemplazar nada.
+     *
+     * @param app Aplicación
+     * @param fichero Fichero con el JSONArray
+     * @param claveId Clave que se utiliza para almacenar el identificador del objeto
+     * @param jsonObject Objeto que se va a reemplazar
+     * @param idUsuario Identificador del usuario
+     * @return Verdadero si se ha conseguido guardar correctamente el fichero. Falso en el caso contrario.
+     */
+    public static boolean reemplazaJSON(
+            Application app,
+            String fichero,
+            String claveId,
+            JSONObject jsonObject,
+            String idUsuario){
         synchronized (PersistenciaDatos.bloqueo) {
             try {
                 int modo = Context.MODE_PRIVATE;
                 JSONArray array = leeFichero(app, fichero);
-                String id = jsonObject.getString(Auxiliar.id);
+                String id = jsonObject.getString(claveId);
                 JSONObject base;
                 boolean encontrado = false;
                 int i;
                 for (i = 0; i < array.length(); i++) {
                     base = array.getJSONObject(i);
                     if (idUsuario != null) {
-                        if (base.getString(Auxiliar.id).equals(id)
+                        if (base.getString(claveId).equals(id)
                                 && base.getString(Auxiliar.idUsuario).equals(idUsuario)) {
                             encontrado = true;
                             break;
                         }
                     } else {
-                        if (base.getString(Auxiliar.id).equals(id)
+                        if (base.getString(claveId).equals(id)
                                 && !base.has(Auxiliar.idUsuario)) {
                             encontrado = true;
                             break;
                         }
                     }
                 }
-                if (encontrado) {
+                /*if (encontrado) {
                     array.remove(i);
-                }
-                array.put(jsonObject);
+                }*/
+                if(encontrado)
+                    array.put(i, jsonObject);
+                else
+                    array.put(jsonObject);
                 return guardaFichero(app, fichero, array, modo);
             } catch (Exception e) {
                 return false;
@@ -545,6 +544,15 @@ public class PersistenciaDatos {
         return recuperaObjeto(app, fichero, Auxiliar.id, idTarea, idUser);
     }
 
+    /**
+     * Método para recuperar un JSONObject indicando el tipo de objeto con el que se le identifica. No modifica el fichero
+     * @param app Aplicación
+     * @param fichero Nombre del fichero
+     * @param tipoObjeto Clave con el tipo de objeto utilizado para identificar
+     * @param idObjeto Identificador del objeto
+     * @param idUser Identificador del usuario
+     * @return JSONObject con el objeto solicitado o null si no existe
+     */
     public static JSONObject recuperaObjeto(Application app, String fichero, String tipoObjeto, String idObjeto, String idUser){
         JSONArray jsonArray = leeFichero(app, fichero);
         JSONObject jsonObject;

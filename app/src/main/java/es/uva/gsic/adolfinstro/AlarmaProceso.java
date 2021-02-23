@@ -22,8 +22,6 @@ import android.os.Bundle;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -40,7 +38,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;

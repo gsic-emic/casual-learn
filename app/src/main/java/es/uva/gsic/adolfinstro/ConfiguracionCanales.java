@@ -3,9 +3,14 @@ package es.uva.gsic.adolfinstro;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
+import android.widget.SearchView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -13,37 +18,67 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.DefaultRetryPolicy;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCanales;
+import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.auxiliar.Canal;
+import es.uva.gsic.adolfinstro.auxiliar.ColaConexiones;
+import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase para modtrar al usuario la lista de canales del sistema y permitirle configurar sus suscripciones.
  * También podrá elegir qué marcador asigna a cada canal.
  *
  * @author Pablo
- * @version 20210216
+ * @version 20210223
  */
 public class ConfiguracionCanales extends AppCompatActivity implements
         View.OnClickListener,
         AdaptadorListaCanales.ItemClickCbCanal,
         AdaptadorListaCanales.ItemClickMarcadorCanal {
 
+    /** Switch para activar o desactivar la característica de canales */
     private SwitchCompat scActivado;
+    /** Contenedor donde se agregará la información de cada uno de los canales */
     private RecyclerView contenedorLista;
+    /** Contexto */
     private Context context;
+    /** Adaptador para controlar el contenido del contenedor */
     private AdaptadorListaCanales adaptador;
+    /** Diálogo para seleccionar el marcador del canal */
     private Dialog dialogoMarcadores;
     private int posicion;
     private int[] listaMarcadores;
+    /** Idetnificador del usuario */
+    private String idUsuario;
+    /** Lista con la totalidad de los canales que tiene la aplicación */
+    private List<Canal> listaCanales;
+    /** Lista con los canales mostrados al buscar por título */
+    private List<Canal> listaVariable;
+    /** Objeto sobre el que se realizarán las búsquedas de canales por su título */
+    private SearchView searchView;
 
     @Override
     public void onCreate (Bundle savedInstance) {
         super.onCreate(savedInstance);
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         setContentView(R.layout.conf_canales);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         scActivado = findViewById(R.id.scActivarCanales);
         scActivado.setOnClickListener(this);
         contenedorLista = findViewById(R.id.rvCanales);
@@ -52,51 +87,239 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         dialogoMarcadores.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialogoMarcadores.setContentView(R.layout.dialogo_selector_marcador);
         dialogoMarcadores.setCancelable(true);
+        //Los marcadores siempre se van a mostrar en el mismo orden para facilitar su selección
         listaMarcadores = new int[]{R.id.ivNormalSC, R.id.ivEspecial0, R.id.ivEspecial1,
                 R.id.ivEspecial2,  R.id.ivEspecial3,  R.id.ivEspecial4};
-    }
-
-    private List<Canal> listaCanales;
-    @Override
-    public void onResume() {
-        super.onResume();
-        listaCanales = new ArrayList<>();
-        listaCanales.add(new Canal("1", "Uno", "Descripción de 1", Canal.obligatorio, false));
-        listaCanales.add(new Canal("2", "Dos", "Descripción de 2", Canal.opcional, false));
-        listaCanales.add(new Canal("3", "Tres", "Descripción de 3", Canal.opcional, true, 2));
-        listaCanales.add(new Canal("1", "Uno", "Descripción de 1", Canal.obligatorio, false));
-        listaCanales.add(new Canal("2", "Dos", "Descripción de 2", Canal.opcional, false));
-        listaCanales.add(new Canal("3", "Tres", "Descripción de 3", Canal.opcional, true, 2));
-        listaCanales.add(new Canal("1", "Uno", "Descripción de 1", Canal.obligatorio, false));
-        listaCanales.add(new Canal("2", "Dos", "Descripción de 2", Canal.opcional, false));
-        listaCanales.add(new Canal("3", "Tres", "Descripción de 3", Canal.opcional, true, 2));
-        listaCanales.add(new Canal("1", "Uno", "Descripción de 1", Canal.obligatorio, false));
-        listaCanales.add(new Canal("2", "Dos", "Descripción de 2", Canal.opcional, false));
-        listaCanales.add(new Canal("3", "Tres", "Descripción de 3", Canal.opcional, true, 2));
-        listaCanales.add(new Canal("1", "Uno", "Descripción de 1", Canal.obligatorio, false));
-        listaCanales.add(new Canal("2", "Dos", "Descripción de 2", Canal.opcional, false));
-        listaCanales.add(new Canal("3", "Tres", "Descripción de 3", Canal.opcional, true, 2));
-        contenedorLista.setHasFixedSize(true);
-        contenedorLista.setLayoutManager(new LinearLayoutManager(context));
-        adaptador = new AdaptadorListaCanales(context, listaCanales);
-        adaptador.setItemClickCbCanal(this);
-        adaptador.setItemClickMarcadorCanal(this);
-        contenedorLista.setAdapter(adaptador);
-        if (scActivado.isChecked()) {//Descarga de canales
-            contenedorLista.setVisibility(View.VISIBLE);
+        //Se obtiene el identificador del usuario ya que se va a utilizar continuamente
+        try {
+            idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroUsuario,
+                    Auxiliar.id
+            ).getString(Auxiliar.uid);
+        }catch (Exception e){
+            idUsuario = null;
+        }
+        if(idUsuario != null) {//No debería pasar ya que solamente se puede acceder a esta pantalla si
+            //el usuario está identificado
+            try {
+                //Recupero la configuración actual para saber si se tiene que activar o no el swich.
+                //También se comprueba si la caducidad de caché ha finalizado.
+                //Si está activado el sw y la lista de canales no está caducada se muestra directamente.
+                JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                        getApplication(),
+                        PersistenciaDatos.ficheroListaCanales,
+                        Auxiliar.canal,
+                        Auxiliar.configuracionActual,
+                        idUsuario);
+                if (configuracionActual != null
+                        && configuracionActual.has(Auxiliar.caracteristica)
+                        && configuracionActual.getBoolean(Auxiliar.caracteristica)) {
+                    scActivado.setChecked(true);
+                    if(configuracionActual.has(Auxiliar.instante)
+                            && configuracionActual.getLong(Auxiliar.instante) < System.currentTimeMillis())
+                        obtenerListaCanales();
+                    else {
+                        listaCanales = cargaListaCanales();
+                        muestraLista();
+                    }
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
         }
     }
 
+    /**
+     * Método para cargar la lista de canales en el contendor. La lista de canales (del objeto
+     * listaCanales) no  puede ser null.
+     */
+    public void muestraLista(){
+        if(listaCanales != null) {
+            contenedorLista.setHasFixedSize(true);
+            contenedorLista.setLayoutManager(new LinearLayoutManager(context));
+            adaptador = new AdaptadorListaCanales(context, listaCanales);
+            adaptador.setItemClickCbCanal(this);
+            adaptador.setItemClickMarcadorCanal(this);
+            contenedorLista.setAdapter(adaptador);
+            contenedorLista.setVisibility(View.VISIBLE);
+            invalidateOptionsMenu();
+        }
+    }
+
+    /**
+     * Método para establecer el menú de esta pantalla. Estará compuesto por la barra de búsqueda y
+     * la solicitud de descarga de la lista de canales. Solamente se activará si el conmutador de la
+     * característica de canales está activo.
+     *
+     * @param menu Menú
+     * @return Devolverá true si hay un menú que pintar y false en caso contrario.
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        if(scActivado.isChecked()) {
+            final MenuInflater menuInflater = getMenuInflater();
+            menuInflater.inflate(R.menu.menu_canales, menu);
+            final MenuItem menuItem = menu.findItem(R.id.busquedaCanal);
+            final SearchView searchView = (SearchView) menuItem.getActionView();
+            this.searchView = searchView;
+            //Se expanda el icono de la búsqueda por nombre al pulsar sobre la lupa. Mismo comportamiento
+            //que otras aplicaciones populares como whatsapp
+            menuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    item.expandActionView();
+                    searchView.onActionViewExpanded();
+                    return true;
+                }
+            });
+            searchView.setQueryHint(context.getResources().getString(R.string.buscaCanales));
+            //Pulsar el salto de carro no tiene efecto. Solo se atiende a cambios del contenido textual del
+            //cuadro de búsqueda
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) { return false; }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    //Mismo procesado en las dos cadenas de texto
+                    newText = StringUtils.stripAccents(newText.trim().toLowerCase());
+                    if(newText.length() > 0) {
+                        listaVariable = new ArrayList<>(listaCanales);
+                        for(Canal canal : listaCanales) {
+                            if(!StringUtils.stripAccents(
+                                    canal.getTitulo().trim().toLowerCase()).contains(newText)){
+                                listaVariable.remove(canal);
+                            }
+                        }
+                        adaptador.actualizaLista(listaVariable);
+                    }else{
+                        adaptador.actualizaLista(listaCanales);
+                        listaVariable = null;
+                    }
+                    return false;
+                }
+            });
+
+            //Métodos para que al colapsar y extender la búsqueda se tenga el comportamiento esperado
+            menuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+                @Override
+                public boolean onMenuItemActionExpand(MenuItem item) {
+                    if(searchView.isIconified())
+                        searchView.setIconified(false);
+                    return true;
+                }
+
+                @Override
+                public boolean onMenuItemActionCollapse(MenuItem item) {
+                    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if(getCurrentFocus() != null && inputMethodManager.isActive(getCurrentFocus()))
+                        inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+                    if(!searchView.isIconified())
+                        searchView.setIconified(true);
+                    searchView.clearFocus();//Evito que se vuelva a mostrar el teclado
+                    return true;
+                }
+            });
+        }
+        return scActivado.isChecked();
+    }
+
+    /**
+     * Método para atencder a las pulsaciones en ítems del menú
+     *
+     * @param menuItem Ítem pulsado
+     * @return Verdadero si se ha pulsado una opción esperada
+     */
+    @Override
+    public boolean onOptionsItemSelected(@NotNull MenuItem menuItem){
+        //Solo se atiende a las pulsaciones de la actualización. Los métodos del icono de búsqueda se
+        //configuran en el onCreteOptionsMenu(Menu menu)
+        if(menuItem.getItemId() == R.id.actualizarCanales){
+            obtenerListaCanales();
+            return true;
+        }
+        else return super.onOptionsItemSelected(menuItem);
+    }
+
+    /**
+     * Pulsación del botón atrás de la barra de título. Se llama al método onBackPressed()
+     *
+     * @return Falso
+     */
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return false;
+    }
+
+    /**
+     * Método llamado al pulsar sobre el botón atrás físico del teclado (o equivalente). Si se estaba
+     * mostrando la búsqueda se oculta. Si no se estaba realizando una búsqueda se vuelve a la
+     * actividad anterior.
+     */
+    @Override
+    public void onBackPressed() {
+        if (searchView != null && !searchView.isIconified()) {
+            searchView.setIconified(true);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    /**
+     * Método llamado al realizar una pulsación sobre algún elemento que no forme parte de ningún
+     * ítem de la lista de canales.
+     *
+     * @param v Vista pulsada
+     */
     @Override
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.scActivarCanales:
-                //Todo Tiene que hacer más cosas como comunicarse con el servidor
-                if (scActivado.isChecked())
-                    contenedorLista.setVisibility(View.VISIBLE);
-                else
+                //Borro el fichero de los contextos para obligar a que desde la pantalla de mapas se
+                // descarguen los puntos elegidos por el usuario
+                PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
+                if (scActivado.isChecked()) {
+                    if(idUsuario != null) {
+                        try {
+                            JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroListaCanales,
+                                    Auxiliar.canal,
+                                    Auxiliar.configuracionActual,
+                                    idUsuario);
+                            if (configuracionActual != null
+                                    && configuracionActual.has(Auxiliar.instante)
+                                    && configuracionActual.getLong(Auxiliar.instante)
+                                        > System.currentTimeMillis()) {
+                                //Los canales actuales siguen siendo válidos.
+                                configuracionActual.put(Auxiliar.caracteristica, true);
+                                PersistenciaDatos.reemplazaJSON(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroListaCanales,
+                                        Auxiliar.canal,
+                                        configuracionActual,
+                                        idUsuario);
+                                listaCanales = cargaListaCanales();
+                                muestraLista();
+                                enviaConfiguracion(true);
+                            } else {
+                                enviaConfiguracion(true);
+                                obtenerListaCanales();
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                else {
+                    desactivarCanales();
                     contenedorLista.setVisibility(View.GONE);
+                    invalidateOptionsMenu();
+                }
                 break;
+            //Pulsación sobre uno de los iconos del diálogo
             case R.id.ivNormalSC:
             case R.id.ivEspecial0:
             case R.id.ivEspecial1:
@@ -104,32 +327,370 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             case R.id.ivEspecial3:
             case R.id.ivEspecial4:
                 dialogoMarcadores.cancel();
-                Canal canal = listaCanales.remove(posicion);
-                for(int i = 0; i < listaMarcadores.length; i++){
-                    if(listaMarcadores[i] == v.getId()){
-                        canal.setMarcador(i - 1);
-                        break;
+                try {
+                    Canal canal;
+                    int i;
+                    if (listaVariable == null) { //No se está buscando
+                        //Elimino el canal para luego volver a agregarlo modificado
+                        canal = listaCanales.remove(posicion);
+                        for (i = 0; i < listaMarcadores.length; i++) {
+                            if (listaMarcadores[i] == v.getId()) {
+                                canal.setMarcador(i - 1);
+                                break;
+                            }
+                        }
+                        listaCanales.add(posicion, canal);
+                        adaptador.actualizarPosicionLista(listaCanales, posicion);
+                    } else {
+                        canal = listaVariable.remove(posicion);
+                        int posicionFijo;
+                        for (posicionFijo = 0; posicionFijo < listaCanales.size(); posicionFijo++)
+                            if (canal.getId().equals(listaCanales.get(posicionFijo).getId()))
+                                break;
+                        for (i = 0; i < listaMarcadores.length; i++) {
+                            if (listaMarcadores[i] == v.getId()) {
+                                canal.setMarcador(i - 1);
+                                break;
+                            }
+                        }
+                        //Tengo que mantener el valor en las dos listas
+                        listaVariable.add(posicion, canal);
+                        listaCanales.remove(posicionFijo);
+                        listaCanales.add(posicionFijo, canal);
+                        adaptador.actualizarPosicionLista(listaVariable, posicion);
                     }
+                    if(searchView != null)
+                        searchView.clearFocus();
+                    //Almaceno en el fichero el marcador seleccionado para la persistencia de los datos
+                    JSONObject jCanal = PersistenciaDatos.recuperaObjeto(
+                            getApplication(),
+                            PersistenciaDatos.ficheroListaCanales,
+                            Auxiliar.canal,
+                            canal.getId(),
+                            idUsuario);
+                    jCanal.put(Auxiliar.marcador, (i - 1));
+                    PersistenciaDatos.reemplazaJSON(
+                            getApplication(),
+                            PersistenciaDatos.ficheroListaCanales,
+                            Auxiliar.canal,
+                            jCanal,
+                            idUsuario);
+                }  catch (Exception e){
+                   adaptador.actualizaLista(listaCanales);
                 }
-                listaCanales.add(posicion, canal);
-                adaptador.actualizarPosicionLista(listaCanales, posicion);
                 break;
             default:
                 break;
         }
     }
 
-    @Override
-    public void onItemClickCb(View view, int position) {
-        Canal canal = listaCanales.remove(position);
-        canal.setMarcado(((CheckBox) view).isChecked());
-        listaCanales.add(position, canal);
-        adaptador.actualizarPosicionLista(listaCanales, position);
+    /**
+     * Método para obtener la lista de canales del fichero donde se almacenan. Se encarga del correcto
+     * formateado de los datos.
+     *
+     * @return Lista con los canales que se pueden mostrar en el contenedor de esta pantalla.
+     */
+    private List<Canal> cargaListaCanales() {
+        List<Canal> salida = new ArrayList<>();
+        JSONArray fichero = PersistenciaDatos.leeFichero(
+                getApplication(),
+                PersistenciaDatos.ficheroListaCanales);
+        JSONObject canal;
+        for(int i = 0; i < fichero.length(); i++){
+            try {
+                canal = fichero.getJSONObject(i);
+                if(canal.getString(Auxiliar.idUsuario).equals(idUsuario)) {
+                    //No tengo en cuenta el canal con la configuración porque no se le va a mostrar al usuario
+                    if (!canal.getString(Auxiliar.canal).equals(Auxiliar.configuracionActual)) {
+                        boolean marcado = canal.has(Auxiliar.marcado) && canal.getBoolean(Auxiliar.marcado);
+                        int marcador = (canal.has(Auxiliar.marcador)) ? canal.getInt(Auxiliar.marcador) : -1;
+
+                        salida.add(new Canal(
+                                canal.getString(Auxiliar.canal),
+                                canal.getString(Auxiliar.label),
+                                canal.getString(Auxiliar.comment),
+                                canal.getString(Auxiliar.tipo),
+                                marcado,
+                                marcador));
+                    }
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return salida;
     }
 
+    /**
+     * Método llamado al pulsar sobre un checkbox de un ítem de la lista de canales.
+     * @param view Vista que se ha pulsado
+     * @param position Posición pulsada dentro de la lista. Hay que tener en cuenta si se está mostrando
+     *                 la lista completa o una reducida si se está realizando una búsqueda.
+     */
+    @Override
+    public void onItemClickCb(View view, int position) {
+        Canal canal;
+        boolean marcado;
+        if(listaVariable == null) {
+            canal = listaCanales.remove(position);
+            marcado = ((CheckBox) view).isChecked();
+            canal.setMarcado(marcado);
+            listaCanales.add(position, canal);
+            adaptador.actualizarPosicionLista(listaCanales, position);
+        } else {
+            canal = listaVariable.remove(position);
+            int posicionFija;
+            for(posicionFija = 0; posicionFija < listaCanales.size(); posicionFija++) {
+                if(canal.getId().equals(listaCanales.get(posicionFija).getId()))
+                    break;
+            }
+            marcado = ((CheckBox) view).isChecked();
+            canal.setMarcado(marcado);
+            listaVariable.add(position, canal);
+            listaCanales.remove(posicionFija);
+            listaCanales.add(posicionFija, canal);
+            adaptador.actualizarPosicionLista(listaVariable, position);
+        }
+        enviaSuscripcion(canal.getId(), marcado);
+    }
+
+    /**
+     * Método llamado cuando se pulsa sobre el icono de un elemento de la lista de canales. Únicamente
+     * almacena qué item se ha seleccionado de la lista y se muestra el diálogo para que el usuario
+     * seleccione el marcador que prefiera.
+     *
+     * @param view Vista pulsada
+     * @param position Posición dentro de la lista mostrada
+     */
     @Override
     public void onItemClickMarcador(View view, int position) {
         posicion = position;
         dialogoMarcadores.show();
+    }
+
+    /**
+     * Método para obtener la lista de canales del servidor. Al recuperarla se almacena en un fichero
+     * indicando cuándo será el instante en el que la lista dejará de tener validez. El cacheado es
+     * de una semana.
+     */
+    public void obtenerListaCanales() {
+        if(idUsuario != null){
+            List<String> keys = new ArrayList<>();
+            final List<Object> objects = new ArrayList<>();
+            keys.add(Auxiliar.idUsuario); objects.add(idUsuario);
+            String url = Auxiliar.creaQuery(Auxiliar.rutaCanales, keys, objects);
+            JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(
+                    Request.Method.GET,
+                    url,
+                    null,
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            if(response != null) {
+                                JSONArray listaCanalesAntiguos = PersistenciaDatos.leeFichero(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroListaCanales);
+                                //Doy por válidos los canales que vienen del servidor. Los del
+                                //dispositivo están "siempre" obsoletos
+                                JSONObject canalServidor, canalCacheado;
+                                //Respeto la configuración actual del usuario
+                                boolean encontrado;
+                                for(int i = 0; i < response.length(); i++){
+                                    try {
+                                        encontrado = false;
+                                        canalServidor = response.getJSONObject(i);
+                                        for (int j = 0; j < listaCanalesAntiguos.length(); j++) {
+                                            canalCacheado = listaCanalesAntiguos.getJSONObject(j);
+                                            if (canalServidor.getString(Auxiliar.canal).equals(
+                                                    canalCacheado.getString(Auxiliar.canal))) {
+                                                if (canalCacheado.has(Auxiliar.marcado))
+                                                    canalServidor.put(Auxiliar.marcado,
+                                                            canalCacheado.getBoolean(Auxiliar.marcado));
+                                                else
+                                                    canalServidor.put(Auxiliar.marcado, false);
+                                                if (canalCacheado.has(Auxiliar.marcador))
+                                                    canalServidor.put(Auxiliar.marcador,
+                                                            canalCacheado.getInt(Auxiliar.marcador));
+                                                else
+                                                    canalServidor.put(Auxiliar.marcador, -1);
+                                                encontrado = true;
+                                                break;
+                                            }
+                                        }
+                                        if(!encontrado){
+                                            canalServidor.put(Auxiliar.marcado, false);
+                                            canalServidor.put(Auxiliar.marcador, -1);
+                                        }
+                                        canalServidor.put(Auxiliar.idUsuario, idUsuario);
+                                        response.put(i, canalServidor);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                                //Guardo la info del servidor
+                                try {
+                                    JSONObject configuracionActual = new JSONObject();
+                                    configuracionActual.put(Auxiliar.canal, Auxiliar.configuracionActual);
+                                    configuracionActual.put(Auxiliar.caracteristica, true);
+                                    //Una semana de validez 1000*60*60*24*7
+                                    configuracionActual.put(Auxiliar.instante,
+                                            (System.currentTimeMillis() + 604800000));
+                                    configuracionActual.put(Auxiliar.idUsuario, idUsuario);
+                                    response.put(configuracionActual);
+                                    PersistenciaDatos.guardaFichero(
+                                            getApplication(),
+                                            PersistenciaDatos.ficheroListaCanales,
+                                            response,
+                                            Context.MODE_PRIVATE);
+                                } catch (Exception e){
+                                    e.printStackTrace();
+                                }
+                                listaCanales = cargaListaCanales();
+                                if(listaCanales.size() > 0)
+                                    muestraLista();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            scActivado.setChecked(false);
+                        }
+                    }
+            );
+            jsonArrayRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    3000,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonArrayRequest);
+        }
+    }
+
+    /**
+     * Método para enviar la suscripción (o la baja) del usuario a un canal.
+     * @param idCanal Identificador del canal
+     * @param marcado Indica si es un alta (true) o una baja (false) de la suscripción.
+     */
+    public void enviaSuscripcion(final String idCanal, final boolean marcado){
+        try {
+            JSONObject peticion = new JSONObject();
+            peticion.put(Auxiliar.canal, idCanal);
+            peticion.put(Auxiliar.idUsuario, idUsuario);
+            peticion.put(Auxiliar.marcado, marcado);
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                    Request.Method.PUT,
+                    Auxiliar.rutaCanales + "/"  + Auxiliar.ultimaParte(idCanal),
+                    peticion,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                JSONObject canal = PersistenciaDatos.recuperaObjeto(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroListaCanales,
+                                        Auxiliar.canal,
+                                        idCanal,
+                                        idUsuario);
+                                canal.put(Auxiliar.marcado, marcado);
+                                PersistenciaDatos.reemplazaJSON(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroListaCanales,
+                                        Auxiliar.canal,
+                                        canal,
+                                        idUsuario);
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            //Por ahora no hago nada si ha ocurrido un error. De esta forma, cuando el
+                            //usuario vuelva a acceder a la pantalla del canal verá que no se ha
+                            //producido el cambio
+                            System.err.println(error.toString());
+                        }
+                    }
+            );
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    2500,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Método llamado para desactivar la característica de canales. Modifica el fichero con la lista
+     * de canales y envía al servidor la desactivación.
+     */
+    public void desactivarCanales(){
+        try {
+            JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    Auxiliar.configuracionActual,
+                    idUsuario);
+            if(configuracionActual == null) {
+                configuracionActual.put(Auxiliar.id, Auxiliar.canal);
+                configuracionActual.put(Auxiliar.instante, 0);
+                configuracionActual.put(Auxiliar.idUsuario, idUsuario);
+            }
+            configuracionActual.put(Auxiliar.caracteristica, false);
+            PersistenciaDatos.reemplazaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    configuracionActual,
+                    idUsuario);
+            enviaConfiguracion(false);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Método para activar o desactivar la característica de los canales en el servidor.
+     *
+     * @param canalesActivos True si se desea activar o false si se desea darse de baja.
+     */
+    private void enviaConfiguracion(boolean canalesActivos) {
+        try {
+            JSONObject peticion = new JSONObject();
+            peticion.put(Auxiliar.idUsuario, idUsuario);
+            peticion.put(Auxiliar.marcado, canalesActivos);
+            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                    Request.Method.PUT,
+                    Auxiliar.rutaCanales + "/users/" + idUsuario,
+                    peticion,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            //Por ahora no hago nada
+                            //System.err.println(response.toString());
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            //Por ahora no hago nada si ha ocurrido un error. De esta forma, cuando el
+                            //usuario vuelva a acceder a la pantalla del canal verá que no se ha
+                            //producido el cambio
+                            //System.err.println(error.toString());
+                        }
+                    }
+            );
+            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
+                    2500,
+                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+            ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }
