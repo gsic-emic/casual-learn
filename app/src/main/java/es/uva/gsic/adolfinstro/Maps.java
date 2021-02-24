@@ -1615,10 +1615,8 @@ public class Maps extends AppCompatActivity implements
             @Override
             public void onInit(int status) {
                 if(status < 0)
-                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
+                    pintaSnackBar(context.getResources().getString(R.string.noTTS));
                 else{
-                    textToSpeech.setLanguage(new Locale("spa", "ESP"));
-
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
                         public void onStart(String utteranceId) {
@@ -1638,6 +1636,11 @@ public class Maps extends AppCompatActivity implements
                 }
             }
         });
+
+        if(textToSpeech.getEngines() == null)
+            ivSpeaker.setVisibility(View.INVISIBLE);
+        else if(textToSpeech.getEngines().size() <= 0)
+            ivSpeaker.setVisibility(View.INVISIBLE);
 
         if(navigationView == null){
             navigationView = findViewById(R.id.nvMapa);

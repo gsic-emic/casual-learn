@@ -812,11 +812,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status < 0)
-                    Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show();
-                else{
-                    textToSpeech.setLanguage(new Locale("spa", "ESP"));
-
+                if(status >= 0){
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
                         public void onStart(String utteranceId) {
@@ -836,6 +832,11 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 }
             }
         });
+
+        if(textToSpeech.getEngines() == null)
+            ivSpeaker.setVisibility(View.INVISIBLE);
+        else if(textToSpeech.getEngines().size() <= 0)
+            ivSpeaker.setVisibility(View.INVISIBLE);
     }
 
     @Override
