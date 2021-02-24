@@ -295,8 +295,6 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
             @Override
             public void onInit(int status) {
                 if(status >= 0){
-                    textToSpeech.setLanguage(new Locale("spa", "ESP"));
-
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
                         public void onStart(String utteranceId) {

@@ -253,7 +253,7 @@
     <string name="compartir_teams">Share on Teams</string>
     <string name="tu_respuesta">Your answare</string>
     <string name="boolean_portafolio_publico">Share answers in a portfolio</string>
-    <string name="titulo_id_protafolio">Portfolio identifier</string>
+    <string name="titulo_id_protafolio">Share the portfolio\'s identifier</string>
     <string name="titulo_compartir_preferencias">Answers publication</string>
     <string name="compartir_id_portafolio">Click to share the portfolio ID</string>
     <string name="idporta_no_disponible">The portfolio ID is not yet available. Try again in a few minutes</string>

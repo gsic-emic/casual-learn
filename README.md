@@ -24,4 +24,4 @@ Se puede descargar desde:
   - Escritura/lectura en el SSFF (cacheado de los mapas)
 
 ## Contacto
-Puedes contactar con el equipo de desarrollo a través de un [correo electrónico](casuallearnapp@gsic.uva.es). También puedes reportar problemas mediante el [sistema de GitHub](https://github.com/gsic-emic/AdolfinstroApp/issues).
+Puedes contactar con el equipo de desarrollo a través de un [correo electrónico](mailto:casuallearnapp@gsic.uva.es). También puedes reportar problemas mediante el [sistema de GitHub](https://github.com/gsic-emic/casual-learn/issues).

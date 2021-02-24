@@ -228,7 +228,7 @@
     <string name="compartir_teams">Compartir en Teams</string>
     <string name="tu_respuesta">Tu respuesta</string>
     <string name="boolean_portafolio_publico">Compartir respuestas en un portafolio</string>
-    <string name="titulo_id_protafolio">Identificador de tu portafolio</string>
+    <string name="titulo_id_protafolio">Comparte el identificador de tu portafolio</string>
     <string name="titulo_compartir_preferencias">Publicación de las respuestas</string>
     <string name="compartir_id_portafolio">Pulsa para compartir el identificador del portafolio</string>
     <string name="idporta_no_disponible">El identificador del portafolio no está disponible. Vuelve a probar en unos minutos</string>

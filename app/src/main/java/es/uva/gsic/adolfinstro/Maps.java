@@ -1582,9 +1582,8 @@ public class Maps extends AppCompatActivity implements
         textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status < 0) {
+                if(status < 0)
                     pintaSnackBar(context.getResources().getString(R.string.noTTS));
-                }
                 else{
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
