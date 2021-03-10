@@ -1282,24 +1282,67 @@ public class Maps extends AppCompatActivity implements
     public void pintaTareas(String ficheroTareas) {
         JSONArray tareas = PersistenciaDatos.leeFichero(getApplication(), ficheroTareas);
         String idUsuario;
+        boolean canalesActivos;
         try{
             idUsuario = PersistenciaDatos.recuperaTarea(
-                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id).getString(Auxiliar.uid);
+                    getApplication(),
+                    PersistenciaDatos.ficheroUsuario,
+                    Auxiliar.id)
+                    .getString(Auxiliar.uid);
+
+            JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    Auxiliar.configuracionActual,
+                    idUsuario);
+
+            if (confCanales != null && confCanales.has(Auxiliar.caracteristica))
+                canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
+            else
+                canalesActivos = false;
         }catch (Exception e){
+            canalesActivos = false;
             idUsuario = null;
         }
+
         List<String> listaId = Auxiliar.getListaTareasCompletadas(getApplication(), idUsuario);
         List<TareasMapaLista> tareasPunto = new ArrayList<>();
         JSONObject jo;
         String uriFondo;
         String id;
+        String[] idsCanales;
+        StringBuilder salida;
+        JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
+        JSONObject canal;
         for (int i = 0; i < tareas.length(); i++) {
             try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
                 jo = tareas.getJSONObject(i);
+                salida = new StringBuilder();
+                salida.append("");
                 try {
                     uriFondo = jo.getString(Auxiliar.recursoImagenBaja);
                 } catch (Exception e) {
                     uriFondo = null;
+                }
+                if(canalesActivos){
+                    idsCanales = jo.getString(Auxiliar.canal).split(";");
+                    if(idsCanales.length > 0) {
+                        for(int j = 0; j < listaCanales.length(); j++){
+                            canal = listaCanales.getJSONObject(j);
+                            for(String iC : idsCanales){
+                                if(canal.getString(Auxiliar.canal).equals(iC)) {
+                                    if(!salida.toString().equals(""))
+                                        salida.append("\n").append(canal.getString(Auxiliar.label));
+                                    else
+                                        salida.append(canal.getString(Auxiliar.label));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    salida = null;
                 }
                 //Agrego el fichero de donde extraer la tarea
                 jo.put(Auxiliar.ficheroOrigen, ficheroTareas);
@@ -1310,7 +1353,8 @@ public class Maps extends AppCompatActivity implements
                         Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
                         uriFondo,
                         jo,
-                        listaId.contains(id)));
+                        listaId.contains(id),
+                        (salida!=null)?salida.toString():null));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -2352,7 +2396,10 @@ public class Maps extends AppCompatActivity implements
      * @return Verdadero si se puede solictar o falso si no se debe
      */
     public boolean solicitarAlServidor(BoundingBox boundingBox){
-        return !(boundingBox.getDiagonalLengthInMeters() / 2000 > 5);
+        if(boundingBox.getActualNorth() == boundingBox.getActualSouth())
+            return false;
+        else
+            return !(boundingBox.getDiagonalLengthInMeters() / 2000 > 5);
     }
 
     /**
@@ -2370,16 +2417,50 @@ public class Maps extends AppCompatActivity implements
         keys.add(Auxiliar.este); objects.add(caja.getLonEast());
         keys.add(Auxiliar.sur); objects.add(caja.getLatSouth());
         keys.add(Auxiliar.oeste); objects.add(caja.getLonWest());
+        String idUsuario;
         try{
             /*Envío el ID del usuario si lo tuviera. Por ahora no se está haciendo nada con este dato,
             pero en un futuro podrá utilizarse para personalizar los contextos que se muestran. */
             JSONObject usuario = PersistenciaDatos.recuperaTarea(
                     getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
             if(usuario != null) {
-                String idUsuario = usuario.getString(Auxiliar.uid);
+                idUsuario = usuario.getString(Auxiliar.uid);
                 if(!idUsuario.trim().equals("")) {
                     keys.add(Auxiliar.id);
                     objects.add(idUsuario);
+                }else{
+                    idUsuario = null;
+                }
+            } else {
+                idUsuario = null;
+            }
+        } catch (Exception e){
+            idUsuario = null;
+            e.printStackTrace();
+        }
+        try{
+            if(idUsuario != null) {
+                JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
+                        getApplication(),
+                        PersistenciaDatos.ficheroListaCanales,
+                        Auxiliar.canal,
+                        Auxiliar.configuracionActual,
+                        idUsuario);
+                boolean canalesActivos;
+                if (confCanales != null && confCanales.has(Auxiliar.caracteristica))
+                    canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
+                else
+                    canalesActivos = false;
+                if(canalesActivos) {//Busco los canales suscritos para agregarlos a la petición
+                    JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
+                    JSONObject canal;
+                    for(int i = 0; i < listaCanales.length(); i++){
+                        canal = listaCanales.getJSONObject(i);
+                        if(canal.getString(Auxiliar.tipo).equals(Canal.obligatorio) || canal.getBoolean(Auxiliar.marcado)){
+                            keys.add(Auxiliar.canal);
+                            objects.add(canal.getString(Auxiliar.canal));
+                        }
+                    }
                 }
             }
         } catch (Exception e){
@@ -2516,6 +2597,37 @@ public class Maps extends AppCompatActivity implements
         List<String> keys = new ArrayList<>();
         List<Object> objects = new ArrayList<>();
         keys.add(Auxiliar.contextos); objects.add(contexto);
+
+        try{
+            String idUsuario = PersistenciaDatos.recuperaTarea(
+                    getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id).getString(Auxiliar.uid);
+
+            JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    Auxiliar.configuracionActual,
+                    idUsuario);
+            boolean canalesActivos;
+            if (confCanales != null && confCanales.has(Auxiliar.caracteristica))
+                canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
+            else
+                canalesActivos = false;
+            if(canalesActivos) {//Busco los canales suscritos para agregarlos a la petición
+                JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
+                JSONObject canal;
+                for(int i = 0; i < listaCanales.length(); i++){
+                    canal = listaCanales.getJSONObject(i);
+                    if(canal.getString(Auxiliar.tipo).equals(Canal.obligatorio) || canal.getBoolean(Auxiliar.marcado)){
+                        keys.add(Auxiliar.canal);
+                        objects.add(canal.getString(Auxiliar.canal));
+                    }
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
         String url = Auxiliar.creaQuery(Auxiliar.rutaTareas, keys, objects);
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(

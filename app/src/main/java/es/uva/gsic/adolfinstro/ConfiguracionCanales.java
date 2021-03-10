@@ -303,9 +303,9 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                                         idUsuario);
                                 listaCanales = cargaListaCanales();
                                 muestraLista();
-                                enviaConfiguracion(true);
+                                //enviaConfiguracion(true);
                             } else {
-                                enviaConfiguracion(true);
+                                //enviaConfiguracion(true);
                                 obtenerListaCanales();
                             }
                         }catch (Exception e){
@@ -328,14 +328,18 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             case R.id.ivEspecial4:
                 dialogoMarcadores.cancel();
                 try {
-                    Canal canal;
+                    Canal canal, canal2;
                     int i;
+                    String tipo;
+                    int marcador = -5;
                     if (listaVariable == null) { //No se está buscando
                         //Elimino el canal para luego volver a agregarlo modificado
                         canal = listaCanales.remove(posicion);
+                        tipo = canal.getTipo();
                         for (i = 0; i < listaMarcadores.length; i++) {
                             if (listaMarcadores[i] == v.getId()) {
-                                canal.setMarcador(i - 1);
+                                marcador = i - 1;
+                                canal.setMarcador(marcador);
                                 break;
                             }
                         }
@@ -343,13 +347,15 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                         adaptador.actualizarPosicionLista(listaCanales, posicion);
                     } else {
                         canal = listaVariable.remove(posicion);
+                        tipo = canal.getTipo();
                         int posicionFijo;
                         for (posicionFijo = 0; posicionFijo < listaCanales.size(); posicionFijo++)
                             if (canal.getId().equals(listaCanales.get(posicionFijo).getId()))
                                 break;
                         for (i = 0; i < listaMarcadores.length; i++) {
                             if (listaMarcadores[i] == v.getId()) {
-                                canal.setMarcador(i - 1);
+                                marcador = i - 1;
+                                canal.setMarcador(marcador);
                                 break;
                             }
                         }
@@ -361,26 +367,74 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                     }
                     if(searchView != null)
                         searchView.clearFocus();
-                    //Almaceno en el fichero el marcador seleccionado para la persistencia de los datos
-                    JSONObject jCanal = PersistenciaDatos.recuperaObjeto(
-                            getApplication(),
-                            PersistenciaDatos.ficheroListaCanales,
-                            Auxiliar.canal,
-                            canal.getId(),
-                            idUsuario);
-                    jCanal.put(Auxiliar.marcador, (i - 1));
-                    PersistenciaDatos.reemplazaJSON(
-                            getApplication(),
-                            PersistenciaDatos.ficheroListaCanales,
-                            Auxiliar.canal,
-                            jCanal,
-                            idUsuario);
+                    if(marcador >= 0) {
+                        JSONObject jCanal = PersistenciaDatos.recuperaObjeto(
+                                getApplication(),
+                                PersistenciaDatos.ficheroListaCanales,
+                                Auxiliar.canal,
+                                canal.getId(),
+                                idUsuario);
+                        jCanal.put(Auxiliar.marcador, marcador);
+                        PersistenciaDatos.reemplazaJSON(
+                                getApplication(),
+                                PersistenciaDatos.ficheroListaCanales,
+                                Auxiliar.canal,
+                                jCanal,
+                                idUsuario);
+                    }
+                    for(int j = 0; j < listaCanales.size(); j++){
+                        if(j != posicion){
+                            canal2 = listaCanales.get(j);
+                            if(canal2.getTipo().equals(tipo))
+                                actualizaElemento(j, marcador, (listaVariable == null));
+                        }
+                    }
                 }  catch (Exception e){
                    adaptador.actualizaLista(listaCanales);
                 }
                 break;
             default:
                 break;
+        }
+    }
+
+    private void actualizaElemento(int posicion, int marcador, boolean busquedaCerrada){
+        Canal canal;
+        if (busquedaCerrada) { //No se está buscando
+            //Elimino el canal para luego volver a agregarlo modificado
+            canal = listaCanales.remove(posicion);
+            canal.setMarcador(marcador);
+            listaCanales.add(posicion, canal);
+            adaptador.actualizarPosicionLista(listaCanales, posicion);
+        } else{
+            canal = listaVariable.remove(posicion);
+            int posicionFijo;
+            for (posicionFijo = 0; posicionFijo < listaCanales.size(); posicionFijo++)
+                if (canal.getId().equals(listaCanales.get(posicionFijo).getId()))
+                    break;
+            canal.setMarcador(marcador);
+            listaVariable.add(posicion, canal);
+            listaCanales.remove(posicionFijo);
+            listaCanales.add(posicionFijo, canal);
+            adaptador.actualizarPosicionLista(listaVariable, posicion);
+        }
+        //Almaceno en el fichero el marcador seleccionado para la persistencia de los datos
+        try {
+            JSONObject jCanal = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    canal.getId(),
+                    idUsuario);
+            jCanal.put(Auxiliar.marcador, marcador);
+            PersistenciaDatos.reemplazaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    jCanal,
+                    idUsuario);
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -451,7 +505,25 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             listaCanales.add(posicionFija, canal);
             adaptador.actualizarPosicionLista(listaVariable, position);
         }
-        enviaSuscripcion(canal.getId(), marcado);
+        //enviaSuscripcion(canal.getId(), marcado);
+        PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
+        try {
+            JSONObject jsonCanal = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    canal.getId(),
+                    idUsuario);
+            jsonCanal.put(Auxiliar.marcado, marcado);
+            PersistenciaDatos.reemplazaJSON(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    jsonCanal,
+                    idUsuario);
+        } catch (Exception e){
+          e.printStackTrace();
+        }
     }
 
     /**
@@ -647,18 +719,18 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                     Auxiliar.canal,
                     configuracionActual,
                     idUsuario);
-            enviaConfiguracion(false);
+            //enviaConfiguracion(false);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    /**
+    /*/**
      * Método para activar o desactivar la característica de los canales en el servidor.
      *
      * @param canalesActivos True si se desea activar o false si se desea darse de baja.
      */
-    private void enviaConfiguracion(boolean canalesActivos) {
+    /*private void enviaConfiguracion(boolean canalesActivos) {
         try {
             JSONObject peticion = new JSONObject();
             peticion.put(Auxiliar.idUsuario, idUsuario);
@@ -692,5 +764,5 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         } catch (Exception e){
             e.printStackTrace();
         }
-    }
+    }*/
 }

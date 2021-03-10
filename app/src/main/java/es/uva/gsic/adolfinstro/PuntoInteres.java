@@ -479,10 +479,27 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
         try {
             if (tareas != null && tareas.length() > 0 && tareas.getJSONObject(0).getString(Auxiliar.contexto).equals(lugar.getString(Auxiliar.contexto))) {
                 String idUsuario;
+                //boolean canalesActivos;
                 try{
                     idUsuario = PersistenciaDatos.recuperaTarea(
-                            getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id).getString(Auxiliar.uid);
+                            getApplication(),
+                            PersistenciaDatos.ficheroUsuario,
+                            Auxiliar.id)
+                            .getString(Auxiliar.uid);
+
+                    /*JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
+                            getApplication(),
+                            PersistenciaDatos.ficheroListaCanales,
+                            Auxiliar.canal,
+                            Auxiliar.configuracionActual,
+                            idUsuario);
+
+                    if (confCanales != null && confCanales.has(Auxiliar.caracteristica))
+                        canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
+                    else
+                        canalesActivos = false;*/
                 }catch (Exception e){
+                    //canalesActivos = false;
                     idUsuario = null;
                 }
                 List<String> listaId = Auxiliar.getListaTareasCompletadas(getApplication(), idUsuario);
@@ -490,6 +507,7 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                 JSONObject jo;
                 String uriFondo;
                 String id;
+                //String listaCanales;
                 for (int i = 0; i < tareas.length(); i++) {
                     try {
                         jo = tareas.getJSONObject(i);
@@ -498,9 +516,17 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                         } catch (Exception e) {
                             uriFondo = null;
                         }
+                        /* if(canalesActivos){
+                            listaCanales = jo.getString(Auxiliar.canal);
+                            if(!listaCanales.equals(""))
+                                listaCanales = listaCanales.replaceAll(";", "\n");
+                        }else{
+                            listaCanales = null;
+                        }*/
                         //Agrego el fichero de donde extraer la tarea
                         jo.put(Auxiliar.ficheroOrigen, PersistenciaDatos.ficheroTareasPersonalizadas);
                         id = jo.getString(Auxiliar.id);
+                        //Por ahora no incluyo los canales en esta pantalla
                         if (listaId.contains(id))
                             tareasPunto.add(new TareasMapaLista(
                                     id,
@@ -508,7 +534,8 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                                     Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
                                     uriFondo,
                                     jo,
-                                    true));
+                                    true,
+                                    null));
                         else
                             tareasPunto.add(new TareasMapaLista(
                                     id,
@@ -516,7 +543,8 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                                     Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
                                     uriFondo,
                                     jo,
-                                    false));
+                                    false,
+                                    null));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

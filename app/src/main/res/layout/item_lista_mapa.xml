@@ -46,24 +46,47 @@
 
     <ImageView
         android:id="@+id/ivItemListaMapa"
-        android:layout_width="0dp"
+        android:layout_width="48dp"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="@id/glListaMapaV1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/glListaMapaH1"
-        android:contentDescription="@string/tipoDeTarea" />
+        android:contentDescription="@string/tipoDeTarea"
+        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/ivItemListaCompletada"
-        android:layout_width="0dp"
+        android:layout_width="48dp"
         android:layout_height="0dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/glListaMapaV2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/glListaMapaH1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivItemListaMapa"
+        app:layout_constraintBottom_toBottomOf="@id/glListaMapaH2"
         android:contentDescription="@string/tareaCompletada"
-        app:srcCompat="@drawable/ic_completada"/>
+        app:srcCompat="@drawable/ic_completada"
+        android:visibility="gone"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierListaMapa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="start"
+        app:constraint_referenced_ids="ivItemListaCompletada, ivItemListaMapa"/>
+
+    <TextView
+        android:id="@+id/tvCanalesItemListaMapa"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textAlignment="gravity"
+        android:gravity="fill_horizontal"
+        android:maxLines="3"
+        android:background="@color/blackTransparente"
+        android:textColor="@color/white"
+        android:paddingHorizontal="5dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/barrierListaMapa"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/tvItemListaMapa"

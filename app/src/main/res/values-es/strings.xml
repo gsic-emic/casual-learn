@@ -247,7 +247,7 @@
     <string name="distancia">Distancia:</string>
     <string name="speaker">Altavóz</string>
     <string name="puntoSinTexto">El punto de interés aún no dispone de descripción…</string>
-    <string name="desarrolladores_nombres"><![CDATA[<p><b>Adolfo Ruiz Calleja</b><br>adolfo@gsic.uva.es</p><p><b>Pablo García Zarza</b><br>pablogz@gsic.uva.es</p>]]></string>
+    <string name="desarrolladores_nombres"><![CDATA[<p><b>Pablo García Zarza</b><br>pablogz@gsic.uva.es</p><p><b>Adolfo Ruiz Calleja</b><br>adolfo@gsic.uva.es</p>]]></string>
     <string name="aun_no_disponible">La opción aún no está disponible. Vuelva a intentarlo en unos minutos.</string>
     <string name="texto_peticion_ubicacion_siempre">Para poder recomendarte lugares de interés cercanos, Casual Learn necesita conocer tu posición incluso cuando se encuentre en segundo plano.\n\n\nCasual Learn solo recoge tu posición con la aplicación cerrada cuando vence el temporizador de notificaciones, configurable desde los ajustes de la aplicación. Cuando te recomiende un lugar de interés dejará de obtener tu posición hasta que vuelva a vencer el temporizador.</string>
     <string name="uso_posicion">Posición en segundo plano</string>
@@ -277,7 +277,6 @@
     <string name="las">las</string>
     <string name="los">los</string>
     <string name="noTTS">No tienes instalado \«Síntesis de voz de Google\» para escuchar los textos</string>
-<<<<<<< HEAD
     <string name="canales">Canales</string>
     <string name="confCanales">Configuración de los canales</string>
     <string name="descripcionConfCanales">Activa la característica de canales y selecciona tus suscripciones favoritas</string>
@@ -285,6 +284,4 @@
     <string name="seleccionaMarcador">Selecciona un marcador para este canal</string>
     <string name="buscaCanales">Busca canales por nombre</string>
     <string name="update_channel_list">Actualizar la lista de canales</string>
-=======
->>>>>>> hotfix/compartirId
 </resources>

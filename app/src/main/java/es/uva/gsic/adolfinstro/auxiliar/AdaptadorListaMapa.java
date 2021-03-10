@@ -2,11 +2,9 @@ package es.uva.gsic.adolfinstro.auxiliar;
 
 import android.content.Context;
 import android.os.Build;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -34,7 +32,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
      * Subclase con el que establezco los items que van a componer cada objeto
      */
     public static class ViewHolderMapa extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView tvTitulo;
+        TextView tvTitulo, tvCanales;
         ImageView ivTipoTarea, ivFondo, ivCompletada;
         ConstraintLayout constraintLayout;
 
@@ -45,6 +43,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
         ViewHolderMapa(@NonNull View itemView){
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvItemListaMapa);
+            tvCanales = itemView.findViewById(R.id.tvCanalesItemListaMapa);
             ivTipoTarea = itemView.findViewById(R.id.ivItemListaMapa);
             ivCompletada = itemView.findViewById(R.id.ivItemListaCompletada);
             ivFondo = itemView.findViewById(R.id.ivFondoListaMapa);
@@ -113,20 +112,23 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                         .into(holder.ivFondo);
             holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(
                     context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
-        }
-        else {
+            holder.ivTipoTarea.setVisibility(View.VISIBLE);
+        } else {
             holder.ivFondo.setImageDrawable(ResourcesCompat.getDrawable(
                     context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
-            holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(
-                    context.getResources() , android.R.color.transparent, null));
+            /*holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(
+                    context.getResources() , android.R.color.transparent, null));*/
+            holder.ivTipoTarea.setVisibility(View.GONE);
         }
         if(lista.get(position).getCompletada()){
             holder.ivCompletada.setVisibility(View.VISIBLE);
         }else{
-            holder.ivCompletada.setVisibility(View.INVISIBLE);
+            holder.ivCompletada.setVisibility(View.GONE);
         }
         try{
-            switch (lista.get(position).getTarea().getString(Auxiliar.creadoPor)){
+            holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                    context.getResources(), R.drawable.boton_secundario, null));
+            /*switch (lista.get(position).getTarea().getString(Auxiliar.creadoPor)){
                 case Auxiliar.creadorInvestigadores:
                     holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
                             context.getResources(), R.drawable.boton_secundario, null));
@@ -151,6 +153,12 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                     holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
                             context.getResources(), R.drawable.fondo_especial, null));
                     break;
+            }*/
+            if(lista.get(position).getCanales() != null && !lista.get(position).getCanales().trim().equals("")){
+                holder.tvCanales.setText(lista.get(position).getCanales());
+                holder.tvCanales.setVisibility(View.VISIBLE);
+            } else {
+                holder.tvCanales.setVisibility(View.GONE);
             }
         }catch (Exception e){
             e.printStackTrace();

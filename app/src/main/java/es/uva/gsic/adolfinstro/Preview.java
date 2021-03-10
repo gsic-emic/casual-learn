@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.core.view.GravityCompat;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
@@ -26,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -46,6 +48,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.osmdroid.api.IMapController;
@@ -59,7 +62,6 @@ import org.osmdroid.views.overlay.Marker;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -111,6 +113,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
     private TextToSpeech textToSpeech;
 
     private String textoParaSpeaker;
+
+    private Dialog dialogoCanales;
 
     /**
      * Se crea la vista de la interfaz de usuario.
@@ -727,27 +731,90 @@ public class Preview extends AppCompatActivity implements LocationListener {
         try {
             menuItem.setIcon(Auxiliar.iconoTipoTareaLista(tarea.getString(Auxiliar.tipoRespuesta)));
         }catch (Exception e){
-            menuItem.setIcon(R.drawable.ic_marcador_uno);
+            menuItem.setVisible(false);
+        }
+        menuItem = menu.findItem(R.id.channelsPreview);
+        try{
+            JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    Auxiliar.configuracionActual,
+                    idUsuario);
+            boolean canalesActivos;
+            if (confCanales != null && confCanales.has(Auxiliar.caracteristica))
+                canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
+            else
+                canalesActivos = false;
+            if(canalesActivos){
+                if(tarea.has(Auxiliar.canal)){
+                    String[] idsCanales = tarea.getString(Auxiliar.canal).split(";");
+                    JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
+                    JSONObject canal;
+                    StringBuilder salida = new StringBuilder();
+                    salida.append("");
+                    if(idsCanales.length > 0) {
+                        for(int j = 0; j < listaCanales.length(); j++){
+                            canal = listaCanales.getJSONObject(j);
+                            for(String iC : idsCanales){
+                                if(canal.getString(Auxiliar.canal).equals(iC)) {
+                                    if(!salida.toString().equals(""))
+                                        salida.append("\n\n").append(canal.getString(Auxiliar.label));
+                                    else
+                                        salida.append(canal.getString(Auxiliar.label));
+                                    break;
+                                }
+                            }
+                        }
+                        if(!salida.toString().trim().equals("")){
+                            dialogoCanales = new Dialog(this);
+                            dialogoCanales.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                            dialogoCanales.setContentView(R.layout.dialogo_desarrolladores);
+                            dialogoCanales.setCancelable(true);
+                            TextView textView = dialogoCanales.findViewById(R.id.tvTituloDesarrolladores);
+                            textView.setText(getResources().getString(R.string.canales));
+                            textView = dialogoCanales.findViewById(R.id.tvEspacioDesarrolladores);
+                            textView.setText(salida.toString());
+                            textView.setGravity(GravityCompat.START);
+                        } else
+                            menuItem.setVisible(false);
+                    } else
+                        menuItem.setVisible(false);
+                } else
+                    menuItem.setVisible(false);
+            } else
+                menuItem.setVisible(false);
+        }catch (Exception e){
+            menuItem.setVisible(false);
         }
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NotNull MenuItem item){
-        if (item.getItemId() == R.id.iPreview) {
-            try {
-                Toast.makeText(
-                        context,
-                        Auxiliar.textoTipoTarea(
-                                this,
-                                tarea.getString(Auxiliar.tipoRespuesta)),
-                        Toast.LENGTH_SHORT).show();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return true;
+        switch (item.getItemId()){
+            case R.id.iPreview:
+                try {
+                    Toast.makeText(
+                            context,
+                            Auxiliar.textoTipoTarea(
+                                    this,
+                                    tarea.getString(Auxiliar.tipoRespuesta)),
+                            Toast.LENGTH_SHORT).show();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            case R.id.channelsPreview:
+                try {
+                    dialogoCanales.show();
+                } catch (Exception e) {
+                    item.setVisible(false);
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -868,18 +935,18 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
 
         if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
-            final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+            final TextView tituloPermisos = dialogoPermisos.findViewById(R.id.tvTituloPermisos);
             tituloPermisos.setVisibility(View.GONE);
-            final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+            final TextView textoPermiso = dialogoPermisos.findViewById(R.id.tvTextoPermisos);
             textoPermiso.setText(Html.fromHtml(textoPermisos));
-            Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+            Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
             salir.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     finishAffinity();
                 }
             });
-            final Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+            final Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
             siguiente.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -900,17 +967,17 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 }
             });
         } else{
-            TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
+            TextView textView = dialogoPermisos.findViewById(R.id.tvTituloPermisos);
             if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
                 textView.setVisibility(View.VISIBLE);
-                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
                 salir.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         finishAffinity();
                     }
                 });
-                Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
                 siguiente.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -925,16 +992,16 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 });
             }else {//Solo muestro el normal
                 textView.setVisibility(View.GONE);
-                textView = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
+                textView = dialogoPermisos.findViewById(R.id.tvTextoPermisos);
                 textView.setText(Html.fromHtml(textoPermisos));
-                Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
+                Button salir = dialogoPermisos.findViewById(R.id.btSalirPermisos);
                 salir.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         finishAffinity();
                     }
                 });
-                Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
+                Button siguiente = dialogoPermisos.findViewById(R.id.btSiguientePermisos);
                 siguiente.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

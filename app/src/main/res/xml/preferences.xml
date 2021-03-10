@@ -23,7 +23,8 @@
             android:key="confCanales"
             app:title="@string/confCanales"
             app:summary="@string/descripcionConfCanales"
-            app:enabled="false" />
+            app:enabled="false"
+            android:icon="@drawable/ic_iconocanales"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:title="@string/titulo_compartir_preferencias">

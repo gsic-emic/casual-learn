@@ -139,8 +139,6 @@
     <string name="palabraClave">Hashtag</string>
     <string name="descripcionPalabraClave">Customize the hashtag with which the tasks will be published on Twitter</string>
     <string name="fuentesInformacion" translatable="false">Fuentes de información</string>
-    <string name="pablo" translatable="false"><b>Pablo García Zarza</b>\npablogz@gsic.uva.es\n</string>
-    <string name="adolfo" translatable="false"><b>Adolfo Ruiz Calleja</b>\nadolfo@gsic.uva.es\n</string>
     <string name="urlgsic" translatable="false">https://www.gsic.uva.es</string>
     <string name="urluva" translatable="false">https://www.uva.es/export/sites/uva/</string>
     <string name="urlBienesJunta" translatable="false">https://datosabiertos.jcyl.es/web/jcyl/set/es/cultura-ocio/bienes-inmuebles/1284872768044</string>
@@ -308,7 +306,6 @@
     <string name="las">the</string>
     <string name="los">the</string>
     <string name="noTTS">You don\'t have \"Google Text-to-Speech\" instaled to listen the texts</string>
-<<<<<<< HEAD
     <string name="canales">Channels</string>
     <string name="confCanales">Configuration of channels</string>
     <string name="descripcionConfCanales">Select your favorite subscriptions</string>
@@ -316,6 +313,4 @@
     <string name="seleccionaMarcador">Select a marker for this channel</string>
     <string name="buscaCanales">Search channels by name</string>
     <string name="update_channel_list">Update channel list</string>
-=======
->>>>>>> hotfix/compartirId
 </resources>

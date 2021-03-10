@@ -1,5 +1,7 @@
 package es.uva.gsic.adolfinstro.auxiliar;
 
+import androidx.annotation.Nullable;
+
 import org.json.JSONObject;
 
 /**
@@ -9,7 +11,7 @@ import org.json.JSONObject;
  * @version 20200914
  */
 public class TareasMapaLista {
-    private String id, titulo, tipoTarea, uriFondo;
+    private String id, titulo, tipoTarea, uriFondo, listaCanales;
     private JSONObject tarea;
     private boolean completada;
 
@@ -26,13 +28,15 @@ public class TareasMapaLista {
                            String tipoTarea,
                            String uriFondo,
                            JSONObject tarea,
-                           boolean completada){
+                           boolean completada,
+                           @Nullable String listaCanales){
         setId(id);
         setTitulo(titulo);
         setTipoTarea(tipoTarea);
         setUriFondo(uriFondo);
         setTarea(tarea);
         this.completada = completada;
+        setListaCanales(listaCanales);
     }
 
     /**
@@ -117,5 +121,13 @@ public class TareasMapaLista {
 
     public boolean getCompletada() {
         return completada;
+    }
+
+    private void setListaCanales(String listaCanales) {
+        this.listaCanales = listaCanales;
+    }
+
+    public String getCanales() {
+        return listaCanales;
     }
 }

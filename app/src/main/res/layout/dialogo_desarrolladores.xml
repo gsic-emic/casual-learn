@@ -25,10 +25,10 @@
             android:id="@+id/tvEspacioDesarrolladores"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAlignment="center"
-            android:paddingTop="30dp"
-            android:paddingHorizontal="@dimen/margen_texto"/>
-
+            android:textAlignment="gravity"
+            android:gravity="center"
+            android:paddingVertical="30dp"
+            android:paddingHorizontal="@dimen/margen_texto" />
     </ScrollView>
 </LinearLayout>
 
