@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * Clase para controlar la interacción del usuario frente al navegador interno
  * @author pablo
- * @version 20200727
+ * @version 20210311
  */
 public abstract class ClienteWeb extends WebViewClient {
 
@@ -22,8 +22,14 @@ public abstract class ClienteWeb extends WebViewClient {
      */
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        if(Objects.requireNonNull(Uri.parse(url).getScheme()).toLowerCase().equals("https"))
-            return false;
+        if(Objects.requireNonNull(Uri.parse(url).getScheme()).toLowerCase().equals("https")){
+            if(url.toLowerCase().contains("youtube") || url.toLowerCase().contains("youtu.be")){
+                navegadorExterno();
+                return true;
+            }else{
+                return false;
+            }
+        }
         else {
             navegadorExterno();
             return true;
