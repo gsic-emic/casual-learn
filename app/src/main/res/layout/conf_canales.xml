@@ -19,7 +19,90 @@
         app:switchPadding="@dimen/margen_texto"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="visible"
+        android:onClick="boton"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guiaConfCanales"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guiaConfCanalesH"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.3" />
+
+    <TextView
+        android:id="@+id/tvObligatoriosCanales"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/canales_obligatorios"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/guiaConfCanales"
+        app:layout_constraintTop_toBottomOf="@id/scActivarCanales"
+        app:layout_constraintBottom_toBottomOf="@id/barrierConfCanales0"
+        android:paddingHorizontal="@dimen/margen_texto"
+        android:textAlignment="gravity"
+        android:gravity="center"
+        android:textSize="15sp"
+        android:paddingVertical="5dp"
+        android:visibility="gone"
+        android:onClick="boton"/>
+
+    <TextView
+        android:id="@+id/tvOpcionalesCanales"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/canales_opcionales"
+        app:layout_constraintStart_toStartOf="@id/guiaConfCanales"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scActivarCanales"
+        app:layout_constraintBottom_toBottomOf="@id/barrierConfCanales0"
+        android:paddingHorizontal="@dimen/margen_texto"
+        android:textAlignment="gravity"
+        android:gravity="center"
+        android:textSize="15sp"
+        android:paddingVertical="5dp"
+        android:visibility="gone"
+        android:onClick="boton"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierConfCanales0"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvObligatoriosCanales, tvOpcionalesCanales"/>
+
+    <ImageView
+        android:id="@+id/ivObligatorioConfCanales"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="5dp"
+        app:srcCompat="@drawable/ic_marcador100"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/guiaConfCanales"
+        app:layout_constraintTop_toBottomOf="@id/barrierConfCanales0"
+        app:layout_constraintBottom_toBottomOf="@id/guiaConfCanalesH"
+        android:visibility="gone"
+        android:onClick="boton"/>
+
+    <ImageView
+        android:id="@+id/ivOpcionalConfCanales"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="5dp"
+        app:srcCompat="@drawable/ic_marcador100_especial3"
+        app:layout_constraintStart_toStartOf="@id/guiaConfCanales"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrierConfCanales0"
+        app:layout_constraintBottom_toBottomOf="@id/guiaConfCanalesH"
+        android:visibility="gone"
+        android:onClick="boton"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCanales"
@@ -27,7 +110,7 @@
         android:layout_height="0dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scActivarCanales"
+        app:layout_constraintTop_toBottomOf="@id/guiaConfCanalesH"
         app:layout_constraintBottom_toBottomOf="parent"
         android:visibility="gone"/>
 

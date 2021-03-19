@@ -6,8 +6,8 @@
         android:title="@string/iconoTareaPreview"
         android:contentDescription="@string/iconoTareaPreview"
         app:showAsAction="always" />
-    <item android:id="@+id/channelsPreview"
+    <!--<item android:id="@+id/channelsPreview"
         android:icon="@drawable/ic_iconocanalesblanco"
         android:title="@string/canales"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" />-->
 </menu>

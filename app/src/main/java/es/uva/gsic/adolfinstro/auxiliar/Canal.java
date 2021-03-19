@@ -22,8 +22,6 @@ public class Canal {
     private String tipo;
     /** Indica si el usuario está suscrito al canal o no */
     private boolean marcado;
-    /** Indica el marcador del canal */
-    private int marcador;
 
     /**
      *
@@ -45,26 +43,13 @@ public class Canal {
      * @param marcado Indica si el canal está seleccionado
      */
     public Canal(String id, String titulo, String descripcion, String tipo, boolean marcado) {
-        this(id, titulo, descripcion, tipo, marcado, -1);
-    }
-
-    /**
-     *
-     * @param id Identificador del canal
-     * @param titulo Título del canal
-     * @param descripcion Descripción del canal
-     * @param tipo Opcional o  obligatorio
-     * @param marcado Indica si el canal está seleccionado
-     * @param marcador Marcador que se va a utilizar
-     */
-    public Canal(String id, String titulo, String descripcion, String tipo, boolean marcado, int marcador) {
         setId(id);
         setTitulo(titulo);
         setDescripcion(descripcion);
         setTipo(tipo);
         setMarcado(marcado);
-        setMarcador(marcador);
     }
+
 
     public String getId() {
         return id;
@@ -107,13 +92,5 @@ public class Canal {
 
     public void setMarcado(boolean marcado) {
         this.marcado = (getTipo().equals(obligatorio)) || marcado;
-    }
-
-    public int getMarcador() {
-        return marcador;
-    }
-
-    public void setMarcador(int marcador) {
-        this.marcador = marcador;
     }
 }

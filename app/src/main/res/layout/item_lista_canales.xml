@@ -25,14 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.1"/>
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guia80Canales"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.8"/>
+        app:layout_constraintGuide_percent="0.15"/>
 
     <TextView
         android:id="@+id/tituloItemCanal"
@@ -44,7 +37,7 @@
         android:textSize="@dimen/tama_titulo"
         android:paddingHorizontal="@dimen/margen_texto"
         app:layout_constraintStart_toStartOf="@id/guia10Canales"
-        app:layout_constraintEnd_toStartOf="@id/marcadorItemCanal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -56,18 +49,7 @@
         android:gravity="center_vertical"
         android:paddingHorizontal="@dimen/margen_texto"
         app:layout_constraintStart_toStartOf="@id/guia10Canales"
-        app:layout_constraintEnd_toStartOf="@id/marcadorItemCanal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tituloItemCanal"
         app:layout_constraintBottom_toBottomOf="parent"/>
-
-    <ImageView
-        android:id="@+id/marcadorItemCanal"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        app:layout_constraintStart_toStartOf="@id/guia80Canales"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/descripcionItemCanal"
-        android:visibility="gone"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

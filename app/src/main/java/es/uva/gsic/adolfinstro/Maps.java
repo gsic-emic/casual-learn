@@ -1315,6 +1315,17 @@ public class Maps extends AppCompatActivity implements
         StringBuilder salida;
         JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
         JSONObject canal;
+        boolean opcional;
+        canal = PersistenciaDatos.recuperaObjeto(getApplication(), PersistenciaDatos.ficheroListaCanales, Auxiliar.canal, Auxiliar.configuracionActual, idUsuario);
+        Integer icono;
+        try {
+            if (canal.has(Canal.opcional))
+                icono = Auxiliar.obtenIdMarcadores()[canal.getInt(Canal.opcional)];
+            else
+                icono = null;
+        }catch (Exception e){
+            icono = null;
+        }
         for (int i = 0; i < tareas.length(); i++) {
             try {//agrego al marcador sus tareas. Dentro está el JSON completo para cuando el usuario decida realizar una de ellas
                 jo = tareas.getJSONObject(i);
@@ -1325,6 +1336,7 @@ public class Maps extends AppCompatActivity implements
                 } catch (Exception e) {
                     uriFondo = null;
                 }
+                opcional = false;
                 if(canalesActivos){
                     idsCanales = jo.getString(Auxiliar.canal).split(";");
                     if(idsCanales.length > 0) {
@@ -1332,6 +1344,8 @@ public class Maps extends AppCompatActivity implements
                             canal = listaCanales.getJSONObject(j);
                             for(String iC : idsCanales){
                                 if(canal.getString(Auxiliar.canal).equals(iC)) {
+                                    if(canal.has(Auxiliar.tipo) && canal.getString(Auxiliar.tipo).equals(Canal.opcional))
+                                        opcional = true;
                                     if(!salida.toString().equals(""))
                                         salida.append("\n").append(canal.getString(Auxiliar.label));
                                     else
@@ -1354,7 +1368,8 @@ public class Maps extends AppCompatActivity implements
                         uriFondo,
                         jo,
                         listaId.contains(id),
-                        (salida!=null)?salida.toString():null));
+                        (salida!=null)?salida.toString():null,
+                        (opcional)?icono:null));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1803,6 +1818,7 @@ public class Maps extends AppCompatActivity implements
         JSONArray ficheroPuntosInteres, listaCanales = null;
         String idUsuario;
         boolean canalesActivos = false;
+        int marcadorTipoObligatorio = R.drawable.ic_marcador100, marcadorTipoOpcional = R.drawable.ic_marcador100_especial3;
         try {
             idUsuario = PersistenciaDatos.recuperaTarea(
                     getApplication(),
@@ -1829,6 +1845,11 @@ public class Maps extends AppCompatActivity implements
                                 break;
                             }
                         }
+                        if(confCanales.has(Canal.obligatorio))
+                            marcadorTipoObligatorio = confCanales.getInt(Canal.obligatorio);
+
+                        if(confCanales.has(Canal.opcional))
+                            marcadorTipoOpcional = confCanales.getInt(Canal.opcional);
                     }
                 }
             }
@@ -1859,36 +1880,58 @@ public class Maps extends AppCompatActivity implements
                                         }
                                     }
                                 }
-                                boolean iguales = true;
-                                for(int j = 0; j < (lugarCoincidencia.size() - 1) ; j++){
-                                    if(listaCanales.getJSONObject(lugarCoincidencia.get(j)).getInt(Auxiliar.marcador)
-                                            != listaCanales.getJSONObject(lugarCoincidencia.get(j+1)).getInt(Auxiliar.marcador)){
-                                        iguales = false;
+                                int tipoMarcador = marcadorTipoObligatorio;
+                                for(int j = 0; j < lugarCoincidencia.size() ; j++){
+                                    if(listaCanales.getJSONObject(lugarCoincidencia.get(j)).getString(Auxiliar.tipo).equals(Canal.opcional)){
+                                        tipoMarcador = marcadorTipoOpcional;
                                         break;
                                     }
                                 }
-                                if(iguales){
-                                    switch (listaCanales.getJSONObject(lugarCoincidencia.get(0)).getInt(Auxiliar.marcador)){
-                                        case 0:
+                                switch (tipoMarcador){
+                                    case 1:
+                                        M1.put(puntoInteres);
+                                        break;
+                                    case 2:
+                                        M2.put(puntoInteres);
+                                        break;
+                                    case 3:
+                                        M3.put(puntoInteres);
+                                        break;
+                                    case 4:
+                                        M4.put(puntoInteres);
+                                        break;
+                                    case 5:
+                                        M5.put(puntoInteres);
+                                        break;
+                                    default:
+                                        M0.put(puntoInteres);
+                                }
+                                /*if(iguales){
+                                    int variable = (listaCanales.getJSONObject(lugarCoincidencia.get(0))
+                                            .getString(Auxiliar.tipo).equals(Canal.obligatorio)) ?
+                                            marcadorTipoObligatorio :
+                                            marcadorTipoOpcional;
+                                    switch (variable){
+                                        case 1:
                                             M1.put(puntoInteres);
                                             break;
-                                        case 1:
+                                        case 2:
                                             M2.put(puntoInteres);
                                             break;
-                                        case 2:
+                                        case 3:
                                             M3.put(puntoInteres);
                                             break;
-                                        case 3:
+                                        case 4:
                                             M4.put(puntoInteres);
                                             break;
-                                        case 4:
+                                        case 5:
                                             M5.put(puntoInteres);
                                             break;
                                         default:
                                             M0.put(puntoInteres);
                                     }
                                 }else
-                                    M6.put(puntoInteres);
+                                    M6.put(puntoInteres);*/
 
                             } else
                                 M0.put(puntoInteres);

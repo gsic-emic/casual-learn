@@ -32,8 +32,8 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
      * Subclase con el que establezco los items que van a componer cada objeto
      */
     public static class ViewHolderMapa extends RecyclerView.ViewHolder implements View.OnClickListener {
-        TextView tvTitulo, tvCanales;
-        ImageView ivTipoTarea, ivFondo, ivCompletada;
+        TextView tvTitulo;
+        ImageView ivTipoTarea, ivFondo, ivCompletada, ivMarcadorCanal;
         ConstraintLayout constraintLayout;
 
         /**
@@ -43,7 +43,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
         ViewHolderMapa(@NonNull View itemView){
             super(itemView);
             tvTitulo = itemView.findViewById(R.id.tvItemListaMapa);
-            tvCanales = itemView.findViewById(R.id.tvCanalesItemListaMapa);
+            ivMarcadorCanal = itemView.findViewById(R.id.ivItemMarcadorListaMapa);
             ivTipoTarea = itemView.findViewById(R.id.ivItemListaMapa);
             ivCompletada = itemView.findViewById(R.id.ivItemListaCompletada);
             ivFondo = itemView.findViewById(R.id.ivFondoListaMapa);
@@ -116,8 +116,6 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
         } else {
             holder.ivFondo.setImageDrawable(ResourcesCompat.getDrawable(
                     context.getResources(), Auxiliar.iconoTipoTarea(lista.get(position).getTipoTarea()), null));
-            /*holder.ivTipoTarea.setImageDrawable(ResourcesCompat.getDrawable(
-                    context.getResources() , android.R.color.transparent, null));*/
             holder.ivTipoTarea.setVisibility(View.GONE);
         }
         if(lista.get(position).getCompletada()){
@@ -128,38 +126,21 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
         try{
             holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
                     context.getResources(), R.drawable.boton_secundario, null));
-            /*switch (lista.get(position).getTarea().getString(Auxiliar.creadoPor)){
-                case Auxiliar.creadorInvestigadores:
-                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                            context.getResources(), R.drawable.boton_secundario, null));
-                    break;
-                case Auxiliar.r1:
-                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                            context.getResources(), R.drawable.fondo_especial1, null));
-                    break;
-                case Auxiliar.r2:
-                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                            context.getResources(), R.drawable.fondo_especial2, null));
-                    break;
-                case Auxiliar.r3:
-                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                            context.getResources(), R.drawable.fondo_especial3, null));
-                    break;
-                case Auxiliar.r4:
-                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                            context.getResources(), R.drawable.fondo_especial4, null));
-                    break;
-                default:
-                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
-                            context.getResources(), R.drawable.fondo_especial, null));
-                    break;
-            }*/
-            if(lista.get(position).getCanales() != null && !lista.get(position).getCanales().trim().equals("")){
+            if(lista.get(position).getOpcional() != null){
+                holder.ivMarcadorCanal.setImageDrawable(ResourcesCompat.getDrawable(
+                        context.getResources(), lista.get(position).getOpcional(), null));
+                holder.ivMarcadorCanal.setVisibility(View.VISIBLE);
+            }else{
+                holder.ivMarcadorCanal.setVisibility(View.GONE);
+            }
+
+            //Aqui lo de los canales
+            /*if(lista.get(position).getCanales() != null && !lista.get(position).getCanales().trim().equals("")){
                 holder.tvCanales.setText(lista.get(position).getCanales());
                 holder.tvCanales.setVisibility(View.VISIBLE);
             } else {
                 holder.tvCanales.setVisibility(View.GONE);
-            }
+            }*/
         }catch (Exception e){
             e.printStackTrace();
         }

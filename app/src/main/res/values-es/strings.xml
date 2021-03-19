@@ -280,8 +280,12 @@
     <string name="canales">Canales</string>
     <string name="confCanales">Configuración de los canales</string>
     <string name="descripcionConfCanales">Activa la característica de canales y selecciona tus suscripciones favoritas</string>
-    <string name="activarCanales">Activar la característica de canales y descargar la lista de canales</string>
+    <string name="activarCanales">Activar la característica de canales</string>
     <string name="seleccionaMarcador">Selecciona un marcador para este canal</string>
     <string name="buscaCanales">Busca canales por nombre</string>
     <string name="update_channel_list">Actualizar la lista de canales</string>
+    <string name="pulsa_lista_canales">Pulsa para ver la lista de canales de la tarea</string>
+    <string name="canales_opcionales">Canales opcionales</string>
+    <string name="canales_obligatorios">Canales obligatorios</string>
+    <string name="desactivarCanales">Desactivar canales</string>
 </resources>

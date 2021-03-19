@@ -527,24 +527,15 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                         jo.put(Auxiliar.ficheroOrigen, PersistenciaDatos.ficheroTareasPersonalizadas);
                         id = jo.getString(Auxiliar.id);
                         //Por ahora no incluyo los canales en esta pantalla
-                        if (listaId.contains(id))
-                            tareasPunto.add(new TareasMapaLista(
-                                    id,
-                                    Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
-                                    Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                                    uriFondo,
-                                    jo,
-                                    true,
-                                    null));
-                        else
-                            tareasPunto.add(new TareasMapaLista(
-                                    id,
-                                    Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
-                                    Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
-                                    uriFondo,
-                                    jo,
-                                    false,
-                                    null));
+                        tareasPunto.add(new TareasMapaLista(
+                                id,
+                                Auxiliar.quitaEnlaces(jo.getString(Auxiliar.recursoAsociadoTexto)).replace("<br>", ""),
+                                Auxiliar.ultimaParte(jo.getString(Auxiliar.tipoRespuesta)),
+                                uriFondo,
+                                jo,
+                                listaId.contains(id),
+                                null,
+                                null));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

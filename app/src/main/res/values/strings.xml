@@ -309,8 +309,12 @@
     <string name="canales">Channels</string>
     <string name="confCanales">Configuration of channels</string>
     <string name="descripcionConfCanales">Select your favorite subscriptions</string>
-    <string name="activarCanales">Enable channels and get the list of existing ones</string>
+    <string name="activarCanales">Enable channels</string>
     <string name="seleccionaMarcador">Select a marker for this channel</string>
     <string name="buscaCanales">Search channels by name</string>
     <string name="update_channel_list">Update channel list</string>
+    <string name="pulsa_lista_canales">Click to see the list of channels of this task</string>
+    <string name="canales_opcionales">Optional channels</string>
+    <string name="canales_obligatorios">Obligatory channels</string>
+    <string name="desactivarCanales">Disable channels</string>
 </resources>

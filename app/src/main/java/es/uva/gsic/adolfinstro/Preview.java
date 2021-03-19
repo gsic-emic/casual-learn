@@ -116,6 +116,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     private Dialog dialogoCanales;
 
+    private boolean canalesActivos;
+
+
     /**
      * Se crea la vista de la interfaz de usuario.
      *
@@ -174,6 +177,75 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     idUsuario);
         } catch (Exception e){
             tareaCompletada = null;
+        }
+
+        TextView tvCanales = findViewById(R.id.canalesPreview);
+        canalesActivos = false;
+        try{
+            JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
+                    getApplication(),
+                    PersistenciaDatos.ficheroListaCanales,
+                    Auxiliar.canal,
+                    Auxiliar.configuracionActual,
+                    idUsuario);
+            if (confCanales != null && confCanales.has(Auxiliar.caracteristica))
+                canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
+            else
+                canalesActivos = false;
+            if(canalesActivos){
+                if(tarea.has(Auxiliar.canal)){
+                    String[] idsCanales = tarea.getString(Auxiliar.canal).split(";");
+                    JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
+                    JSONObject canal;
+                    StringBuilder salida = new StringBuilder();
+                    salida.append("");
+                    if(idsCanales.length > 0) {
+                        if(idsCanales.length == 1){
+                            for (int j = 0; j < listaCanales.length(); j++) {
+                                canal = listaCanales.getJSONObject(j);
+                                if (canal.getString(Auxiliar.canal).equals(idsCanales[0])) {
+                                    tvCanales.setText(canal.getString(Auxiliar.label));
+                                    break;
+                                }
+
+                            }
+                            tvCanales.setVisibility(View.VISIBLE);
+                        }else {
+                            for (int j = 0; j < listaCanales.length(); j++) {
+                                canal = listaCanales.getJSONObject(j);
+                                for (String iC : idsCanales) {
+                                    if (canal.getString(Auxiliar.canal).equals(iC)) {
+                                        if (!salida.toString().equals(""))
+                                            salida.append("\n\n").append(canal.getString(Auxiliar.label));
+                                        else
+                                            salida.append(canal.getString(Auxiliar.label));
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!salida.toString().trim().equals("")) {
+                                dialogoCanales = new Dialog(this);
+                                dialogoCanales.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                                dialogoCanales.setContentView(R.layout.dialogo_desarrolladores);
+                                dialogoCanales.setCancelable(true);
+                                TextView textView = dialogoCanales.findViewById(R.id.tvTituloDesarrolladores);
+                                textView.setText(getResources().getString(R.string.canales));
+                                textView = dialogoCanales.findViewById(R.id.tvEspacioDesarrolladores);
+                                textView.setText(salida.toString());
+                                textView.setGravity(GravityCompat.START);
+                                tvCanales.setText(getResources().getString(R.string.pulsa_lista_canales));
+                                tvCanales.setVisibility(View.VISIBLE);
+                            } else
+                                tvCanales.setVisibility(View.GONE);
+                        }
+                    } else
+                        tvCanales.setVisibility(View.GONE);
+                } else
+                    tvCanales.setVisibility(View.GONE);
+            } else
+                tvCanales.setVisibility(View.GONE);
+        }catch (Exception e){
+            tvCanales.setVisibility(View.GONE);
         }
 
         completada = tareaCompletada != null;
@@ -530,8 +602,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
             if(permisos.isEmpty())
                 if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Ajustes.NO_MOLESTAR_pref, false))
                     new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
-            else
-                solicitaPermisoUbicacion();
+                else
+                    solicitaPermisoUbicacion();
         }
     }
 
@@ -583,7 +655,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
         try {
             switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
-                        .getExtras()).getString(Auxiliar.previa))){
+                    .getExtras()).getString(Auxiliar.previa))){
                 case Auxiliar.notificacion:
                     if(idUsuario != null) {
                         Intent intent = new Intent();
@@ -682,6 +754,10 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 case R.id.btAmpliarMapa:
                     saltaNavegacion();
                     break;
+                case R.id.canalesPreview:
+                    if(canalesActivos)
+                        dialogoCanales.show();
+                    break;
                 default:
                     if (idUsuario == null) {
                         snackBarLogin(R.id.clPreview);
@@ -733,60 +809,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }catch (Exception e){
             menuItem.setVisible(false);
         }
-        menuItem = menu.findItem(R.id.channelsPreview);
-        try{
-            JSONObject confCanales = PersistenciaDatos.recuperaObjeto(
-                    getApplication(),
-                    PersistenciaDatos.ficheroListaCanales,
-                    Auxiliar.canal,
-                    Auxiliar.configuracionActual,
-                    idUsuario);
-            boolean canalesActivos;
-            if (confCanales != null && confCanales.has(Auxiliar.caracteristica))
-                canalesActivos = confCanales.getBoolean(Auxiliar.caracteristica);
-            else
-                canalesActivos = false;
-            if(canalesActivos){
-                if(tarea.has(Auxiliar.canal)){
-                    String[] idsCanales = tarea.getString(Auxiliar.canal).split(";");
-                    JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
-                    JSONObject canal;
-                    StringBuilder salida = new StringBuilder();
-                    salida.append("");
-                    if(idsCanales.length > 0) {
-                        for(int j = 0; j < listaCanales.length(); j++){
-                            canal = listaCanales.getJSONObject(j);
-                            for(String iC : idsCanales){
-                                if(canal.getString(Auxiliar.canal).equals(iC)) {
-                                    if(!salida.toString().equals(""))
-                                        salida.append("\n\n").append(canal.getString(Auxiliar.label));
-                                    else
-                                        salida.append(canal.getString(Auxiliar.label));
-                                    break;
-                                }
-                            }
-                        }
-                        if(!salida.toString().trim().equals("")){
-                            dialogoCanales = new Dialog(this);
-                            dialogoCanales.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                            dialogoCanales.setContentView(R.layout.dialogo_desarrolladores);
-                            dialogoCanales.setCancelable(true);
-                            TextView textView = dialogoCanales.findViewById(R.id.tvTituloDesarrolladores);
-                            textView.setText(getResources().getString(R.string.canales));
-                            textView = dialogoCanales.findViewById(R.id.tvEspacioDesarrolladores);
-                            textView.setText(salida.toString());
-                            textView.setGravity(GravityCompat.START);
-                        } else
-                            menuItem.setVisible(false);
-                    } else
-                        menuItem.setVisible(false);
-                } else
-                    menuItem.setVisible(false);
-            } else
-                menuItem.setVisible(false);
-        }catch (Exception e){
-            menuItem.setVisible(false);
-        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -803,13 +825,6 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             Toast.LENGTH_SHORT).show();
                 } catch (JSONException e) {
                     e.printStackTrace();
-                }
-                return true;
-            case R.id.channelsPreview:
-                try {
-                    dialogoCanales.show();
-                } catch (Exception e) {
-                    item.setVisible(false);
                 }
                 return true;
             default:

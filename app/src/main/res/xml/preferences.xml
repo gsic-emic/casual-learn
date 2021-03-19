@@ -37,7 +37,7 @@
             android:title="@string/titulo_id_protafolio"
             android:summary="@string/compartir_id_portafolio"
             android:enabled="false"
-            android:icon="@drawable/ic_share" />
+            android:icon="@drawable/ic_share"/>
         <SwitchPreference
             app:key="portaRetardado"
             app:title="@string/retardo_publicacion"

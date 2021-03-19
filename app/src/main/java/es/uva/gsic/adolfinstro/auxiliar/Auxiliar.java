@@ -1556,4 +1556,10 @@ public class Auxiliar {
             return new ArrayList<>();
         }
     }
+
+    public static int[] obtenIdMarcadores(){
+        return new int[]{R.drawable.ic_marcador100, R.drawable.ic_marcador100_especial,
+                R.drawable.ic_marcador100_especial1, R.drawable.ic_marcador100_especial2,
+                R.drawable.ic_marcador100_especial3, R.drawable.ic_marcador100_especial4};
+    }
 }

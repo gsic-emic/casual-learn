@@ -28,16 +28,14 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
     public static class ViewHolderCanales extends RecyclerView.ViewHolder implements View.OnClickListener {
         CheckBox cbMarcado;
         TextView tvTitulo, tvDescripcion;
-        ImageView ivMarcador;
 
         ViewHolderCanales(@NonNull View view){
             super(view);
             cbMarcado = view.findViewById(R.id.cbItemCanal);
             tvTitulo = view.findViewById(R.id.tituloItemCanal);
             tvDescripcion = view.findViewById(R.id.descripcionItemCanal);
-            ivMarcador = view.findViewById(R.id.marcadorItemCanal);
             cbMarcado.setOnClickListener(this);
-            ivMarcador.setOnClickListener(this);
+            //ivMarcador.setOnClickListener(this);
         }
 
         @Override
@@ -47,10 +45,10 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
                     if(itemClickCbCanal != null)
                         itemClickCbCanal.onItemClickCb(view, getAdapterPosition());
                     break;
-                case R.id.marcadorItemCanal:
+                /*case R.id.marcadorItemCanal:
                     if(itemClickMarcadorCanal != null)
                         itemClickMarcadorCanal.onItemClickMarcador(view, getAdapterPosition());
-                    break;
+                    break;*/
                 default:
                     break;
             }
@@ -61,7 +59,7 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
     private List<Canal> listaCanales;
     private LayoutInflater layoutInflater;
     private static ItemClickCbCanal itemClickCbCanal;
-    private static ItemClickMarcadorCanal itemClickMarcadorCanal;
+    //private static ItemClickMarcadorCanal itemClickMarcadorCanal;
 
     public AdaptadorListaCanales(Context context, List<Canal> listaCanales){
         this.context = context;
@@ -84,7 +82,7 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
         holder.tvTitulo.setText(canal.getTitulo());
         holder.tvDescripcion.setText(canal.getDescripcion());
         int icono;
-        switch (canal.getMarcador()){
+        /*switch (canal.getMarcador()){
             case 0:
                 icono = R.drawable.ic_marcador100_especial;
                 break;
@@ -107,7 +105,7 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
         if(canal.isMarcado())
             holder.ivMarcador.setVisibility(View.VISIBLE);
         else
-            holder.ivMarcador.setVisibility(View.GONE);
+            holder.ivMarcador.setVisibility(View.GONE);*/
     }
 
     @Override
@@ -127,11 +125,11 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
 
     public void setItemClickCbCanal(ItemClickCbCanal iCbCanal){ itemClickCbCanal = iCbCanal; }
 
-    public void setItemClickMarcadorCanal(ItemClickMarcadorCanal iMarcadorCanal){
+    /*public void setItemClickMarcadorCanal(ItemClickMarcadorCanal iMarcadorCanal){
         itemClickMarcadorCanal = iMarcadorCanal;
-    }
+    }*/
 
     public interface ItemClickCbCanal { void onItemClickCb(View view, int position);}
 
-    public interface  ItemClickMarcadorCanal { void onItemClickMarcador(View view, int position); }
+    /*public interface  ItemClickMarcadorCanal { void onItemClickMarcador(View view, int position); }*/
 }

@@ -125,10 +125,28 @@
             android:contentDescription="@string/botonAmpliar"/>
 
         <TextView
+            android:id="@+id/canalesPreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:drawableStartCompat="@drawable/ic_iconocanales"
+            android:drawablePadding="@dimen/margen_texto"
+            android:layout_marginHorizontal="@dimen/margen_texto"
+            android:textAlignment="gravity"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toBottomOf="@id/mapPreview"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="5dp"
+            android:textSize="12sp"
+            android:onClick="boton"
+            android:text="@string/pulsa_lista_canales"
+            android:visibility="gone"/>
+
+        <TextView
             android:id="@+id/textoPreview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/mapPreview"
+            app:layout_constraintTop_toBottomOf="@id/canalesPreview"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="5dp"

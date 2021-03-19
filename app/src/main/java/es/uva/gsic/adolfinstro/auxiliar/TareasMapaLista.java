@@ -14,6 +14,7 @@ public class TareasMapaLista {
     private String id, titulo, tipoTarea, uriFondo, listaCanales;
     private JSONObject tarea;
     private boolean completada;
+    private Integer opcional;
 
     /**
      * Constructor de la tarea que luego se utilizará en la lista de tareas del marcador.
@@ -29,7 +30,8 @@ public class TareasMapaLista {
                            String uriFondo,
                            JSONObject tarea,
                            boolean completada,
-                           @Nullable String listaCanales){
+                           @Nullable String listaCanales,
+                           @Nullable Integer opcional){
         setId(id);
         setTitulo(titulo);
         setTipoTarea(tipoTarea);
@@ -37,6 +39,7 @@ public class TareasMapaLista {
         setTarea(tarea);
         this.completada = completada;
         setListaCanales(listaCanales);
+        setOpcional(opcional);
     }
 
     /**
@@ -129,5 +132,13 @@ public class TareasMapaLista {
 
     public String getCanales() {
         return listaCanales;
+    }
+
+    public Integer getOpcional() {
+        return opcional;
+    }
+
+    public void setOpcional(Integer opcional) {
+        this.opcional = opcional;
     }
 }

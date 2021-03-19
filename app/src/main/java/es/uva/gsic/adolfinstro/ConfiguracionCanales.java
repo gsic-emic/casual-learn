@@ -1,20 +1,31 @@
 package es.uva.gsic.adolfinstro;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.SearchView;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.constraintlayout.widget.Guideline;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,14 +59,17 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * @version 20210223
  */
 public class ConfiguracionCanales extends AppCompatActivity implements
-        View.OnClickListener,
-        AdaptadorListaCanales.ItemClickCbCanal,
-        AdaptadorListaCanales.ItemClickMarcadorCanal {
+        /*View.OnClickListener,*/
+        AdaptadorListaCanales.ItemClickCbCanal/*,
+        AdaptadorListaCanales.ItemClickMarcadorCanal*/ {
 
     /** Switch para activar o desactivar la característica de canales */
     private SwitchCompat scActivado;
     /** Contenedor donde se agregará la información de cada uno de los canales */
     private RecyclerView contenedorLista;
+
+    private TextView tvObligatorios, tvOpcionales;
+    private ImageView ivObligatorios, ivOpcionales;
     /** Contexto */
     private Context context;
     /** Adaptador para controlar el contenido del contenedor */
@@ -80,8 +94,33 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         setContentView(R.layout.conf_canales);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         scActivado = findViewById(R.id.scActivarCanales);
-        scActivado.setOnClickListener(this);
+        //scActivado.setOnClickListener(this);
+        tvObligatorios = findViewById(R.id.tvObligatoriosCanales);
+        tvOpcionales = findViewById(R.id.tvOpcionalesCanales);
+        ivObligatorios = findViewById(R.id.ivObligatorioConfCanales);
+        ivOpcionales = findViewById(R.id.ivOpcionalConfCanales);
+        final Guideline guia = findViewById(R.id.guiaConfCanalesH);
         contenedorLista = findViewById(R.id.rvCanales);
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            contenedorLista.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    switch (newState) {
+                        case RecyclerView.SCROLL_STATE_IDLE:
+                            if (!recyclerView.canScrollVertically(-1))
+                                guia.setGuidelinePercent(0.3f);
+                            break;
+                        case RecyclerView.SCROLL_STATE_DRAGGING:
+                            if (recyclerView.canScrollVertically(1))
+                                guia.setGuidelinePercent(0.15f);
+                            break;
+                        default:
+                            break;
+                    }
+                    super.onScrollStateChanged(recyclerView, newState);
+                }
+            });
+        }
         context = getApplicationContext();
         dialogoMarcadores = new Dialog(ConfiguracionCanales.this);
         dialogoMarcadores.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -115,7 +154,8 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                 if (configuracionActual != null
                         && configuracionActual.has(Auxiliar.caracteristica)
                         && configuracionActual.getBoolean(Auxiliar.caracteristica)) {
-                    scActivado.setChecked(true);
+                    //scActivado.setChecked(true);
+                    muestraConfMarcadores();
                     if(configuracionActual.has(Auxiliar.instante)
                             && configuracionActual.getLong(Auxiliar.instante) < System.currentTimeMillis())
                         obtenerListaCanales();
@@ -127,6 +167,8 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             } catch (Exception e){
                 e.printStackTrace();
             }
+        } else {
+            scActivado.setVisibility(View.GONE);
         }
     }
 
@@ -140,11 +182,47 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             contenedorLista.setLayoutManager(new LinearLayoutManager(context));
             adaptador = new AdaptadorListaCanales(context, listaCanales);
             adaptador.setItemClickCbCanal(this);
-            adaptador.setItemClickMarcadorCanal(this);
+            //adaptador.setItemClickMarcadorCanal(this);
             contenedorLista.setAdapter(adaptador);
             contenedorLista.setVisibility(View.VISIBLE);
             invalidateOptionsMenu();
         }
+    }
+
+    public void muestraConfMarcadores(){
+        scActivado.setVisibility(View.GONE);
+        JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                getApplication(),
+                PersistenciaDatos.ficheroListaCanales,
+                Auxiliar.canal,
+                Auxiliar.configuracionActual,
+                idUsuario);
+        if(configuracionActual != null){
+            try {
+                if (configuracionActual.has(Canal.obligatorio))
+                    ivObligatorios.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[configuracionActual.getInt(Canal.obligatorio)], null));
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            try {
+                if (configuracionActual.has(Canal.opcional))
+                    ivOpcionales.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[configuracionActual.getInt(Canal.opcional)], null));
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        tvObligatorios.setVisibility(View.VISIBLE);
+        tvOpcionales.setVisibility(View.VISIBLE);
+        ivObligatorios.setVisibility(View.VISIBLE);
+        ivOpcionales.setVisibility(View.VISIBLE);
+    }
+
+    public void ocultaConfMarcadores(){
+        scActivado.setVisibility(View.VISIBLE);
+        tvObligatorios.setVisibility(View.GONE);
+        tvOpcionales.setVisibility(View.GONE);
+        ivObligatorios.setVisibility(View.GONE);
+        ivOpcionales.setVisibility(View.GONE);
     }
 
     /**
@@ -157,7 +235,7 @@ public class ConfiguracionCanales extends AppCompatActivity implements
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
-        if(scActivado.isChecked()) {
+        if(scActivado.getVisibility() == View.GONE) {
             final MenuInflater menuInflater = getMenuInflater();
             menuInflater.inflate(R.menu.menu_canales, menu);
             final MenuItem menuItem = menu.findItem(R.id.busquedaCanal);
@@ -222,7 +300,7 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                 }
             });
         }
-        return scActivado.isChecked();
+        return (scActivado.getVisibility() == View.GONE);
     }
 
     /**
@@ -233,13 +311,22 @@ public class ConfiguracionCanales extends AppCompatActivity implements
      */
     @Override
     public boolean onOptionsItemSelected(@NotNull MenuItem menuItem){
-        //Solo se atiende a las pulsaciones de la actualización. Los métodos del icono de búsqueda se
+        // Los métodos del icono de búsqueda se
         //configuran en el onCreteOptionsMenu(Menu menu)
-        if(menuItem.getItemId() == R.id.actualizarCanales){
-            obtenerListaCanales();
-            return true;
+        switch (menuItem.getItemId()) {
+            case R.id.actualizarCanales:
+                obtenerListaCanales();
+                return true;
+            case R.id.descactivaCanales:
+                desactivarCanales();
+                contenedorLista.setVisibility(View.GONE);
+                ocultaConfMarcadores();
+                invalidateOptionsMenu();
+                return true;
+            default:
+                return super.onOptionsItemSelected(menuItem);
+
         }
-        else return super.onOptionsItemSelected(menuItem);
     }
 
     /**
@@ -267,143 +354,12 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Método llamado al realizar una pulsación sobre algún elemento que no forme parte de ningún
-     * ítem de la lista de canales.
-     *
-     * @param v Vista pulsada
-     */
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.scActivarCanales:
-                //Borro el fichero de los contextos para obligar a que desde la pantalla de mapas se
-                // descarguen los puntos elegidos por el usuario
-                PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
-                if (scActivado.isChecked()) {
-                    if(idUsuario != null) {
-                        try {
-                            JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
-                                    getApplication(),
-                                    PersistenciaDatos.ficheroListaCanales,
-                                    Auxiliar.canal,
-                                    Auxiliar.configuracionActual,
-                                    idUsuario);
-                            if (configuracionActual != null
-                                    && configuracionActual.has(Auxiliar.instante)
-                                    && configuracionActual.getLong(Auxiliar.instante)
-                                        > System.currentTimeMillis()) {
-                                //Los canales actuales siguen siendo válidos.
-                                configuracionActual.put(Auxiliar.caracteristica, true);
-                                PersistenciaDatos.reemplazaJSON(
-                                        getApplication(),
-                                        PersistenciaDatos.ficheroListaCanales,
-                                        Auxiliar.canal,
-                                        configuracionActual,
-                                        idUsuario);
-                                listaCanales = cargaListaCanales();
-                                muestraLista();
-                                //enviaConfiguracion(true);
-                            } else {
-                                //enviaConfiguracion(true);
-                                obtenerListaCanales();
-                            }
-                        }catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                else {
-                    desactivarCanales();
-                    contenedorLista.setVisibility(View.GONE);
-                    invalidateOptionsMenu();
-                }
-                break;
-            //Pulsación sobre uno de los iconos del diálogo
-            case R.id.ivNormalSC:
-            case R.id.ivEspecial0:
-            case R.id.ivEspecial1:
-            case R.id.ivEspecial2:
-            case R.id.ivEspecial3:
-            case R.id.ivEspecial4:
-                dialogoMarcadores.cancel();
-                try {
-                    Canal canal, canal2;
-                    int i;
-                    String tipo;
-                    int marcador = -5;
-                    if (listaVariable == null) { //No se está buscando
-                        //Elimino el canal para luego volver a agregarlo modificado
-                        canal = listaCanales.remove(posicion);
-                        tipo = canal.getTipo();
-                        for (i = 0; i < listaMarcadores.length; i++) {
-                            if (listaMarcadores[i] == v.getId()) {
-                                marcador = i - 1;
-                                canal.setMarcador(marcador);
-                                break;
-                            }
-                        }
-                        listaCanales.add(posicion, canal);
-                        adaptador.actualizarPosicionLista(listaCanales, posicion);
-                    } else {
-                        canal = listaVariable.remove(posicion);
-                        tipo = canal.getTipo();
-                        int posicionFijo;
-                        for (posicionFijo = 0; posicionFijo < listaCanales.size(); posicionFijo++)
-                            if (canal.getId().equals(listaCanales.get(posicionFijo).getId()))
-                                break;
-                        for (i = 0; i < listaMarcadores.length; i++) {
-                            if (listaMarcadores[i] == v.getId()) {
-                                marcador = i - 1;
-                                canal.setMarcador(marcador);
-                                break;
-                            }
-                        }
-                        //Tengo que mantener el valor en las dos listas
-                        listaVariable.add(posicion, canal);
-                        listaCanales.remove(posicionFijo);
-                        listaCanales.add(posicionFijo, canal);
-                        adaptador.actualizarPosicionLista(listaVariable, posicion);
-                    }
-                    if(searchView != null)
-                        searchView.clearFocus();
-                    if(marcador >= 0) {
-                        JSONObject jCanal = PersistenciaDatos.recuperaObjeto(
-                                getApplication(),
-                                PersistenciaDatos.ficheroListaCanales,
-                                Auxiliar.canal,
-                                canal.getId(),
-                                idUsuario);
-                        jCanal.put(Auxiliar.marcador, marcador);
-                        PersistenciaDatos.reemplazaJSON(
-                                getApplication(),
-                                PersistenciaDatos.ficheroListaCanales,
-                                Auxiliar.canal,
-                                jCanal,
-                                idUsuario);
-                    }
-                    for(int j = 0; j < listaCanales.size(); j++){
-                        if(j != posicion){
-                            canal2 = listaCanales.get(j);
-                            if(canal2.getTipo().equals(tipo))
-                                actualizaElemento(j, marcador, (listaVariable == null));
-                        }
-                    }
-                }  catch (Exception e){
-                   adaptador.actualizaLista(listaCanales);
-                }
-                break;
-            default:
-                break;
-        }
-    }
-
     private void actualizaElemento(int posicion, int marcador, boolean busquedaCerrada){
         Canal canal;
         if (busquedaCerrada) { //No se está buscando
             //Elimino el canal para luego volver a agregarlo modificado
             canal = listaCanales.remove(posicion);
-            canal.setMarcador(marcador);
+            //canal.setMarcador(marcador);
             listaCanales.add(posicion, canal);
             adaptador.actualizarPosicionLista(listaCanales, posicion);
         } else{
@@ -412,7 +368,7 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             for (posicionFijo = 0; posicionFijo < listaCanales.size(); posicionFijo++)
                 if (canal.getId().equals(listaCanales.get(posicionFijo).getId()))
                     break;
-            canal.setMarcador(marcador);
+            //canal.setMarcador(marcador);
             listaVariable.add(posicion, canal);
             listaCanales.remove(posicionFijo);
             listaCanales.add(posicionFijo, canal);
@@ -457,15 +413,13 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                     //No tengo en cuenta el canal con la configuración porque no se le va a mostrar al usuario
                     if (!canal.getString(Auxiliar.canal).equals(Auxiliar.configuracionActual)) {
                         boolean marcado = canal.has(Auxiliar.marcado) && canal.getBoolean(Auxiliar.marcado);
-                        int marcador = (canal.has(Auxiliar.marcador)) ? canal.getInt(Auxiliar.marcador) : -1;
 
                         salida.add(new Canal(
                                 canal.getString(Auxiliar.canal),
                                 canal.getString(Auxiliar.label),
                                 canal.getString(Auxiliar.comment),
                                 canal.getString(Auxiliar.tipo),
-                                marcado,
-                                marcador));
+                                marcado));
                     }
                 }
             } catch (Exception e){
@@ -526,7 +480,7 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         }
     }
 
-    /**
+    /*/**
      * Método llamado cuando se pulsa sobre el icono de un elemento de la lista de canales. Únicamente
      * almacena qué item se ha seleccionado de la lista y se muestra el diálogo para que el usuario
      * seleccione el marcador que prefiera.
@@ -534,11 +488,11 @@ public class ConfiguracionCanales extends AppCompatActivity implements
      * @param view Vista pulsada
      * @param position Posición dentro de la lista mostrada
      */
-    @Override
+    /*@Override
     public void onItemClickMarcador(View view, int position) {
         posicion = position;
         dialogoMarcadores.show();
-    }
+    }*/
 
     /**
      * Método para obtener la lista de canales del servidor. Al recuperarla se almacena en un fichero
@@ -580,18 +534,18 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                                                             canalCacheado.getBoolean(Auxiliar.marcado));
                                                 else
                                                     canalServidor.put(Auxiliar.marcado, false);
-                                                if (canalCacheado.has(Auxiliar.marcador))
+                                                /*if (canalCacheado.has(Auxiliar.marcador))
                                                     canalServidor.put(Auxiliar.marcador,
                                                             canalCacheado.getInt(Auxiliar.marcador));
                                                 else
-                                                    canalServidor.put(Auxiliar.marcador, -1);
+                                                    canalServidor.put(Auxiliar.marcador, -1);*/
                                                 encontrado = true;
                                                 break;
                                             }
                                         }
                                         if(!encontrado){
                                             canalServidor.put(Auxiliar.marcado, false);
-                                            canalServidor.put(Auxiliar.marcador, -1);
+                                            //canalServidor.put(Auxiliar.marcador, -1);
                                         }
                                         canalServidor.put(Auxiliar.idUsuario, idUsuario);
                                         response.put(i, canalServidor);
@@ -601,13 +555,24 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                                 }
                                 //Guardo la info del servidor
                                 try {
-                                    JSONObject configuracionActual = new JSONObject();
-                                    configuracionActual.put(Auxiliar.canal, Auxiliar.configuracionActual);
+                                    JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                                            getApplication(),
+                                            PersistenciaDatos.ficheroListaCanales,
+                                            Auxiliar.canal,
+                                            Auxiliar.configuracionActual,
+                                            idUsuario);
+                                    if(configuracionActual == null){
+                                        configuracionActual = new JSONObject();
+                                        configuracionActual.put(Auxiliar.canal, Auxiliar.configuracionActual);
+                                        configuracionActual.put(Auxiliar.idUsuario, idUsuario);
+                                        configuracionActual.put(Canal.obligatorio, 0);
+                                        configuracionActual.put(Canal.opcional, 4);
+
+                                    }
                                     configuracionActual.put(Auxiliar.caracteristica, true);
-                                    //Una semana de validez 1000*60*60*24*7
                                     configuracionActual.put(Auxiliar.instante,
                                             (System.currentTimeMillis() + 604800000));
-                                    configuracionActual.put(Auxiliar.idUsuario, idUsuario);
+
                                     response.put(configuracionActual);
                                     PersistenciaDatos.guardaFichero(
                                             getApplication(),
@@ -722,6 +687,112 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             //enviaConfiguracion(false);
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    private boolean tipoCanalObligatorio;
+
+    public void boton(View view) {
+        switch (view.getId()){
+            case R.id.scActivarCanales:
+                scActivado.setChecked(false);
+                muestraConfMarcadores();
+                //Borro el fichero de los contextos para obligar a que desde la pantalla de mapas se
+                // descarguen los puntos elegidos por el usuario
+                PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
+
+                    if(idUsuario != null) {
+                        try {
+                            JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroListaCanales,
+                                    Auxiliar.canal,
+                                    Auxiliar.configuracionActual,
+                                    idUsuario);
+                            if (configuracionActual != null
+                                    && configuracionActual.has(Auxiliar.instante)
+                                    && configuracionActual.getLong(Auxiliar.instante)
+                                    > System.currentTimeMillis()) {
+                                //Los canales actuales siguen siendo válidos.
+                                configuracionActual.put(Auxiliar.caracteristica, true);
+                                PersistenciaDatos.reemplazaJSON(
+                                        getApplication(),
+                                        PersistenciaDatos.ficheroListaCanales,
+                                        Auxiliar.canal,
+                                        configuracionActual,
+                                        idUsuario);
+                                listaCanales = cargaListaCanales();
+                                muestraLista();
+                                //enviaConfiguracion(true);
+                            } else {
+                                //enviaConfiguracion(true);
+                                obtenerListaCanales();
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+
+                /*else { TODO descativar los canales
+                    desactivarCanales();
+                    contenedorLista.setVisibility(View.GONE);
+                    invalidateOptionsMenu();
+                }*/
+
+                break;
+            case R.id.tvObligatoriosCanales:
+            case R.id.ivObligatorioConfCanales:
+                tipoCanalObligatorio = true;
+                dialogoMarcadores.show();
+                break;
+            case R.id.tvOpcionalesCanales:
+            case R.id.ivOpcionalConfCanales:
+                tipoCanalObligatorio = false;
+                dialogoMarcadores.show();
+                break;
+            //Pulsación sobre uno de los iconos del diálogo
+            case R.id.ivNormalSC:
+            case R.id.ivEspecial0:
+            case R.id.ivEspecial1:
+            case R.id.ivEspecial2:
+            case R.id.ivEspecial3:
+            case R.id.ivEspecial4:
+                dialogoMarcadores.cancel();
+                try {
+                    int marcador = -5;
+                    for (int i = 0; i < listaMarcadores.length; i++) {
+                        if (listaMarcadores[i] == view.getId()) {
+                            marcador = i;
+                            break;
+                        }
+                    }
+                    if(marcador > -5) {
+                        JSONObject jCanal = PersistenciaDatos.recuperaObjeto(
+                                getApplication(),
+                                PersistenciaDatos.ficheroListaCanales,
+                                Auxiliar.canal,
+                                Auxiliar.configuracionActual,
+                                idUsuario);
+                        if (tipoCanalObligatorio) {
+                            jCanal.put(Canal.obligatorio, marcador);
+                            ivObligatorios.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[marcador], null));
+                        } else {
+                            jCanal.put(Canal.opcional, marcador);
+                            ivOpcionales.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[marcador], null));
+                        }
+                        PersistenciaDatos.reemplazaJSON(
+                                getApplication(),
+                                PersistenciaDatos.ficheroListaCanales,
+                                Auxiliar.canal,
+                                jCanal,
+                                idUsuario);
+                    }
+                }  catch (Exception e){
+                    e.printStackTrace();
+                }
+                break;
+            default:
+                break;
         }
     }
 

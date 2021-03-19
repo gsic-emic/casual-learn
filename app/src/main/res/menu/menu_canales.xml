@@ -9,4 +9,7 @@
     <item android:id="@+id/actualizarCanales"
         android:title="@string/update_channel_list"
         app:showAsAction="never"/>
+    <item android:id="@+id/descactivaCanales"
+        android:title="@string/desactivarCanales"
+        app:showAsAction="never" />
 </menu>
