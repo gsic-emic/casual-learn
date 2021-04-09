@@ -38,7 +38,21 @@
         android:paddingHorizontal="@dimen/margen_texto"
         app:layout_constraintStart_toStartOf="@id/guia10Canales"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvAutorCanal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAlignment="gravity"
+        android:gravity="end"
+        android:textSize="16sp"
+        android:paddingHorizontal="@dimen/margen_texto"
+        app:layout_constraintStart_toStartOf="@id/guia10Canales"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tituloItemCanal"
+        app:layout_constraintBottom_toTopOf="@id/descripcionItemCanal"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/descripcionItemCanal"
@@ -50,6 +64,6 @@
         android:paddingHorizontal="@dimen/margen_texto"
         app:layout_constraintStart_toStartOf="@id/guia10Canales"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tituloItemCanal"
+        app:layout_constraintTop_toBottomOf="@id/tvAutorCanal"
         app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

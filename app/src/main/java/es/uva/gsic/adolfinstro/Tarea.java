@@ -59,7 +59,7 @@ import static java.util.Objects.requireNonNull;
  * la respuesta en una base de datos.
  *
  * @author Pablo
- * @version 20210202
+ * @version 20210407
  */
 public class Tarea extends AppCompatActivity implements
         AdaptadorVideosCompletados.ItemClickListenerVideo,
@@ -159,14 +159,14 @@ public class Tarea extends AppCompatActivity implements
                         idUsuario);
                 try {
                     recursoAsociadoImagen300px = tarea.getString(Auxiliar.recursoImagenBaja);
-                    if(recursoAsociadoImagen300px.equals("") || recursoAsociadoImagen300px.equals("?width=300"))
+                    if(Auxiliar.stringVacio(recursoAsociadoImagen300px) || recursoAsociadoImagen300px.equals("?width=300"))
                         recursoAsociadoImagen300px = null;
                 }catch (Exception e){
                     recursoAsociadoImagen300px = null;
                 }
                 try{
                     recursoAsociadoImagen = tarea.getString(Auxiliar.recursoImagen);
-                    if(recursoAsociadoImagen.equals(""))
+                    if(Auxiliar.stringVacio(recursoAsociadoImagen))
                         recursoAsociadoImagen = null;
                 }catch (Exception e){
                     recursoAsociadoImagen = null;
@@ -217,7 +217,7 @@ public class Tarea extends AppCompatActivity implements
                 tipo = tarea.getString(Auxiliar.tipoRespuesta);
                 try{
                     respuestaEsperada = tarea.getString(Auxiliar.respuestaEsperada);
-                    if(respuestaEsperada.equals(""))
+                    if(Auxiliar.stringVacio(respuestaEsperada))
                         respuestaEsperada = null;
                 }catch (Exception e){
                     respuestaEsperada = null;
@@ -392,11 +392,11 @@ public class Tarea extends AppCompatActivity implements
                                 PersistenciaDatos.ficheroCompletadas,
                                 respuesta,
                                 Context.MODE_PRIVATE);
-                        if(!etRespuestaTextual.getText().toString().isEmpty()){
+                        if(!Auxiliar.stringVacio(etRespuestaTextual.getText().toString())){
                             PersistenciaDatos.guardaTareaRespuesta(getApplication(),
                                     PersistenciaDatos.ficheroCompletadas,
                                     respuesta,
-                                    etRespuestaTextual.getText().toString(),
+                                    etRespuestaTextual.getText().toString().trim(),
                                     Auxiliar.texto,
                                     Context.MODE_PRIVATE);
                         }
@@ -488,14 +488,14 @@ public class Tarea extends AppCompatActivity implements
             case R.id.btTerminar:
                 try {
                     if(tipo.equals(Auxiliar.tipoPreguntaImagen) || tipo.equals(Auxiliar.tipoPreguntaImagenes) || tipo.equals(Auxiliar.tipoPreguntaVideo)){
-                        if(etRespuestaTextual.getText().toString().isEmpty()){
+                        if(Auxiliar.stringVacio(etRespuestaTextual.getText().toString())){
                             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
                         }else{
-                            guardaRespuesta(etRespuestaTextual.getText().toString());
+                            guardaRespuesta(etRespuestaTextual.getText().toString().trim());
                             Toast.makeText(this, getString(R.string.imagenesG), Toast.LENGTH_SHORT).show();
                         }
                     }else {
-                        guardaRespuesta(etRespuestaTextual.getText().toString());
+                        guardaRespuesta(etRespuestaTextual.getText().toString().trim());
                     }
                 }catch (Exception e){
                     mensajeError();
@@ -553,12 +553,12 @@ public class Tarea extends AppCompatActivity implements
                                 contenido = contenido.concat(String.format("%s\n", getString(R.string.tarea_no_pertinente)));
                                 cb  = cb.concat("5");
                             }
-                            if(!textoEdit.isEmpty() || !textoEdit.equals("")) {
+                            if(!Auxiliar.stringVacio(textoEdit)) {
                                 contenido = contenido.concat(String.format("%s\n", textoEdit));
                                 cb = cb.concat(String.format(" %s", textoEdit.substring(0, (Math.min(textoEdit.length(), 19)))));
                             }
                         }else {//Necesita texto
-                            if(!textoEdit.isEmpty() || !textoEdit.equals("")) {
+                            if(!Auxiliar.stringVacio(textoEdit)) {
                                 envia = true;
                                 contenido = contenido.concat(String.format("%s\n", textoEdit));
                                 cb = cb.concat(String.format(" %s", textoEdit.substring(0, (Math.min(textoEdit.length(), 19)))));
@@ -611,12 +611,12 @@ public class Tarea extends AppCompatActivity implements
                 PersistenciaDatos.ficheroCompletadas,
                 json,
                 Context.MODE_PRIVATE);
-        if(!respuestaTextual.isEmpty()){
+        if(!Auxiliar.stringVacio(respuestaTextual)){
             PersistenciaDatos.guardaTareaRespuesta(
                     getApplication(),
                     PersistenciaDatos.ficheroCompletadas,
                     json,
-                    respuestaTextual,
+                    respuestaTextual.trim(),
                     Auxiliar.texto,
                     Context.MODE_PRIVATE);
         }
@@ -904,7 +904,7 @@ public class Tarea extends AppCompatActivity implements
     private void guardaRespuestaPregunta(){
         String respuesta = etRespuestaTextual.getText().toString();
         respuesta = respuesta.trim();
-        if(respuesta.isEmpty()){
+        if(Auxiliar.stringVacio(respuesta)){
             etRespuestaTextual.setError(getString(R.string.respuestaVacia));
         }
         else{
@@ -931,6 +931,8 @@ public class Tarea extends AppCompatActivity implements
                 }catch (Exception e){
                     mensajeError();
                 }
+                //TODO para evitar que salte el mensaje hasta que no se prepare un poco mejor lo de la respuesta esperada
+                respuestaEsperada=null;
                 if(respuestaEsperada!=null){
                     if (respuesta.toLowerCase().contains(respuestaEsperada.toLowerCase())) {
                         mensajeRespuestaEsperada(this,true);

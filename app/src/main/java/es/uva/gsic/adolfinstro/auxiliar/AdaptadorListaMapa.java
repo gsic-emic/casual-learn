@@ -24,7 +24,7 @@ import es.uva.gsic.adolfinstro.R;
 /**
  * Clase para establecer la lista de tareas que se muestra cuando un usuario pulsa en un marcador
  * @author pablo
- * @version 20210202
+ * @version 20210407
  */
 public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.ViewHolderMapa>  {
 
@@ -100,7 +100,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
     public void onBindViewHolder(@NonNull AdaptadorListaMapa.ViewHolderMapa holder, int position){
         holder.tvTitulo.setText(lista.get(position).getTitulo());
         String uriFondo = lista.get(position).getUriFondo();
-        if(uriFondo != null && !uriFondo.equals("") && !uriFondo.equals("?width=300")) {
+        if(!Auxiliar.stringVacio(uriFondo) && !uriFondo.equals("?width=300")) {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                 Picasso.get()
                         .load(uriFondo)
@@ -135,7 +135,7 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
             }
 
             //Aqui lo de los canales
-            /*if(lista.get(position).getCanales() != null && !lista.get(position).getCanales().trim().equals("")){
+            /*if(lista.get(position).getCanales() != null && !Auxiliar.stringVacio(lista.get(position).getCanales())){
                 holder.tvCanales.setText(lista.get(position).getCanales());
                 holder.tvCanales.setVisibility(View.VISIBLE);
             } else {

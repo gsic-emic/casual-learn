@@ -130,7 +130,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20210223
+ * @version 20210407
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -440,7 +440,7 @@ public class Maps extends AppCompatActivity implements
             @Override
             public boolean onQueryTextChange(String newText) {
                 //Aqui debería ir la sugerencia según escriba
-                if (newText.trim().length() > 0) {
+                if (!Auxiliar.stringVacio(newText)) {
                     JSONArray municipios = Auxiliar.buscaMunicipio(
                             context, StringUtils.stripAccents(newText.trim().toLowerCase()));
                     if (municipios.length() > 0) {
@@ -613,7 +613,7 @@ public class Maps extends AppCompatActivity implements
 
         try {
             String contenido = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.textoParaElMapa);
-            if (contenido != null && !contenido.equals("")) {
+            if (!Auxiliar.stringVacio(contenido)) {
                 getIntent().removeExtra(Auxiliar.textoParaElMapa);
                 pintaSnackBar(contenido);
                 if(!contenido.contains(getString(R.string.hola)))
@@ -997,7 +997,7 @@ public class Maps extends AppCompatActivity implements
                 }
             }
             else {
-                if (Build.VERSION.SDK_INT >= 30 && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
                     if (!(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
@@ -1211,7 +1211,7 @@ public class Maps extends AppCompatActivity implements
 
                 tituloPunto.setText(puntoInteres.getString(Auxiliar.label));
                 textoPunto.setText(
-                        (puntoInteres.getString(Auxiliar.comment).equals("") ?
+                        (Auxiliar.stringVacio(puntoInteres.getString(Auxiliar.comment)) ?
                                 getResources().getString(R.string.puntoSinTexto) :
                                 puntoInteres.getString(Auxiliar.comment)));
                 textoPunto.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -1346,7 +1346,7 @@ public class Maps extends AppCompatActivity implements
                                 if(canal.getString(Auxiliar.canal).equals(iC)) {
                                     if(canal.has(Auxiliar.tipo) && canal.getString(Auxiliar.tipo).equals(Canal.opcional))
                                         opcional = true;
-                                    if(!salida.toString().equals(""))
+                                    if(!Auxiliar.stringVacio(salida.toString()))
                                         salida.append("\n").append(canal.getString(Auxiliar.label));
                                     else
                                         salida.append(canal.getString(Auxiliar.label));
@@ -1635,7 +1635,7 @@ public class Maps extends AppCompatActivity implements
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         if (map != null)
             map.onResume();
-        if (!idZona.equals("") && locationManager != null) {
+        if (!Auxiliar.stringVacio(idZona) && locationManager != null) {
             if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     && ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, this);
@@ -2099,7 +2099,7 @@ public class Maps extends AppCompatActivity implements
                         textToSpeech.stop();
                         ivSpeaker.setImageDrawable(dameDrawable(R.drawable.ic_speaker));
                     }else{
-                        if (textoParaAltavoz != null && !textoParaAltavoz.equals("")) {
+                        if (!Auxiliar.stringVacio(textoParaAltavoz)) {
                             HashMap<String, String> map = new HashMap<>();
                             map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerMapa");
                             textToSpeech.speak(textoParaAltavoz, TextToSpeech.QUEUE_FLUSH, map);
@@ -2468,7 +2468,7 @@ public class Maps extends AppCompatActivity implements
                     getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
             if(usuario != null) {
                 idUsuario = usuario.getString(Auxiliar.uid);
-                if(!idUsuario.trim().equals("")) {
+                if(!Auxiliar.stringVacio(idUsuario)) {
                     keys.add(Auxiliar.id);
                     objects.add(idUsuario);
                 }else{
@@ -2499,7 +2499,7 @@ public class Maps extends AppCompatActivity implements
                     JSONObject canal;
                     for(int i = 0; i < listaCanales.length(); i++){
                         canal = listaCanales.getJSONObject(i);
-                        if(canal.getString(Auxiliar.tipo).equals(Canal.obligatorio) || canal.getBoolean(Auxiliar.marcado)){
+                        if((canal.has(Auxiliar.tipo) && canal.getString(Auxiliar.tipo).equals(Canal.obligatorio)) || canal.getBoolean(Auxiliar.marcado)){
                             keys.add(Auxiliar.canal);
                             objects.add(canal.getString(Auxiliar.canal));
                         }
@@ -2690,7 +2690,7 @@ public class Maps extends AppCompatActivity implements
                                     tarea.put(Auxiliar.longitud, longitud);
                                     if(enlaceWikipedia != null)
                                         tarea.put(Auxiliar.enlaceWiki, enlaceWikipedia);
-                                    if(!tarea.has(Auxiliar.comment) || tarea.getString(Auxiliar.comment).equals(""))
+                                    if(!tarea.has(Auxiliar.comment) || Auxiliar.stringVacio(tarea.getString(Auxiliar.comment)))
                                         tarea.put(Auxiliar.comment, nombre);
                                     tareasG.put(tarea);
                                 } catch (JSONException e) {
@@ -2933,7 +2933,7 @@ public class Maps extends AppCompatActivity implements
      */
     @Override
     public void onLocationChanged(Location location) {
-        if(!idZona.equals("")) {
+        if(!Auxiliar.stringVacio(idZona)) {
             if (distanciaPunto != null) {
                 double distanciaDospuntos = calculaDistanciaDosPuntos(
                         new GeoPoint(location),

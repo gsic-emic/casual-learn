@@ -4,7 +4,7 @@ package es.uva.gsic.adolfinstro.auxiliar;
  * Objeto que representa a un canal en Casual Learn.
  *
  * @author Pablo
- * @version 20210223
+ * @version 20210409
  */
 public class Canal {
     /** El canal es obligatorio. El usuario no podrá darse de baja */
@@ -22,8 +22,12 @@ public class Canal {
     private String tipo;
     /** Indica si el usuario está suscrito al canal o no */
     private boolean marcado;
+    /** Objeto para almacenar el nombre del autor que se va a mostrar en la lista de la configuración
+     * de los canales */
+    private String detallesAutor;
 
     /**
+     * Constructor del canal
      *
      * @param id Identificador del canal
      * @param titulo Título del canal
@@ -35,6 +39,7 @@ public class Canal {
     }
 
     /**
+     * Constructor del canal
      *
      * @param id Identificador del canal
      * @param titulo Título del canal
@@ -43,11 +48,26 @@ public class Canal {
      * @param marcado Indica si el canal está seleccionado
      */
     public Canal(String id, String titulo, String descripcion, String tipo, boolean marcado) {
+        this(id, titulo, descripcion, tipo, marcado, null);
+    }
+
+    /**
+     * Constructor del canal
+     *
+     * @param id Identificador del canal
+     * @param titulo Título del canal
+     * @param descripcion Descripción del canal
+     * @param tipo Opcional o  obligatorio
+     * @param marcado Indica si el canal está seleccionado
+     * @param detallesAutor Nombre del autor del canal
+     */
+    public Canal(String id, String titulo, String descripcion, String tipo, boolean marcado, String detallesAutor){
         setId(id);
         setTitulo(titulo);
         setDescripcion(descripcion);
         setTipo(tipo);
         setMarcado(marcado);
+        setDetallesAutor(detallesAutor);
     }
 
 
@@ -64,7 +84,7 @@ public class Canal {
     }
 
     public void setTitulo(String titulo) {
-        this.titulo = (titulo.length() < 50) ? titulo : titulo.substring(0, 49);
+        this.titulo = (titulo.length() < 100) ? titulo : titulo.substring(0, 98) + "…";
     }
 
     public String getDescripcion() {
@@ -72,7 +92,7 @@ public class Canal {
     }
 
     public void setDescripcion(String descripcion) {
-        this.descripcion = (descripcion.length() < 300) ? descripcion : descripcion.substring(0, 299);
+        this.descripcion = (descripcion.length() < 400) ? descripcion : descripcion.substring(0, 398) + "…";
     }
 
     public String getTipo() {
@@ -92,5 +112,13 @@ public class Canal {
 
     public void setMarcado(boolean marcado) {
         this.marcado = (getTipo().equals(obligatorio)) || marcado;
+    }
+
+    public String getDetallesAutor() {
+        return detallesAutor;
+    }
+
+    public void setDetallesAutor(String detallesAutor){
+        this.detallesAutor = detallesAutor;
     }
 }

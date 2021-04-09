@@ -48,7 +48,6 @@ import org.osmdroid.views.overlay.Marker;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
@@ -62,7 +61,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * contexto. El orden viene determinado por lo que indique el sistema de recomendación.
  *
  * @author Pablo
- * @version 20210202
+ * @version 20210407
  */
 public class PuntoInteres extends AppCompatActivity implements LocationListener, AdaptadorListaMapa.ItemClickListener {
 
@@ -220,7 +219,7 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                                         }
                                         if (enlaceWiki != null)
                                             tarea.put(Auxiliar.enlaceWiki, enlaceWiki);
-                                        if (!tarea.has(Auxiliar.comment) || tarea.getString(Auxiliar.comment).equals(""))
+                                        if (!tarea.has(Auxiliar.comment) || Auxiliar.stringVacio(tarea.getString(Auxiliar.comment)))
                                             tarea.put(Auxiliar.comment, lugar.getString(Auxiliar.label));
                                         tareasGuardar.put(tarea);
                                     }
@@ -518,7 +517,7 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                         }
                         /* if(canalesActivos){
                             listaCanales = jo.getString(Auxiliar.canal);
-                            if(!listaCanales.equals(""))
+                            if(!Auxiliar.stringVacio(listaCanales))
                                 listaCanales = listaCanales.replaceAll(";", "\n");
                         }else{
                             listaCanales = null;

@@ -1,15 +1,12 @@
 package es.uva.gsic.adolfinstro;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
@@ -21,10 +18,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.constraintlayout.widget.Guideline;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -56,12 +51,10 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * También podrá elegir qué marcador asigna a cada canal.
  *
  * @author Pablo
- * @version 20210223
+ * @version 20210409
  */
 public class ConfiguracionCanales extends AppCompatActivity implements
-        /*View.OnClickListener,*/
-        AdaptadorListaCanales.ItemClickCbCanal/*,
-        AdaptadorListaCanales.ItemClickMarcadorCanal*/ {
+        AdaptadorListaCanales.ItemClickCbCanal {
 
     /** Switch para activar o desactivar la característica de canales */
     private SwitchCompat scActivado;
@@ -76,7 +69,6 @@ public class ConfiguracionCanales extends AppCompatActivity implements
     private AdaptadorListaCanales adaptador;
     /** Diálogo para seleccionar el marcador del canal */
     private Dialog dialogoMarcadores;
-    private int posicion;
     private int[] listaMarcadores;
     /** Idetnificador del usuario */
     private String idUsuario;
@@ -94,7 +86,6 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         setContentView(R.layout.conf_canales);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         scActivado = findViewById(R.id.scActivarCanales);
-        //scActivado.setOnClickListener(this);
         tvObligatorios = findViewById(R.id.tvObligatoriosCanales);
         tvOpcionales = findViewById(R.id.tvOpcionalesCanales);
         ivObligatorios = findViewById(R.id.ivObligatorioConfCanales);
@@ -413,13 +404,21 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                     //No tengo en cuenta el canal con la configuración porque no se le va a mostrar al usuario
                     if (!canal.getString(Auxiliar.canal).equals(Auxiliar.configuracionActual)) {
                         boolean marcado = canal.has(Auxiliar.marcado) && canal.getBoolean(Auxiliar.marcado);
-
-                        salida.add(new Canal(
-                                canal.getString(Auxiliar.canal),
-                                canal.getString(Auxiliar.label),
-                                canal.getString(Auxiliar.comment),
-                                canal.getString(Auxiliar.tipo),
-                                marcado));
+                        if(canal.has(Auxiliar.detallesCreador))
+                            salida.add(new Canal(
+                                    canal.getString(Auxiliar.canal),
+                                    canal.getString(Auxiliar.label),
+                                    canal.getString(Auxiliar.comment),
+                                    canal.getString(Auxiliar.tipo),
+                                    marcado,
+                                    canal.getString(Auxiliar.detallesCreador)));
+                        else
+                            salida.add(new Canal(
+                                    canal.getString(Auxiliar.canal),
+                                    canal.getString(Auxiliar.label),
+                                    canal.getString(Auxiliar.comment),
+                                    canal.getString(Auxiliar.tipo),
+                                    marcado));
                     }
                 }
             } catch (Exception e){

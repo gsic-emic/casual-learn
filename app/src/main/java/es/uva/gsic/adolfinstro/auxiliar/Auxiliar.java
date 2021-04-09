@@ -65,7 +65,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * aplicación. Los métodos son utilizados en otras clases.
  *
  * @author Pablo
- * @version 20210223
+ * @version 20210407
  */
 public class Auxiliar {
 
@@ -183,6 +183,7 @@ public class Auxiliar {
     public static final String marcado = "marcado";
     public static final String marcador = "marcador";
     public static final String caracteristica = "caracteristica";
+    public static final String detallesCreador = "detailsCreator";
 
     private static SimpleDateFormat formatoFecha = new SimpleDateFormat("HH:mm:ss - dd/MM/yyyy");
 
@@ -662,7 +663,7 @@ public class Auxiliar {
                 for(int i = 0; i < respuestas.length(); i++){
                     respuesta = respuestas.getJSONObject(i);
                     if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                        if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                        if (!Auxiliar.stringVacio(respuesta.getString(Auxiliar.respuestaRespuesta))) {
                             textoUsuario = respuesta.getString(Auxiliar.respuestaRespuesta);
                         }
                     } else {//URI de video o fotos
@@ -866,11 +867,11 @@ public class Auxiliar {
                             PersistenciaDatos.ficheroUsuario,
                             Auxiliar.id)
                             .getString(Auxiliar.idPortafolio);
-                    if (!idUsuario.equals(""))
+                    if (!Auxiliar.stringVacio(idUsuario))
                         link = Auxiliar.rutaPortafolio + idUsuario + "/" + tarea.getString(Auxiliar.idToken);
                 }
             }
-            if(!link.equals(""))
+            if(!Auxiliar.stringVacio(link))
                 tama += 23;
             if(texto.length() + hashtags.length + tama > 279){ //espacios + texto
                 texto = texto.substring(0, 279 - (hashtags.length + tama + 5)) + "...";
@@ -912,7 +913,7 @@ public class Auxiliar {
         try {
             //texto = tarea.getString(Auxiliar.titulo);
             texto = "";
-            if(textoUsuario != null && !textoUsuario.equals("")){
+            if(textoUsuario != null && !Auxiliar.stringVacio(texto)){
                 texto = String.format("%s\n%s", texto, textoUsuario);
 
                 texto = String.format("%s %s\n\n%s %s\n\n%s %s",
@@ -1561,5 +1562,12 @@ public class Auxiliar {
         return new int[]{R.drawable.ic_marcador100, R.drawable.ic_marcador100_especial,
                 R.drawable.ic_marcador100_especial1, R.drawable.ic_marcador100_especial2,
                 R.drawable.ic_marcador100_especial3, R.drawable.ic_marcador100_especial4};
+    }
+
+    public static boolean stringVacio(String s){
+        if(s == null)
+            return true;
+        else
+            return s.trim().isEmpty();
     }
 }

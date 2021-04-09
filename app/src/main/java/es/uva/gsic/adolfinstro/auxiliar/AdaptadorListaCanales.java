@@ -27,30 +27,22 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
 
     public static class ViewHolderCanales extends RecyclerView.ViewHolder implements View.OnClickListener {
         CheckBox cbMarcado;
-        TextView tvTitulo, tvDescripcion;
+        TextView tvTitulo, tvDescripcion, tvAutorCanal;
 
         ViewHolderCanales(@NonNull View view){
             super(view);
             cbMarcado = view.findViewById(R.id.cbItemCanal);
             tvTitulo = view.findViewById(R.id.tituloItemCanal);
             tvDescripcion = view.findViewById(R.id.descripcionItemCanal);
+            tvAutorCanal = view.findViewById(R.id.tvAutorCanal);
             cbMarcado.setOnClickListener(this);
-            //ivMarcador.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View view){
-            switch (view.getId()){
-                case R.id.cbItemCanal:
-                    if(itemClickCbCanal != null)
-                        itemClickCbCanal.onItemClickCb(view, getAdapterPosition());
-                    break;
-                /*case R.id.marcadorItemCanal:
-                    if(itemClickMarcadorCanal != null)
-                        itemClickMarcadorCanal.onItemClickMarcador(view, getAdapterPosition());
-                    break;*/
-                default:
-                    break;
+            if (view.getId() == R.id.cbItemCanal) {
+                if (itemClickCbCanal != null)
+                    itemClickCbCanal.onItemClickCb(view, getAdapterPosition());
             }
         }
     }
@@ -59,7 +51,6 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
     private List<Canal> listaCanales;
     private LayoutInflater layoutInflater;
     private static ItemClickCbCanal itemClickCbCanal;
-    //private static ItemClickMarcadorCanal itemClickMarcadorCanal;
 
     public AdaptadorListaCanales(Context context, List<Canal> listaCanales){
         this.context = context;
@@ -79,33 +70,14 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         holder.cbMarcado.setChecked(canal.isMarcado());
         holder.cbMarcado.setEnabled(!canal.getTipo().equals(Canal.obligatorio));
+        if(Auxiliar.stringVacio(canal.getDetallesAutor()))
+            holder.tvAutorCanal.setVisibility(View.GONE);
+        else{
+            holder.tvAutorCanal.setText(canal.getDetallesAutor());
+            holder.tvAutorCanal.setVisibility(View.VISIBLE);
+        }
         holder.tvTitulo.setText(canal.getTitulo());
         holder.tvDescripcion.setText(canal.getDescripcion());
-        int icono;
-        /*switch (canal.getMarcador()){
-            case 0:
-                icono = R.drawable.ic_marcador100_especial;
-                break;
-            case 1:
-                icono = R.drawable.ic_marcador100_especial1;
-                break;
-            case 2:
-                icono = R.drawable.ic_marcador100_especial2;
-                break;
-            case 3:
-                icono = R.drawable.ic_marcador100_especial3;
-                break;
-            case 4:
-                icono = R.drawable.ic_marcador100_especial4;
-                break;
-            default:
-                icono = R.drawable.ic_marcador100;
-        }
-        holder.ivMarcador.setImageDrawable(AppCompatResources.getDrawable(context, icono));
-        if(canal.isMarcado())
-            holder.ivMarcador.setVisibility(View.VISIBLE);
-        else
-            holder.ivMarcador.setVisibility(View.GONE);*/
     }
 
     @Override
@@ -125,11 +97,5 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
 
     public void setItemClickCbCanal(ItemClickCbCanal iCbCanal){ itemClickCbCanal = iCbCanal; }
 
-    /*public void setItemClickMarcadorCanal(ItemClickMarcadorCanal iMarcadorCanal){
-        itemClickMarcadorCanal = iMarcadorCanal;
-    }*/
-
     public interface ItemClickCbCanal { void onItemClickCb(View view, int position);}
-
-    /*public interface  ItemClickMarcadorCanal { void onItemClickMarcador(View view, int position); }*/
 }

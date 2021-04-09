@@ -72,7 +72,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * realizar.
  *
  * @author Pablo
- * @version 20201203
+ * @version 20210407
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
@@ -215,7 +215,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                                 canal = listaCanales.getJSONObject(j);
                                 for (String iC : idsCanales) {
                                     if (canal.getString(Auxiliar.canal).equals(iC)) {
-                                        if (!salida.toString().equals(""))
+                                        if (!Auxiliar.stringVacio(salida.toString()))
                                             salida.append("\n\n").append(canal.getString(Auxiliar.label));
                                         else
                                             salida.append(canal.getString(Auxiliar.label));
@@ -223,7 +223,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                                     }
                                 }
                             }
-                            if (!salida.toString().trim().equals("")) {
+                            if (!Auxiliar.stringVacio(salida.toString())) {
                                 dialogoCanales = new Dialog(this);
                                 dialogoCanales.requestWindowFeature(Window.FEATURE_NO_TITLE);
                                 dialogoCanales.setContentView(R.layout.dialogo_desarrolladores);
@@ -313,11 +313,11 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
                     assert tarea != null;
                     if (tarea.has(Auxiliar.recursoImagenBaja) &&
-                            !tarea.getString(Auxiliar.recursoImagenBaja).equals("") &&
+                            !Auxiliar.stringVacio(tarea.getString(Auxiliar.recursoImagenBaja)) &&
                             !tarea.getString(Auxiliar.recursoImagenBaja).equals("?width=300")) {
                         urlImagen = tarea.getString(Auxiliar.recursoImagenBaja);
                     } else {
-                        if (tarea.has(Auxiliar.recursoImagen) && !tarea.getString(Auxiliar.recursoImagen).equals("")) {
+                        if (tarea.has(Auxiliar.recursoImagen) && !Auxiliar.stringVacio(tarea.getString(Auxiliar.recursoImagen))) {
                             urlImagen = tarea.getString(Auxiliar.recursoImagen);
                         }
                     }

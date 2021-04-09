@@ -58,7 +58,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * modificar la respuesta dada o complementarla.
  *
  * @author Pablo García Zarza
- * @version 20201028
+ * @version 20210407
  */
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
@@ -174,7 +174,7 @@ public class Completadas extends AppCompatActivity implements
                 for (int i = 0; i < respuestas.length(); i++) {
                     respuesta = respuestas.getJSONObject(i);
                     if (respuesta.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.texto)) {
-                        if (!respuesta.getString(Auxiliar.respuestaRespuesta).equals("")) {
+                        if (!Auxiliar.stringVacio(respuesta.getString(Auxiliar.respuestaRespuesta))) {
                             tvTextoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
                             etTextoUsuario.setText(respuesta.getString(Auxiliar.respuestaRespuesta));
                             tvTextoUsuario.setVisibility(View.VISIBLE);
@@ -349,7 +349,7 @@ public class Completadas extends AppCompatActivity implements
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
                                         || tipoRespuesta.equals(Auxiliar.tipoPreguntaVideo)
-                                ) && etTextoUsuario.getText().toString().isEmpty()) {
+                                ) && Auxiliar.stringVacio(etTextoUsuario.getText().toString())) {
                             etTextoUsuario.setError(getString(R.string.respuestaVacia));
                         } else {
                             //Se comprueba si se tiene algún recurso multimedia
@@ -450,7 +450,7 @@ public class Completadas extends AppCompatActivity implements
         }catch (Exception e){
             e.printStackTrace();
         }
-        if(etTextoUsuario.getText().toString().isEmpty()){
+        if(Auxiliar.stringVacio(etTextoUsuario.getText().toString())){
             etTextoUsuario.setVisibility(View.GONE);
             etTextoUsuario.setEnabled(false);
             etTextoUsuario.setInputType(InputType.TYPE_NULL);
