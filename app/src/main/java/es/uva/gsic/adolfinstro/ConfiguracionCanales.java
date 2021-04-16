@@ -48,10 +48,10 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
 /**
  * Clase para modtrar al usuario la lista de canales del sistema y permitirle configurar sus suscripciones.
- * También podrá elegir qué marcador asigna a cada canal.
+ * También podrá elegir qué marcador asigna a los canales obligatorios y a los opcionales.
  *
  * @author Pablo
- * @version 20210409
+ * @version 20210415
  */
 public class ConfiguracionCanales extends AppCompatActivity implements
         AdaptadorListaCanales.ItemClickCbCanal {
@@ -78,6 +78,7 @@ public class ConfiguracionCanales extends AppCompatActivity implements
     private List<Canal> listaVariable;
     /** Objeto sobre el que se realizarán las búsquedas de canales por su título */
     private SearchView searchView;
+    private boolean tipoCanalObligatorio;
 
     @Override
     public void onCreate (Bundle savedInstance) {
@@ -133,9 +134,10 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         if(idUsuario != null) {//No debería pasar ya que solamente se puede acceder a esta pantalla si
             //el usuario está identificado
             try {
-                //Recupero la configuración actual para saber si se tiene que activar o no el swich.
-                //También se comprueba si la caducidad de caché ha finalizado.
-                //Si está activado el sw y la lista de canales no está caducada se muestra directamente.
+                /* Recupero la configuración actual para saber si se tiene que activar o no el swich.
+                 * También se comprueba si la caducidad de caché ha finalizado.
+                 * Si está activado el sw y la lista de canales no está caducada se muestra
+                 * directamente.*/
                 JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
                         getApplication(),
                         PersistenciaDatos.ficheroListaCanales,
@@ -145,7 +147,6 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                 if (configuracionActual != null
                         && configuracionActual.has(Auxiliar.caracteristica)
                         && configuracionActual.getBoolean(Auxiliar.caracteristica)) {
-                    //scActivado.setChecked(true);
                     muestraConfMarcadores();
                     if(configuracionActual.has(Auxiliar.instante)
                             && configuracionActual.getLong(Auxiliar.instante) < System.currentTimeMillis())
@@ -173,13 +174,17 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             contenedorLista.setLayoutManager(new LinearLayoutManager(context));
             adaptador = new AdaptadorListaCanales(context, listaCanales);
             adaptador.setItemClickCbCanal(this);
-            //adaptador.setItemClickMarcadorCanal(this);
             contenedorLista.setAdapter(adaptador);
             contenedorLista.setVisibility(View.VISIBLE);
             invalidateOptionsMenu();
         }
     }
 
+    /**
+     * Método para mostrar la configuración de los marcadores opcionales y obligatorios a través de
+     * la selección de dos imágenes. Se hace visible tanto las imágenes de los marcadores como el
+     * tipo de marcador.
+     */
     public void muestraConfMarcadores(){
         scActivado.setVisibility(View.GONE);
         JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
@@ -191,13 +196,19 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         if(configuracionActual != null){
             try {
                 if (configuracionActual.has(Canal.obligatorio))
-                    ivObligatorios.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[configuracionActual.getInt(Canal.obligatorio)], null));
+                    ivObligatorios.setImageDrawable(ResourcesCompat.getDrawable(
+                            context.getResources(),
+                            Auxiliar.obtenIdMarcadores()[configuracionActual.getInt(Canal.obligatorio)],
+                            null));
             } catch (Exception e){
                 e.printStackTrace();
             }
             try {
                 if (configuracionActual.has(Canal.opcional))
-                    ivOpcionales.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[configuracionActual.getInt(Canal.opcional)], null));
+                    ivOpcionales.setImageDrawable(ResourcesCompat.getDrawable(
+                            context.getResources(),
+                            Auxiliar.obtenIdMarcadores()[configuracionActual.getInt(Canal.opcional)],
+                            null));
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -208,6 +219,9 @@ public class ConfiguracionCanales extends AppCompatActivity implements
         ivOpcionales.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Método para ocultar la configuración de los marcadores.
+     */
     public void ocultaConfMarcadores(){
         scActivado.setVisibility(View.VISIBLE);
         tvObligatorios.setVisibility(View.GONE);
@@ -302,8 +316,8 @@ public class ConfiguracionCanales extends AppCompatActivity implements
      */
     @Override
     public boolean onOptionsItemSelected(@NotNull MenuItem menuItem){
-        // Los métodos del icono de búsqueda se
-        //configuran en el onCreteOptionsMenu(Menu menu)
+        /* Los métodos del icono de búsqueda se
+         * configuran en el onCreteOptionsMenu(Menu menu)*/
         switch (menuItem.getItemId()) {
             case R.id.actualizarCanales:
                 obtenerListaCanales();
@@ -342,46 +356,6 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             searchView.setIconified(true);
         } else {
             super.onBackPressed();
-        }
-    }
-
-    private void actualizaElemento(int posicion, int marcador, boolean busquedaCerrada){
-        Canal canal;
-        if (busquedaCerrada) { //No se está buscando
-            //Elimino el canal para luego volver a agregarlo modificado
-            canal = listaCanales.remove(posicion);
-            //canal.setMarcador(marcador);
-            listaCanales.add(posicion, canal);
-            adaptador.actualizarPosicionLista(listaCanales, posicion);
-        } else{
-            canal = listaVariable.remove(posicion);
-            int posicionFijo;
-            for (posicionFijo = 0; posicionFijo < listaCanales.size(); posicionFijo++)
-                if (canal.getId().equals(listaCanales.get(posicionFijo).getId()))
-                    break;
-            //canal.setMarcador(marcador);
-            listaVariable.add(posicion, canal);
-            listaCanales.remove(posicionFijo);
-            listaCanales.add(posicionFijo, canal);
-            adaptador.actualizarPosicionLista(listaVariable, posicion);
-        }
-        //Almaceno en el fichero el marcador seleccionado para la persistencia de los datos
-        try {
-            JSONObject jCanal = PersistenciaDatos.recuperaObjeto(
-                    getApplication(),
-                    PersistenciaDatos.ficheroListaCanales,
-                    Auxiliar.canal,
-                    canal.getId(),
-                    idUsuario);
-            jCanal.put(Auxiliar.marcador, marcador);
-            PersistenciaDatos.reemplazaJSON(
-                    getApplication(),
-                    PersistenciaDatos.ficheroListaCanales,
-                    Auxiliar.canal,
-                    jCanal,
-                    idUsuario);
-        } catch (Exception e){
-            e.printStackTrace();
         }
     }
 
@@ -458,7 +432,7 @@ public class ConfiguracionCanales extends AppCompatActivity implements
             listaCanales.add(posicionFija, canal);
             adaptador.actualizarPosicionLista(listaVariable, position);
         }
-        //enviaSuscripcion(canal.getId(), marcado);
+
         PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
         try {
             JSONObject jsonCanal = PersistenciaDatos.recuperaObjeto(
@@ -475,23 +449,9 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                     jsonCanal,
                     idUsuario);
         } catch (Exception e){
-          e.printStackTrace();
+            e.printStackTrace();
         }
     }
-
-    /*/**
-     * Método llamado cuando se pulsa sobre el icono de un elemento de la lista de canales. Únicamente
-     * almacena qué item se ha seleccionado de la lista y se muestra el diálogo para que el usuario
-     * seleccione el marcador que prefiera.
-     *
-     * @param view Vista pulsada
-     * @param position Posición dentro de la lista mostrada
-     */
-    /*@Override
-    public void onItemClickMarcador(View view, int position) {
-        posicion = position;
-        dialogoMarcadores.show();
-    }*/
 
     /**
      * Método para obtener la lista de canales del servidor. Al recuperarla se almacena en un fichero
@@ -533,18 +493,12 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                                                             canalCacheado.getBoolean(Auxiliar.marcado));
                                                 else
                                                     canalServidor.put(Auxiliar.marcado, false);
-                                                /*if (canalCacheado.has(Auxiliar.marcador))
-                                                    canalServidor.put(Auxiliar.marcador,
-                                                            canalCacheado.getInt(Auxiliar.marcador));
-                                                else
-                                                    canalServidor.put(Auxiliar.marcador, -1);*/
                                                 encontrado = true;
                                                 break;
                                             }
                                         }
                                         if(!encontrado){
                                             canalServidor.put(Auxiliar.marcado, false);
-                                            //canalServidor.put(Auxiliar.marcador, -1);
                                         }
                                         canalServidor.put(Auxiliar.idUsuario, idUsuario);
                                         response.put(i, canalServidor);
@@ -603,63 +557,6 @@ public class ConfiguracionCanales extends AppCompatActivity implements
     }
 
     /**
-     * Método para enviar la suscripción (o la baja) del usuario a un canal.
-     * @param idCanal Identificador del canal
-     * @param marcado Indica si es un alta (true) o una baja (false) de la suscripción.
-     */
-    public void enviaSuscripcion(final String idCanal, final boolean marcado){
-        try {
-            JSONObject peticion = new JSONObject();
-            peticion.put(Auxiliar.canal, idCanal);
-            peticion.put(Auxiliar.idUsuario, idUsuario);
-            peticion.put(Auxiliar.marcado, marcado);
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                    Request.Method.PUT,
-                    Auxiliar.rutaCanales + "/"  + Auxiliar.ultimaParte(idCanal),
-                    peticion,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                JSONObject canal = PersistenciaDatos.recuperaObjeto(
-                                        getApplication(),
-                                        PersistenciaDatos.ficheroListaCanales,
-                                        Auxiliar.canal,
-                                        idCanal,
-                                        idUsuario);
-                                canal.put(Auxiliar.marcado, marcado);
-                                PersistenciaDatos.reemplazaJSON(
-                                        getApplication(),
-                                        PersistenciaDatos.ficheroListaCanales,
-                                        Auxiliar.canal,
-                                        canal,
-                                        idUsuario);
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            //Por ahora no hago nada si ha ocurrido un error. De esta forma, cuando el
-                            //usuario vuelva a acceder a la pantalla del canal verá que no se ha
-                            //producido el cambio
-                            System.err.println(error.toString());
-                        }
-                    }
-            );
-            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
-                    2500,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-            ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Método llamado para desactivar la característica de canales. Modifica el fichero con la lista
      * de canales y envía al servidor la desactivación.
      */
@@ -683,62 +580,61 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                     Auxiliar.canal,
                     configuracionActual,
                     idUsuario);
-            //enviaConfiguracion(false);
+            //Borro las cuadrículas para que se tenga que volver a hacer la petición al servidor
+            PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    private boolean tipoCanalObligatorio;
-
+    /**
+     * Método que es llamado al pulsar sobre un objeto pulsable.
+     *
+     * @param view Objeto pulsado
+     */
     public void boton(View view) {
         switch (view.getId()){
+            /* Pulsación sobre el conmutador. Su comportamiento para desactivar los canales se pasa
+             * al menú */
             case R.id.scActivarCanales:
                 scActivado.setChecked(false);
                 muestraConfMarcadores();
                 //Borro el fichero de los contextos para obligar a que desde la pantalla de mapas se
                 // descarguen los puntos elegidos por el usuario
                 PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
-
-                    if(idUsuario != null) {
-                        try {
-                            JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                if(idUsuario != null) { // Por precaución
+                    try {
+                        JSONObject configuracionActual = PersistenciaDatos.recuperaObjeto(
+                                getApplication(),
+                                PersistenciaDatos.ficheroListaCanales,
+                                Auxiliar.canal,
+                                Auxiliar.configuracionActual,
+                                idUsuario);
+                        if (configuracionActual != null
+                                && configuracionActual.has(Auxiliar.instante)
+                                && configuracionActual.getLong(Auxiliar.instante)
+                                > System.currentTimeMillis()) {
+                            //Los canales actuales siguen siendo válidos.
+                            configuracionActual.put(Auxiliar.caracteristica, true);
+                            PersistenciaDatos.reemplazaJSON(
                                     getApplication(),
                                     PersistenciaDatos.ficheroListaCanales,
                                     Auxiliar.canal,
-                                    Auxiliar.configuracionActual,
+                                    configuracionActual,
                                     idUsuario);
-                            if (configuracionActual != null
-                                    && configuracionActual.has(Auxiliar.instante)
-                                    && configuracionActual.getLong(Auxiliar.instante)
-                                    > System.currentTimeMillis()) {
-                                //Los canales actuales siguen siendo válidos.
-                                configuracionActual.put(Auxiliar.caracteristica, true);
-                                PersistenciaDatos.reemplazaJSON(
-                                        getApplication(),
-                                        PersistenciaDatos.ficheroListaCanales,
-                                        Auxiliar.canal,
-                                        configuracionActual,
-                                        idUsuario);
-                                listaCanales = cargaListaCanales();
-                                muestraLista();
-                                //enviaConfiguracion(true);
-                            } else {
-                                //enviaConfiguracion(true);
-                                obtenerListaCanales();
-                            }
-                        }catch (Exception e){
-                            e.printStackTrace();
+                            listaCanales = cargaListaCanales();
+                            muestraLista();
+                            //enviaConfiguracion(true);
+                        } else {
+                            //enviaConfiguracion(true);
+                            obtenerListaCanales();
                         }
+                    }catch (Exception e){
+                        e.printStackTrace();
                     }
-
-                /*else { TODO descativar los canales
-                    desactivarCanales();
-                    contenedorLista.setVisibility(View.GONE);
-                    invalidateOptionsMenu();
-                }*/
-
+                }
                 break;
+            //Pulsar sobre el tipo de canal o la imagen tiene el mismo efecto
             case R.id.tvObligatoriosCanales:
             case R.id.ivObligatorioConfCanales:
                 tipoCanalObligatorio = true;
@@ -774,10 +670,16 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                                 idUsuario);
                         if (tipoCanalObligatorio) {
                             jCanal.put(Canal.obligatorio, marcador);
-                            ivObligatorios.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[marcador], null));
+                            ivObligatorios.setImageDrawable(ResourcesCompat.getDrawable(
+                                    context.getResources(),
+                                    Auxiliar.obtenIdMarcadores()[marcador],
+                                    null));
                         } else {
                             jCanal.put(Canal.opcional, marcador);
-                            ivOpcionales.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), Auxiliar.obtenIdMarcadores()[marcador], null));
+                            ivOpcionales.setImageDrawable(ResourcesCompat.getDrawable(
+                                    context.getResources(),
+                                    Auxiliar.obtenIdMarcadores()[marcador],
+                                    null));
                         }
                         PersistenciaDatos.reemplazaJSON(
                                 getApplication(),
@@ -794,45 +696,4 @@ public class ConfiguracionCanales extends AppCompatActivity implements
                 break;
         }
     }
-
-    /*/**
-     * Método para activar o desactivar la característica de los canales en el servidor.
-     *
-     * @param canalesActivos True si se desea activar o false si se desea darse de baja.
-     */
-    /*private void enviaConfiguracion(boolean canalesActivos) {
-        try {
-            JSONObject peticion = new JSONObject();
-            peticion.put(Auxiliar.idUsuario, idUsuario);
-            peticion.put(Auxiliar.marcado, canalesActivos);
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                    Request.Method.PUT,
-                    Auxiliar.rutaCanales + "/users/" + idUsuario,
-                    peticion,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            //Por ahora no hago nada
-                            //System.err.println(response.toString());
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            //Por ahora no hago nada si ha ocurrido un error. De esta forma, cuando el
-                            //usuario vuelva a acceder a la pantalla del canal verá que no se ha
-                            //producido el cambio
-                            //System.err.println(error.toString());
-                        }
-                    }
-            );
-            jsonObjectRequest.setRetryPolicy(new DefaultRetryPolicy(
-                    2500,
-                    DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-                    DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-            ColaConexiones.getInstance(getApplicationContext()).getRequestQueue().add(jsonObjectRequest);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }*/
 }

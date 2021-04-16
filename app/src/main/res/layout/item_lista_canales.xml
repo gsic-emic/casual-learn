@@ -45,14 +45,15 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textAlignment="gravity"
-        android:gravity="end"
+        android:gravity="start"
         android:textSize="16sp"
         android:paddingHorizontal="@dimen/margen_texto"
         app:layout_constraintStart_toStartOf="@id/guia10Canales"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tituloItemCanal"
         app:layout_constraintBottom_toTopOf="@id/descripcionItemCanal"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        android:textStyle="italic"/>
 
     <TextView
         android:id="@+id/descripcionItemCanal"

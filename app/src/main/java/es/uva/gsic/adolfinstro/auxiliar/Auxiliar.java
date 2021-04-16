@@ -71,7 +71,8 @@ public class Auxiliar {
 
     //TODO comprueba que sea la dirección correcta
     //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    public static final String direccionIP = "http://192.168.1.222:10001/app/";
 
     private static final String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static final String rutaTareas = direccionIP + "tareas";

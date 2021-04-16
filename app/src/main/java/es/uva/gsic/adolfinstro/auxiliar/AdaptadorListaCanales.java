@@ -5,12 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -21,7 +19,7 @@ import es.uva.gsic.adolfinstro.R;
  * Adaptador para la selección de canales
  *
  * @author Pablo
- * @version 20210216
+ * @version 20210415
  */
 public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCanales.ViewHolderCanales> {
 
@@ -47,13 +45,11 @@ public class AdaptadorListaCanales extends RecyclerView.Adapter<AdaptadorListaCa
         }
     }
 
-    private Context context;
     private List<Canal> listaCanales;
     private LayoutInflater layoutInflater;
     private static ItemClickCbCanal itemClickCbCanal;
 
     public AdaptadorListaCanales(Context context, List<Canal> listaCanales){
-        this.context = context;
         layoutInflater = LayoutInflater.from(context);
         this.listaCanales = listaCanales;
     }

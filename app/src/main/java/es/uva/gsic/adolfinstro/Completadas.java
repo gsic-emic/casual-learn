@@ -58,7 +58,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * modificar la respuesta dada o complementarla.
  *
  * @author Pablo García Zarza
- * @version 20210407
+ * @version 20210416
  */
 public class Completadas extends AppCompatActivity implements
         AdaptadorImagenesCompletadas.ItemClickListener,
@@ -128,7 +128,7 @@ public class Completadas extends AppCompatActivity implements
             tarea = PersistenciaDatos.recuperaTarea(
                     getApplication(),
                     PersistenciaDatos.ficheroCompletadas,
-                    getIntent().getExtras().getString(Auxiliar.id),
+                    Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id),
                     idUsuario);
         } catch (JSONException e) {
             idUsuario = null;
@@ -328,7 +328,7 @@ public class Completadas extends AppCompatActivity implements
      * @return True si la opción está registrada
      */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
+    public boolean onOptionsItemSelected(@NotNull MenuItem item){
         int caso;
         //Si es null es que se ha llamado desde el onCreate para que mantenga la edición
         if(item == null) {
@@ -396,10 +396,10 @@ public class Completadas extends AppCompatActivity implements
                     if(tarea.has(Auxiliar.idToken)) {
                         String tokenTarea = tarea.getString(Auxiliar.idToken);
                         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                        String idUsuario = PersistenciaDatos.recuperaTarea(
+                        String idUsuario = Objects.requireNonNull(PersistenciaDatos.recuperaTarea(
                                 getApplication(),
                                 PersistenciaDatos.ficheroUsuario,
-                                Auxiliar.id)
+                                Auxiliar.id))
                                 .getString(Auxiliar.idPortafolio);
                         String url = Auxiliar.rutaPortafolio + idUsuario + "/" + tokenTarea;
                         clipboardManager.setPrimaryClip(ClipData.newPlainText(Auxiliar.idToken, url));
@@ -759,37 +759,33 @@ public class Completadas extends AppCompatActivity implements
      */
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.btAgregarCompletada:
-                try {
-                    switch (tarea.getString(Auxiliar.tipoRespuesta)){
-                        case Auxiliar.tipoImagen:
-                        case Auxiliar.tipoImagenMultiple:
-                        case Auxiliar.tipoPreguntaImagen:
-                        case Auxiliar.tipoVideo:
-                        case Auxiliar.tipoPreguntaImagenes:
-                        case Auxiliar.tipoPreguntaVideo:
-                            Intent intent = new Intent();
-                            intent.setAction(Intent.ACTION_GET_CONTENT);
-                            if(tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)
-                                || tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoPreguntaVideo)){
-                                intent.setType("video/*");
-                            }else{
-                                intent.setType("image/*");
-                            }
-                            startActivityForResult(
-                                    Intent.createChooser(intent, ""),
-                                    5000);
-                            break;
-                        default:
-                            break;
-                    }
-                }catch (JSONException e){
-                    e.printStackTrace();
+        if (v.getId() == R.id.btAgregarCompletada) {
+            try {
+                switch (tarea.getString(Auxiliar.tipoRespuesta)) {
+                    case Auxiliar.tipoImagen:
+                    case Auxiliar.tipoImagenMultiple:
+                    case Auxiliar.tipoPreguntaImagen:
+                    case Auxiliar.tipoVideo:
+                    case Auxiliar.tipoPreguntaImagenes:
+                    case Auxiliar.tipoPreguntaVideo:
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        if (tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)
+                                || tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoPreguntaVideo)) {
+                            intent.setType("video/*");
+                        } else {
+                            intent.setType("image/*");
+                        }
+                        startActivityForResult(
+                                Intent.createChooser(intent, ""),
+                                5000);
+                        break;
+                    default:
+                        break;
                 }
-                break;
-            default:
-                break;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -881,35 +877,48 @@ public class Completadas extends AppCompatActivity implements
     }
 
     public void boton(View view) {
-        switch (view.getId()){
-            case R.id.btCompartirCompletada:
-                if((findViewById(R.id.btCompartirCompletadaTwitter)).getVisibility() == View.VISIBLE){
+        try {
+            switch (view.getId()) {
+                case R.id.btCompartirCompletada:
+                    if ((findViewById(R.id.btCompartirCompletadaTwitter)).getVisibility() == View.VISIBLE) {
+                        muestraOculta(false);
+                    } else {
+                        muestraOculta(true);
+                    }
+                    break;
+                case R.id.btCompartirCompletadaTwitter:
+                    respuestaCompartidaFirebase(tarea.getString(Auxiliar.id), idUsuario, Auxiliar.twitter);
+                    Auxiliar.mandaTweet(this, tarea, hashtag);
                     muestraOculta(false);
-                }else{
-                    muestraOculta(true);
-                }
-                break;
-            case R.id.btCompartirCompletadaTwitter:
-                Auxiliar.mandaTweet(this, tarea, hashtag);
-                muestraOculta(false);
-                break;
-            case R.id.btCompartirCompletadaYammer:
-                Auxiliar.mandaYammer(this, tarea, hashtag);
-                muestraOculta(false);
-                break;
-            case R.id.btCompartirCompletadaInstagram:
-                Auxiliar.mandaInsta(this, tarea, hashtag);
-                muestraOculta(false);
-                break;
-            case R.id.btCompartirCompletadaTeams:
-                Auxiliar.mandaTeams(this, tarea, hashtag);
-                muestraOculta(false);
-                break;
-            default:
-                break;
+                    break;
+                case R.id.btCompartirCompletadaYammer:
+                    respuestaCompartidaFirebase(tarea.getString(Auxiliar.id), idUsuario, Auxiliar.yammer);
+                    Auxiliar.mandaYammer(this, tarea, hashtag);
+                    muestraOculta(false);
+                    break;
+                case R.id.btCompartirCompletadaInstagram:
+                    respuestaCompartidaFirebase(tarea.getString(Auxiliar.id), idUsuario, Auxiliar.instagram);
+                    Auxiliar.mandaInsta(this, tarea, hashtag);
+                    muestraOculta(false);
+                    break;
+                case R.id.btCompartirCompletadaTeams:
+                    respuestaCompartidaFirebase(tarea.getString(Auxiliar.id), idUsuario, Auxiliar.teams);
+                    Auxiliar.mandaTeams(this, tarea, hashtag);
+                    muestraOculta(false);
+                    break;
+                default:
+                    break;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
+    /**
+     * Método para mostrar u ocultar los botones para compartir en las plataformas soportadas por CL.
+     * Dependiendo del tipo de respuesta de la tarea se muestran unas plataformas u otras.
+     * @param mostrar Permite controlar silos objetos son visibles o no.
+     */
     private void muestraOculta(boolean mostrar){
         Integer[] lista;
         try {
@@ -949,5 +958,25 @@ public class Completadas extends AppCompatActivity implements
             btCompartir.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_baseline_close_24, null));
         else
             btCompartir.setImageDrawable(ResourcesCompat.getDrawable(this.getResources(), R.drawable.ic_share_white, null));
+    }
+
+    /**
+     * Método para enviar un evento a Firebase cada vez que se envíe información a una plataforma.
+     * Este método es utilizado por la clase CompartirRespuesta
+     *
+     * @param idTarea Id. Tarea
+     * @param idUsuario Id. Usuario
+     * @param plataforma Nombre de la plataforma.
+     */
+    public static void respuestaCompartidaFirebase(String idTarea, String idUsuario, String plataforma){
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
+            bundle.putString("idUsuario", idUsuario);
+            bundle.putString("plataforma", plataforma);
+            Login.firebaseAnalytics.logEvent("respuestaCompartida", bundle);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

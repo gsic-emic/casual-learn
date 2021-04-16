@@ -130,7 +130,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 /**
  * Clase que gestiona la actividad principal de la aplicación.
  * @author Pablo
- * @version 20210407
+ * @version 202100415
  */
 public class Maps extends AppCompatActivity implements
         SharedPreferences.OnSharedPreferenceChangeListener,
@@ -172,7 +172,7 @@ public class Maps extends AppCompatActivity implements
     private final String idPosicionZoom = "posicionZum";
 
     /** Adaptador para la lista de tareas del marcador */
-    private static AdaptadorListaMapa adaptadorListaMapa;
+    private AdaptadorListaMapa adaptadorListaMapa;
 
     /** Identificador de la primera cuadrícula */
     final String idPrimeraCuadricula = "1C";
@@ -253,14 +253,6 @@ public class Maps extends AppCompatActivity implements
     private FloatingActionButton btCentrar;
 
     private FloatingActionButton btNavegar;
-
-    //private FloatingActionButton btModos;
-
-    //private Button btModos1, btModos2, btModos3, btModos4;
-
-    //private Button[] btsModo;
-
-    //private ConstraintLayout modos;
 
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
@@ -479,14 +471,10 @@ public class Maps extends AppCompatActivity implements
                         }
                     } else {
                         ocultaContenedorBusqMapa();
-                        /*if (!btCentrar.isShown())
-                            btCentrar.show();*/
                     }
 
                 } else {
                     ocultaContenedorBusqMapa();
-                    /*if (!btCentrar.isShown())
-                        btCentrar.show();*/
                 }
                 return false;
             }
@@ -562,9 +550,6 @@ public class Maps extends AppCompatActivity implements
 
         final SwitchCompat swActivarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swActivarPor);
         final SwitchCompat swRetardarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swRetardarPor);
-        //final TextView textoTiempo = dialogoConfiguracionPorfolio.findViewById(R.id.tvIntervaloPor);
-        //textoTiempo.setText(String.format("%s\n(3 %s)", getResources().getString(R.string.intervalo), getResources().getString(R.string.horas)));
-        //SeekBar seekBar = dialogoConfiguracionPorfolio.findViewById(R.id.sbIntervalo);
         final Button btOmitir = dialogoConfiguracionPorfolio.findViewById(R.id.btOmitirPor);
 
         dialogoConfiguracionPorfolio.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -651,14 +636,6 @@ public class Maps extends AppCompatActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //btModos = findViewById(R.id.btModo);
-        //modos = findViewById(R.id.modos);
-        //btModos1 = findViewById(R.id.modo1);
-        //btModos2 = findViewById(R.id.modo2);
-        //btModos3 = findViewById(R.id.modo3);
-        //btModos4 = findViewById(R.id.modo4);
-        //btsModo = new Button[]{btModos1, btModos2, btModos3, btModos4};
     }
 
     private void enviaConfiguracionPorfolio(final boolean publico, final boolean retardado) {
@@ -816,24 +793,7 @@ public class Maps extends AppCompatActivity implements
         }
         btCentrar.setVisibility(View.VISIBLE);
         btNavegar.setVisibility(View.GONE);
-        //ocultaModos();
     }
-
-    /*private void ocultaModos(){
-        if(modos.isShown()){
-            modos.setVisibility(View.GONE);
-        }
-        if(!btModos.isShown())
-            btModos.show();
-    }
-
-    private void ocultaTodoModos(){
-        if(modos.isShown()){
-            modos.setVisibility(View.GONE);
-        }
-        if(btModos.isShown())
-            btModos.hide();
-    }*/
 
     /**
      * Método para pasar la vista de la descripción del lugar de reducida a completa
@@ -1313,13 +1273,20 @@ public class Maps extends AppCompatActivity implements
         String id;
         String[] idsCanales;
         StringBuilder salida;
-        JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
+        JSONArray listaCanales = PersistenciaDatos.leeFichero(
+                getApplication(),
+                PersistenciaDatos.ficheroListaCanales);
         JSONObject canal;
         boolean opcional;
-        canal = PersistenciaDatos.recuperaObjeto(getApplication(), PersistenciaDatos.ficheroListaCanales, Auxiliar.canal, Auxiliar.configuracionActual, idUsuario);
+        canal = PersistenciaDatos.recuperaObjeto(
+                getApplication(),
+                PersistenciaDatos.ficheroListaCanales,
+                Auxiliar.canal,
+                Auxiliar.configuracionActual,
+                idUsuario);
         Integer icono;
         try {
-            if (canal.has(Canal.opcional))
+            if (canal != null && canal.has(Canal.opcional))
                 icono = Auxiliar.obtenIdMarcadores()[canal.getInt(Canal.opcional)];
             else
                 icono = null;
@@ -1541,11 +1508,6 @@ public class Maps extends AppCompatActivity implements
                             R.drawable.ic_marcador300_especial4, R.drawable.ic_marcador500_especial4,
                             R.drawable.ic_marcador700_especial4, R.drawable.ic_marcador900_especial4};
                     break;
-                case 5:
-                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial_combi, R.drawable.ic_marcador100_especial_combi,
-                            R.drawable.ic_marcador300_especial_combi, R.drawable.ic_marcador500_especial_combi,
-                            R.drawable.ic_marcador700_especial_combi, R.drawable.ic_marcador900_especial_combi};
-                    break;
                 default:
                     vector = new int[]{R.drawable.ic_marcador_pulsado, R.drawable.ic_marcador100,
                             R.drawable.ic_marcador300, R.drawable.ic_marcador500,
@@ -1571,6 +1533,9 @@ public class Maps extends AppCompatActivity implements
      * Método para generar la parte gráfica del marcador. Dentro de un elemento fijo se dibujará el
      * número de tareas.
      * @param size Número de tareas que representa el marcador en un interior
+     * @param tipo Tipo de marcador que se tiene que representar: 0 para el especial; 1 para especial1;
+     *             2 para especial2; 3 para especial3; 4 para especial4; y cualquier otro para el
+     *             marcador por defecto
      * @return Representación gráfica del marcador
      */
     private Bitmap generaBitmapMarkerNumero(int size, int tipo) {
@@ -1906,33 +1871,6 @@ public class Maps extends AppCompatActivity implements
                                     default:
                                         M0.put(puntoInteres);
                                 }
-                                /*if(iguales){
-                                    int variable = (listaCanales.getJSONObject(lugarCoincidencia.get(0))
-                                            .getString(Auxiliar.tipo).equals(Canal.obligatorio)) ?
-                                            marcadorTipoObligatorio :
-                                            marcadorTipoOpcional;
-                                    switch (variable){
-                                        case 1:
-                                            M1.put(puntoInteres);
-                                            break;
-                                        case 2:
-                                            M2.put(puntoInteres);
-                                            break;
-                                        case 3:
-                                            M3.put(puntoInteres);
-                                            break;
-                                        case 4:
-                                            M4.put(puntoInteres);
-                                            break;
-                                        case 5:
-                                            M5.put(puntoInteres);
-                                            break;
-                                        default:
-                                            M0.put(puntoInteres);
-                                    }
-                                }else
-                                    M6.put(puntoInteres);*/
-
                             } else
                                 M0.put(puntoInteres);
                         }
@@ -1968,8 +1906,12 @@ public class Maps extends AppCompatActivity implements
         JSONObject puntoInteres;
         Marcador marcador;
         double latitud, longitud;
-
-        JSONArray tareasCompletadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroCompletadas);
+        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
+        JSONArray tareasCompletadas;
+        if(idUsuario != null)
+            tareasCompletadas = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroCompletadas);
+        else
+            tareasCompletadas = new JSONArray();
         String nombreTareaCompletada, nombrePuntoInteres;
         boolean anterior = false;
         try {
@@ -2243,30 +2185,6 @@ public class Maps extends AppCompatActivity implements
         new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
     }
 
-    /*/**
-     * Creación del menú en el layout
-     * @param menu Menú a rellenar
-     * @return Verdadero si se va a mostrar el menú
-     */
-    /*@Override
-    public boolean onCreateOptionsMenu(Menu menu){
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }*/
-
-    /*@Override
-    public boolean onPrepareOptionsMenu(Menu menu){
-        JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-        MenuItem menuItem = menu.findItem(R.id.cerrarSesion);
-        if(idUsuario == null) {//Si el usuario no se ha identificado se cambia la etiqueta a mostrar
-            menuItem.setTitle(getString(R.string.iniciarSesion));
-        }else{
-            menuItem.setVisible(false);
-        }
-        return super.onPrepareOptionsMenu(menu);
-    }*/
-
     @Override
     public boolean onNavigationItemSelected(MenuItem menuItem){
         onBackPressed();
@@ -2499,7 +2417,8 @@ public class Maps extends AppCompatActivity implements
                     JSONObject canal;
                     for(int i = 0; i < listaCanales.length(); i++){
                         canal = listaCanales.getJSONObject(i);
-                        if((canal.has(Auxiliar.tipo) && canal.getString(Auxiliar.tipo).equals(Canal.obligatorio)) || canal.getBoolean(Auxiliar.marcado)){
+                        if((canal.has(Auxiliar.tipo) && canal.getString(Auxiliar.tipo).equals(Canal.obligatorio))
+                                || canal.getBoolean(Auxiliar.marcado)){
                             keys.add(Auxiliar.canal);
                             objects.add(canal.getString(Auxiliar.canal));
                         }
@@ -2626,8 +2545,12 @@ public class Maps extends AppCompatActivity implements
      * de interés
      *
      * @param contexto Identificador del punto de interés
+     * @param enlaceWikipedia Enlace de la Wikipedia del contexo
      * @param nombreFicheroTareas Nombre que se desea poner al fichero donde se almacenan las tareas
      * @param nombreFicheroZona Nombre del fichero donde está almacenado el punto de interés
+     * @param latitud Latitud Latitud
+     * @param longitud Longitud Longitud
+     * @param nombre Label del contexto
      */
     private void peticionTareas(
             final String contexto,
@@ -2636,7 +2559,7 @@ public class Maps extends AppCompatActivity implements
             final String nombreFicheroZona,
             final double latitud,
             final double longitud,
-            final String nombre){//Seguro que necesito algo más como el id del lugar donde lo voy a colocar
+            final String nombre){
         List<String> keys = new ArrayList<>();
         List<Object> objects = new ArrayList<>();
         keys.add(Auxiliar.contextos); objects.add(contexto);
@@ -2657,7 +2580,8 @@ public class Maps extends AppCompatActivity implements
             else
                 canalesActivos = false;
             if(canalesActivos) {//Busco los canales suscritos para agregarlos a la petición
-                JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(), PersistenciaDatos.ficheroListaCanales);
+                JSONArray listaCanales = PersistenciaDatos.leeFichero(getApplication(),
+                        PersistenciaDatos.ficheroListaCanales);
                 JSONObject canal;
                 for(int i = 0; i < listaCanales.length(); i++){
                     canal = listaCanales.getJSONObject(i);
@@ -2690,7 +2614,8 @@ public class Maps extends AppCompatActivity implements
                                     tarea.put(Auxiliar.longitud, longitud);
                                     if(enlaceWikipedia != null)
                                         tarea.put(Auxiliar.enlaceWiki, enlaceWikipedia);
-                                    if(!tarea.has(Auxiliar.comment) || Auxiliar.stringVacio(tarea.getString(Auxiliar.comment)))
+                                    if(!tarea.has(Auxiliar.comment)
+                                            || Auxiliar.stringVacio(tarea.getString(Auxiliar.comment)))
                                         tarea.put(Auxiliar.comment, nombre);
                                     tareasG.put(tarea);
                                 } catch (JSONException e) {
@@ -2749,6 +2674,9 @@ public class Maps extends AppCompatActivity implements
      * contiene. También se muestra esta lista al final de la información.
      *
      * @param marcador Información que representa al marcador
+     * @param tipo Tipo de marcador que se tiene que representar: 0 para el especial; 1 para especial1;
+     *             2 para especial2; 3 para especial3; 4 para especial4; y cualquier otro para el
+     *             marcador por defecto
      */
     void newMarker(final Marcador marcador, final int tipo) {
         Marker marker = new Marker(map);

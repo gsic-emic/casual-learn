@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Objects;
+
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
 import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 
@@ -22,7 +24,7 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  * soporta la aplicación.
  *
  * @author Pablo
- * @version 20201007
+ * @version 20210416
  */
 public class CompartirRespuesta extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener{
@@ -36,24 +38,27 @@ public class CompartirRespuesta extends AppCompatActivity
 
     private JSONObject tarea;
 
+    private String idUsuario;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compartir_respuesta);
 
-        idTarea = getIntent().getExtras().getString("ID");
+        idTarea = Objects.requireNonNull(getIntent().getExtras()).getString("ID");
         textoPuntua = getIntent().getExtras().getString(Auxiliar.textoParaElMapa);
 
         try {
+            idUsuario = Objects.requireNonNull(PersistenciaDatos.recuperaTarea(
+                    getApplication(),
+                    PersistenciaDatos.ficheroUsuario,
+                    Auxiliar.id))
+                    .getString(Auxiliar.uid);
             tarea = PersistenciaDatos.recuperaTarea(
                     getApplication(),
                     PersistenciaDatos.ficheroCompletadas,
                     idTarea,
-                    PersistenciaDatos.recuperaTarea(
-                            getApplication(),
-                            PersistenciaDatos.ficheroUsuario,
-                            Auxiliar.id)
-                            .getString(Auxiliar.uid));
+                    idUsuario);
             String tipo = tarea.getString(Auxiliar.tipoRespuesta);
             if(tipo.equals(Auxiliar.tipoSinRespuesta) ||
                     tipo.equals(Auxiliar.tipoPreguntaCorta) ||
@@ -83,36 +88,48 @@ public class CompartirRespuesta extends AppCompatActivity
     }
 
     public void boton(View view) {
-        switch (view.getId()){
-            case R.id.btCompartirVolver:
-                muestraMapa(textoPuntua);
-                break;
-            case R.id.btCompartirTwitter:
-                Auxiliar.mandaTweet(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            case R.id.btCompartirYammer:
-                Auxiliar.mandaYammer(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            case R.id.btCompartirInsta:
-                Auxiliar.mandaInsta(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            case R.id.btCompartirTeams:
-                Auxiliar.mandaTeams(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            default:
-                break;
+        try {
+            switch (view.getId()) {
+                case R.id.btCompartirVolver:
+                    muestraMapa(textoPuntua);
+                    break;
+                case R.id.btCompartirTwitter:
+                    Completadas.respuestaCompartidaFirebase(
+                            tarea.getString(Auxiliar.id), idUsuario, Auxiliar.twitter);
+                    Auxiliar.mandaTweet(
+                            this,
+                            tarea,
+                            hashtag);
+                    break;
+                case R.id.btCompartirYammer:
+                    Completadas.respuestaCompartidaFirebase(
+                            tarea.getString(Auxiliar.id), idUsuario, Auxiliar.yammer);
+                    Auxiliar.mandaYammer(
+                            this,
+                            tarea,
+                            hashtag);
+                    break;
+                case R.id.btCompartirInsta:
+                    Completadas.respuestaCompartidaFirebase(
+                            tarea.getString(Auxiliar.id), idUsuario, Auxiliar.instagram);
+                    Auxiliar.mandaInsta(
+                            this,
+                            tarea,
+                            hashtag);
+                    break;
+                case R.id.btCompartirTeams:
+                    Completadas.respuestaCompartidaFirebase(
+                            tarea.getString(Auxiliar.id), idUsuario, Auxiliar.teams);
+                    Auxiliar.mandaTeams(
+                            this,
+                            tarea,
+                            hashtag);
+                    break;
+                default:
+                    break;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
