@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 
 import androidx.preference.PreferenceManager;
 
@@ -82,15 +83,27 @@ public class CompruebaEnvios extends BroadcastReceiver {
         if(alarmManager != null) {
             cancelaComrpuebaEnvios(context);
             //10 minutos entre cada comprobación
-            alarmManager.setRepeating(
-                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    5000,
-                    600000,
-                    PendingIntent.getBroadcast(
-                            context,
-                            9985,
-                            new Intent(context, CompruebaEnvios.class),
-                            0));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                alarmManager.setRepeating(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        5000,
+                        600000,
+                        PendingIntent.getBroadcast(
+                                context,
+                                9985,
+                                new Intent(context, CompruebaEnvios.class),
+                                PendingIntent.FLAG_IMMUTABLE));
+            } else {
+                alarmManager.setRepeating(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        5000,
+                        600000,
+                        PendingIntent.getBroadcast(
+                                context,
+                                9985,
+                                new Intent(context, CompruebaEnvios.class),
+                                0));
+            }
         }
     }
 
@@ -102,10 +115,18 @@ public class CompruebaEnvios extends BroadcastReceiver {
     public void cancelaComrpuebaEnvios(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if(alarmManager != null)
-            alarmManager.cancel(
-                    PendingIntent.getBroadcast(context,
-                            9985,
-                            new Intent(context, CompruebaEnvios.class),
-                            0));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                alarmManager.cancel(
+                        PendingIntent.getBroadcast(context,
+                                9985,
+                                new Intent(context, CompruebaEnvios.class),
+                                PendingIntent.FLAG_IMMUTABLE));
+            } else {
+                alarmManager.cancel(
+                        PendingIntent.getBroadcast(context,
+                                9985,
+                                new Intent(context, CompruebaEnvios.class),
+                                0));
+            }
     }
 }

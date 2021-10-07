@@ -509,7 +509,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     }
                 }
                 else {
-                    if (Build.VERSION.SDK_INT >= 30 && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
                         if (!(ActivityCompat.checkSelfPermission(
                                 context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                                 == PackageManager.PERMISSION_GRANTED)) {
