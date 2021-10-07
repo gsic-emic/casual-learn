@@ -1,166 +1,262 @@
 <!DOCTYPE html>
 <html lang="es">
-        <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <meta name="author" content="GSIC/EMIC - Pablo García Zarza y Adolfo Ruiz Calleja">
-                <meta name="description" content="Casual Learn es una aplicación para aprender historia del arte de Castilla y León. Está desarrollada para ser utilizada en dispositivos Android a partir de la versión 4.0. En esta página web se pueden conocer las principales características de la aplicación así como obtener su enlace de descarga dentro de Google Play.">
-                <title>Casual Learn: aprende historia del arte en Castilla y León</title>
 
-                <link rel="apple-touch-icon" sizes="57x57" href="media/apple-icon-57x57.png">
-                <link rel="apple-touch-icon" sizes="60x60" href="media/apple-icon-60x60.png">
-                <link rel="apple-touch-icon" sizes="72x72" href="media/apple-icon-72x72.png">
-                <link rel="apple-touch-icon" sizes="76x76" href="media/apple-icon-76x76.png">
-                <link rel="apple-touch-icon" sizes="114x114" href="media/apple-icon-114x114.png">
-                <link rel="apple-touch-icon" sizes="120x120" href="media/apple-icon-120x120.png">
-                <link rel="apple-touch-icon" sizes="144x144" href="media/media/apple-icon-144x144.png">
-                <link rel="apple-touch-icon" sizes="152x152" href="media/apple-icon-152x152.png">
-                <link rel="apple-touch-icon" sizes="180x180" href="media/apple-icon-180x180.png">
-                <link rel="icon" type="image/png" sizes="192x192"  href="media/android-icon-192x192.png">
-                <link rel="icon" type="image/png" sizes="32x32" href="media/favicon-32x32.png">
-                <link rel="icon" type="image/png" sizes="96x96" href="media/favicon-96x96.png">
-                <link rel="icon" type="image/png" sizes="16x16" href="media/favicon-16x16.png">
-                <link rel="manifest" href="media/manifest.json">
-                <meta name="msapplication-TileColor" content="#ffffff">
-                <meta name="msapplication-TileImage" content="media/ms-icon-144x144.png">
-                <meta name="theme-color" content="#ffffff">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="author" content="GSIC/EMIC - Pablo García Zarza y Adolfo Ruiz Calleja">
+	<meta name="description"
+		content="Casual Learn es una aplicación para aprender historia del arte de Castilla y León. Está desarrollada para ser utilizada en dispositivos Android a partir de la versión 4.4 (Kitkat, API 19). En esta página web se pueden conocer las principales características de la aplicación así como obtener su enlace de descarga dentro de Google Play.">
+	<title>Casual Learn: aprende historia del arte en Castilla y León</title>
 
-                <link href="bootstrap-4.5.2-dist/css/bootstrap.min.css" rel="stylesheet" media="screen">
-                <link href="css/cajonSastre.css" rel="stylesheet">
-				<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+	<link rel="apple-touch-icon" sizes="57x57" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-57x57.png">
+	<link rel="apple-touch-icon" sizes="60x60" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-60x60.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="76x76" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-76x76.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-114x114.png">
+	<link rel="apple-touch-icon" sizes="120x120" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-120x120.png">
+	<link rel="apple-touch-icon" sizes="144x144"
+		href="https://casuallearnapp.gsic.uva.es/media/media/apple-icon-144x144.png">
+	<link rel="apple-touch-icon" sizes="152x152" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-152x152.png">
+	<link rel="apple-touch-icon" sizes="180x180" href="https://casuallearnapp.gsic.uva.es/media/apple-icon-180x180.png">
+	<link rel="icon" type="https://casuallearnapp.gsic.uva.es/image/png" sizes="192x192"
+		href="media/android-icon-192x192.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="https://casuallearnapp.gsic.uva.es/media/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="96x96" href="https://casuallearnapp.gsic.uva.es/media/favicon-96x96.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="https://casuallearnapp.gsic.uva.es/media/favicon-16x16.png">
+	<link rel="manifest" href="https://casuallearnapp.gsic.uva.es/media/manifest.json">
+	<meta name="msapplication-TileColor" content="#ffffff">
+	<meta name="msapplication-TileImage" content="https://casuallearnapp.gsic.uva.es/media/ms-icon-144x144.png">
+	<meta name="theme-color" content="#ffffff">
 
-				<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-				<script src="bootstrap-4.5.2-dist/js/bootstrap.min.js"></script>
-        </head>
-        <body>
-                <div class="d-md-flex flex-md-row cabecera" id="inicio">
-                        <div class="text-center flex-fill order-md-1">
-                                <img class="responsive2" src="media/Casual_Learn_01.webp" alt="Icono aplicación">
-                        </div>
-                        <div class="p-3 flex-fill order-md-2" style="margin: auto;">
-                                <div class="subtitulo text-center">Descarga la aplicación:</div>
-                                <div class="row" style="margin-top: -1rem;"><div class="mx-auto"><a href="https://play.google.com/store/apps/details?id=es.uva.gsic.adolfinstro" rel="noopener" target="_blank"><img src="media/google-play-badge.webp" alt="Página de Google Play" class="responsive"></a></div></div>
-                        </div>
-                </div>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+	<link href="https://casuallearnapp.gsic.uva.es/libraries/bootstrap-4.5.2-dist/css/bootstrap.min.css"
+		rel="stylesheet" media="screen">
+	<link href="https://casuallearnapp.gsic.uva.es/css/cajonSastre.css" rel="stylesheet">
+</head>
 
-
-                <div class="colorfondo">
-                        <div class="container">
-                                <div class="d-md-flex flex-md-row py-5">
-                                        <div class="order-md-2">
-                                                <h1>Aprende historia del arte en Castilla y León</h1>
-                                                <p>Casual Learn es una aplicación para aprender historia del arte mientras paseas. Realiza las tareas propuestas para percatarte de ciertos detalles o reflexionar sobre varios aspectos de los monumentos que encuentres. Actualmente se centra en monumentos de Castilla y León. Puedes utilizarla durante tus paseos habituales o cuando visites los municipios de Castilla y León.</p>
-                                        </div>
-                                        <div class="text-center p-1 order-md-1">
-                                                <img class="imagen" src="media/tarea.webp" alt="Tarea">
-                                        </div>
-                                </div>
-                        </div>
-                </div>
-
-                <div class="container">
-                        <div class="d-md-flex flex-md-row py-5">
-                                <div>
-                                        <h1>Una aplicación diseñada para aprender</h1>
-                                        <p>Las tareas ofrecidas por Casual Learn han sido propuestas por expertos en tecnología educativa. Son tareas que resultan interesantes a cualquier tipo de público que quiera aprender sobre historia del arte en Castilla y León.</p>
-                                </div>
-                                <div class="text-center p-1">
-                                        <img class="imagen" src="media/mapa.webp" alt="MapaValladolidTareas">
-                                </div>
-                        </div>
-                </div>
-
-				<div class="colorfondo">
-					<div class="container">
-							<div class="d-md-flex flex-md-row py-5">
-									<div class="order-md-2 my-auto px-2">
-											<h1>Te será muy útil si estudias historia del arte</h1>
-											<p>Mira cómo Emma, una alumna de secundaria de Palencia, usa Casual Learn para entender conceptos que estudia en historia del arte.</p>
-									</div>
-									<div class="order-md-1">
-											<iframe class="videoDemo mx-auto" src="https://www.youtube-nocookie.com/embed/jUBNOPYVRvU" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Emma utilizando Casual Learn"></iframe>
-									</div>
-							</div>
-					</div>
-			</div>
-
-
-			<div class="container">
-					<div class="d-md-flex flex-md-row py-5">
-							<div class="my-auto px-2">
-									<h1>Muy fácil de usar</h1>
-									<p>En este vídeo verás cómo hacer uso de todas las funcionalidades que ofrece Casual Learn.
-							</div>
-							<div>
-									<iframe class="videoDemo mx-auto" src="https://www.youtube-nocookie.com/embed/h4UKSBRO7Tg" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen title="Tutorial de uso de Casual Learn"></iframe>
-							</div>
-					</div>
-			</div>
-
-
-			<div class="colorfondo">
-					<div class="container">
-							<div class="d-md-flex flex-md-row py-5">
-									<div class="order-md-2">
-											<h1>Es una aplicación premiada</h1>
-											<p>Casual Learn ha recibido el <a href="http://www.ec-tel.eu/index.php?id=957" rel="noopener" target="_blank">premio a la mejor demostración</a> de 2020 en la conferencia científica de tecnología educativa más importante de Europa. También ha ganado el <a href="https://datosabiertos.jcyl.es/web/jcyl/RISP/es/Plantilla100/1285004455821/_/_/_" rel="noopener" target="_blank">premio al mejor recurso educativo</a> del IV Concurso de Datos Abiertos de la Junta de Castilla y León.</p>
-									</div>
-									<div class="text-center p-1 order-md-1" style="margin:auto">
-											<img class="imagen2" src="media/certificadoEctel.webp" alt="Certificado ECTEL">
-									</div>
-							</div>
-					</div>
-			</div>
-
-					<div class="container">
-							<div class="d-md-flex flex-md-row py-5">
-									<div>
-											<h1>Casual Learn usa Datos Abiertos</h1>
-											<p>Para generar las tareas de Casual Learn se han utilizado <a href="https://datosabiertos.jcyl.es/web/es/datos-abiertos-castilla-leon.html" rel="noopener" target="_blank">Datos Abiertos ofrecidos por la Junta de Castilla y León</a>, por <a href="https://wiki.dbpedia.org/" rel="noopener" target="_blank">DBpedia</a> y por <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" rel="noopener" target="_blank">Wikidata</a>. Así, más de 13.000 tareas se han creado y geolocalizado de manera semi-automática. Estas tareas se ofrecen, a su vez, <a href="https://casuallearn.gsic.uva.es/sparql" rel="noopener" target="_blank">como Datos Abiertos para quien quiera utilizarlas</a>.</p>
-									</div>
-									<div class="text-center p-1" style="margin:auto">
-											<img src="media/fuentes.svg" alt="datosAbiertos" style="max-width: 280px">
-									</div>
-							</div>
-					</div>
-			<div class="colorfondo">
-				<div class="container">
-						<div class="d-md-flex flex-md-row py-5">
-								<div class="order-md-2">
-										<h1>Un trabajo del grupo GSIC</h1>
-										<p>Casual Learn es una aplicación diseñada y desarrollada por el <a href="https://www.gsic.uva.es/" rel="noopener" target="_blank">grupo GSIC-EMIC de la Universidad de Valladolid</a>. GSIC-EMIC es un grupo de investigación formado por ingenieros y educadores expertos en tecnología educativa, práctica pedagógica, Web de Datos y gestión de datos educativos.</p>
-								</div>
-								<div class="text-center p-1 order-md-1" style="margin:auto" >
-										<img class="imagen2" src="media/collage.webp" alt="Equipo Casual Learn">
-								</div>
-						</div>
+<body>
+	<div class="d-md-flex flex-md-row cabecera" id="inicio">
+		<div class="text-center flex-fill order-md-1">
+			<picture>
+				<source type="image/webp" srcset="https://casuallearnapp.gsic.uva.es/media/Casual_Learn_01.webp">
+				<source type="image/png" srcset="https://casuallearnapp.gsic.uva.es/media/Casual_Learn_01.png">
+				<img class="responsive2" src="https://casuallearnapp.gsic.uva.es/media/Casual_Learn_01.png"
+					alt="Icono Casual Learn">
+			</picture>
+		</div>
+		<div class="p-3 flex-fill order-md-2" style="margin: auto;">
+			<div class="col">
+				<div class="row subtitulo justify-content-center">
+					<a style="text-decoration: none;"
+						href="https://play.google.com/store/apps/details?id=es.uva.gsic.adolfinstro" rel="noopener"
+						target="_blank">
+						Descarga la aplicación:
+					</a>
+				</div>
+				<div class="row justify-content-center" style="margin-top: -1rem;">
+					<a href="https://play.google.com/store/apps/details?id=es.uva.gsic.adolfinstro" rel="noopener"
+						target="_blank">
+						<picture>
+							<source type="image/webp"
+								srcset="https://casuallearnapp.gsic.uva.es/media/google-play-badge.webp">
+							<source type="image/png"
+								srcset="https://casuallearnapp.gisc.uva.es/media/google-play-badge.png">
+							<img src="https://casuallearnapp.gsic.uva.es/media/google-play-badge.png"
+								alt="Página de Google Play" class="responsive">
+						</picture>
+					</a>
 				</div>
 			</div>
+		</div>
+	</div>
 
-			<div class="d-md-flex flex-md-row cabecera">
-					<div class="p-3 flex-fill order-md-2" style="margin: auto;">
-							<div class="subtitulo text-center">Descarga Casual Learn:</div>
-							<div class="row" style="margin-top: -1rem;"><div class="mx-auto"><a href="https://play.google.com/store/apps/details?id=es.uva.gsic.adolfinstro" rel="noopener" target="_blank"><img src="media/google-play-badge.png" alt="Página de Google Play" class="responsive"></a></div></div>
-					</div>
-			</div>
 
-			<div class="botonFlotante" id="contenedorArriba">
-					<a href="#inicio"><img src="media/arriba.svg" alt="volverArriba"></a>
+	<div class="colorfondo">
+		<div class="container">
+			<div class="d-md-flex flex-md-row py-5">
+				<div class="order-md-2">
+					<h1>Aprende historia del arte en Castilla y León</h1>
+					<p>Casual Learn es una aplicación para aprender historia del arte mientras paseas. Realiza las
+						tareas propuestas para percatarte de ciertos detalles o reflexionar sobre varios aspectos de los
+						monumentos que encuentres. Actualmente se centra en monumentos de Castilla y León. Puedes
+						utilizarla durante tus paseos habituales o cuando visites los municipios de Castilla y León.</p>
+				</div>
+				<div class="text-center p-1 order-md-1">
+					<picture>
+						<source type="image/webp" srcset="https://casuallearnapp.gsic.uva.es/media/tarea.webp">
+						<source type="image/png" srcset="https://casuallearnapp.gsic.uva.es/media/tarea.png">
+						<img class="imagen" src="https://casuallearnapp.gsic.uva.es/media/tarea.png" alt="Tarea">
+					</picture>
+				</div>
 			</div>
-			
-		<script>
-				$(document).ready(function() {
-						$(window).scroll(function(event){
-								if($(this).scrollTop() > 200){
-										document.getElementById("contenedorArriba").style.display = "inline";
-								}else{
-										document.getElementById("contenedorArriba").style.display = "none";
-								}
-						});
-				});
-		</script>
-		<footer>
-			<p style="font-size: x-small; color: black">Google Play y el logotipo de Google Play son marcas comerciales de Google LLC.</p>
-		</footer>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="d-md-flex flex-md-row py-5">
+			<div>
+				<h1>Una aplicación diseñada para aprender</h1>
+				<p>Las tareas ofrecidas por Casual Learn han sido propuestas por expertos en tecnología educativa. Son
+					tareas que resultan interesantes a cualquier tipo de público que quiera aprender sobre historia del
+					arte en Castilla y León.</p>
+			</div>
+			<div class="text-center p-1">
+				<picture>
+					<source type="image/webp" srcset="https://casuallearnapp.gsic.uva.es/media/mapa.webp">
+					<source type="image/png" srcset="https://casuallearnapp.gsic.uva.es/media/mapa.png">
+					<img class="imagen" src="https://casuallearnapp.gsic.uva.es/media/mapa.png"
+						alt="Mapa de Valladolid con puntos de interés">
+				</picture>
+			</div>
+		</div>
+	</div>
+
+	<div class="colorfondo">
+		<div class="container">
+			<div class="d-md-flex flex-md-row py-5">
+				<div class="order-md-2 my-auto px-2">
+					<h1>Te será muy útil si estudias historia del arte</h1>
+					<p>Mira cómo Emma, una alumna de secundaria de Palencia, usa Casual Learn para entender conceptos
+						que estudia en historia del arte.</p>
+				</div>
+				<div class="order-md-1">
+					<iframe class="videoDemo mx-auto" src="https://www.youtube-nocookie.com/embed/jUBNOPYVRvU"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+						allowfullscreen title="Emma utilizando Casual Learn"></iframe>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="container">
+		<div class="d-md-flex flex-md-row py-5">
+			<div class="my-auto px-2">
+				<h1>Muy fácil de usar</h1>
+				<p>En este vídeo verás cómo hacer uso de todas las funcionalidades que ofrece Casual Learn.
+			</div>
+			<div>
+				<iframe class="videoDemo mx-auto" src="https://www.youtube-nocookie.com/embed/h4UKSBRO7Tg"
+					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+					allowfullscreen title="Tutorial de uso de Casual Learn"></iframe>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="colorfondo">
+		<div class="container">
+			<div class="d-md-flex flex-md-row py-5">
+				<div class="order-md-2">
+					<h1>Es una aplicación premiada</h1>
+					<p>Casual Learn ha recibido el <a href="http://www.ec-tel.eu/index.php?id=957" rel="noopener"
+							target="_blank">premio a la mejor demostración</a> de 2020 en la conferencia científica de
+						tecnología educativa más importante de Europa. También ha ganado el <a
+							href="https://datosabiertos.jcyl.es/web/jcyl/RISP/es/Plantilla100/1285004455821/_/_/_"
+							rel="noopener" target="_blank">premio al mejor recurso educativo</a> del IV Concurso de
+						Datos Abiertos de la Junta de Castilla y León.</p>
+				</div>
+				<div class="text-center p-1 order-md-1" style="margin:auto">
+					<picture>
+						<source type="image/webp"
+							srcset="https://casuallearnapp.gsic.uva.es/media/certificadoEctel.webp">
+						<source type="image/png" srcset="https://casuallearnapp.gsic.uva.es/media/certificadoEctel.png">
+						<img class="imagen2" src="https://casuallearnapp.gsic.uva.es/media/certificadoEctel.png"
+							alt="Certificado ECTEL">
+					</picture>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="d-md-flex flex-md-row py-5">
+			<div>
+				<h1>Casual Learn usa Datos Abiertos</h1>
+				<p>Para generar las tareas de Casual Learn se han utilizado <a
+						href="https://datosabiertos.jcyl.es/web/es/datos-abiertos-castilla-leon.html" rel="noopener"
+						target="_blank">Datos Abiertos ofrecidos por la Junta de Castilla y León</a>, por <a
+						href="https://wiki.dbpedia.org/" rel="noopener" target="_blank">DBpedia</a> y por <a
+						href="https://www.wikidata.org/wiki/Wikidata:Main_Page" rel="noopener"
+						target="_blank">Wikidata</a>. Así, más de 13.000 tareas se han creado y geolocalizado de manera
+					semi-automática. Estas tareas se ofrecen, a su vez, <a href="https://casuallearn.gsic.uva.es/sparql"
+						rel="noopener" target="_blank">como Datos Abiertos para quien quiera utilizarlas</a>.</p>
+			</div>
+			<div class="text-center p-1" style="margin:auto">
+				<img src="https://casuallearnapp.gsic.uva.es/media/fuentes.svg" alt="datosAbiertos"
+					style="max-width: 280px">
+			</div>
+		</div>
+	</div>
+	<div class="colorfondo">
+		<div class="container">
+			<div class="d-md-flex flex-md-row py-5">
+				<div class="order-md-2">
+					<h1>Un trabajo del grupo GSIC</h1>
+					<p>Casual Learn es una aplicación diseñada y desarrollada por el <a href="https://www.gsic.uva.es/"
+							rel="noopener" target="_blank">grupo GSIC-EMIC de la Universidad de Valladolid</a>.
+						GSIC-EMIC es un grupo de investigación formado por ingenieros y educadores expertos en
+						tecnología educativa, práctica pedagógica, Web de Datos y gestión de datos educativos.</p>
+				</div>
+				<div class="text-center p-1 order-md-1" style="margin:auto">
+					<picture>
+						<source type="image/webp" srcset="https://casuallearnapp.gsic.uva.es/media/collage.webp">
+						<source type="image/png" srcset="https://casuallearnapp.gsic.uva.es/media/collage.png">
+						<img class="imagen2" src="https://casuallearnapp.gsic.uva.es/media/collage.png"
+							alt="Equipo Casual Learn">
+					</picture>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="p-3 flex-fill" style="margin: auto;">
+		<div class="col">
+			<div class="row subtitulo justify-content-center">
+				<a style="text-decoration: none;"
+					href="https://play.google.com/store/apps/details?id=es.uva.gsic.adolfinstro" rel="noopener"
+					target="_blank">
+					Descarga la aplicación:
+				</a>
+			</div>
+			<div class="row justify-content-center" style="margin-top: -1rem;">
+				<a href="https://play.google.com/store/apps/details?id=es.uva.gsic.adolfinstro" rel="noopener"
+					target="_blank">
+					<picture>
+						<source type="image/webp"
+							srcset="https://casuallearnapp.gsic.uva.es/media/google-play-badge.webp">
+						<source type="image/png"
+							srcset="https://casuallearnapp.gisc.uva.es/media/google-play-badge.png">
+						<img src="https://casuallearnapp.gsic.uva.es/media/google-play-badge.png"
+							alt="Página de Google Play" class="responsive">
+					</picture>
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="botonFlotante" id="contenedorArriba">
+		<a href="#inicio"><img src="media/arriba.svg" alt="volverArriba"></a>
+	</div>
+
+	<script src="https://casuallearnapp.gsic.uva.es/libraries/jquery-3.6/jquery-3.6.0.min.js"></script>
+	<script src="https://casuallearnapp.gsic.uva.es/libraries/bootstrap-4.5.2-dist/js/bootstrap.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$(window).scroll(function (event) {
+				if ($(this).scrollTop() > 200) {
+					document.getElementById("contenedorArriba").style.display = "inline";
+				} else {
+					document.getElementById("contenedorArriba").style.display = "none";
+				}
+			});
+		});
+	</script>
+	<footer>
+		<p style="font-size: x-small; color: black">Google Play y el logotipo de Google Play son marcas comerciales de
+			Google LLC.</p>
+	</footer>
 </body>
+
 </html>

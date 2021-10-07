@@ -613,6 +613,7 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         }
                         Bundle bundle = new Bundle();
                         bundle.putString(Auxiliar.idUsuario, idUser.getString(Auxiliar.uid));
+                        //TODO
                         Login.firebaseAnalytics.logEvent("contextoNotificado", bundle);
                     } catch (Exception e) {
                         e.printStackTrace();
