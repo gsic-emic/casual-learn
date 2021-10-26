@@ -5,6 +5,31 @@
       <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
     </configurations>
   </component>
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/fondo_especial.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/fondo_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial1.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial2.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial3.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial4.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador300_especial.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador300_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador500_especial.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador500_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador700_especial.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador700_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador900_especial.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador900_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador_pulsado_especial.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador_pulsado_especial0.xml" value="0.3828125" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
