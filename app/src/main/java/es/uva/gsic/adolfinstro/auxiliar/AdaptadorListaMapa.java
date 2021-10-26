@@ -2,9 +2,11 @@ package es.uva.gsic.adolfinstro.auxiliar;
 
 import android.content.Context;
 import android.os.Build;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -145,6 +147,9 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                     holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
                             context.getResources(), R.drawable.fondo_especial4, null));
                     break;
+                case Auxiliar.r0:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.fondo_especial0, null));
                 default:
                     holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
                             context.getResources(), R.drawable.fondo_especial, null));

@@ -314,7 +314,6 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
                 }
             }
         });
-
         if(textToSpeech.getEngines() == null)
             ivSpeaker.setVisibility(View.INVISIBLE);
         else if(textToSpeech.getEngines().size() <= 0)

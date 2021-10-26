@@ -22,8 +22,6 @@ import android.os.Bundle;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceManager;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -120,15 +118,27 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if(alarmManager != null) {
             cancelaAlarmaProceso(context);
-            alarmManager.setRepeating(
-                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    10000,
-                    intervaloComprobacion,
-                    PendingIntent.getBroadcast(
-                            context,
-                            9995,
-                            new Intent(context, AlarmaProceso.class),
-                            0));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                alarmManager.setRepeating(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        10000,
+                        intervaloComprobacion,
+                        PendingIntent.getBroadcast(
+                                context,
+                                9995,
+                                new Intent(context, AlarmaProceso.class),
+                                PendingIntent.FLAG_MUTABLE));
+            } else {
+                alarmManager.setRepeating(
+                        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        10000,
+                        intervaloComprobacion,
+                        PendingIntent.getBroadcast(
+                                context,
+                                9995,
+                                new Intent(context, AlarmaProceso.class),
+                                0));
+            }
         }
     }
 
@@ -140,11 +150,19 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
     public void cancelaAlarmaProceso(Context context){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if(alarmManager != null)
-            alarmManager.cancel(
-                    PendingIntent.getBroadcast(context,
-                    9995,
-                    new Intent(context, AlarmaProceso.class),
-                    0));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                alarmManager.cancel(
+                        PendingIntent.getBroadcast(context,
+                        9995,
+                        new Intent(context, AlarmaProceso.class),
+                        PendingIntent.FLAG_MUTABLE));
+            } else {
+                alarmManager.cancel(
+                        PendingIntent.getBroadcast(context,
+                                9995,
+                                new Intent(context, AlarmaProceso.class),
+                                0));
+            }
     }
 
     /**
@@ -578,11 +596,20 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                         .setContentText(textoTarea);
 
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                PendingIntent pendingIntent = PendingIntent.getActivity(
-                        context,
-                        Auxiliar.incr,
-                        intent,
-                        PendingIntent.FLAG_CANCEL_CURRENT);
+                PendingIntent pendingIntent = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                    pendingIntent = PendingIntent.getActivity(
+                            context,
+                            Auxiliar.incr,
+                            intent,
+                            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_CANCEL_CURRENT);
+                } else {
+                    pendingIntent = PendingIntent.getActivity(
+                            context,
+                            Auxiliar.incr,
+                            intent,
+                            PendingIntent.FLAG_CANCEL_CURRENT);
+                }
 
                 builder.setContentIntent(pendingIntent);
                 builder.setAutoCancel(true);

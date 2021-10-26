@@ -113,6 +113,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
@@ -273,6 +274,7 @@ public class Maps extends AppCompatActivity implements
         StrictMode.setThreadPolicy(policy);
 
         context = this;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
@@ -997,7 +999,7 @@ public class Maps extends AppCompatActivity implements
                 }
             }
             else {
-                if (Build.VERSION.SDK_INT >= 30 && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
                     if (!(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
@@ -1434,8 +1436,78 @@ public class Maps extends AppCompatActivity implements
         return ResourcesCompat.getDrawable(context.getResources(), id, null);
     }
 
+    /**
+     * Método para obtener un color de forma que funcione en las versiones más antiguas de Android.
+     * @param id Identificador del color
+     * @return Color compatible
+     */
     private int dameColor(int id){
         return ResourcesCompat.getColor(context.getResources(), id, null);
+    }
+
+    /**
+     * Método para obtener el marcador que se precisa en cada instante
+     * @param size Número de tareas que representar en el marcador
+     * @param tipo Tipo de marcador que se tiene que representar: 0 para el especial; 1 para especial1;
+     *             2 para especial2; 3 para especial3; 4 para especial4; y cualquier otro para el
+     *             marcador por defecto
+     * @return objeto del marcador que se va a representar
+     */
+    private Drawable dameMarcador(int size, int tipo){
+        int[] vector;
+        if(size == 0)
+            return dameDrawable(R.drawable.ic_marcador_check);
+        else{
+            switch (tipo){
+                case 0:
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial, R.drawable.ic_marcador100_especial,
+                            R.drawable.ic_marcador300_especial, R.drawable.ic_marcador500_especial,
+                            R.drawable.ic_marcador700_especial, R.drawable.ic_marcador900_especial};
+                    break;
+                case 1://R1
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial1, R.drawable.ic_marcador100_especial1,
+                            R.drawable.ic_marcador300_especial1, R.drawable.ic_marcador500_especial1,
+                            R.drawable.ic_marcador700_especial1, R.drawable.ic_marcador900_especial1};
+                    break;
+                case 2://R2
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial2, R.drawable.ic_marcador100_especial2,
+                            R.drawable.ic_marcador300_especial2, R.drawable.ic_marcador500_especial2,
+                            R.drawable.ic_marcador700_especial2, R.drawable.ic_marcador900_especial2};
+                    break;
+                case 3://R3
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial3, R.drawable.ic_marcador100_especial3,
+                            R.drawable.ic_marcador300_especial3, R.drawable.ic_marcador500_especial3,
+                            R.drawable.ic_marcador700_especial3, R.drawable.ic_marcador900_especial3};
+                    break;
+                case 4://R4
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial4, R.drawable.ic_marcador100_especial4,
+                            R.drawable.ic_marcador300_especial4, R.drawable.ic_marcador500_especial4,
+                            R.drawable.ic_marcador700_especial4, R.drawable.ic_marcador900_especial4};
+                    break;
+                case 5://R0
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial0, R.drawable.ic_marcador100_especial0,
+                            R.drawable.ic_marcador300_especial0, R.drawable.ic_marcador500_especial0,
+                            R.drawable.ic_marcador700_especial0, R.drawable.ic_marcador900_especial0};
+                    break;
+                default:
+                    vector = new int[]{R.drawable.ic_marcador_pulsado, R.drawable.ic_marcador100,
+                            R.drawable.ic_marcador300, R.drawable.ic_marcador500,
+                            R.drawable.ic_marcador700, R.drawable.ic_marcador900};
+                    break;
+            }
+            if(size < 0)
+                return dameDrawable(vector[0]);
+            else if (size <= 10)
+                return dameDrawable(vector[1]);
+            else if (size <= 20)
+                return dameDrawable(vector[2]);
+            else if (size <= 40)
+                return dameDrawable(vector[3]);
+            else if (size <= 70)
+                return dameDrawable(vector[4]);
+            else
+                return dameDrawable(vector[5]);
+        }
     }
 
     /**
@@ -1445,106 +1517,7 @@ public class Maps extends AppCompatActivity implements
      * @return Representación gráfica del marcador
      */
     private Bitmap generaBitmapMarkerNumero(int size, int tipo) {
-        Drawable drawable;
-
-        switch (tipo){
-            case 0:
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial);
-                break;
-            case 1://R1
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial1);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial1);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial1);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial1);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial1);
-                break;
-            case 2://R2
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial2);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial2);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial2);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial2);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial2);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial2);
-                break;
-            case 3://R3
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial3);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial3);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial3);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial3);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial3);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial3);
-                break;
-            case 4://R4
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado_especial4);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100_especial4);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300_especial4);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500_especial4);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700_especial4);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900_especial4);
-                break;
-            default:
-                if (size < 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_pulsado);
-                else if (size == 0)
-                    drawable = dameDrawable(R.drawable.ic_marcador_check);
-                else if (size <= 10)
-                    drawable = dameDrawable(R.drawable.ic_marcador100);
-                else if (size <= 20)
-                    drawable = dameDrawable(R.drawable.ic_marcador300);
-                else if (size <= 40)
-                    drawable = dameDrawable(R.drawable.ic_marcador500);
-                else if (size <= 70)
-                    drawable = dameDrawable(R.drawable.ic_marcador700);
-                else
-                    drawable = dameDrawable(R.drawable.ic_marcador900);
-                break;
-        }
+        Drawable drawable = dameMarcador(size, tipo);
 
         size = Math.abs(size);
 
@@ -1773,6 +1746,7 @@ public class Maps extends AppCompatActivity implements
 
         JSONArray todasTareas = new JSONArray(),
                 puntosEspeciales = new JSONArray(),
+                puntosEpecialesR0 = new JSONArray(),
                 puntosEpecialesR1 = new JSONArray(),
                 puntosEpecialesR2 = new JSONArray(),
                 puntosEpecialesR3 = new JSONArray(),
@@ -1804,6 +1778,9 @@ public class Maps extends AppCompatActivity implements
                                 case Auxiliar.creadorInvestigadores:
                                     todasTareas.put(puntoInteres);
                                     break;
+                                case Auxiliar.r0:
+                                    puntosEpecialesR0.put(puntoInteres);
+                                    break;
                                 default:
                                     puntosEspeciales.put(puntoInteres);
                                     break;
@@ -1819,7 +1796,7 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
-        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3};
+        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3, puntosEpecialesR0};
 
         List<Marcador> listaMarcadores;
         for(int i = 0; i < tareas.length; i++){
@@ -1997,61 +1974,10 @@ public class Maps extends AppCompatActivity implements
                     e.printStackTrace();
                 }
                 break;
-            /*case R.id.btModo:
-                if(!modos.isShown()) {
-                    btModos.hide();
-                    configuraModos();
-                }
-                break;
-            case R.id.modo1:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_uno));
-                numero = 1;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;
-            case R.id.modo2:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_dos));
-                numero = 2;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;
-            case R.id.modo3:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_tres));
-                numero = 3;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;
-            case R.id.modo4:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_cuatro));
-                numero = 4;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;*/
             default:
                 break;
         }
     }
-
-    /*private void configuraModos() {
-        for(Button b : btsModo){
-            b.setBackground(dameDrawable(R.drawable.boton_rojo));
-        }
-        switch (numero){
-            case 1:
-                btModos1.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-            case 2:
-                btModos2.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-            case 3:
-                btModos3.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-            default:
-                btModos4.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-        }
-        modos.setVisibility(View.VISIBLE);
-    }*/
 
     /**
      * Método que se llamará antes de destruir temporalmente la actividad para almacenar la posición
@@ -2205,7 +2131,7 @@ public class Maps extends AppCompatActivity implements
                     intent.setPackage("com.android.vending");
                     startActivity(intent);
                 }catch (ActivityNotFoundException e){
-                    Toast.makeText(context, getResources().getString(R.string.noGooglePlay), Toast.LENGTH_SHORT).show();
+                    pintaSnackBar(context.getResources().getString(R.string.noGooglePlay));
                 }
                 return true;
             case R.id.comparte:

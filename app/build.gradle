@@ -9,14 +9,18 @@ android {
             keyAlias = 'androiddebugkey'
         }
     }
-    compileSdkVersion 29
+    compileOptions{
+        sourceCompatibility(JavaVersion.VERSION_1_8)
+        targetCompatibility(JavaVersion.VERSION_1_8)
+    }
+    compileSdkVersion 31
     buildToolsVersion "29.0.2"
     defaultConfig {
         applicationId "es.uva.gsic.adolfinstro"
         minSdkVersion 19
-        targetSdkVersion 29
-        versionCode 37
-        versionName "1.1.12"
+        targetSdkVersion 31
+        versionCode 38
+        versionName "1.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true
@@ -37,21 +41,21 @@ dependencies {
 }
 
 /*dependencies {
-    implementation 'id.zelory:compressor:2.1.0'
+    implementation 'id.zelory:compressor:2.1.1'
 }*/
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
 }
 
 dependencies {
-    def work_version = "2.2.0"
+    def work_version = "2.7.0"
 
     // (Java only)
     implementation "androidx.work:work-runtime:$work_version"
@@ -75,11 +79,11 @@ dependencies {
 
 
 dependencies {
-    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'androidx.preference:preference:1.1.1'
 }
 
 dependencies {
-    implementation 'org.osmdroid:osmdroid-android:6.1.5'
+    implementation 'org.osmdroid:osmdroid-android:6.1.11'
 }
 
 dependencies {
@@ -95,10 +99,10 @@ dependencies {
 dependencies {
     // add SDKs for desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
-    implementation 'com.google.firebase:firebase-core:17.4.2'
-    implementation 'com.google.firebase:firebase-auth:+'
-    implementation 'com.google.android.gms:play-services-auth:18.0.0'
-    implementation 'com.google.firebase:firebase-analytics:17.2.2'
+    implementation 'com.google.firebase:firebase-core:19.0.2'
+    implementation 'com.google.firebase:firebase-auth:21.0.1'
+    implementation 'com.google.android.gms:play-services-auth:19.2.0'
+    implementation 'com.google.firebase:firebase-analytics:19.0.2'
 }
 
 apply plugin: 'com.google.gms.google-services'
@@ -109,7 +113,7 @@ dependencies {
 
 
 dependencies {
-    implementation 'com.android.volley:volley:1.1.1'
+    implementation 'com.android.volley:volley:1.2.1'
 }
 
 dependencies {
@@ -118,5 +122,5 @@ dependencies {
 
 //Valorar la app dentro de esta
 dependencies {
-    implementation 'com.google.android.play:core:1.9.0'
+    implementation 'com.google.android.play:core:1.10.2'
 }
