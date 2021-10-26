@@ -1,7 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -275,6 +274,7 @@ public class Maps extends AppCompatActivity implements
         StrictMode.setThreadPolicy(policy);
 
         context = this;
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
@@ -999,7 +999,7 @@ public class Maps extends AppCompatActivity implements
                 }
             }
             else {
-                if (Build.VERSION.SDK_INT >= 30 && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
                     if (!(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
@@ -1484,6 +1484,11 @@ public class Maps extends AppCompatActivity implements
                             R.drawable.ic_marcador300_especial4, R.drawable.ic_marcador500_especial4,
                             R.drawable.ic_marcador700_especial4, R.drawable.ic_marcador900_especial4};
                     break;
+                case 5://R0
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial0, R.drawable.ic_marcador100_especial0,
+                            R.drawable.ic_marcador300_especial0, R.drawable.ic_marcador500_especial0,
+                            R.drawable.ic_marcador700_especial0, R.drawable.ic_marcador900_especial0};
+                    break;
                 default:
                     vector = new int[]{R.drawable.ic_marcador_pulsado, R.drawable.ic_marcador100,
                             R.drawable.ic_marcador300, R.drawable.ic_marcador500,
@@ -1741,6 +1746,7 @@ public class Maps extends AppCompatActivity implements
 
         JSONArray todasTareas = new JSONArray(),
                 puntosEspeciales = new JSONArray(),
+                puntosEpecialesR0 = new JSONArray(),
                 puntosEpecialesR1 = new JSONArray(),
                 puntosEpecialesR2 = new JSONArray(),
                 puntosEpecialesR3 = new JSONArray(),
@@ -1772,6 +1778,9 @@ public class Maps extends AppCompatActivity implements
                                 case Auxiliar.creadorInvestigadores:
                                     todasTareas.put(puntoInteres);
                                     break;
+                                case Auxiliar.r0:
+                                    puntosEpecialesR0.put(puntoInteres);
+                                    break;
                                 default:
                                     puntosEspeciales.put(puntoInteres);
                                     break;
@@ -1787,7 +1796,7 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
-        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3};
+        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3, puntosEpecialesR0};
 
         List<Marcador> listaMarcadores;
         for(int i = 0; i < tareas.length; i++){
@@ -1965,61 +1974,10 @@ public class Maps extends AppCompatActivity implements
                     e.printStackTrace();
                 }
                 break;
-            /*case R.id.btModo:
-                if(!modos.isShown()) {
-                    btModos.hide();
-                    configuraModos();
-                }
-                break;
-            case R.id.modo1:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_uno));
-                numero = 1;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;
-            case R.id.modo2:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_dos));
-                numero = 2;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;
-            case R.id.modo3:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_tres));
-                numero = 3;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;
-            case R.id.modo4:
-                btModos.setImageDrawable(dameDrawable(R.drawable.ic_cuatro));
-                numero = 4;
-                modos.setVisibility(View.GONE);
-                btModos.show();
-                break;*/
             default:
                 break;
         }
     }
-
-    /*private void configuraModos() {
-        for(Button b : btsModo){
-            b.setBackground(dameDrawable(R.drawable.boton_rojo));
-        }
-        switch (numero){
-            case 1:
-                btModos1.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-            case 2:
-                btModos2.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-            case 3:
-                btModos3.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-            default:
-                btModos4.setBackground(dameDrawable(R.drawable.boton_secundario));
-                break;
-        }
-        modos.setVisibility(View.VISIBLE);
-    }*/
 
     /**
      * Método que se llamará antes de destruir temporalmente la actividad para almacenar la posición

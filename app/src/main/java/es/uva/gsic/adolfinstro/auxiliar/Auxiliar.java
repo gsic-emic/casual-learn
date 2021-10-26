@@ -104,6 +104,7 @@ public class Auxiliar {
     public static final String imagen = "imagen";
 
     public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
+    public static final String r0 = "pinarubia241@gmail.com";
     public static final String r1 = "charo1";
     public static final String r2 = "charo2";
     public static final String r3 = "charo3";
