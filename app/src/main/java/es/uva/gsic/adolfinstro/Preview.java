@@ -11,6 +11,7 @@ import android.Manifest;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -523,11 +524,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 permisos.remove(Manifest.permission.ACCESS_FINE_LOCATION);
             }
 
-            if(permisos.isEmpty())
-                if(PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Ajustes.NO_MOLESTAR_pref, false))
+            if(permisos.isEmpty()) {
+                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Ajustes.NO_MOLESTAR_pref, false))
                     new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
-            else
+            }
+            else {
                 solicitaPermisoUbicacion();
+            }
         }
     }
 
@@ -761,6 +764,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         permisos = new ArrayList<>();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         try {
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -771,7 +775,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
             if(idUsuario != null) {
                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                    if(!(ActivityCompat.checkSelfPermission(
+                    if(!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) &&
+                            !(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
@@ -784,7 +789,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 permisos.remove(Manifest.permission.ACCESS_FINE_LOCATION);
             }
 
-            if(!permisos.isEmpty()){
+            if(permisos != null && !permisos.isEmpty()){
                 solicitaPermisoUbicacion();
             } else {
                 locationManager.requestLocationUpdates(
@@ -866,8 +871,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     break;
             }
         }
-
-        if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if(permisos.size() > 1 &&  !sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
             final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
             tituloPermisos.setVisibility(View.GONE);
             final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
@@ -876,7 +881,20 @@ public class Preview extends AppCompatActivity implements LocationListener {
             salir.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    finishAffinity();
+                    //finishAffinity();
+                    SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                    prefs.putBoolean(Ajustes.NO_MOLESTAR_pref, true);
+                    prefs.commit();
+                    boolean encontrado = false;
+                    int i, tama = permisos.size();
+                    for(i = 0; i < tama; i++){
+                        if(permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                            encontrado = true;
+                            break;
+                        }
+                    }
+                    if(encontrado)
+                        permisos.remove(i);
                 }
             });
             final Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
@@ -907,7 +925,23 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 salir.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        finishAffinity();
+                        //finishAffinity();
+                        SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                        prefs.putBoolean(Ajustes.NO_MOLESTAR_pref, true);
+                        prefs.commit();
+                        boolean encontrado = false;
+                        int i, tama = permisos.size();
+                        for(i = 0; i < tama; i++){
+                            if(permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                        if(encontrado)
+                            permisos.remove(i);
+                        if(permisos.isEmpty() && dialogoPermisos.isShowing()) {
+                            dialogoPermisos.cancel();
+                        }
                     }
                 });
                 Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);

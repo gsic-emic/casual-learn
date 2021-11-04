@@ -22,11 +22,16 @@ public abstract class ClienteWeb extends WebViewClient {
      */
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        if(Objects.requireNonNull(Uri.parse(url).getScheme()).toLowerCase().equals("https"))
-            return false;
-        else {
+        if(url.toLowerCase().contains("youtube") || url.toLowerCase().contains("youtu")){
             navegadorExterno();
             return true;
+        } else {
+            if (Objects.requireNonNull(Uri.parse(url).getScheme()).equalsIgnoreCase("https"))
+                return false;
+            else {
+                navegadorExterno();
+                return true;
+            }
         }
     }
 

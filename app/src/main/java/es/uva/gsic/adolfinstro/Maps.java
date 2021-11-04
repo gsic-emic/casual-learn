@@ -113,7 +113,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaCoincidencia;
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorListaMapa;
@@ -254,14 +253,6 @@ public class Maps extends AppCompatActivity implements
 
     private FloatingActionButton btNavegar;
 
-    //private FloatingActionButton btModos;
-
-    //private Button btModos1, btModos2, btModos3, btModos4;
-
-    //private Button[] btsModo;
-
-    //private ConstraintLayout modos;
-
     /**
      * Método con el que se pinta la actividad. Lo primero que comprueba es si está activada el modo no
      * molestar para saber si se tiene que mostar el mapa o no
@@ -274,7 +265,7 @@ public class Maps extends AppCompatActivity implements
         StrictMode.setThreadPolicy(policy);
 
         context = this;
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
+
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
         super.onCreate(savedInstanceState);
@@ -564,9 +555,6 @@ public class Maps extends AppCompatActivity implements
 
         final SwitchCompat swActivarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swActivarPor);
         final SwitchCompat swRetardarPorfolio = dialogoConfiguracionPorfolio.findViewById(R.id.swRetardarPor);
-        //final TextView textoTiempo = dialogoConfiguracionPorfolio.findViewById(R.id.tvIntervaloPor);
-        //textoTiempo.setText(String.format("%s\n(3 %s)", getResources().getString(R.string.intervalo), getResources().getString(R.string.horas)));
-        //SeekBar seekBar = dialogoConfiguracionPorfolio.findViewById(R.id.sbIntervalo);
         final Button btOmitir = dialogoConfiguracionPorfolio.findViewById(R.id.btOmitirPor);
 
         dialogoConfiguracionPorfolio.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -653,14 +641,6 @@ public class Maps extends AppCompatActivity implements
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        //btModos = findViewById(R.id.btModo);
-        //modos = findViewById(R.id.modos);
-        //btModos1 = findViewById(R.id.modo1);
-        //btModos2 = findViewById(R.id.modo2);
-        //btModos3 = findViewById(R.id.modo3);
-        //btModos4 = findViewById(R.id.modo4);
-        //btsModo = new Button[]{btModos1, btModos2, btModos3, btModos4};
     }
 
     private void enviaConfiguracionPorfolio(final boolean publico, final boolean retardado) {
@@ -992,7 +972,7 @@ public class Maps extends AppCompatActivity implements
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if (idUsuario != null) {
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-                if (!(ActivityCompat.checkSelfPermission(
+                if (!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && !(ActivityCompat.checkSelfPermission(
                         context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                         == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
@@ -1000,7 +980,7 @@ public class Maps extends AppCompatActivity implements
             }
             else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
-                    if (!(ActivityCompat.checkSelfPermission(
+                    if (!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && !(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
@@ -1018,12 +998,12 @@ public class Maps extends AppCompatActivity implements
 
         //Si no falta ningún servicio se activa el servicio en segundo plano (si el usuario se ha identificado).
         //Muestra la posición del usuario en el mapa
-        if (!permisos.isEmpty()) {
+        if (permisos != null && !permisos.isEmpty()) {
             final Dialog dialogoPermisos = new Dialog(context);
             dialogoPermisos.requestWindowFeature(Window.FEATURE_NO_TITLE);
             dialogoPermisos.setContentView(R.layout.dialogo_permisos_ubicacion);
             dialogoPermisos.setCancelable(false);
-            if(permisos.size() > 1 && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
+            if(permisos.size() > 1 && !sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
                 final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
                 tituloPermisos.setVisibility(View.GONE);
                 final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
@@ -1032,7 +1012,20 @@ public class Maps extends AppCompatActivity implements
                 salir.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        finishAffinity();
+                        //finishAffinity();
+                        SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                        prefs.putBoolean(Ajustes.NO_MOLESTAR_pref, true);
+                        prefs.commit();
+                        boolean encontrado = false;
+                        int i = 0, tama = permisos.size();
+                        for(i = 0; i < tama; i++){
+                            if(permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                                encontrado = true;
+                                break;
+                            }
+                        }
+                        if(encontrado)
+                            permisos.remove(i);
                     }
                 });
                 final Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
@@ -1057,13 +1050,30 @@ public class Maps extends AppCompatActivity implements
                 });
             } else{
                 TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
-                if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
+                if(!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
                     textView.setVisibility(View.VISIBLE);
                     Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
                     salir.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            finishAffinity();
+                            //finishAffinity();
+                            SharedPreferences.Editor prefs = PreferenceManager.getDefaultSharedPreferences(context).edit();
+                            prefs.putBoolean(Ajustes.NO_MOLESTAR_pref, true);
+                            prefs.commit();
+                            boolean encontrado = false;
+                            int i, tama = permisos.size();
+                            for(i = 0; i < tama; i++){
+                                if(permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                                    encontrado = true;
+                                    break;
+                                }
+                            }
+                            if(encontrado)
+                                permisos.remove(i);
+                            if(permisos.isEmpty() && dialogoPermisos.isShowing()) {
+                                dialogoPermisos.cancel();
+                                activaPosicionMapa();
+                            }
                         }
                     });
                     Button siguiente = (Button) dialogoPermisos.findViewById(R.id.btSiguientePermisos);
@@ -1930,7 +1940,7 @@ public class Maps extends AppCompatActivity implements
         switch (view.getId()){
             case R.id.btCentrar: //Solo centra la posición si se ha conseguido recuperar
                 //ocultaModos();
-                if(myLocationNewOverlay.getMyLocation() != null) {
+                if(myLocationNewOverlay != null && myLocationNewOverlay.getMyLocation() != null) {
                     mapController.setZoom(nivelMax);
                     mapController.setCenter(myLocationNewOverlay.getMyLocation());
                 }else{ //Si aún no se conoce se muestra un mensaje
