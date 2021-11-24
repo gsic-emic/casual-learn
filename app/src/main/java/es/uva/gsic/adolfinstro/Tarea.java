@@ -22,6 +22,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +46,9 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import es.uva.gsic.adolfinstro.auxiliar.AdaptadorImagenesCompletadas;
@@ -112,6 +117,9 @@ public class Tarea extends AppCompatActivity implements
 
     /** Indica si la tarea realizado se tiene que publicar o no */
     private boolean publicarRespuesta;
+
+    private RadioGroup rgRespuestas;
+    private RadioButton rb0, rb1, rb2, rb3;
 
     /**
      * Método que se lanza al inicio de la vida de la actividad. Se encarga de dibujar la interfaz
@@ -295,6 +303,11 @@ public class Tarea extends AppCompatActivity implements
                             break;
                     }
                 }
+                rgRespuestas = findViewById(R.id.rgMCQTrueFalseTareas);
+                rb0 = findViewById(R.id.rb0MCQTrueFalseTareas);
+                rb1 = findViewById(R.id.rb1MCQTrueFalseTareas);
+                rb2 = findViewById(R.id.rb2MCQTrueFalseTareas);
+                rb3 = findViewById(R.id.rb3MCQTrueFalseTareas);
 
                 switch (tipo) {
                     case Auxiliar.tipoSinRespuesta:
@@ -324,6 +337,48 @@ public class Tarea extends AppCompatActivity implements
                         if(tipo.equals(Auxiliar.tipoVideo))
                             btCamara.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_videocam_white_24dp, 0, 0, 0);
                         btCamara.setVisibility(View.VISIBLE);
+                        break;
+                    case Auxiliar.tipoTrueFalse:
+                        etRespuestaTextual.setHint(getString(R.string.textoOpcional));
+                        btAceptar.setVisibility(View.VISIBLE);
+                        rb0.setText(getText(R.string.verdadero));
+                        rb0.setVisibility(View.VISIBLE);
+                        rb1.setText(getText((R.string.falso)));
+                        rb1.setVisibility(View.VISIBLE);
+                        rgRespuestas.setVisibility(View.VISIBLE);
+                        rgRespuestas.setOnCheckedChangeListener((radioGroup, rbId) -> {
+                            btAceptar.setEnabled(true);
+                        });
+                        btAceptar.setEnabled(false);
+                        break;
+                    case Auxiliar.tipoMcq:
+                        etRespuestaTextual.setHint(getString(R.string.textoOpcional));
+                        btAceptar.setVisibility(View.VISIBLE);
+
+                        List<String> textos = new ArrayList<>();
+                        String posibles[] = {Auxiliar.correctMcq, Auxiliar.d1Mcq, Auxiliar.d2Mcq, Auxiliar.d3Mcq};
+                        for (String posible : posibles) {
+                            if (tarea.has(posible)) {
+                                textos.add(tarea.getString(posible));
+                            }
+                        }
+
+                        List<RadioButton> radios = new ArrayList<>(Arrays.asList(rb0, rb1, rb2, rb3));
+                        Collections.shuffle(radios);
+                        int i = 0;
+                        for(RadioButton rb : radios) {
+                            if(i < posibles.length) {
+                                rb.setText(textos.get(i++));
+                                rb.setVisibility(View.VISIBLE);
+                            } else {
+                                break;
+                            }
+                        }
+                        rgRespuestas.setVisibility(View.VISIBLE);
+                        rgRespuestas.setOnCheckedChangeListener((radioGroup, rbId) -> {
+                            btAceptar.setEnabled(true);
+                        });
+                        btAceptar.setEnabled(false);
                         break;
                     default:
                         break;
@@ -377,36 +432,54 @@ public class Tarea extends AppCompatActivity implements
         final Intent intent;
         switch (view.getId()){
             case R.id.btAceptar:
-                if(tipo.equals(Auxiliar.tipoSinRespuesta)){
-                    try {
-                        JSONObject respuesta = PersistenciaDatos.obtenTarea(
-                                getApplication(),
-                                PersistenciaDatos.ficheroNotificadas,
-                                idTarea,
-                                idUsuario);
-                        respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
-                        respuesta.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
-                        respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
-                        respuesta.put(Auxiliar.publico, publicarRespuesta);
-                        PersistenciaDatos.guardaJSON(getApplication(),
-                                PersistenciaDatos.ficheroCompletadas,
-                                respuesta,
-                                Context.MODE_PRIVATE);
-                        if(!etRespuestaTextual.getText().toString().isEmpty()){
-                            PersistenciaDatos.guardaTareaRespuesta(getApplication(),
+                switch (tipo) {
+                    case Auxiliar.tipoSinRespuesta:
+                        try {
+                            JSONObject respuesta = PersistenciaDatos.obtenTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNotificadas,
+                                    idTarea,
+                                    idUsuario);
+                            respuesta.put(Auxiliar.estadoTarea, EstadoTarea.COMPLETADA.getValue());
+                            respuesta.put(Auxiliar.fechaFinalizacion, Auxiliar.horaFechaActual());
+                            respuesta.put(Auxiliar.fechaUltimaModificacion, Auxiliar.horaFechaActual());
+                            respuesta.put(Auxiliar.publico, publicarRespuesta);
+                            PersistenciaDatos.guardaJSON(getApplication(),
                                     PersistenciaDatos.ficheroCompletadas,
                                     respuesta,
-                                    etRespuestaTextual.getText().toString(),
-                                    Auxiliar.texto,
                                     Context.MODE_PRIVATE);
+                            if(!etRespuestaTextual.getText().toString().isEmpty()){
+                                PersistenciaDatos.guardaTareaRespuesta(getApplication(),
+                                        PersistenciaDatos.ficheroCompletadas,
+                                        respuesta,
+                                        etRespuestaTextual.getText().toString(),
+                                        Auxiliar.texto,
+                                        Context.MODE_PRIVATE);
+                            }
+                        }catch (Exception e){
+                            mensajeError();
                         }
-                    }catch (Exception e){
-                        mensajeError();
-                    }
-                    tareaCompletadaFirebase();
-                    Auxiliar.puntuaTarea(this, idTarea);
-                } else {
-                    guardaRespuestaPregunta();
+                        tareaCompletadaFirebase();
+                        Auxiliar.puntuaTarea(this, idTarea);
+                        break;
+                    case Auxiliar.tipoTrueFalse:
+                    case Auxiliar.tipoMcq:
+                        int rbSelect = rgRespuestas.getCheckedRadioButtonId();
+                        String textSelect;
+                        if(tipo.equals(Auxiliar.tipoTrueFalse)) {
+                            if (rbSelect == R.id.rb0MCQTrueFalseTareas) { //True
+                                textSelect = "true";
+                            } else {
+                                textSelect = "false";
+                            }
+                        } else {
+                            textSelect = ((RadioButton) findViewById(rbSelect)).getText().toString();
+                        }
+                        break;
+                        //TODO TERMINAR
+                    default:
+                        guardaRespuestaPregunta();
+                        break;
                 }
                 break;
             case R.id.btCamara:
