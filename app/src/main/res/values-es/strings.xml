@@ -278,4 +278,6 @@
     <string name="los">los</string>
     <string name="noTTS">No tienes instalado \«Síntesis de voz de Google\» para escuchar los textos</string>
     <string name="noGracias">No, gracias</string>
+    <string name="verdadero">Verdadero</string>
+    <string name="falso">Falso</string>
 </resources>

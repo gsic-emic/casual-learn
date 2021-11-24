@@ -70,12 +70,12 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //TODO comprueba que sea la dirección correcta
-    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
-    private static String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
-    public static String rutaTareas = direccionIP + "tareas";
-    public static String rutaContextos = direccionIP + "contextos";
+    private static final String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
+    public static final String rutaTareas = direccionIP + "tareas";
+    public static final String rutaContextos = direccionIP + "contextos";
     public static final String rutaPortafolio = direccionIP + "portafolio/";
 
     public static final String id = "id";
@@ -102,6 +102,10 @@ public class Auxiliar {
     public static final String busquedasMunicipio = "busquedaMunicipio";
     public static final String creadoPor = "creadoPor";
     public static final String imagen = "imagen";
+    public static final String correctMcq = "correctMCQ";
+    public static final String d1Mcq = "d1MCQ";
+    public static final String d2Mcq = "d2MCQ";
+    public static final String d3Mcq = "d3MCQ";
 
     public static final String creadorInvestigadores = "https://casuallearn.gsic.uva.es/researchers";
     public static final String r0 = "pinarubia241@gmail.com";
@@ -132,6 +136,8 @@ public class Auxiliar {
     public static final String tipoPreguntaImagen = "fotografiaYTexto";
     public static final String tipoPreguntaImagenes = "multiplesFotografiasYTexto";
     public static final String tipoPreguntaVideo = "videoYTexto";
+    public static final String tipoTrueFalse = "trueFalse";
+    public static final String tipoMcq = "mcq";
 
     public static final String peticion = "peticion";
 

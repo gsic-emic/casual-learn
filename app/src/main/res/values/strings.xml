@@ -309,4 +309,6 @@
     <string name="los">the</string>
     <string name="noTTS">You don\'t have \"Google Text-to-Speech\" instaled to listen the texts</string>
     <string name="noGracias">No, thanks</string>
+    <string name="verdadero">True</string>
+    <string name="falso">False</string>
 </resources>

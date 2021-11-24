@@ -50,5 +50,7 @@
     <color name="paleta_especial4">#764214</color>
     <color name="paleta_especial4_dark">#471a00</color>
     <color name="paleta_especial4_transparente">#1A764214</color>
-
+    <color name="azul_p0">#4974a5</color>
+    <color name="azul_p0_dark">#2b4563</color>
+    <color name="azul_p0_transparente">#194974A5</color>
 </resources>
