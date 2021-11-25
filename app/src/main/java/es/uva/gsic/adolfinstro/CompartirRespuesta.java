@@ -55,11 +55,17 @@ public class CompartirRespuesta extends AppCompatActivity
                             Auxiliar.id)
                             .getString(Auxiliar.uid));
             String tipo = tarea.getString(Auxiliar.tipoRespuesta);
-            if(tipo.equals(Auxiliar.tipoSinRespuesta) ||
-                    tipo.equals(Auxiliar.tipoPreguntaCorta) ||
-                    tipo.equals(Auxiliar.tipoPreguntaLarga)){
-                Button insta = findViewById(R.id.btCompartirInsta);
-                insta.setVisibility(View.GONE);
+            switch (tipo) {
+                case Auxiliar.tipoSinRespuesta:
+                case Auxiliar.tipoPreguntaCorta:
+                case Auxiliar.tipoPreguntaLarga:
+                case Auxiliar.tipoMcq:
+                case Auxiliar.tipoTrueFalse:
+                    Button insta = findViewById(R.id.btCompartirInsta);
+                    insta.setVisibility(View.GONE);
+                    break;
+                default:
+                    break;
             }
         } catch (JSONException e) {
             Button insta = findViewById(R.id.btCompartirInsta);

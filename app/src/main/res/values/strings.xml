@@ -311,4 +311,7 @@
     <string name="noGracias">No, thanks</string>
     <string name="verdadero">True</string>
     <string name="falso">False</string>
+    <string name="eligeCorrecta">Select correct answer!</string>
+    <string name="trueFalse">True or false?</string>
+    <string name="mcq">Select an answer from multiple alternatives</string>
 </resources>

@@ -1225,7 +1225,7 @@ public class Maps extends AppCompatActivity implements
                 textoPunto.setText(
                         (puntoInteres.getString(Auxiliar.comment).equals("") ?
                                 getResources().getString(R.string.puntoSinTexto) :
-                                puntoInteres.getString(Auxiliar.comment)));
+                                Html.fromHtml(puntoInteres.getString(Auxiliar.comment))));
                 textoPunto.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {

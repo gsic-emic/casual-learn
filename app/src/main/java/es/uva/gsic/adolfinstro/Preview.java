@@ -75,36 +75,60 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
  */
 public class Preview extends AppCompatActivity implements LocationListener {
 
-    /** Contexto */
+    /**
+     * Contexto
+     */
     private Context context;
-    /** Vista donde se incluye la vista del mapa */
+    /**
+     * Vista donde se incluye la vista del mapa
+     */
     private MapView map;
-    /** Receptor de notificaciones */
+    /**
+     * Receptor de notificaciones
+     */
     private RecepcionNotificaciones recepcionNotificaciones;
 
-    /** Objeto que tiene toda la información de la tarea */
+    /**
+     * Objeto que tiene toda la información de la tarea
+     */
     private JSONObject tarea;
 
-    /** Objeto donde se coloca la explicación del por qué no puede realizar la tarea */
+    /**
+     * Objeto donde se coloca la explicación del por qué no puede realizar la tarea
+     */
     private TextView explicacionDistancia;
-    /** Instancia donde se coloca la distancia a la tarea */
+    /**
+     * Instancia donde se coloca la distancia a la tarea
+     */
     private TextView textoDistancia;
-    /** Botones de la vista */
+    /**
+     * Botones de la vista
+     */
     private Button btRechazar, btPosponer, btAceptar;
 
-    /** Objeto con el que se hace el seguimiento de la posición del usuario */
+    /**
+     * Objeto con el que se hace el seguimiento de la posición del usuario
+     */
     private LocationManager locationManager;
 
-    /** Instancia de la posición */
+    /**
+     * Instancia de la posición
+     */
     private Location location;
 
-    /** URL de la licencia */
+    /**
+     * URL de la licencia
+     */
     private String urlLicencia;
 
-    /** Objeto para almacenar el identificador del usuario */
+    /**
+     * Objeto para almacenar el identificador del usuario
+     */
     private String idUsuario;
 
-    /** Objeto para saber si una tarea se ha completado */
+    /**
+     * Objeto para saber si una tarea se ha completado
+     */
     private boolean completada;
 
     private ImageView ivSpeaker;
@@ -136,13 +160,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
         ImageView imageView = findViewById(R.id.imagenPreview);
         String idTarea = Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id);
-        try{
+        try {
             idUsuario = PersistenciaDatos.recuperaTarea(
                     getApplication(),
                     PersistenciaDatos.ficheroUsuario,
                     Auxiliar.id
             ).getString(Auxiliar.uid);
-        }catch (Exception e){
+        } catch (Exception e) {
             idUsuario = null;
         }
         try {
@@ -157,30 +181,30 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     PersistenciaDatos.ficheroNotificadas,
                     tarea,
                     idUsuario);
-        }catch (Exception e){
+        } catch (Exception e) {
             tarea = null;
         }
 
         //Compruebo si la tarea ya ha sido completada
         JSONObject tareaCompletada;
-        try{
+        try {
             tareaCompletada = PersistenciaDatos.recuperaTarea(
                     getApplication(),
                     PersistenciaDatos.ficheroCompletadas,
                     idTarea,
                     idUsuario);
-        } catch (Exception e){
+        } catch (Exception e) {
             tareaCompletada = null;
         }
 
         completada = tareaCompletada != null;
 
-        if(completada){
+        if (completada) {
             Button bt = findViewById(R.id.btIrACompletada);
             bt.setVisibility(View.VISIBLE);
         }
 
-        if(tarea.has(Auxiliar.enlaceWiki)) {
+        if (tarea.has(Auxiliar.enlaceWiki)) {
             ImageView imageWikiPedia = findViewById(R.id.ivWikiPreview);
             imageWikiPedia.setVisibility(View.VISIBLE);
             try {
@@ -194,12 +218,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
             } catch (Exception e) {
                 imageWikiPedia.setVisibility(View.INVISIBLE);
             }
-        }else{
+        } else {
             ImageView imageWikiPedia = findViewById(R.id.ivWikiPreview);
             imageWikiPedia.setVisibility(View.INVISIBLE);
         }
 
-        if(tarea != null) {
+        if (tarea != null) {
             try {
                 switch (tarea.getString(Auxiliar.tipoRespuesta)) {
                     case Auxiliar.tipoSinRespuesta:
@@ -226,6 +250,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     case Auxiliar.tipoVideo:
                         setTitle(R.string.previewVideo);
                         break;
+                    case Auxiliar.tipoTrueFalse:
+                        setTitle(R.string.trueFalse);
+                        break;
+                    case Auxiliar.tipoMcq:
+                        setTitle(R.string.eligeCorrecta);
+                        break;
                     default:
                         break;
                 }
@@ -246,7 +276,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                             urlImagen = tarea.getString(Auxiliar.recursoImagen);
                         }
                     }
-                    if(urlImagen != null){
+                    if (urlImagen != null) {
                         Picasso.get()
                                 .load(urlImagen)
                                 .placeholder(R.drawable.ic_cloud_download_blue_80dp)
@@ -260,7 +290,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
                 TextView licenciaPreview = findViewById(R.id.tvLicenciaPreview);
                 if (imageView.getVisibility() == View.VISIBLE) {
-                    if(tarea.has(Auxiliar.textoLicencia)){
+                    if (tarea.has(Auxiliar.textoLicencia)) {
                         licenciaPreview.setText(tarea.getString(Auxiliar.textoLicencia));
                     }
                     urlLicencia = Auxiliar.enlaceLicencia(context, licenciaPreview, urlImagen);
@@ -324,11 +354,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
                 map.getOverlays().add(marker);
 
-                if (!getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion)) {
-                    botonesVisibles(false);
-                } else {
-                    botonesVisibles(true);
-                }
+                botonesVisibles(getIntent().getExtras().getString(Auxiliar.previa).equals(Auxiliar.notificacion));
 
                 //Identifiación usuario. Si existe el fichero con el identificador no muestro la barra
                 if (idUsuario == null) {
@@ -337,7 +363,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else{//Por si le salta una notificación, sale de la sesión y pulsa en la notficación
+        } else {//Por si le salta una notificación, sale de la sesión y pulsa en la notficación
             Intent intent = new Intent(this, Login.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -349,33 +375,33 @@ public class Preview extends AppCompatActivity implements LocationListener {
         ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
     }
 
-    private void saltaNavegacion(){
+    private void saltaNavegacion() {
         try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
-            if(location != null){
+            if (location != null) {
                 Intent intent = new Intent(context, MapaNavegable.class);
                 intent.putExtra(Auxiliar.latitud + "user", location.getLatitude());
                 intent.putExtra(Auxiliar.longitud + "user", location.getLongitude());
                 intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
                 intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
                 startActivity(intent);
-            }else{
-                try{
+            } else {
+                try {
                     Intent intent = new Intent(context, MapaNavegable.class);
                     intent.putExtra(Auxiliar.latitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLat));
                     intent.putExtra(Auxiliar.longitud + "user", getIntent().getExtras().getDouble(Auxiliar.posUsuarioLon));
                     intent.putExtra(Auxiliar.latitud + "task", tarea.getDouble(Auxiliar.latitud));
                     intent.putExtra(Auxiliar.longitud + "task", tarea.getDouble(Auxiliar.longitud));
                     startActivity(intent);
-                }catch (Exception e){
+                } catch (Exception e) {
                     pintaSnackBar(context.getString(R.string.recuperandoPosicion));
                 }
             }
-        }catch (JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void snackBarLogin(int snack){
+    private void snackBarLogin(int snack) {
         Snackbar snackbar = Snackbar.make(findViewById(snack), R.string.textoInicioBreve, Snackbar.LENGTH_INDEFINITE);
         snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
         snackbar.setAction(R.string.autenticarse, new View.OnClickListener() {
@@ -414,7 +440,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
         }
     }
 
-    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount){
+    private void firebaseAuthWithGoogle(GoogleSignInAccount googleSignInAccount) {
         try {
             AuthCredential authCredential = GoogleAuthProvider.getCredential(googleSignInAccount.getIdToken(), null);
             Login.firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -428,33 +454,33 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     }
                 }
             });
-        }catch (Exception e){
+        } catch (Exception e) {
             updateUI(null, true);
         }
     }
 
-    public void updateUI(FirebaseUser firebaseUser, boolean registro){
-        if(firebaseUser != null){
+    public void updateUI(FirebaseUser firebaseUser, boolean registro) {
+        if (firebaseUser != null) {
             idUsuario = firebaseUser.getUid();
             Login.firebaseAnalytics.setUserId(idUsuario);
             Bundle bundle = new Bundle();
             bundle.putString(Auxiliar.uid, idUsuario);
-            if(registro)
+            if (registro)
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
             else
                 Login.firebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
             try {
                 JSONObject jsonObject = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
-                if(jsonObject == null || !jsonObject.getString(Auxiliar.uid).equals(idUsuario)) {
+                if (jsonObject == null || !jsonObject.getString(Auxiliar.uid).equals(idUsuario)) {
                     JSONObject usuario = new JSONObject();
                     usuario.put(Auxiliar.id, Auxiliar.id);
                     usuario.put(Auxiliar.uid, idUsuario);
                     PersistenciaDatos.reemplazaJSON(getApplication(), PersistenciaDatos.ficheroUsuario, usuario);
                 }
-            }catch (JSONException e){
+            } catch (JSONException e) {
                 e.printStackTrace();
             }
-            try{
+            try {
                 tarea.put(Auxiliar.fechaInicio, Auxiliar.horaFechaActual());
                 tarea.put(Auxiliar.idUsuario, idUsuario);
                 PersistenciaDatos.reemplazaJSON(
@@ -462,55 +488,54 @@ public class Preview extends AppCompatActivity implements LocationListener {
                         PersistenciaDatos.ficheroNotificadas,
                         tarea,
                         null);
-            }catch (Exception e){
+            } catch (Exception e) {
                 tarea = null;
             }
 
 
             //Compruebo si la tarea ya ha sido completada
             JSONObject tareaCompletada;
-            try{
+            try {
                 tareaCompletada = PersistenciaDatos.recuperaTarea(
                         getApplication(),
                         PersistenciaDatos.ficheroCompletadas,
                         tarea.getString(Auxiliar.id),
                         idUsuario);
-            } catch (Exception e){
+            } catch (Exception e) {
                 tareaCompletada = null;
             }
 
             completada = tareaCompletada != null;
 
-            if(completada){
+            if (completada) {
                 botonesVisibles(false);
             }
 
             pintaSnackBar(String.format("%s%s", getString(R.string.hola), firebaseUser.getDisplayName()));
             permisos = new ArrayList<>();
             //String textoPermisos = getString(R.string.necesidad_permisos);
-            if(!(ActivityCompat.checkSelfPermission(
+            if (!(ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             }
             //Compruebo permisos de localización en primer y segundo plano
-            if(!(ActivityCompat.checkSelfPermission(
+            if (!(ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED)) {
                 permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
             }
             //Comprobación para saber si el usuario se ha identificado
-            if(idUsuario != null) {
-                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.Q){
-                    if(!(ActivityCompat.checkSelfPermission(
+            if (idUsuario != null) {
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                    if (!(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
                         //textoPermisos = String.format("%s%s", textoPermisos, getString(R.string.ubicacion_segundo));
                     }
-                }
-                else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                } else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)) {
                         if (!(ActivityCompat.checkSelfPermission(
                                 context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                                 == PackageManager.PERMISSION_GRANTED)) {
@@ -520,15 +545,14 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 }
             }
 
-            if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+            if (permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                 permisos.remove(Manifest.permission.ACCESS_FINE_LOCATION);
             }
 
-            if(permisos.isEmpty()) {
+            if (permisos.isEmpty()) {
                 if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Ajustes.NO_MOLESTAR_pref, false))
                     new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
-            }
-            else {
+            } else {
                 solicitaPermisoUbicacion();
             }
         }
@@ -536,11 +560,12 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     /**
      * Método que habilita o deshabilita los botones dependiendo del argumento de entrada
+     *
      * @param visibles Si es true se muestran los botones para interactuar frente a la tarea. False
      *                 paramostrar la información de la distancia que falta a la tarea
      */
-    private void botonesVisibles(boolean visibles){
-        if(!completada) {
+    private void botonesVisibles(boolean visibles) {
+        if (!completada) {
             if (visibles) {
                 btRechazar.setVisibility(View.VISIBLE);
                 btPosponer.setVisibility(View.VISIBLE);
@@ -554,7 +579,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 explicacionDistancia.setVisibility(View.VISIBLE);
                 textoDistancia.setVisibility(View.VISIBLE);
             }
-        }else{
+        } else {
             btRechazar.setVisibility(View.GONE);
             btPosponer.setVisibility(View.GONE);
             btAceptar.setVisibility(View.GONE);
@@ -565,6 +590,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     /**
      * Al pulsar el botón de la barra título se realiza la misma acción que al pulsar atrás
+     *
      * @return false ya que no se finaliza la actividad
      */
     @Override
@@ -578,13 +604,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
      * tarea a pospuesta si procede (tarea de notificación) y se muestra un toast antes de volver al mapa.
      */
     @Override
-    public void onBackPressed(){
+    public void onBackPressed() {
         Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
         try {
             switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
-                        .getExtras()).getString(Auxiliar.previa))){
+                    .getExtras()).getString(Auxiliar.previa))) {
                 case Auxiliar.notificacion:
-                    if(idUsuario != null) {
+                    if (idUsuario != null) {
                         Intent intent = new Intent();
                         intent.setAction(Auxiliar.ahora_no);
                         intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent()
@@ -634,7 +660,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 default:
                     break;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             pintaSnackBar(getString(R.string.errorOpera));
         }
     }
@@ -649,14 +675,14 @@ public class Preview extends AppCompatActivity implements LocationListener {
             Intent intent;
             //Para mostrar la información de donde se han obtenido los datos
             int idBoton = view.getId();
-            switch (idBoton){
+            switch (idBoton) {
                 case R.id.ivSpeakerPreview:
-                    if(textToSpeech != null) {
-                        if(textToSpeech.isSpeaking()) {
+                    if (textToSpeech != null) {
+                        if (textToSpeech.isSpeaking()) {
                             textToSpeech.stop();
                             ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
-                        }else{
-                            if(textoParaSpeaker != null) {
+                        } else {
+                            if (textoParaSpeaker != null) {
                                 HashMap<String, String> map = new HashMap<>();
                                 map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerPreview");
                                 textToSpeech.speak(
@@ -668,7 +694,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     }
                     break;
                 case R.id.tvLicenciaPreview:
-                    if(urlLicencia != null)
+                    if (urlLicencia != null)
                         Auxiliar.navegadorInterno(this, urlLicencia);
                     break;
                 case R.id.btIrACompletada:
@@ -717,26 +743,26 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     }
 
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
         menuInflater.inflate(R.menu.menu_preview, menu);
         MenuItem menuItem = menu.findItem(R.id.iPreview);
         try {
             menuItem.setIcon(Auxiliar.iconoTipoTareaLista(tarea.getString(Auxiliar.tipoRespuesta)));
-        }catch (Exception e){
+        } catch (Exception e) {
             menuItem.setIcon(R.drawable.ic_marcador_uno);
         }
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
-    public boolean onOptionsItemSelected(@NotNull MenuItem item){
+    public boolean onOptionsItemSelected(@NotNull MenuItem item) {
         if (item.getItemId() == R.id.iPreview) {
             try {
                 Toast.makeText(
@@ -758,7 +784,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
      * Se activa el seguimiento del usuario para mostrar la distancia a la tarea según se desplace
      */
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         recepcionNotificaciones = new RecepcionNotificaciones();
         registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
@@ -773,37 +799,37 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
             }
 
-            if(idUsuario != null) {
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                    if(!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) &&
+            if (idUsuario != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                    if (!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) &&
                             !(ActivityCompat.checkSelfPermission(
-                            context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                            == PackageManager.PERMISSION_GRANTED)) {
+                                    context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                                    == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
                     }
-            }else{
+            } else {
                 new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
             }
 
-            if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+            if (permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                 permisos.remove(Manifest.permission.ACCESS_FINE_LOCATION);
             }
 
-            if(permisos != null && !permisos.isEmpty()){
+            if (permisos != null && !permisos.isEmpty()) {
                 solicitaPermisoUbicacion();
             } else {
                 locationManager.requestLocationUpdates(
                         LocationManager.GPS_PROVIDER, 1000, 2, this);
-                if(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
+                if (locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER) != null)
                     onLocationChanged(
                             locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
-                else{
+                else {
                     try {
                         textoInformativoDistancia(tarea.getDouble(Auxiliar.latitud),
                                 tarea.getDouble(Auxiliar.longitud),
                                 getIntent().getExtras().getDouble(Auxiliar.posUsuarioLat),
                                 getIntent().getExtras().getDouble(Auxiliar.posUsuarioLon));
-                    }catch (Exception e){
+                    } catch (Exception e) {
                         explicacionDistancia.setText(getResources().getString(R.string.recuperandoPosicion));
                     }
                 }
@@ -811,13 +837,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(map != null)
+        if (map != null)
             map.onResume();
 
         textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
-                if(status >= 0){
+                if (status >= 0) {
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                         @Override
                         public void onStart(String utteranceId) {
@@ -837,16 +863,16 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 }
             }
         });
-        if(textToSpeech.getEngines() == null)
+        if (textToSpeech.getEngines() == null)
             ivSpeaker.setVisibility(View.INVISIBLE);
-        else if(textToSpeech.getEngines().size() <= 0)
+        else if (textToSpeech.getEngines().size() <= 0)
             ivSpeaker.setVisibility(View.INVISIBLE);
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
-        if(textToSpeech != null)
+        if (textToSpeech != null)
             textToSpeech.shutdown();
     }
 
@@ -859,20 +885,20 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
         String textoPermisos = context.getString(R.string.necesidad_permisos);
 
-        for(String s : permisos){
-            switch (s){
+        for (String s : permisos) {
+            switch (s) {
                 case Manifest.permission.ACCESS_FINE_LOCATION:
-                    textoPermisos = String.format("%s%s",textoPermisos,context.getString(R.string.ubicacion_primer));
+                    textoPermisos = String.format("%s%s", textoPermisos, context.getString(R.string.ubicacion_primer));
                     break;
                 case Manifest.permission.WRITE_EXTERNAL_STORAGE:
-                    textoPermisos = String.format("%s%s",textoPermisos,context.getString(R.string.permiso_almacenamiento));
+                    textoPermisos = String.format("%s%s", textoPermisos, context.getString(R.string.permiso_almacenamiento));
                     break;
                 default:
                     break;
             }
         }
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        if(permisos.size() > 1 &&  !sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
+        if (permisos.size() > 1 && !sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Se necesitan mostrar dos dialogos
             final TextView tituloPermisos = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
             tituloPermisos.setVisibility(View.GONE);
             final TextView textoPermiso = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
@@ -887,13 +913,13 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     prefs.commit();
                     boolean encontrado = false;
                     int i, tama = permisos.size();
-                    for(i = 0; i < tama; i++){
-                        if(permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                    for (i = 0; i < tama; i++) {
+                        if (permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                             encontrado = true;
                             break;
                         }
                     }
-                    if(encontrado)
+                    if (encontrado)
                         permisos.remove(i);
                 }
             });
@@ -906,7 +932,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     siguiente.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if(dialogoPermisos.isShowing())
+                            if (dialogoPermisos.isShowing())
                                 dialogoPermisos.cancel();
                             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
                             ActivityCompat.requestPermissions(
@@ -917,9 +943,9 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     });
                 }
             });
-        } else{
+        } else {
             TextView textView = (TextView) dialogoPermisos.findViewById(R.id.tvTituloPermisos);
-            if(permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){//Solo muestro el de ubicación siempre
+            if (permisos.contains(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {//Solo muestro el de ubicación siempre
                 textView.setVisibility(View.VISIBLE);
                 Button salir = (Button) dialogoPermisos.findViewById(R.id.btSalirPermisos);
                 salir.setOnClickListener(new View.OnClickListener() {
@@ -931,15 +957,15 @@ public class Preview extends AppCompatActivity implements LocationListener {
                         prefs.commit();
                         boolean encontrado = false;
                         int i, tama = permisos.size();
-                        for(i = 0; i < tama; i++){
-                            if(permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)){
+                        for (i = 0; i < tama; i++) {
+                            if (permisos.get(i).equals(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
                                 encontrado = true;
                                 break;
                             }
                         }
-                        if(encontrado)
+                        if (encontrado)
                             permisos.remove(i);
-                        if(permisos.isEmpty() && dialogoPermisos.isShowing()) {
+                        if (permisos.isEmpty() && dialogoPermisos.isShowing()) {
                             dialogoPermisos.cancel();
                         }
                     }
@@ -948,7 +974,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 siguiente.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if(dialogoPermisos.isShowing())
+                        if (dialogoPermisos.isShowing())
                             dialogoPermisos.cancel();
                         permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
                         ActivityCompat.requestPermissions(
@@ -957,7 +983,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                                 1002);
                     }
                 });
-            }else {//Solo muestro el normal
+            } else {//Solo muestro el normal
                 textView.setVisibility(View.GONE);
                 textView = (TextView) dialogoPermisos.findViewById(R.id.tvTextoPermisos);
                 textView.setText(Html.fromHtml(textoPermisos));
@@ -972,7 +998,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 siguiente.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if(dialogoPermisos.isShowing())
+                        if (dialogoPermisos.isShowing())
                             dialogoPermisos.cancel();
                         ActivityCompat.requestPermissions(
                                 Preview.this,
@@ -990,42 +1016,43 @@ public class Preview extends AppCompatActivity implements LocationListener {
      * Se detiene el seguimiento al usuario
      */
     @Override
-    protected void onPause(){
+    protected void onPause() {
         super.onPause();
         unregisterReceiver(recepcionNotificaciones);
-        if(map != null)
+        if (map != null)
             map.onPause();
-        if(locationManager != null)
+        if (locationManager != null)
             locationManager.removeUpdates(this);
-        if(textToSpeech != null){
+        if (textToSpeech != null) {
             textToSpeech.stop();
         }
-        if(ivSpeaker != null)
+        if (ivSpeaker != null)
             ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
     }
 
     /**
      * Método para modificar la distancia que existe, en línea recta, entre la tarea y el usuario
-     * @param tareaLat Latitud de la tarea
-     * @param tareaLon Longitud de la tarea
+     *
+     * @param tareaLat   Latitud de la tarea
+     * @param tareaLon   Longitud de la tarea
      * @param usuarioLat Latitud del usuario
      * @param usuarioLon Longitud del usuario
      */
-    private void textoInformativoDistancia(double tareaLat, double tareaLon, double usuarioLat, double usuarioLon){
+    private void textoInformativoDistancia(double tareaLat, double tareaLon, double usuarioLat, double usuarioLon) {
         double distancia = Auxiliar.calculaDistanciaDosPuntos(
                 tareaLat,
                 tareaLon,
                 usuarioLat,
                 usuarioLon);
         //TODO cambiar a 0.15
-        if(distancia <= 0.15){
+        if (distancia <= 0.15) {
             botonesVisibles(true);
-        }else{
+        } else {
             botonesVisibles(false);
-            if(distancia>=1)
+            if (distancia >= 1)
                 textoDistancia.setText(String.format("%.2fkm", distancia));
             else
-                textoDistancia.setText(String.format("%.2fm", distancia*1000));
+                textoDistancia.setText(String.format("%.2fm", distancia * 1000));
         }
     }
 
@@ -1037,7 +1064,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                     tarea.getDouble(Auxiliar.longitud),
                     location.getLatitude(),
                     location.getLongitude());
-        }catch (Exception e){
+        } catch (Exception e) {
             explicacionDistancia.setText(getResources().getString(R.string.recuperandoPosicion));
         }
     }
@@ -1058,7 +1085,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
     }
 
-    private void pintaSnackBar(String texto){
+    private void pintaSnackBar(String texto) {
         Snackbar snackbar = Snackbar.make(findViewById(R.id.clPreview), R.string.app_name, Snackbar.LENGTH_SHORT);
         snackbar.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.colorSecondaryText, null));
         snackbar.getView().setBackground(ResourcesCompat.getDrawable(context.getResources(), R.drawable.snack, null));
