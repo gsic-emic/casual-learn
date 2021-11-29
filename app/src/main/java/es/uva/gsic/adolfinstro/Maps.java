@@ -1225,7 +1225,7 @@ public class Maps extends AppCompatActivity implements
                 textoPunto.setText(
                         (puntoInteres.getString(Auxiliar.comment).equals("") ?
                                 getResources().getString(R.string.puntoSinTexto) :
-                                puntoInteres.getString(Auxiliar.comment)));
+                                Html.fromHtml(puntoInteres.getString(Auxiliar.comment))));
                 textoPunto.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
@@ -1480,6 +1480,7 @@ public class Maps extends AppCompatActivity implements
                             R.drawable.ic_marcador700_especial1, R.drawable.ic_marcador900_especial1};
                     break;
                 case 2://R2
+                case 6: //R5
                     vector = new int[]{R.drawable.ic_marcador_pulsado_especial2, R.drawable.ic_marcador100_especial2,
                             R.drawable.ic_marcador300_especial2, R.drawable.ic_marcador500_especial2,
                             R.drawable.ic_marcador700_especial2, R.drawable.ic_marcador900_especial2};
@@ -1760,7 +1761,8 @@ public class Maps extends AppCompatActivity implements
                 puntosEpecialesR1 = new JSONArray(),
                 puntosEpecialesR2 = new JSONArray(),
                 puntosEpecialesR3 = new JSONArray(),
-                puntosEpecialesR4 = new JSONArray();
+                puntosEpecialesR4 = new JSONArray(),
+                puntosEspecialesR5 = new JSONArray();
 
         JSONObject puntoInteres;
         JSONArray ficheroPuntosInteres;
@@ -1791,6 +1793,9 @@ public class Maps extends AppCompatActivity implements
                                 case Auxiliar.r0:
                                     puntosEpecialesR0.put(puntoInteres);
                                     break;
+                                case Auxiliar.r5:
+                                    puntosEspecialesR5.put(puntoInteres);
+                                    break;
                                 default:
                                     puntosEspeciales.put(puntoInteres);
                                     break;
@@ -1806,7 +1811,7 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
-        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3, puntosEpecialesR0};
+        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3, puntosEpecialesR0, puntosEspecialesR5};
 
         List<Marcador> listaMarcadores;
         for(int i = 0; i < tareas.length; i++){

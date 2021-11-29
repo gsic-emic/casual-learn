@@ -1,13 +1,11 @@
 package es.uva.gsic.adolfinstro.auxiliar;
 
-import android.net.Uri;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import java.util.Objects;
-
 /**
  * Clase para controlar la interacción del usuario frente al navegador interno
+ *
  * @author pablo
  * @version 20200727
  */
@@ -16,19 +14,20 @@ public abstract class ClienteWeb extends WebViewClient {
     /**
      * Todos los enlaces https los abre dentro del navegador interno. Si tiene enlaces http se abre en
      * su navedor por defecto
+     *
      * @param view Vista
-     * @param url Url
+     * @param url  URL
      * @return True fuera, false dentro
      */
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        if(url.toLowerCase().contains("youtube") || url.toLowerCase().contains("youtu")){
+        if (url.toLowerCase().contains("youtube") || url.toLowerCase().contains("youtu")) {
             navegadorExterno();
             return true;
         } else {
-            if (Objects.requireNonNull(Uri.parse(url).getScheme()).equalsIgnoreCase("https"))
+            if (url.toLowerCase().contains("https://")) {
                 return false;
-            else {
+            } else {
                 navegadorExterno();
                 return true;
             }

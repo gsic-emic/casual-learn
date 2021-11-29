@@ -280,4 +280,7 @@
     <string name="noGracias">No, gracias</string>
     <string name="verdadero">Verdadero</string>
     <string name="falso">Falso</string>
+    <string name="eligeCorrecta">Selecciona la respuesta correcta</string>
+    <string name="trueFalse">¿Verdadero o falso?</string>
+    <string name="mcq">Selecciona una respuesta entre múltiples alternativas</string>
 </resources>
