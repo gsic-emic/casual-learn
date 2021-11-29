@@ -1299,13 +1299,13 @@ public class Tarea extends AppCompatActivity implements
      * Método para indicar dejar registro en Firebase de una tarea completada
      */
     private void tareaCompletadaFirebase() {
-        /*try {
+        try {
             Bundle bundle = new Bundle();
             bundle.putString("idTarea", Auxiliar.idReducida(idTarea));
             bundle.putString("idUsuario", idUsuario);
             Login.firebaseAnalytics.logEvent("tareaCompletada", bundle);
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+        }
     }
 }

@@ -94,24 +94,28 @@ public class CompartirRespuesta extends AppCompatActivity
                 muestraMapa(textoPuntua);
                 break;
             case R.id.btCompartirTwitter:
+                registraRedSocial("twitter");
                 Auxiliar.mandaTweet(
                         this,
                         tarea,
                         hashtag);
                 break;
             case R.id.btCompartirYammer:
+                registraRedSocial("yammer");
                 Auxiliar.mandaYammer(
                         this,
                         tarea,
                         hashtag);
                 break;
             case R.id.btCompartirInsta:
+                registraRedSocial("instagram");
                 Auxiliar.mandaInsta(
                         this,
                         tarea,
                         hashtag);
                 break;
             case R.id.btCompartirTeams:
+                registraRedSocial("teams");
                 Auxiliar.mandaTeams(
                         this,
                         tarea,
@@ -119,6 +123,16 @@ public class CompartirRespuesta extends AppCompatActivity
                 break;
             default:
                 break;
+        }
+    }
+
+    private void registraRedSocial(String red) {
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString("red", red);
+            Login.firebaseAnalytics.logEvent("respuestaCompartida", bundle);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

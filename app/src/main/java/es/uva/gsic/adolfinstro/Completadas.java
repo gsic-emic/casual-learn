@@ -333,10 +333,7 @@ public class Completadas extends AppCompatActivity implements
         }
 
         if (savedInstanceState != null) {
-            if (savedInstanceState.getInt("COMPARTIENDO") == View.VISIBLE)
-                muestraOculta(true);
-            else
-                muestraOculta(false);
+            muestraOculta(savedInstanceState.getInt("COMPARTIENDO") == View.VISIBLE);
         }
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -988,23 +985,37 @@ public class Completadas extends AppCompatActivity implements
                 }
                 break;
             case R.id.btCompartirCompletadaTwitter:
+                registraRedSocial("twitter");
                 Auxiliar.mandaTweet(this, tarea, hashtag);
                 muestraOculta(false);
                 break;
             case R.id.btCompartirCompletadaYammer:
+                registraRedSocial("yammer");
                 Auxiliar.mandaYammer(this, tarea, hashtag);
                 muestraOculta(false);
                 break;
             case R.id.btCompartirCompletadaInstagram:
+                registraRedSocial("instagram");
                 Auxiliar.mandaInsta(this, tarea, hashtag);
                 muestraOculta(false);
                 break;
             case R.id.btCompartirCompletadaTeams:
+                registraRedSocial("teams");
                 Auxiliar.mandaTeams(this, tarea, hashtag);
                 muestraOculta(false);
                 break;
             default:
                 break;
+        }
+    }
+
+    private void registraRedSocial(String red) {
+        try {
+            Bundle bundle = new Bundle();
+            bundle.putString("red", red);
+            Login.firebaseAnalytics.logEvent("respuestaCompartida", bundle);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

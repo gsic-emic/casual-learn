@@ -72,8 +72,8 @@ import es.uva.gsic.adolfinstro.persistencia.PersistenciaDatos;
 public class Auxiliar {
 
     //TODO comprueba que sea la dirección correcta
-    //public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
-    public static final String direccionIP = "http://10.0.104.17:10001/app/";
+    public static final String direccionIP = "https://casuallearnapp.gsic.uva.es/app/";
+    //public static final String direccionIP = "http://10.0.104.17:10001/app/";
 
     private static final String rutaTareasCompletadas = direccionIP + "tareasCompletadas";
     public static final String rutaTareas = direccionIP + "tareas";
@@ -115,6 +115,7 @@ public class Auxiliar {
     public static final String r2 = "charo2";
     public static final String r3 = "charo3";
     public static final String r4 = "charo4";
+    public static final String r5 = "pinarubia363@gmail.com";
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
@@ -775,8 +776,10 @@ public class Auxiliar {
                                 break;
                             case Auxiliar.yammer:
                             case Auxiliar.teams:
-                                intent.putExtra(Intent.EXTRA_TEXT,
-                                        Auxiliar.contenidoTexto(context, tarea, textoUsuario, hashtag));
+                                if(listaURI.size() == 0) {
+                                    intent.putExtra(Intent.EXTRA_TEXT,
+                                            Auxiliar.contenidoTexto(context, tarea, textoUsuario, hashtag));
+                                }
                                 break;
                             default:
                                 break;
