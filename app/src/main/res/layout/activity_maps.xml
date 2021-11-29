@@ -262,6 +262,7 @@
                     android:paddingHorizontal="@dimen/margen_texto"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/barrierMapa"
                     app:layout_constraintTop_toBottomOf="@id/tvPuntoTitulo"/>
 
                 <TextView
@@ -276,6 +277,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tvPuntoTitulo"
+                    app:layout_constraintBottom_toTopOf="@id/barrierMapa"
                     android:onClick="boton"/>
 
                 <androidx.constraintlayout.widget.Barrier

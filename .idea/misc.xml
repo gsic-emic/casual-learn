@@ -10,6 +10,7 @@
       <map>
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/fondo_especial.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/fondo_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/fondo_especial2.xml" value="0.4036458333333333" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial0.xml" value="0.3828125" />
@@ -17,16 +18,31 @@
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial2.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial3.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial4.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador100_especial_combi.xml" value="0.4036458333333333" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador300_especial.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador300_especial0.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador500_especial.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador500_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador500_especial1.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador700_especial.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador700_especial0.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador900_especial.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador900_especial0.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador_pulsado_especial.xml" value="0.3828125" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador_pulsado_especial0.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador_pulsado_especial2.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_marcador_pulsado_especial3.xml" value="0.4036458333333333" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_mcq.xml" value="0.2359375" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_mcq_lista.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_preguntavideo_lista.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_truefalse.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/drawable/ic_truefalse_lista.xml" value="0.3828125" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/layout-land/activity_maps.xml" value="0.23385416666666667" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/layout/activity_completadas.xml" value="0.38153846153846155" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/layout/activity_maps.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/layout/activity_tarea.xml" value="0.38153846153846155" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/layout/dialogo_permisos_ubicacion.xml" value="0.2105978260869565" />
+        <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/xml/preferences.xml" value="0.36666666666666664" />
       </map>
     </option>
   </component>
