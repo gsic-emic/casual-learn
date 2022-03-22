@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         debug {
-            storeFile file('C:\\Users\\pablo\\.android\\debug.keystore')
+            storeFile file('/Users/pablo/.android/debug.keystore')
             keyPassword 'android'
             storePassword 'android'
             keyAlias = 'androiddebugkey'
@@ -19,8 +19,8 @@ android {
         applicationId "es.uva.gsic.adolfinstro"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 41
-        versionName "1.2.3"
+        versionCode 42
+        versionName '1.2.3_telecoDay'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         vectorDrawables.useSupportLibrary = true

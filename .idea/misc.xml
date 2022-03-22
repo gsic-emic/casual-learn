@@ -43,10 +43,19 @@
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/layout/activity_tarea.xml" value="0.38153846153846155" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/layout/dialogo_permisos_ubicacion.xml" value="0.2105978260869565" />
         <entry key="..\:/Users/pablo/StudioProjects/AdolfinstroApp/app/src/main/res/xml/preferences.xml" value="0.36666666666666664" />
+        <entry key="app/src/main/res/drawable/fondo_especial4.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/fondo_especial6.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/ic_marcador100_especial6.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/ic_marcador300_especial6.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/ic_marcador500_especial6.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/ic_marcador700_especial6.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/ic_marcador900_especial6.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/ic_marcador_pulsado_especial6.xml" value="0.1325" />
+        <entry key="app/src/main/res/menu/menu2.xml" value="0.20462962962962963" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

@@ -45,6 +45,7 @@ import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -1500,6 +1501,11 @@ public class Maps extends AppCompatActivity implements
                             R.drawable.ic_marcador300_especial0, R.drawable.ic_marcador500_especial0,
                             R.drawable.ic_marcador700_especial0, R.drawable.ic_marcador900_especial0};
                     break;
+                case 7: //R6
+                    vector = new int[]{R.drawable.ic_marcador_pulsado_especial6, R.drawable.ic_marcador100_especial6,
+                            R.drawable.ic_marcador300_especial6, R.drawable.ic_marcador500_especial6,
+                            R.drawable.ic_marcador700_especial6, R.drawable.ic_marcador900_especial6};
+                    break;
                 default:
                     vector = new int[]{R.drawable.ic_marcador_pulsado, R.drawable.ic_marcador100,
                             R.drawable.ic_marcador300, R.drawable.ic_marcador500,
@@ -1762,7 +1768,8 @@ public class Maps extends AppCompatActivity implements
                 puntosEpecialesR2 = new JSONArray(),
                 puntosEpecialesR3 = new JSONArray(),
                 puntosEpecialesR4 = new JSONArray(),
-                puntosEspecialesR5 = new JSONArray();
+                puntosEspecialesR5 = new JSONArray(),
+                puntosEspecialesR6 = new JSONArray();
 
         JSONObject puntoInteres;
         JSONArray ficheroPuntosInteres;
@@ -1796,6 +1803,9 @@ public class Maps extends AppCompatActivity implements
                                 case Auxiliar.r5:
                                     puntosEspecialesR5.put(puntoInteres);
                                     break;
+                                case Auxiliar.r6:
+                                    puntosEspecialesR6.put(puntoInteres);
+                                    break;
                                 default:
                                     puntosEspeciales.put(puntoInteres);
                                     break;
@@ -1811,10 +1821,20 @@ public class Maps extends AppCompatActivity implements
             }
         }
 
-        JSONArray[] tareas = {todasTareas, puntosEspeciales, puntosEpecialesR1, puntosEpecialesR2, puntosEpecialesR3, puntosEpecialesR3, puntosEpecialesR0, puntosEspecialesR5};
+        JSONArray[] tareas = {
+                todasTareas,
+                puntosEspeciales,
+                puntosEpecialesR1,
+                puntosEpecialesR2,
+                puntosEpecialesR3,
+                puntosEpecialesR3,
+                puntosEpecialesR0,
+                puntosEspecialesR5,
+                puntosEspecialesR6
+        };
 
         List<Marcador> listaMarcadores;
-        for(int i = 0; i < tareas.length; i++){
+        for(int i = 0, tama = tareas.length; i < tama; i++){
             if(tareas[i].length() > 0){
                 listaMarcadores = creaAgrupaciones(tareas[i], nivelZum);
                 for(Marcador m : listaMarcadores)
@@ -2060,17 +2080,17 @@ public class Maps extends AppCompatActivity implements
         new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
     }
 
-    /*/**
+    /**
      * Creación del menú en el layout
      * @param menu Menú a rellenar
      * @return Verdadero si se va a mostrar el menú
      */
-    /*@Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu){
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.menu, menu);
+        menuInflater.inflate(R.menu.menu2, menu);
         return super.onCreateOptionsMenu(menu);
-    }*/
+    }
 
     /*@Override
     public boolean onPrepareOptionsMenu(Menu menu){
@@ -2154,6 +2174,10 @@ public class Maps extends AppCompatActivity implements
                 intent.putExtra(Intent.EXTRA_TEXT, context.getResources().getString(R.string.urlLanding));
                 intent.setType("text/plain");
                 startActivity(Intent.createChooser(intent, context.getResources().getString(R.string.app_name)));
+                return true;
+            case R.id.actualizarTodosPOI:
+                PersistenciaDatos.borraFichero(getApplication(), PersistenciaDatos.ficheroNuevasCuadriculas);
+                compruebaZona(true);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

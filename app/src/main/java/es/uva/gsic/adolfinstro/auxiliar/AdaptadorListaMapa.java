@@ -152,6 +152,10 @@ public class AdaptadorListaMapa extends RecyclerView.Adapter<AdaptadorListaMapa.
                     holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
                             context.getResources(), R.drawable.fondo_especial0, null));
                     break;
+                case Auxiliar.r6:
+                    holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
+                            context.getResources(), R.drawable.fondo_especial6, null));
+                    break;
                 default:
                     holder.constraintLayout.setBackground(ResourcesCompat.getDrawable(
                             context.getResources(), R.drawable.fondo_especial, null));

@@ -116,6 +116,7 @@ public class Auxiliar {
     public static final String r3 = "charo3";
     public static final String r4 = "charo4";
     public static final String r5 = "pinarubia363@gmail.com";
+    public static final String r6 = "pablogz@gsic.uva.es";
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
