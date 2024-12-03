@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -189,6 +190,27 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
             startActivity(intent);
             finishAffinity();
         }
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Bundle extras = getIntent().getExtras();
+                if (extras != null && extras.containsKey(Auxiliar.previa)) {
+                    switch (extras.getString(Auxiliar.previa)){
+                        case Auxiliar.mapa:
+                            finish();
+                            break;
+                        case Auxiliar.notificacion:
+                        default:
+                            aMapas();
+                            break;
+                    }
+                }else{
+                    aMapas();
+                }
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     private void peticionTareasPersonalizadas(@Nullable final String enlaceWiki) {
@@ -533,72 +555,48 @@ public class PuntoInteres extends AppCompatActivity implements LocationListener,
     }
 
     public void boton(View view) {
-        switch (view.getId()){
-            case R.id.ivSpeakerInfoPunto:
-                if(textToSpeech != null) {
-                    if(textToSpeech.isSpeaking()) {
-                        textToSpeech.stop();
-                        ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
-                    }else{
-                        if(textoSpeaker != null) {
-                            HashMap<String, String> map = new HashMap<>();
-                            map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerPreview");
-                            textToSpeech.speak(
-                                    textoSpeaker,
-                                    TextToSpeech.QUEUE_FLUSH,
-                                    map);
-                        }
+        int id = view.getId();
+        if (id == R.id.ivSpeakerInfoPunto) {
+            if (textToSpeech != null) {
+                if (textToSpeech.isSpeaking()) {
+                    textToSpeech.stop();
+                    ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+                } else {
+                    if (textoSpeaker != null) {
+                        HashMap<String, String> map = new HashMap<>();
+                        map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerPreview");
+                        textToSpeech.speak(
+                                textoSpeaker,
+                                TextToSpeech.QUEUE_FLUSH,
+                                map);
                     }
                 }
-                break;
-            case R.id.btAmpliarInfoPunto:
-                try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
-                    if(posicion != null){
-                        Intent intent = new Intent(context, MapaNavegable.class);
-                        intent.putExtra(Auxiliar.latitud + "user", posicion.getLatitude());
-                        intent.putExtra(Auxiliar.longitud + "user", posicion.getLongitude());
-                        intent.putExtra(Auxiliar.latitud + "task", lugar.getDouble(Auxiliar.latitud));
-                        intent.putExtra(Auxiliar.longitud + "task", lugar.getDouble(Auxiliar.longitud));
-                        startActivity(intent);
-                    }else{
-                        Toast.makeText(context, R.string.recuperandoPosicion, Toast.LENGTH_SHORT).show();
-                    }
-                }catch (JSONException e){
-                    e.printStackTrace();
+            }
+        } else if (id == R.id.btAmpliarInfoPunto) {
+            try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
+                if (posicion != null) {
+                    Intent intent = new Intent(context, MapaNavegable.class);
+                    intent.putExtra(Auxiliar.latitud + "user", posicion.getLatitude());
+                    intent.putExtra(Auxiliar.longitud + "user", posicion.getLongitude());
+                    intent.putExtra(Auxiliar.latitud + "task", lugar.getDouble(Auxiliar.latitud));
+                    intent.putExtra(Auxiliar.longitud + "task", lugar.getDouble(Auxiliar.longitud));
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(context, R.string.recuperandoPosicion, Toast.LENGTH_SHORT).show();
                 }
-                break;
-            case R.id.textoReducidoInfoPunto:
-                textoLugarReducido.setVisibility(View.GONE);
-                textoLugar.setVisibility(View.VISIBLE);
-                break;
-            default:
-
-                break;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        } else if (id == R.id.textoReducidoInfoPunto) {
+            textoLugarReducido.setVisibility(View.GONE);
+            textoLugar.setVisibility(View.VISIBLE);
         }
     }
 
     @Override
     public boolean onSupportNavigateUp() {
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    @Override
-    public void onBackPressed(){
-        Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.containsKey(Auxiliar.previa)) {
-            switch (extras.getString(Auxiliar.previa)){
-                case Auxiliar.mapa:
-                    finish();
-                    break;
-                case Auxiliar.notificacion:
-                default:
-                    aMapas();
-                    break;
-            }
-        }else{
-            aMapas();
-        }
     }
 
     private void aMapas(){

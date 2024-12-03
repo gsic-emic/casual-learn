@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -94,6 +95,14 @@ public class ListaTareas extends AppCompatActivity
             posicionPulsada = savedInstanceState.getInt("PULSACION");
         else
             posicionPulsada = -1;
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     /**
@@ -203,17 +212,8 @@ public class ListaTareas extends AppCompatActivity
 
     @Override
     public boolean onSupportNavigateUp() {
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    /**
-     * Método que se ejecuta cuando el usuario presiona el botón de atras de su teléfono. Se pasa la
-     * tarea a pospuesta y se muestra un toast antes de volver al mapa.
-     */
-    @Override
-    public void onBackPressed(){
-        finish();
     }
 
     @Override

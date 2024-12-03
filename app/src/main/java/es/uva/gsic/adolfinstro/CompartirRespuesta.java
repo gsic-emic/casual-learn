@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
@@ -79,6 +80,14 @@ public class CompartirRespuesta extends AppCompatActivity
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         onSharedPreferenceChanged(sharedPreferences, Ajustes.HASHTAG_pref);
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                muestraMapa(textoPuntua);
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     @Override
@@ -89,40 +98,33 @@ public class CompartirRespuesta extends AppCompatActivity
     }
 
     public void boton(View view) {
-        switch (view.getId()){
-            case R.id.btCompartirVolver:
-                muestraMapa(textoPuntua);
-                break;
-            case R.id.btCompartirTwitter:
-                registraRedSocial("twitter");
-                Auxiliar.mandaTweet(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            case R.id.btCompartirYammer:
-                registraRedSocial("yammer");
-                Auxiliar.mandaYammer(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            case R.id.btCompartirInsta:
-                registraRedSocial("instagram");
-                Auxiliar.mandaInsta(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            case R.id.btCompartirTeams:
-                registraRedSocial("teams");
-                Auxiliar.mandaTeams(
-                        this,
-                        tarea,
-                        hashtag);
-                break;
-            default:
-                break;
+        int id = view.getId();
+        if (id == R.id.btCompartirVolver) {
+            muestraMapa(textoPuntua);
+        } else if (id == R.id.btCompartirTwitter) {
+            registraRedSocial("twitter");
+            Auxiliar.mandaTweet(
+                    this,
+                    tarea,
+                    hashtag);
+        } else if (id == R.id.btCompartirYammer) {
+            registraRedSocial("yammer");
+            Auxiliar.mandaYammer(
+                    this,
+                    tarea,
+                    hashtag);
+        } else if (id == R.id.btCompartirInsta) {
+            registraRedSocial("instagram");
+            Auxiliar.mandaInsta(
+                    this,
+                    tarea,
+                    hashtag);
+        } else if (id == R.id.btCompartirTeams) {
+            registraRedSocial("teams");
+            Auxiliar.mandaTeams(
+                    this,
+                    tarea,
+                    hashtag);
         }
     }
 
@@ -148,12 +150,6 @@ public class CompartirRespuesta extends AppCompatActivity
             intent.putExtra(Auxiliar.textoParaElMapa, string);
         startActivity(intent);
         finishAffinity();
-    }
-
-    @Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        muestraMapa(textoPuntua);
     }
 
     /**

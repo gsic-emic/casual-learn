@@ -53,4 +53,7 @@
     <color name="azul_p0">#4974a5</color>
     <color name="azul_p0_dark">#2b4563</color>
     <color name="azul_p0_transparente">#194974A5</color>
+    <color name="rosa_p0">#d81b60</color>
+    <color name="rosa_p0_dark">#a00037</color>
+    <color name="rosa_p0_transparente">#19d81b60</color>
 </resources>

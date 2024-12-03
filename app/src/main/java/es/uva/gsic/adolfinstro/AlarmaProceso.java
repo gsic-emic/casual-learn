@@ -517,7 +517,8 @@ public class AlarmaProceso extends BroadcastReceiver implements SharedPreference
                             } catch (JSONException je) {
                                 distancia = 10;
                             }
-                            if (distancia < 0.15) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
+                            //TODO cambiar a 0.15
+                            if (distancia < 0.75) {//Si el usuario está lo suficientemente cerca, se le envía una notificación
                                 try {
                                     //Se extrae la tarea para que no se le vuelva a ofrecer
                                     PersistenciaDatos.obtenObjeto(

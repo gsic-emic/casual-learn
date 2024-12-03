@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.FileProvider;
@@ -341,6 +342,20 @@ public class Completadas extends AppCompatActivity implements
         hashtag = sharedPreferences.getString(Ajustes.HASHTAG_pref, getString(R.string.hashtag));
         enviaWifi = sharedPreferences.getBoolean(Ajustes.WIFI_pref, false);
         publicarGeneral = sharedPreferences.getBoolean(Ajustes.PORTAFOLIO_pref, false);
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                //Si el usuario a agregado una imágen o un vídeo a la aplicación y luego no guarda se elimina
+                if (editando && !uriGuardadas.isEmpty()) {
+                    for (Uri uri : uriGuardadas) {
+                        getContentResolver().delete(uri, null, null);
+                    }
+                }
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     /**
@@ -350,22 +365,8 @@ public class Completadas extends AppCompatActivity implements
      */
     @Override
     public boolean onSupportNavigateUp() {
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    /**
-     * Método para controlar la pulsación atrás del botón físico
-     */
-    @Override
-    public void onBackPressed() {
-        //Si el usuario a agregado una imágen o un vídeo a la aplicación y luego no guarda se elimina
-        if (editando && !uriGuardadas.isEmpty()) {
-            for (Uri uri : uriGuardadas) {
-                this.getContentResolver().delete(uri, null, null);
-            }
-        }
-        finish();
     }
 
     /**
@@ -430,80 +431,79 @@ public class Completadas extends AppCompatActivity implements
             editando = !editando;
         } else
             caso = item.getItemId();
-        switch (caso) {
-            case R.id.editarCompletada:
-                if (editando) {
-                    try {
-                        String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
-                        //Se comprueba si la respuesta está vacía
-                        if (etTextoUsuario.getVisibility() != View.GONE &&
-                                (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
-                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
-                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
-                                        || tipoRespuesta.equals(Auxiliar.tipoPreguntaVideo)
-                                ) && etTextoUsuario.getText().toString().isEmpty()) {
-                            etTextoUsuario.setError(getString(R.string.respuestaVacia));
-                        } else {
-                            //Se comprueba si se tiene algún recurso multimedia
-                            if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
-                                    || tipoRespuesta.equals(Auxiliar.tipoImagen)
-                                    || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
-                                    || tipoRespuesta.equals(Auxiliar.tipoVideo)
+        if (caso == R.id.editarCompletada) {
+            if (editando) {
+                try {
+                    String tipoRespuesta = tarea.getString(Auxiliar.tipoRespuesta);
+                    //Se comprueba si la respuesta está vacía
+                    if (etTextoUsuario.getVisibility() != View.GONE &&
+                            (tipoRespuesta.equals(Auxiliar.tipoPreguntaCorta)
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaLarga)
+                                    || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
                                     || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
                                     || tipoRespuesta.equals(Auxiliar.tipoPreguntaVideo)
-                            ) && (listaURI.size() == 0)) {
-                                muestraSnack(getString(R.string.agregarContenido));
-                            } else {
-                                editando = false;
-                                if (item != null)
-                                    item.setIcon(R.drawable.ic_edit_black_24dp);
-                                bloqueaYGuarda();
-                                btCompartir.show();
-                            }
+                            ) && etTextoUsuario.getText().toString().isEmpty()) {
+                        etTextoUsuario.setError(getString(R.string.respuestaVacia));
+                    } else {
+                        //Se comprueba si se tiene algún recurso multimedia
+                        if ((tipoRespuesta.equals(Auxiliar.tipoPreguntaImagen)
+                                || tipoRespuesta.equals(Auxiliar.tipoImagen)
+                                || tipoRespuesta.equals(Auxiliar.tipoImagenMultiple)
+                                || tipoRespuesta.equals(Auxiliar.tipoVideo)
+                                || tipoRespuesta.equals(Auxiliar.tipoPreguntaImagenes)
+                                || tipoRespuesta.equals(Auxiliar.tipoPreguntaVideo)
+                        ) && (listaURI.size() == 0)) {
+                            muestraSnack(getString(R.string.agregarContenido));
+                        } else {
+                            editando = false;
+                            if (item != null)
+                                item.setIcon(R.drawable.ic_edit_black_24dp);
+                            bloqueaYGuarda();
+                            btCompartir.show();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
                     }
-                } else {
-                    editando = true;
-                    if (item != null)
-                        item.setIcon(R.drawable.ic_save_white_24dp);
-                    desbloqueaCampos();
-                    muestraOculta(false);
-                    btCompartir.hide();
-                }
-                return true;
-            case R.id.tareaPublicaSelector:
-                try {
-                    publico = !publico;
-                    tarea.put(Auxiliar.publico, publico);
-                    bloqueaYGuarda();
-                    invalidateOptionsMenu();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                return true;
-            case R.id.copiarToken:
-                try {
-                    if (tarea.has(Auxiliar.idToken)) {
-                        String tokenTarea = tarea.getString(Auxiliar.idToken);
-                        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                        String idUsuario = PersistenciaDatos.recuperaTarea(
-                                getApplication(),
-                                PersistenciaDatos.ficheroUsuario,
-                                Auxiliar.id)
-                                .getString(Auxiliar.idPortafolio);
-                        String url = Auxiliar.rutaPortafolio + idUsuario + "/" + tokenTarea;
-                        clipboardManager.setPrimaryClip(ClipData.newPlainText(Auxiliar.idToken, url));
-                        Toast.makeText(this, R.string.copiado_al_porta, Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, R.string.idToken_noDisponible, Toast.LENGTH_SHORT).show();
-                    }
-                } catch (Exception e) {
-                    Toast.makeText(this, R.string.errorCopiaPortapapeles, Toast.LENGTH_SHORT).show();
+            } else {
+                editando = true;
+                if (item != null)
+                    item.setIcon(R.drawable.ic_save_white_24dp);
+                desbloqueaCampos();
+                muestraOculta(false);
+                btCompartir.hide();
+            }
+            return true;
+        } else if (caso == R.id.tareaPublicaSelector) {
+            try {
+                publico = !publico;
+                tarea.put(Auxiliar.publico, publico);
+                bloqueaYGuarda();
+                invalidateOptionsMenu();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return true;
+        } else if (caso == R.id.copiarToken) {
+            try {
+                if (tarea.has(Auxiliar.idToken)) {
+                    String tokenTarea = tarea.getString(Auxiliar.idToken);
+                    ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                    String idUsuario = PersistenciaDatos.recuperaTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroUsuario,
+                                    Auxiliar.id)
+                            .getString(Auxiliar.idPortafolio);
+                    String url = Auxiliar.rutaPortafolio + idUsuario + "/" + tokenTarea;
+                    clipboardManager.setPrimaryClip(ClipData.newPlainText(Auxiliar.idToken, url));
+                    Toast.makeText(this, R.string.copiado_al_porta, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, R.string.idToken_noDisponible, Toast.LENGTH_SHORT).show();
                 }
-                return true;
+            } catch (Exception e) {
+                Toast.makeText(this, R.string.errorCopiaPortapapeles, Toast.LENGTH_SHORT).show();
+            }
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -853,37 +853,33 @@ public class Completadas extends AppCompatActivity implements
      */
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btAgregarCompletada:
-                try {
-                    switch (tarea.getString(Auxiliar.tipoRespuesta)) {
-                        case Auxiliar.tipoImagen:
-                        case Auxiliar.tipoImagenMultiple:
-                        case Auxiliar.tipoPreguntaImagen:
-                        case Auxiliar.tipoVideo:
-                        case Auxiliar.tipoPreguntaImagenes:
-                        case Auxiliar.tipoPreguntaVideo:
-                            Intent intent = new Intent();
-                            intent.setAction(Intent.ACTION_GET_CONTENT);
-                            if (tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)
-                                    || tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoPreguntaVideo)) {
-                                intent.setType("video/*");
-                            } else {
-                                intent.setType("image/*");
-                            }
-                            startActivityForResult(
-                                    Intent.createChooser(intent, ""),
-                                    5000);
-                            break;
-                        default:
-                            break;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        if (v.getId() == R.id.btAgregarCompletada) {
+            try {
+                switch (tarea.getString(Auxiliar.tipoRespuesta)) {
+                    case Auxiliar.tipoImagen:
+                    case Auxiliar.tipoImagenMultiple:
+                    case Auxiliar.tipoPreguntaImagen:
+                    case Auxiliar.tipoVideo:
+                    case Auxiliar.tipoPreguntaImagenes:
+                    case Auxiliar.tipoPreguntaVideo:
+                        Intent intent = new Intent();
+                        intent.setAction(Intent.ACTION_GET_CONTENT);
+                        if (tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoVideo)
+                                || tarea.getString(Auxiliar.tipoRespuesta).equals(Auxiliar.tipoPreguntaVideo)) {
+                            intent.setType("video/*");
+                        } else {
+                            intent.setType("image/*");
+                        }
+                        startActivityForResult(
+                                Intent.createChooser(intent, ""),
+                                5000);
+                        break;
+                    default:
+                        break;
                 }
-                break;
-            default:
-                break;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -976,36 +972,29 @@ public class Completadas extends AppCompatActivity implements
     }
 
     public void boton(View view) {
-        switch (view.getId()) {
-            case R.id.btCompartirCompletada:
-                if ((findViewById(R.id.btCompartirCompletadaTwitter)).getVisibility() == View.VISIBLE) {
-                    muestraOculta(false);
-                } else {
-                    muestraOculta(true);
-                }
-                break;
-            case R.id.btCompartirCompletadaTwitter:
-                registraRedSocial("twitter");
-                Auxiliar.mandaTweet(this, tarea, hashtag);
+        int id = view.getId();
+        if (id == R.id.btCompartirCompletada) {
+            if ((findViewById(R.id.btCompartirCompletadaTwitter)).getVisibility() == View.VISIBLE) {
                 muestraOculta(false);
-                break;
-            case R.id.btCompartirCompletadaYammer:
-                registraRedSocial("yammer");
-                Auxiliar.mandaYammer(this, tarea, hashtag);
-                muestraOculta(false);
-                break;
-            case R.id.btCompartirCompletadaInstagram:
-                registraRedSocial("instagram");
-                Auxiliar.mandaInsta(this, tarea, hashtag);
-                muestraOculta(false);
-                break;
-            case R.id.btCompartirCompletadaTeams:
-                registraRedSocial("teams");
-                Auxiliar.mandaTeams(this, tarea, hashtag);
-                muestraOculta(false);
-                break;
-            default:
-                break;
+            } else {
+                muestraOculta(true);
+            }
+        } else if (id == R.id.btCompartirCompletadaTwitter) {
+            registraRedSocial("twitter");
+            Auxiliar.mandaTweet(this, tarea, hashtag);
+            muestraOculta(false);
+        } else if (id == R.id.btCompartirCompletadaYammer) {
+            registraRedSocial("yammer");
+            Auxiliar.mandaYammer(this, tarea, hashtag);
+            muestraOculta(false);
+        } else if (id == R.id.btCompartirCompletadaInstagram) {
+            registraRedSocial("instagram");
+            Auxiliar.mandaInsta(this, tarea, hashtag);
+            muestraOculta(false);
+        } else if (id == R.id.btCompartirCompletadaTeams) {
+            registraRedSocial("teams");
+            Auxiliar.mandaTeams(this, tarea, hashtag);
+            muestraOculta(false);
         }
     }
 
