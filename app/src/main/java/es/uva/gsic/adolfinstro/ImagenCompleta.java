@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
@@ -60,6 +61,15 @@ public class ImagenCompleta extends AppCompatActivity {
                     (ImageView) findViewById(R.id.ivInfoFotoCompleta),
                     Objects.requireNonNull(getIntent().getExtras()).getString("IMAGENCOMPLETA"));
         }
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Picasso.get().cancelTag(Auxiliar.cargaImagenDetalles);
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     /**
@@ -68,17 +78,8 @@ public class ImagenCompleta extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    /**
-     * Se pulsa al botón atrás físico. Cancela la carga de la imagen y finaliza la actividad.
-     */
-    @Override
-    public  void onBackPressed(){
-        Picasso.get().cancelTag(Auxiliar.cargaImagenDetalles);
-        finish();
     }
 
     public void boton(View view) {

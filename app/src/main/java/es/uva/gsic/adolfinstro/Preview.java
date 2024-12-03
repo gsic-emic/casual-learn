@@ -1,10 +1,12 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.multidex.BuildConfig;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
@@ -60,7 +62,6 @@ import org.osmdroid.views.overlay.Marker;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import es.uva.gsic.adolfinstro.auxiliar.Auxiliar;
@@ -373,7 +374,74 @@ public class Preview extends AppCompatActivity implements LocationListener {
 
         ivSpeaker = findViewById(R.id.ivSpeakerPreview);
         ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
+                try {
+                    switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
+                            .getExtras()).getString(Auxiliar.previa))) {
+                        case Auxiliar.notificacion:
+                            if (idUsuario != null) {
+                                Intent intent = new Intent();
+                                intent.setAction(Auxiliar.ahora_no);
+                                intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent()
+                                        .getExtras()).getString(Auxiliar.id));
+                                sendBroadcast(intent);
+                            }
+                            //Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
+                            Intent intent2 = new Intent(context, Maps.class);
+                            intent2.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent2.putExtra(Auxiliar.textoParaElMapa, getString(R.string.tareaPospuesta));
+                            context.startActivity(intent2);
+                            finish();
+                            break;
+                        case Auxiliar.mapa:
+                            PersistenciaDatos.obtenTarea(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroNotificadas,
+                                    tarea.getString(Auxiliar.id),
+                                    idUsuario);
+                            finish();
+                            break;
+                        case Auxiliar.tareasPospuestas:
+                            PersistenciaDatos.guardaJSON(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroTareasPospuestas,
+                                    PersistenciaDatos.obtenTarea(
+                                            getApplication(),
+                                            PersistenciaDatos.ficheroNotificadas,
+                                            tarea.getString(Auxiliar.id),
+                                            idUsuario),
+                                    Context.MODE_PRIVATE);
+                            finish();
+                            break;
+                        case Auxiliar.tareasRechazadas:
+                            PersistenciaDatos.guardaJSON(
+                                    getApplication(),
+                                    PersistenciaDatos.ficheroTareasRechazadas,
+                                    PersistenciaDatos.obtenTarea(
+                                            getApplication(),
+                                            PersistenciaDatos.ficheroNotificadas,
+                                            tarea.getString(Auxiliar.id),
+                                            idUsuario),
+                                    Context.MODE_PRIVATE);
+                            finish();
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (Exception e) {
+                    pintaSnackBar(getString(R.string.errorOpera));
+                }
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
+
     }
+
 
     private void saltaNavegacion() {
         try {//Se salta a la tarea de navegación cuando el usuario pulse sobre el mapa
@@ -408,7 +476,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
             @Override
             public void onClick(View v) {
                 Login.gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestIdToken("717881479121-ub94hscveuj3aue4stbqv4mr6mljhbsi.apps.googleusercontent.com")
                         .requestEmail().build();
                 Login.googleSignInClient = GoogleSignIn.getClient(context, Login.gso);
                 Intent intent = Login.googleSignInClient.getSignInIntent();
@@ -595,74 +663,8 @@ public class Preview extends AppCompatActivity implements LocationListener {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    /**
-     * Método que se ejecuta cuando el usuario presiona el botón de atras de su teléfono. Se pasa la
-     * tarea a pospuesta si procede (tarea de notificación) y se muestra un toast antes de volver al mapa.
-     */
-    @Override
-    public void onBackPressed() {
-        Picasso.get().cancelTag(Auxiliar.cargaImagenPreview);
-        try {
-            switch (Objects.requireNonNull(Objects.requireNonNull(getIntent()
-                    .getExtras()).getString(Auxiliar.previa))) {
-                case Auxiliar.notificacion:
-                    if (idUsuario != null) {
-                        Intent intent = new Intent();
-                        intent.setAction(Auxiliar.ahora_no);
-                        intent.putExtra(Auxiliar.id, Objects.requireNonNull(getIntent()
-                                .getExtras()).getString(Auxiliar.id));
-                        sendBroadcast(intent);
-                    }
-                    //Toast.makeText(context, getString(R.string.tareaPospuesta), Toast.LENGTH_SHORT).show();
-                    Intent intent2 = new Intent(context, Maps.class);
-                    intent2.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent2.putExtra(Auxiliar.textoParaElMapa, getString(R.string.tareaPospuesta));
-                    context.startActivity(intent2);
-                    finish();
-                    break;
-                case Auxiliar.mapa:
-                    PersistenciaDatos.obtenTarea(
-                            getApplication(),
-                            PersistenciaDatos.ficheroNotificadas,
-                            tarea.getString(Auxiliar.id),
-                            idUsuario);
-                    finish();
-                    break;
-                case Auxiliar.tareasPospuestas:
-                    PersistenciaDatos.guardaJSON(
-                            getApplication(),
-                            PersistenciaDatos.ficheroTareasPospuestas,
-                            PersistenciaDatos.obtenTarea(
-                                    getApplication(),
-                                    PersistenciaDatos.ficheroNotificadas,
-                                    tarea.getString(Auxiliar.id),
-                                    idUsuario),
-                            Context.MODE_PRIVATE);
-                    finish();
-                    break;
-                case Auxiliar.tareasRechazadas:
-                    PersistenciaDatos.guardaJSON(
-                            getApplication(),
-                            PersistenciaDatos.ficheroTareasRechazadas,
-                            PersistenciaDatos.obtenTarea(
-                                    getApplication(),
-                                    PersistenciaDatos.ficheroNotificadas,
-                                    tarea.getString(Auxiliar.id),
-                                    idUsuario),
-                            Context.MODE_PRIVATE);
-                    finish();
-                    break;
-                default:
-                    break;
-            }
-        } catch (Exception e) {
-            pintaSnackBar(getString(R.string.errorOpera));
-        }
     }
 
     /**
@@ -675,73 +677,61 @@ public class Preview extends AppCompatActivity implements LocationListener {
             Intent intent;
             //Para mostrar la información de donde se han obtenido los datos
             int idBoton = view.getId();
-            switch (idBoton) {
-                case R.id.ivSpeakerPreview:
-                    if (textToSpeech != null) {
-                        if (textToSpeech.isSpeaking()) {
-                            textToSpeech.stop();
-                            ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
-                        } else {
-                            if (textoParaSpeaker != null) {
-                                HashMap<String, String> map = new HashMap<>();
-                                map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerPreview");
-                                textToSpeech.speak(
-                                        textoParaSpeaker,
-                                        TextToSpeech.QUEUE_FLUSH,
-                                        map);
-                            }
-                        }
-                    }
-                    break;
-                case R.id.tvLicenciaPreview:
-                    if (urlLicencia != null)
-                        Auxiliar.navegadorInterno(this, urlLicencia);
-                    break;
-                case R.id.btIrACompletada:
-                    intent = new Intent(context, Completadas.class);
-                    intent.putExtra(
-                            Auxiliar.id,
-                            Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                    startActivity(intent);
-                    break;
-                case R.id.btAmpliarMapa:
-                    saltaNavegacion();
-                    break;
-                default:
-                    if (idUsuario == null) {
-                        snackBarLogin(R.id.clPreview);
+            if (idBoton == R.id.ivSpeakerPreview) {
+                if (textToSpeech != null) {
+                    if (textToSpeech.isSpeaking()) {
+                        textToSpeech.stop();
+                        ivSpeaker.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_speaker, null));
                     } else {
-                        switch (idBoton) {
-                            case R.id.botonAceptarPreview:
-                                intent = new Intent(context, Tarea.class);
-                                intent.putExtra(
-                                        Auxiliar.id,
-                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                                startActivity(intent);
-                                break;
-                            case R.id.botonAhoraNoPreview:
-                                intent = new Intent();
-                                intent.setAction(Auxiliar.ahora_no);
-                                intent.putExtra(
-                                        Auxiliar.id,
-                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                                sendBroadcast(intent);
-                                finish();
-                                break;
-                            case R.id.botonRechazarPreview:
-                                intent = new Intent();
-                                intent.setAction(Auxiliar.nunca_mas);
-                                intent.putExtra(
-                                        Auxiliar.id,
-                                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
-                                sendBroadcast(intent);
-                                finish();
-                                break;
-                            default:
-                                break;
+                        if (textoParaSpeaker != null) {
+                            HashMap<String, String> map = new HashMap<>();
+                            map.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "speakerPreview");
+                            textToSpeech.speak(
+                                    textoParaSpeaker,
+                                    TextToSpeech.QUEUE_FLUSH,
+                                    map);
                         }
                     }
-
+                }
+            } else if (idBoton == R.id.tvLicenciaPreview) {
+                if (urlLicencia != null)
+                    Auxiliar.navegadorInterno(this, urlLicencia);
+            } else if (idBoton == R.id.btIrACompletada) {
+                intent = new Intent(context, Completadas.class);
+                intent.putExtra(
+                        Auxiliar.id,
+                        Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                startActivity(intent);
+            } else if (idBoton == R.id.btAmpliarMapa) {
+                saltaNavegacion();
+            } else {
+                if (idUsuario == null) {
+                    snackBarLogin(R.id.clPreview);
+                } else {
+                    if (idBoton == R.id.botonAceptarPreview) {
+                        intent = new Intent(context, Tarea.class);
+                        intent.putExtra(
+                                Auxiliar.id,
+                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        startActivity(intent);
+                    } else if (idBoton == R.id.botonAhoraNoPreview) {
+                        intent = new Intent();
+                        intent.setAction(Auxiliar.ahora_no);
+                        intent.putExtra(
+                                Auxiliar.id,
+                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        sendBroadcast(intent);
+                        finish();
+                    } else if (idBoton == R.id.botonRechazarPreview) {
+                        intent = new Intent();
+                        intent.setAction(Auxiliar.nunca_mas);
+                        intent.putExtra(
+                                Auxiliar.id,
+                                Objects.requireNonNull(getIntent().getExtras()).getString(Auxiliar.id));
+                        sendBroadcast(intent);
+                        finish();
+                    }
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -787,7 +777,11 @@ public class Preview extends AppCompatActivity implements LocationListener {
     protected void onResume() {
         super.onResume();
         recepcionNotificaciones = new RecepcionNotificaciones();
-        registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter(), Context.RECEIVER_EXPORTED);
+        } else {
+            registerReceiver(recepcionNotificaciones, Auxiliar.intentFilter());
+        }
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         permisos = new ArrayList<>();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -1045,7 +1039,7 @@ public class Preview extends AppCompatActivity implements LocationListener {
                 usuarioLat,
                 usuarioLon);
         //TODO cambiar a 0.15
-        if (distancia <= 0.75) {
+        if (distancia <= 0.15) {
             botonesVisibles(true);
         } else {
             botonesVisibles(false);
