@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -61,6 +62,14 @@ public class ListaContextos extends AppCompatActivity
             posicionPulsada = savedInstanceState.getInt("PULSACION");
         else
             posicionPulsada = -1;
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     @Override
@@ -72,13 +81,8 @@ public class ListaContextos extends AppCompatActivity
     }
 
     @Override
-    public void onBackPressed() {
-        finish();
-    }
-
-    @Override
     public boolean onSupportNavigateUp() {
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
     }
 

@@ -116,6 +116,7 @@ public class Auxiliar {
     public static final String r3 = "charo3";
     public static final String r4 = "charo4";
     public static final String r5 = "pinarubia363@gmail.com";
+    public static final String r6 = "pablogz@gsic.uva.es";
 
     public static final String posUsuarioLat = "posUsuarioLat";
     public static final String posUsuarioLon = "posUsuarioLon";
@@ -223,18 +224,6 @@ public class Auxiliar {
             case 2:
                 mediaFile = File.createTempFile("JPG_" + timeStamp, ".jpg",
                         context.getExternalFilesDir(Environment.DIRECTORY_PICTURES));
-                /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                    ContentResolver contentResolver = context.getContentResolver();
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timeStamp + ".jpg");
-                    contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg");
-                    contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
-                    Uri uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
-                    mediaFile = new File(uri.getPath() + "/"+timeStamp+".jpg");
-                }else{
-                    String imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-                    mediaFile = new File(imagesDir, timeStamp + ".jpg");
-                }*/
                 break;
             case 3:
                 mediaFile = File.createTempFile("VID_" + timeStamp, ".mp4",

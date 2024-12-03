@@ -198,6 +198,7 @@
     <string name="solicitar">Solicitar</string>
     <string name="necesidad_permisos">Se necesitan los siguientes permisos:</string>
     <string name="ubicacion_primer"><![CDATA[<p>Se necesita conocer tu <b>ubicación en primer plano</b> para poder mostrar tu posición en el mapa.</p>]]></string>
+    <string name="permiso_notificaciones"><![CDATA[<p>Se necesita poder enviarte notificaciones para que puedas saber cuándo te encuentras cerca de un lugar donde puedas realizar una tarea.</p>]]></string>
     <string name="volver">Atrás</string>
     <string name="permiso_camara"><![CDATA[<p>Se necesita acceder a la <b>cámara</b> del dispositivo para tomar fotografías o grabar vídeos.</p>]]></string>
     <string name="permiso_micro"><![CDATA[<p>Se necesita acceder al <b>micrófono</b> para que los vídeos tengan audio.</p>]]></string>

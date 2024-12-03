@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
@@ -125,6 +126,14 @@ public class Acerca extends AppCompatActivity {
                 }
             }
         }
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     /**
@@ -134,76 +143,59 @@ public class Acerca extends AppCompatActivity {
     public void boton(View view) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
-        switch (view.getId()){
-            case R.id.imagenGsic:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlgsic)));
+        int id = view.getId();
+        if (id == R.id.imagenGsic) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlgsic)));
+            startActivity(intent);
+        } else if (id == R.id.imagenUva) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urluva)));
+            startActivity(intent);
+        } else if (id == R.id.tvDesarrolladores) {
+            dialogoDesarrolladoresActivo = true;
+            dialogoDesarrolladores.show();
+        } else if (id == R.id.ivJunta) {
+            dialogoJuntaCyLActivo = true;
+            dialogoJuntaCyL.show();
+        } else if (id == R.id.tvBICJunta) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlBienesJunta)));
+            startActivity(intent);
+        } else if (id == R.id.tvMunicipiosJunta) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlMunicipiosJunta)));
+            startActivity(intent);
+        } else if (id == R.id.ivDbPiedia) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlDbpedia)));
+            startActivity(intent);
+        } else if (id == R.id.ivWikidata) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlWikidata)));
+            startActivity(intent);
+        } else if (id == R.id.tvOpenStreepMap) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlopenStreetMap)));
+            startActivity(intent);
+        } else if (id == R.id.tvOsmdroid) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlOsmdroid)));
+            startActivity(intent);
+        } else if (id == R.id.tvPhotoView) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlPhotoView)));
+            startActivity(intent);
+        } else if (id == R.id.tvPicasso) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlPicasso)));
+            startActivity(intent);
+        } else if (id == R.id.tvLicencia) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlLicencia)));
+            startActivity(intent);
+        } else if (id == R.id.tvPoliticaPrivacidad) {
+            intent.setData(Uri.parse(contexto.getResources().getString(R.string.politica_url)));
+            startActivity(intent);
+        } else if (id == R.id.tvContacto) {
+            intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("message/rfc822");
+            String[] direcciones = {getString(R.string.emailCasualLearn)};
+            intent.putExtra(Intent.EXTRA_EMAIL, direcciones);
+            if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivity(intent);
-                break;
-            case R.id.imagenUva:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urluva)));
-                startActivity(intent);
-                break;
-            case R.id.tvDesarrolladores:
-                dialogoDesarrolladoresActivo = true;
-                dialogoDesarrolladores.show();
-                break;
-            case R.id.ivJunta:
-                dialogoJuntaCyLActivo = true;
-                dialogoJuntaCyL.show();
-                break;
-            case R.id.tvBICJunta:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlBienesJunta)));
-                startActivity(intent);
-                break;
-            case R.id.tvMunicipiosJunta:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlMunicipiosJunta)));
-                startActivity(intent);
-                break;
-            case R.id.ivDbPiedia:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlDbpedia)));
-                startActivity(intent);
-                break;
-            case R.id.ivWikidata:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlWikidata)));
-                startActivity(intent);
-                break;
-            case R.id.tvOpenStreepMap:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlopenStreetMap)));
-                startActivity(intent);
-                break;
-            case R.id.tvOsmdroid:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlOsmdroid)));
-                startActivity(intent);
-                break;
-            case R.id.tvPhotoView:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlPhotoView)));
-                startActivity(intent);
-                break;
-            case R.id.tvPicasso:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlPicasso)));
-                startActivity(intent);
-                break;
-            case R.id.tvLicencia:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.urlLicencia)));
-                startActivity(intent);
-                break;
-            case R.id.tvPoliticaPrivacidad:
-                intent.setData(Uri.parse(contexto.getResources().getString(R.string.politica_url)));
-                startActivity(intent);
-                break;
-            case R.id.tvContacto:
-                intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("message/rfc822");
-                String[] direcciones = {getString(R.string.emailCasualLearn)};
-                intent.putExtra(Intent.EXTRA_EMAIL, direcciones);
-                if (intent.resolveActivity(getPackageManager()) != null) {
-                    startActivity(intent);
-                }else{
-                    Toast.makeText(contexto, getString(R.string.noEmail), Toast.LENGTH_SHORT).show();
-                }
-                break;
-            default:
-                break;
+            } else {
+                Toast.makeText(contexto, getString(R.string.noEmail), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -213,16 +205,8 @@ public class Acerca extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp(){
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    /**
-     * Acción que se toma al accionar el botón atrás
-     */
-    @Override
-    public void onBackPressed(){
-        finish();
     }
 
     /**

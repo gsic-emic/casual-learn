@@ -314,4 +314,5 @@
     <string name="eligeCorrecta">Select correct answer!</string>
     <string name="trueFalse">True or false?</string>
     <string name="mcq">Select an answer from multiple alternatives</string>
+    <string name="permiso_notificaciones"><![CDATA[<p>The application needs to send you notifications to let you know when you are close to a place where you can carry out a task.</p>]]></string>
 </resources>
