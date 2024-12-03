@@ -1,10 +1,12 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.multidex.BuildConfig;
 import androidx.preference.PreferenceManager;
 
 import android.Manifest;
@@ -110,6 +112,14 @@ public class MapaNavegable extends AppCompatActivity {
 
         map.setTilesScaledToDpi(true);
 
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
+
     }
 
     /**
@@ -149,7 +159,7 @@ public class MapaNavegable extends AppCompatActivity {
                 gpsMyLocationProvider.addLocationSource(LocationManager.NETWORK_PROVIDER); //Utiliza red y GPS
                 myLocationNewOverlay = new MyLocationNewOverlay(gpsMyLocationProvider, map);
                 myLocationNewOverlay.enableMyLocation();
-                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), R.drawable.person),
+                myLocationNewOverlay.setDirectionArrow(BitmapFactory.decodeResource(getResources(), org.osmdroid.library.R.drawable.person),
                         BitmapFactory.decodeResource(getResources(), R.drawable.ic_flecha_roja));
                 map.getOverlays().add(myLocationNewOverlay);
             }
@@ -177,7 +187,7 @@ public class MapaNavegable extends AppCompatActivity {
             alertaExplicativa.setNegativeButton(getString(R.string.volver), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    onBackPressed();
+                    getOnBackPressedDispatcher().onBackPressed();
                 }
             });
             alertaExplicativa.setCancelable(false);
@@ -228,16 +238,8 @@ public class MapaNavegable extends AppCompatActivity {
      */
     @Override
     public boolean onSupportNavigateUp() {
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    /**
-     * Método de la acción back. Finaliza la actividad
-     */
-    @Override
-    public void onBackPressed() {
-        finish();
     }
 
     /**

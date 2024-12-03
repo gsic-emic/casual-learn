@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
@@ -52,6 +53,14 @@ public class Ajustes extends AppCompatActivity
         estadoAnterior = sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false);
         SharedPreferences sharedPreferences = Ajustes.sharedPreferences;
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
     }
 
     @Override
@@ -74,21 +83,8 @@ public class Ajustes extends AppCompatActivity
 
     @Override
     public boolean onSupportNavigateUp(){
-        onBackPressed();
+        getOnBackPressedDispatcher().onBackPressed();
         return false;
-    }
-
-    @Override
-    public void onBackPressed(){
-        /*if(reiniciaMapa) {
-            Intent intent = new Intent(this, Maps.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            finishAffinity();
-            startActivity(intent);
-        }else {
-            finish();
-        }*/
-        finish();
     }
 }
 

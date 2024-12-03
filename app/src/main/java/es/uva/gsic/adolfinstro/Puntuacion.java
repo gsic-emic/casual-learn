@@ -1,5 +1,6 @@
 package es.uva.gsic.adolfinstro;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.PreferenceManager;
@@ -90,6 +91,18 @@ public class Puntuacion extends AppCompatActivity {
                         Context.MODE_PRIVATE);
             }
         }
+
+        OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                BackupManager backupManager = new BackupManager(getApplicationContext());
+                Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
+                backupManager.dataChanged();
+                pantallaCompartir(getString(R.string.puntuaCompletada));
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this,onBackPressedCallback);
+
     }
 
     /**
@@ -112,18 +125,6 @@ public class Puntuacion extends AppCompatActivity {
         super.onRestoreInstanceState(b);
         idTarea = b.getString("ID");
         puntuacion = b.getFloat("PUNTUACION");
-    }
-
-    /**
-     * Método para que cuando el usuario pulse atrás vuelva a la actividad principal y no a la tarea
-     */
-    @Override
-    public void onBackPressed(){
-        super.onBackPressed();
-        BackupManager backupManager = new BackupManager(this);
-        Auxiliar.guardaRespuesta(getApplication(), getApplicationContext(), idTarea, enviaWifi);
-        backupManager.dataChanged();
-        pantallaCompartir(getString(R.string.puntuaCompletada));
     }
 
     /**
