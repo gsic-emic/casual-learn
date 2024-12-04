@@ -12,6 +12,7 @@
         <item name="android:fontFamily">@font/roboto</item>
         <item name="android:textSize">14sp</item>
         <item name="android:listDivider">@color/colorSecondaryDarkTranspa</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -20,6 +21,7 @@
         <item name="colorControlNormal">#deffffff</item>
         <item name="android:textColor">@color/texto</item>
         <item name="fontFamily">@font/roboto</item>
+        <item name="android:statusBarColor">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

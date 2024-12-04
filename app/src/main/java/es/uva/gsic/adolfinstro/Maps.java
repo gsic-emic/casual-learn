@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
@@ -49,7 +48,6 @@ import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -990,28 +988,28 @@ public class Maps extends AppCompatActivity implements
             permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if(ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                permisos.add(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        }
+
         //Comprobación para saber si el usuario se ha identificado
         JSONObject idUsuario = PersistenciaDatos.recuperaTarea(getApplication(), PersistenciaDatos.ficheroUsuario, Auxiliar.id);
         if (idUsuario != null) {
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-                if (!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && !(ActivityCompat.checkSelfPermission(
-                        context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-                        == PackageManager.PERMISSION_GRANTED)) {
+                if (!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) &&
+                        !(ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
                     permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
                 }
             }
             else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !permisos.contains(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     if (!sharedPreferences.getBoolean(Ajustes.NO_MOLESTAR_pref, false) && !(ActivityCompat.checkSelfPermission(
                             context, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                             == PackageManager.PERMISSION_GRANTED)) {
                         permisos.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION);
                     }
-                }
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                if(checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                    permisos.add(Manifest.permission.POST_NOTIFICATIONS);
                 }
             }
         }
@@ -1113,7 +1111,9 @@ public class Maps extends AppCompatActivity implements
                         public void onClick(View v) {
                             if(dialogoPermisos.isShowing())
                                 dialogoPermisos.cancel();
-                            permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                                permisos.add(Manifest.permission.ACCESS_FINE_LOCATION);
+                            }
                             ActivityCompat.requestPermissions(
                                     Maps.this,
                                     permisos.toArray(new String[permisos.size()]),
@@ -2111,7 +2111,7 @@ public class Maps extends AppCompatActivity implements
         new AlarmaProceso().activaAlarmaProceso(getApplicationContext());
     }
 
-    /**
+    /*
      * Creación del menú en el layout
      * @param menu Menú a rellenar
      * @return Verdadero si se va a mostrar el menú
