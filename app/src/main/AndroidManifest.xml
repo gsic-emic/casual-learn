@@ -16,7 +16,6 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/>
 
     <uses-feature
         android:name="android.hardware.location.gps"
@@ -39,32 +38,51 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".ListaContextos"
-            android:label="@string/lugares_notificados" />
+            android:label="@string/lugares_notificados"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".CompartirRespuesta"
-            android:label="@string/compartir_respuesta" />
+            android:label="@string/compartir_respuesta"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".MapaNavegable"
-            android:label="@string/navega" />
+            android:label="@string/navega"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".Completadas"
-            android:label="@string/tareaCompletada" />
-        <activity android:name=".ListaTareas" />
+            android:label="@string/tareaCompletada"
+            android:windowSoftInputMode="adjustResize"
+            />
+        <activity android:name=".ListaTareas"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".Preview"
-            android:label="@string/infoTarea" />
+            android:label="@string/infoTarea"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".Puntuacion"
-            android:label="@string/score" />
+            android:label="@string/score"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".ImagenCompleta"
-            android:label="@string/imagenAmpliable" />
+            android:label="@string/imagenAmpliable"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".Acerca"
-            android:label="@string/acercade" />
+            android:label="@string/acercade"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".Tarea"
-            android:label="@string/tareaRealizar"/>
+            android:label="@string/tareaRealizar"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".PuntoInteres"
             android:label="@string/info_lugar">
@@ -76,7 +94,9 @@
             android:name=".Ajustes"
             android:label="@string/settings"
             android:parentActivityName=".Maps"
-            android:theme="@style/PreferenceScreen" />
+            android:theme="@style/PreferenceScreen"
+            android:windowSoftInputMode="adjustResize"
+            />
         <activity
             android:name=".Maps"
             android:theme="@style/AppTheme.NoActionBar" />
@@ -127,5 +147,9 @@
         <intent>
             <action android:name="android.intent.action.MAIN" />
         </intent>
+        <package android:name="com.microsoft.teams" />
+        <package android:name="com.twitter.android" />
+        <package android:name="com.instagram.android" />
+        <package android:name="com.yammer.v1" />
     </queries>
 </manifest>

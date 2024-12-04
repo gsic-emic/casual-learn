@@ -210,7 +210,7 @@ public class Acerca extends AppCompatActivity {
     }
 
     /**
-     * Se almacnea el texto de la versión para no tener que recargarlo con
+     * Se almacena el texto de la versión para no tener que recargarlo con
      * cada cierre.
      * @param b bundle donde se almacena el estado
      */
